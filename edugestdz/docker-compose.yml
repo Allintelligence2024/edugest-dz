@@ -1,0 +1,251 @@
+# docker-compose.yml
+version: '3.9'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# EDUGEST DZ — ENVIRONNEMENT DE DÉVELOPPEMENT
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+services:
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🐘 POSTGRESQL — Base de Données
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  postgres:
+    image: postgres:16-alpine
+    container_name: edugestdz_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${DB_DATABASE:-edugestdz}
+      POSTGRES_USER:     ${DB_USERNAME:-edugest_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-EduGest@2026!}
+      PGDATA:            /data/postgres
+      TZ:                Africa/Algiers
+    volumes:
+      - postgres_data:/data/postgres
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-edugest_user} -d ${DB_DATABASE:-edugestdz}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🔴 REDIS — Cache & Queue
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  redis:
+    image: redis:7-alpine
+    container_name: edugestdz_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-EduGestRedis@2026}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD:-EduGestRedis@2026}", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🐘 BACKEND — Laravel 11
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  app:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+      target:     development
+    container_name: edugestdz_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - ./backend/storage:/var/www/html/storage
+      - /var/www/html/vendor  # Exclure vendor du mount
+    environment:
+      APP_ENV:  local
+      APP_DEBUG: "true"
+      TZ:       Africa/Algiers
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # ⚛️  FRONTEND — React 18 + Vite
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  frontend:
+    build:
+      context:    ./frontend
+      dockerfile: Dockerfile
+      target:     development
+    container_name: edugestdz_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Exclure node_modules du mount
+    environment:
+      VITE_API_URL:  http://localhost/api/v1
+      VITE_APP_NAME: "EduGest DZ"
+      TZ:            Africa/Algiers
+    ports:
+      - "5173:5173"
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🌐 NGINX — Reverse Proxy
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: edugestdz_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend:/var/www/html:ro
+      - ./backend/storage/app/public:/var/www/html/storage:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+      - frontend
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🔍 MEILISEARCH — Moteur de Recherche
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    container_name: edugestdz_search
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY:     ${MEILISEARCH_KEY:-EduGestSearch@2026}
+      MEILI_NO_ANALYTICS:   "true"
+      MEILI_ENV:            development
+    volumes:
+      - meilisearch_data:/meili_data
+    ports:
+      - "7700:7700"
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 👷 QUEUE WORKER — Jobs Laravel
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  queue:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+      target:     development
+    container_name: edugestdz_queue
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --verbose
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - app
+      - redis
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # ⏰ SCHEDULER — Tâches Planifiées
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  scheduler:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+      target:     development
+    container_name: edugestdz_scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "while [ true ]; do
+        php artisan schedule:run --verbose --no-interaction &
+        sleep 60
+      done"
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      - app
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🗄️  PGADMIN — Interface BDD (Dev)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: edugestdz_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL:    admin@edugestdz.local
+      PGADMIN_DEFAULT_PASSWORD: PgAdmin@2026
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - edugestdz_net
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 📊 REDIS COMMANDER — Interface Redis
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    container_name: edugestdz_redis_ui
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS:    "local:redis:6379:0:${REDIS_PASSWORD:-EduGestRedis@2026}"
+      HTTP_USER:      admin
+      HTTP_PASSWORD:  RedisAdmin@2026
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - edugestdz_net
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# VOLUMES PERSISTANTS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  meilisearch_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  nginx_logs:
+    driver: local
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# RÉSEAU ISOLÉ
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+networks:
+  edugestdz_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

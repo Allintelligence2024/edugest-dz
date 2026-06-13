@@ -1,0 +1,2 @@
+-- EduGest DZ PostgreSQL Initialization Script
+-- This script runs automatically when the database container starts for the first time.

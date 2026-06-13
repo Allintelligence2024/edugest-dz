@@ -1,0 +1,3077 @@
+# 📋 CAHIER DES CHARGES TECHNIQUE
+## Logiciel de Gestion des Cours Particuliers & Écoles Privées en Algérie
+
+---
+
+> **Version :** 1.0
+> **Date :** Juin 2026
+> **Statut :** Document de référence – Phase 1
+> **Langue :** Français / Arabe / Darija
+
+---
+
+## 📑 TABLE DES MATIÈRES
+
+```
+1. Présentation générale du projet
+2. Objectifs du logiciel
+3. Périmètre fonctionnel
+4. Architecture technique
+5. Modules détaillés
+6. Sécurité & Conformité
+7. Interfaces & UX/UI
+8. Intégrations externes
+9. Performances & Contraintes
+10. Planning de développement
+11. Livrables attendus
+12. Glossaire
+```
+
+---
+
+# PARTIE 1 — PRÉSENTATION GÉNÉRALE
+
+---
+
+## 1.1 Identification du Projet
+
+| Champ | Détail |
+|---|---|
+| **Nom du projet** | EduGest DZ |
+| **Type** | Plateforme SaaS multi-tenant |
+| **Secteur** | EdTech / Éducation privée en Algérie |
+| **Cible principale** | Centres de cours particuliers, écoles privées, profs indépendants |
+| **Déploiement** | Cloud (Web + Mobile iOS/Android) |
+| **Langues** | Arabe 🇩🇿 / Français 🇫🇷 / Darija |
+
+---
+
+## 1.2 Contexte & Justification
+
+```
+PROBLÈME IDENTIFIÉ :
+┌─────────────────────────────────────────────────────────┐
+│ Les centres de cours particuliers algériens gèrent      │
+│ encore manuellement :                                   │
+│  ❌ Les cahiers d'inscription papier                    │
+│  ❌ Les paiements en espèces non tracés                 │
+│  ❌ Les emplois du temps sur Excel                      │
+│  ❌ Les relances des parents par appel téléphonique     │
+│  ❌ Les bulletins imprimés à la main                    │
+│  ❌ La paie des enseignants calculée manuellement       │
+└─────────────────────────────────────────────────────────┘
+
+SOLUTION PROPOSÉE :
+┌─────────────────────────────────────────────────────────┐
+│ Une plateforme SaaS centralisée, accessible sur web     │
+│ et mobile, gérant l'intégralité des opérations d'un    │
+│ centre de cours particuliers ou école privée, adaptée   │
+│ au contexte algérien (paiement local, fiscalité,        │
+│ calendrier national, curricula)                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1.3 Parties Prenantes
+
+| Acteur | Rôle | Niveau d'accès |
+|---|---|---|
+| **Super Admin** | Éditeur du logiciel | Total |
+| **Admin Centre** | Directeur de l'école/centre | Complet |
+| **Secrétaire** | Gestion inscriptions/caisse | Limité |
+| **Enseignant** | Gestion cours, notes, présences | Personnel |
+| **Élève** | Consultation planning, notes | Lecture |
+| **Parent** | Suivi enfant, paiements | Consultation |
+
+---
+
+# PARTIE 2 — OBJECTIFS DU LOGICIEL
+
+---
+
+## 2.1 Objectifs Fonctionnels
+
+```
+✅ OBJ-01 : Digitaliser la gestion des inscriptions élèves
+✅ OBJ-02 : Automatiser la planification des cours
+✅ OBJ-03 : Gérer les paiements et la comptabilité locale
+✅ OBJ-04 : Assurer le suivi pédagogique des élèves
+✅ OBJ-05 : Faciliter la communication parent-prof-centre
+✅ OBJ-06 : Gérer la paie et les contrats des enseignants
+✅ OBJ-07 : Produire des rapports analytiques
+✅ OBJ-08 : Intégrer les moyens de paiement algériens
+```
+
+## 2.2 Objectifs Non-Fonctionnels
+
+```
+✅ OBJ-NF-01 : Disponibilité 99.9% (SLA)
+✅ OBJ-NF-02 : Temps de réponse < 2 secondes
+✅ OBJ-NF-03 : Support multilingue (AR/FR/Darija)
+✅ OBJ-NF-04 : Conformité RGPD + Loi algérienne 18-07
+✅ OBJ-NF-05 : Interface mobile-responsive
+✅ OBJ-NF-06 : Sécurité des données (chiffrement AES-256)
+✅ OBJ-NF-07 : Multi-tenant (plusieurs centres sur une instance)
+✅ OBJ-NF-08 : Sauvegarde automatique quotidienne
+```
+
+---
+
+# PARTIE 3 — PÉRIMÈTRE FONCTIONNEL
+
+---
+
+## 3.1 Cartographie des Modules
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║              PLATEFORME EDUGEST DZ — VUE GLOBALE                ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        ║
+║  │  MODULE  │  │  MODULE  │  │  MODULE  │  │  MODULE  │        ║
+║  │   M01    │  │   M02    │  │   M03    │  │   M04    │        ║
+║  │Inscript. │  │ Planning │  │ Finance  │  │Pédagogie │        ║
+║  └──────────┘  └──────────┘  └──────────┘  └──────────┘        ║
+║                                                                  ║
+║  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        ║
+║  │  MODULE  │  │  MODULE  │  │  MODULE  │  │  MODULE  │        ║
+║  │   M05    │  │   M06    │  │   M07    │  │   M08    │        ║
+║  │Personnel │  │  Comm.   │  │Reporting │  │  Admin   │        ║
+║  └──────────┘  └──────────┘  └──────────┘  └──────────┘        ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 3.2 Tableau des Priorités MoSCoW
+
+| Module | Fonctionnalité | Priorité | Phase |
+|---|---|---|---|
+| M01 | Gestion des inscriptions | MUST | Phase 1 |
+| M01 | Dossier numérique élève | MUST | Phase 1 |
+| M02 | Emploi du temps | MUST | Phase 1 |
+| M02 | Réservation de créneaux | MUST | Phase 1 |
+| M03 | Caisse & paiements | MUST | Phase 1 |
+| M03 | Facturation automatique | MUST | Phase 1 |
+| M04 | Saisie des notes | MUST | Phase 1 |
+| M04 | Suivi des présences | MUST | Phase 1 |
+| M05 | Gestion enseignants | MUST | Phase 1 |
+| M06 | Notifications SMS/Push | SHOULD | Phase 2 |
+| M06 | Chat intégré | COULD | Phase 2 |
+| M07 | Tableaux de bord | SHOULD | Phase 2 |
+| M07 | Export Excel/PDF | MUST | Phase 1 |
+| M08 | Multi-centre | SHOULD | Phase 2 |
+| M08 | API publique | WONT | Phase 3 |
+| — | IA Matching prof/élève | COULD | Phase 3 |
+| — | Paiement CIB/Dahabia | SHOULD | Phase 2 |
+
+---
+
+# PARTIE 4 — ARCHITECTURE TECHNIQUE
+
+---
+
+## 4.1 Architecture Globale
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENTS                                  │
+├──────────────┬──────────────┬──────────────┬───────────────────┤
+│  Web Browser │  Android App │   iOS App    │  Admin Dashboard  │
+│  (React.js)  │ (React Native│ (React Native│    (React.js)     │
+└──────┬───────┴──────┬───────┴──────┬───────┴──────────┬────────┘
+       │              │              │                   │
+       └──────────────┴──────────────┴───────────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │    API GATEWAY     │
+                    │   (Nginx/Kong)     │
+                    │  Rate Limiting     │
+                    │  Authentication    │
+                    └─────────┬─────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+┌─────────▼────────┐ ┌────────▼───────┐ ┌────────▼────────┐
+│  AUTH SERVICE    │ │  CORE SERVICE  │ │  NOTIF SERVICE  │
+│  (JWT/OAuth2)    │ │  (Node.js /    │ │  (Firebase +    │
+│  Refresh Tokens  │ │   Laravel)     │ │   Twilio SMS)   │
+└──────────────────┘ └────────┬───────┘ └─────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          │                   │                   │
+┌─────────▼────────┐ ┌────────▼───────┐ ┌────────▼────────┐
+│   PostgreSQL DB  │ │   Redis Cache  │ │  File Storage   │
+│  (Données métier)│ │  (Sessions,    │ │  (AWS S3 / OVH) │
+│                  │ │   Temps réel)  │ │  Documents PDF  │
+└──────────────────┘ └────────────────┘ └─────────────────┘
+```
+
+---
+
+## 4.2 Stack Technologique Recommandée
+
+### 🖥️ Frontend
+
+| Composant | Technologie | Justification |
+|---|---|---|
+| **Web App** | React.js 18+ | Performance, écosystème |
+| **Mobile** | React Native | Code partagé iOS/Android |
+| **UI Library** | Ant Design / Tailwind CSS | RTL support (Arabe) |
+| **State Management** | Redux Toolkit | Gestion d'état complexe |
+| **Graphiques** | Recharts / Chart.js | Dashboards |
+| **PDF** | jsPDF + React-PDF | Bulletins, factures |
+
+### ⚙️ Backend
+
+| Composant | Technologie | Justification |
+|---|---|---|
+| **Framework principal** | Laravel 11 (PHP) | Écosystème riche, développeurs DZ |
+| **API** | RESTful API + GraphQL | Flexibilité |
+| **Authentification** | JWT + Laravel Sanctum | Sécurité |
+| **Queue** | Laravel Queue + Redis | Notifications asynchrones |
+| **Scheduler** | Laravel Task Scheduling | Rappels automatiques |
+
+### 🗄️ Base de Données
+
+| Composant | Technologie | Justification |
+|---|---|---|
+| **BDD Principale** | PostgreSQL 16 | ACID, relations complexes |
+| **Cache** | Redis 7 | Sessions, performances |
+| **Recherche** | Meilisearch | Recherche rapide élèves/profs |
+| **Backup** | Automatique quotidien | Sécurité données |
+
+### ☁️ Infrastructure
+
+| Composant | Technologie | Justification |
+|---|---|---|
+| **Hébergement** | OVH France / Hetzner | Latence faible pour DZ |
+| **CDN** | Cloudflare | Performance mondiale |
+| **Conteneurisation** | Docker + Docker Compose | Déploiement simplifié |
+| **CI/CD** | GitHub Actions | Automatisation |
+| **SSL** | Let's Encrypt | HTTPS gratuit |
+| **Monitoring** | Sentry + Uptime Robot | Surveillance 24/7 |
+
+---
+
+## 4.3 Modèle Multi-Tenant
+
+```
+┌──────────────────────────────────────────────────┐
+│              BASE DE DONNÉES PARTAGÉE            │
+│                                                  │
+│  ┌──────────────┐  ┌──────────────┐             │
+│  │  tenant_id:1 │  │  tenant_id:2 │   ...        │
+│  │  Centre Alger│  │  École Oran  │             │
+│  │  ──────────  │  │  ──────────  │             │
+│  │  Données     │  │  Données     │             │
+│  │  isolées     │  │  isolées     │             │
+│  └──────────────┘  └──────────────┘             │
+│                                                  │
+│  Isolation par : tenant_id dans chaque table     │
+└──────────────────────────────────────────────────┘
+```
+
+---
+
+# PARTIE 5 — MODULES DÉTAILLÉS
+
+---
+
+## MODULE M01 — GESTION DES INSCRIPTIONS
+
+### Diagramme de flux
+
+```
+FLUX D'INSCRIPTION ÉLÈVE :
+
+[Parent/Élève]
+      │
+      ▼
+[Formulaire d'inscription]
+      │
+      ├──► Nom, Prénom, Date de naissance
+      ├──► Wilaya, Commune, Adresse
+      ├──► Niveau scolaire (1AP → Terminal)
+      ├──► Matières souhaitées
+      ├──► Photo (optionnel)
+      └──► Contact parent (GSM, Email)
+      │
+      ▼
+[Vérification & Validation Admin]
+      │
+      ├──► Création du dossier numérique
+      ├──► Génération N° d'inscription unique
+      ├──► Affectation groupe/niveau
+      └──► Notification SMS/Email d'acceptation
+      │
+      ▼
+[Paiement des frais d'inscription]
+      │
+      ▼
+[Activation du compte Élève]
+```
+
+### Données du Dossier Élève
+
+```sql
+TABLE : eleves
+─────────────────────────────────────────
+id                    UUID (PK)
+tenant_id             UUID (FK)
+numero_inscription    VARCHAR (unique, auto)
+nom                   VARCHAR(100)
+prenom                VARCHAR(100)
+date_naissance        DATE
+sexe                  ENUM(M, F)
+wilaya_id             INT (FK)
+commune_id            INT (FK)
+adresse               TEXT
+niveau_scolaire       ENUM(1AP..3AS, Univ)
+ecole_origine         VARCHAR
+photo_url             VARCHAR
+statut                ENUM(actif, inactif, suspendu)
+date_inscription      DATETIME
+created_at            TIMESTAMP
+updated_at            TIMESTAMP
+─────────────────────────────────────────
+
+TABLE : parents
+─────────────────────────────────────────
+id                    UUID
+eleve_id              UUID (FK)
+lien                  ENUM(père, mère, tuteur)
+nom_complet           VARCHAR
+telephone_1           VARCHAR(13)
+telephone_2           VARCHAR(13)
+email                 VARCHAR
+profession            VARCHAR
+─────────────────────────────────────────
+```
+
+---
+
+## MODULE M02 — PLANNING & EMPLOI DU TEMPS
+
+### Règles de gestion
+
+```
+RG-PLAN-01 : Un enseignant ne peut avoir 2 cours au même créneau
+RG-PLAN-02 : Une salle ne peut accueillir 2 groupes simultanément
+RG-PLAN-03 : Créneaux disponibles : 7h00 → 22h00 (par défaut)
+RG-PLAN-04 : Durée minimale d'un cours : 1h00
+RG-PLAN-05 : Durée maximale d'un cours : 3h00
+RG-PLAN-06 : Pause minimale entre 2 cours (même enseignant) : 15 min
+RG-PLAN-07 : Respect du calendrier scolaire algérien (vacances)
+RG-PLAN-08 : Alerte automatique en cas de conflit de planning
+```
+
+### Structure des créneaux
+
+```sql
+TABLE : cours
+─────────────────────────────────────────
+id                    UUID
+tenant_id             UUID
+enseignant_id         UUID (FK)
+matiere_id            UUID (FK)
+groupe_id             UUID (FK)
+salle_id              UUID (FK)
+jour_semaine          ENUM(Dim..Jeu, Ven, Sam)
+heure_debut           TIME
+heure_fin             TIME
+type_cours            ENUM(individuel, groupe, en_ligne)
+recurrence            ENUM(hebdo, bimensuel, unique)
+date_debut            DATE
+date_fin              DATE
+statut                ENUM(planifié, annulé, terminé)
+─────────────────────────────────────────
+```
+
+---
+
+## MODULE M03 — GESTION FINANCIÈRE
+
+### Architecture comptable
+
+```
+FLUX FINANCIER :
+
+RECETTES                          DÉPENSES
+─────────                         ─────────
+Frais inscription                 Salaires enseignants
+Mensualités élèves                Loyer/Charges
+Cours individuels                 Fournitures
+Cours de groupe                   Publicité
+Matériel vendu                    Maintenance logiciel
+                │                         │
+                └────────────┬────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   CAISSE/BANQUE  │
+                    │  Solde en temps  │
+                    │      réel        │
+                    └─────────────────┘
+```
+
+### Moyens de paiement intégrés
+
+```
+PAIEMENTS ACCEPTÉS :
+┌─────────────────────────────────────────┐
+│  💵 Espèces (Cash)          → Caisse    │
+│  💳 CIB (Carte Interbancaire)→ API Satim│
+│  💳 Dahabia (Algérie Poste) → API Satim│
+│  📱 BaridiMob               → API CCP  │
+│  🏦 Virement bancaire       → Manuel   │
+│  📆 Paiement en tranches    → Planifié │
+└─────────────────────────────────────────┘
+```
+
+### Gestion des impayés
+
+```
+CYCLE DE RELANCE AUTOMATIQUE :
+
+J+1 après échéance  ──► Notification push (app)
+J+3                 ──► SMS de rappel doux
+J+7                 ──► SMS de relance ferme
+J+15                ──► Blocage accès élève (optionnel)
+J+30                ──► Alerte Admin + rapport
+```
+
+---
+
+## MODULE M04 — SUIVI PÉDAGOGIQUE
+
+### Système de notation
+
+```
+TYPES D'ÉVALUATION :
+┌────────────────────────────────────────────┐
+│  📝 Devoir en classe (DC)    - sur 20      │
+│  📚 Devoir maison (DM)       - sur 20      │
+│  🎯 Test rapide              - sur 10      │
+│  📊 Examen mensuel           - sur 20      │
+│  🏆 Examen de fin de module  - sur 20      │
+│  ⭐ Note de participation    - sur 5       │
+└────────────────────────────────────────────┘
+
+CALCUL DE LA MOYENNE :
+  Moyenne = (Σ notes × coefficients) / Σ coefficients
+  Arrondi à 2 décimales
+  Affichage : Numérique + Appréciation (Excellent/TB/B/...)
+```
+
+### Suivi des présences
+
+```sql
+TABLE : presences
+─────────────────────────────────────
+id              UUID
+cours_id        UUID (FK)
+eleve_id        UUID (FK)
+date_cours      DATE
+statut          ENUM(présent, absent, retard, excusé)
+motif_absence   TEXT
+note_enseignant TEXT
+heure_arrivee   TIME (si retard)
+─────────────────────────────────────
+```
+
+---
+
+## MODULE M05 — GESTION DU PERSONNEL
+
+### Types de contrats gérés
+
+```
+CONTRATS ENSEIGNANTS :
+┌──────────────────────────────────────────────────┐
+│  📄 CDI    → Salaire fixe + IRG + CNAS           │
+│  📄 CDD    → Durée déterminée + IRG              │
+│  📄 Vacataire → Paiement à l'heure/séance        │
+│  📄 Freelance → Contrat de prestation            │
+└──────────────────────────────────────────────────┘
+
+CALCUL AUTOMATIQUE :
+  ✅ IRG (Impôt sur Revenu Global) selon barème DZ
+  ✅ CNAS (cotisation salariale 9%)
+  ✅ CASNOS (pour indépendants)
+  ✅ Retenues sur absences
+  ✅ Primes et majorations
+  ✅ Bulletin de paie PDF automatique
+```
+
+---
+
+## MODULE M06 — COMMUNICATION
+
+### Canaux de communication
+
+```
+SYSTÈME DE NOTIFICATIONS :
+
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  📱 Push Notification (App Mobile)             │
+│     → Rappel cours, résultats, paiements        │
+│                                                 │
+│  📩 SMS (via Twilio / Solution locale DZ)       │
+│     → Absences, impayés, convocations           │
+│                                                 │
+│  📧 Email (SMTP / SendGrid)                     │
+│     → Bulletins, factures, rapports             │
+│                                                 │
+│  💬 Chat In-App                                 │
+│     → Parent ↔ Enseignant (texte + fichiers)    │
+│                                                 │
+│  📢 Annonces (Tableau d'affichage digital)      │
+│     → Événements, fermetures, actualités        │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## MODULE M07 — REPORTING & ANALYTIQUE
+
+### Tableaux de bord par rôle
+
+```
+DASHBOARD ADMIN :
+├── 📊 KPIs Financiers (CA mensuel, encaissements, impayés)
+├── 👥 Statistiques élèves (actifs, nouveaux, abandons)
+├── 📈 Taux de remplissage des groupes
+├── 🏆 Performance par matière / enseignant
+├── 📅 Taux de présence global
+└── 📉 Tendances et prévisions
+
+DASHBOARD ENSEIGNANT :
+├── 📅 Mon planning de la semaine
+├── 👥 Mes groupes & élèves
+├── 📊 Moyennes de mes classes
+├── ✅ Suivi des présences
+└── 💰 Mes heures & rémunération
+
+DASHBOARD PARENT :
+├── 📅 Planning de mon enfant
+├── 📊 Notes & moyennes
+├── ✅ Présences / Absences
+├── 💰 Solde & factures
+└── 📩 Messages du centre
+```
+
+### Rapports exportables
+
+| Rapport | Format | Fréquence |
+|---|---|---|
+| Bulletin de notes | PDF | Mensuel / Trimestriel |
+| Relevé de paiements | PDF / Excel | Sur demande |
+| Fiche de paie enseignant | PDF | Mensuel |
+| Rapport de présence | Excel / PDF | Hebdo / Mensuel |
+| Bilan financier | Excel | Mensuel / Annuel |
+| Statistiques pédagogiques | PDF | Trimestriel |
+| Attestation de scolarité | PDF | Sur demande |
+
+---
+
+# PARTIE 6 — SÉCURITÉ & CONFORMITÉ
+
+---
+
+## 6.1 Sécurité des Données
+
+```
+MESURES DE SÉCURITÉ :
+
+🔐 AUTHENTIFICATION
+   ├── JWT Token (expiration 1h)
+   ├── Refresh Token (7 jours)
+   ├── 2FA par SMS (optionnel)
+   └── Blocage après 5 tentatives échouées
+
+🛡️ CHIFFREMENT
+   ├── HTTPS/TLS 1.3 obligatoire
+   ├── Données sensibles : AES-256
+   ├── Mots de passe : bcrypt (cost 12)
+   └── Backup chiffré
+
+🔒 CONTRÔLE D'ACCÈS (RBAC)
+   ├── Rôles définis par tenant
+   ├── Permissions granulaires
+   └── Log de toutes les actions
+
+🔍 AUDIT & LOGS
+   ├── Journal des connexions
+   ├── Historique des modifications
+   └── Alertes d'activités suspectes
+```
+
+## 6.2 Conformité Légale Algérienne
+
+```
+LOI 18-07 du 10 juin 2018 (Protection des données personnelles) :
+  ✅ Consentement explicite des utilisateurs
+  ✅ Droit d'accès, modification, suppression
+  ✅ Hébergement en Europe (compatible)
+  ✅ DPO désigné (Délégué à la Protection des Données)
+  ✅ Mention légale et politique de confidentialité
+
+FISCALITÉ ALGÉRIENNE :
+  ✅ Conformité IRG (barème 2026)
+  ✅ Conformité CNAS / CASNOS
+  ✅ TVA (si applicable)
+  ✅ Numéro NIF/NIS sur les factures
+```
+
+---
+
+# PARTIE 7 — INTERFACES & UX/UI
+
+---
+
+## 7.1 Principes de Design
+
+```
+DESIGN SYSTEM :
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  🎨 Couleurs principales :                      │
+│     Primaire  : #1E5EBC (Bleu professionnel)    │
+│     Secondaire: #27AE60 (Vert succès)           │
+│     Alerte    : #E74C3C (Rouge erreur)          │
+│     Fond      : #F5F7FA (Gris clair)            │
+│                                                 │
+│  📐 Typographie :                               │
+│     Arabe  : Noto Sans Arabic                  │
+│     Latin  : Inter / Poppins                   │
+│                                                 │
+│  📱 Responsive Breakpoints :                    │
+│     Mobile  : < 768px                          │
+│     Tablet  : 768px - 1024px                   │
+│     Desktop : > 1024px                         │
+│                                                 │
+│  🔄 Support RTL/LTR :                           │
+│     Arabe/Darija : RTL (de droite à gauche)    │
+│     Français    : LTR (de gauche à droite)     │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## 7.2 Maquettes Fonctionnelles (Wireframes)
+
+```
+ÉCRAN PRINCIPAL - DASHBOARD ADMIN :
+┌────────────────────────────────────────────────┐
+│ 🏫 EduGest DZ    [🔔 3]    [👤 Admin]   [☰]   │
+├────────────────────────────────────────────────┤
+│                                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐      │
+│  │👥 Élèves │ │📅 Cours  │ │💰 CA mois│      │
+│  │  247     │ │  38      │ │  125.000 │      │
+│  │  actifs  │ │ auj.     │ │    DA    │      │
+│  └──────────┘ └──────────┘ └──────────┘      │
+│                                                │
+│  ┌─────────────────────┐ ┌──────────────────┐ │
+│  │  Planning du jour   │ │  Impayés récents │ │
+│  │  ─────────────────  │ │  ───────────────  │ │
+│  │  08:00 - Math G1   │ │  Ahmed M. 3.500DA│ │
+│  │  10:00 - Phys G3   │ │  Sara B.  2.000DA│ │
+│  │  14:00 - Fr G2     │ │  Karim T. 5.000DA│ │
+│  └─────────────────────┘ └──────────────────┘ │
+│                                                │
+│  ┌─────────────────────────────────────────┐  │
+│  │     Graphique CA des 6 derniers mois   │  │
+│  │  [████████████████████████████████]   │  │
+│  └─────────────────────────────────────────┘  │
+└────────────────────────────────────────────────┘
+```
+
+---
+
+# PARTIE 8 — INTÉGRATIONS EXTERNES
+
+---
+
+## 8.1 Tableau des Intégrations
+
+| Service | Type | Usage | Priorité |
+|---|---|---|---|
+| **Satim/CIB** | Paiement | CIB/Dahabia en ligne | Phase 2 |
+| **BaridiMob API** | Paiement | Algérie Poste mobile | Phase 2 |
+| **Twilio / Nexmo** | SMS | Notifications SMS | Phase 1 |
+| **Firebase FCM** | Push | Notifications mobiles | Phase 1 |
+| **SendGrid** | Email | Envoi emails transact. | Phase 1 |
+| **Google Calendar** | Agenda | Sync planning | Phase 2 |
+| **WhatsApp Business API** | Messagerie | Rappels parents | Phase 2 |
+| **Google Maps API** | Cartographie | Localisation centres | Phase 3 |
+| **OpenAI API** | IA | Matching / Suggestions | Phase 3 |
+
+---
+
+# PARTIE 9 — PERFORMANCES & CONTRAINTES
+
+---
+
+## 9.1 Contraintes Techniques
+
+```
+CONTRAINTES RÉSEAU (Contexte Algérien) :
+  ⚠️  Internet instable dans certaines wilayas
+  ✅  Mode hors-ligne partiel sur mobile
+  ✅  Compression des images et assets
+  ✅  Temps de chargement < 3s sur 3G
+
+CONTRAINTES SCALABILITÉ :
+  📊 Phase 1 : 10 à 50 centres simultanés
+  📊 Phase 2 : 50 à 500 centres
+  📊 Phase 3 : 500+ centres (scaling horizontal)
+
+CONTRAINTES MÉTIER :
+  📅 Calendrier scolaire algérien intégré
+  🗺️  48 Wilayas + communes dans la BDD
+  📚 Curriculum MEN (matières officielles)
+  💰 Devise : Dinar Algérien (DA / DZD)
+  🕌 Gestion des jours fériés (fêtes nationales + religieuses)
+```
+
+---
+
+# PARTIE 10 — PLANNING DE DÉVELOPPEMENT
+
+---
+
+## 10.1 Découpage en Phases
+
+```
+═══════════════════════════════════════════════════
+PHASE 1 — MVP (Minimum Viable Product)
+Durée : 3 à 4 mois
+═══════════════════════════════════════════════════
+  Sprint 1 (2 sem) : Architecture + Auth + Multi-tenant
+  Sprint 2 (2 sem) : Module M01 - Inscriptions
+  Sprint 3 (2 sem) : Module M02 - Planning
+  Sprint 4 (2 sem) : Module M03 - Finance (espèces)
+  Sprint 5 (2 sem) : Module M04 - Pédagogie + Notes
+  Sprint 6 (2 sem) : Module M05 - Personnel
+  Sprint 7 (1 sem) : Module M07 - Rapports PDF/Excel
+  Sprint 8 (1 sem) : Tests + Corrections + Déploiement
+
+═══════════════════════════════════════════════════
+PHASE 2 — VERSION COMPLÈTE
+Durée : 2 à 3 mois
+═══════════════════════════════════════════════════
+  → Module M06 - Communication (SMS, Push, Chat)
+  → Intégration paiement CIB/Dahabia/BaridiMob
+  → Application mobile (iOS + Android)
+  → Dashboard analytique avancé
+  → Gestion multi-centres
+
+═══════════════════════════════════════════════════
+PHASE 3 — VERSION AVANCÉE
+Durée : 2 à 3 mois
+═══════════════════════════════════════════════════
+  → Module IA (Matching prof/élève)
+  → API publique (Open API)
+  → Marketplace cours particuliers
+  → Cours en ligne (visioconférence intégrée)
+  → Application parent dédiée
+```
+
+---
+
+## 10.2 Équipe Recommandée
+
+| Rôle | Profil | Priorité |
+|---|---|---|
+| **Chef de projet** | PM technique | Obligatoire |
+| **Développeur Backend** | Laravel / PHP Senior | Obligatoire |
+| **Développeur Frontend** | React.js Senior | Obligatoire |
+| **Développeur Mobile** | React Native | Phase 2 |
+| **Designer UI/UX** | Figma, RTL expert | Obligatoire |
+| **DBA** | PostgreSQL | Obligatoire |
+| **DevOps** | Docker, Linux, CI/CD | Phase 1 fin |
+| **Testeur QA** | Tests automatisés | Phase 1 fin |
+
+---
+
+# PARTIE 11 — LIVRABLES ATTENDUS
+
+---
+
+```
+📦 LIVRABLES PHASE 1 :
+
+✅ L01 : Document d'architecture technique (ce document)
+✅ L02 : Maquettes UI/UX Figma (toutes les pages)
+✅ L03 : Modèle de base de données (Schéma ERD complet)
+✅ L04 : Code source versionné (GitHub/GitLab privé)
+✅ L05 : Application Web fonctionnelle (MVP)
+✅ L06 : Documentation API (Swagger/Postman)
+✅ L07 : Manuel utilisateur (FR + AR)
+✅ L08 : Rapport de tests (unitaires + intégration)
+✅ L09 : Instance déployée (serveur de staging)
+✅ L10 : Instance déployée (serveur de production)
+```
+
+---
+
+# PARTIE 12 — GLOSSAIRE
+
+| Terme | Définition |
+|---|---|
+| **SaaS** | Software as a Service : logiciel hébergé en cloud |
+| **Multi-tenant** | Une seule instance pour plusieurs clients isolés |
+| **MVP** | Minimum Viable Product : version minimale fonctionnelle |
+| **IRG** | Impôt sur le Revenu Global (fiscalité algérienne) |
+| **CNAS** | Caisse Nationale des Assurances Sociales |
+| **CASNOS** | Caisse des Non-Salariés |
+| **RTL** | Right-to-Left : direction d'écriture arabe |
+| **Sprint** | Cycle de développement de 2 semaines (Agile/Scrum) |
+| **API** | Interface de programmation entre systèmes |
+| **JWT** | JSON Web Token : système d'authentification sécurisé |
+| **RBAC** | Role-Based Access Control : droits selon le rôle |
+| **CI/CD** | Intégration et déploiement continus |
+| **KPI** | Indicateur clé de performance |
+| **ERD** | Entity-Relationship Diagram : schéma de la BDD |
+
+---
+
+## 🎯 RÉSUMÉ EXÉCUTIF
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                   RÉCAPITULATIF PROJET                   │
+├──────────────────────────────────────────────────────────┤
+│  Nom           : EduGest DZ                             │
+│  Type          : SaaS Multi-tenant Cloud                │
+│  Cible         : Cours particuliers + Écoles privées DZ │
+│  Stack Backend : Laravel 11 + PostgreSQL + Redis        │
+│  Stack Frontend: React.js + React Native                │
+│  Hébergement   : OVH / Hetzner (Europe)                 │
+│  Langues       : Arabe + Français + Darija              │
+│  Phase 1       : 3-4 mois (MVP Web)                     │
+│  Phase 2       : +2-3 mois (Mobile + Paiement)         │
+│  Phase 3       : +2-3 mois (IA + Marketplace)          │
+│  Équipe min.   : 4 développeurs + 1 designer            │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ✅ PROCHAINES ÉTAPES
+
+> 🔜 **Phase suivante disponible :**
+> 1. **📐 Conception BDD** → Schéma ERD complet (toutes les tables)
+> 2. **🎨 Maquettes UI/UX** → Wireframes Figma détaillés
+> 3. **⚙️ Architecture API** → Documentation Swagger des endpoints
+> 4. **🚀 Setup projet** → Structure des dossiers + environnement Dev
+
+**Quelle phase souhaitez-vous traiter en priorité ?** 🚀
+
+
+
+# 🚀 PHASE 2 — CONCEPTION COMPLÈTE DU PROJET
+## EduGest DZ — Architecture & Structure Technique Complète
+
+---
+
+> **Version :** 2.0
+> **Statut :** Phase 2 — Conception Technique
+> **Comprend :** BDD ERD + UI/UX + API + Setup Projet
+
+---
+
+# 📐 PARTIE 1 — SCHÉMA ERD COMPLET (Base de Données)
+
+---
+
+## 1.1 Vue Globale des Tables
+
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║                    EDUGEST DZ — SCHÉMA ERD GLOBAL                      ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║                                                                          ║
+║   [tenants] ──────────────────────────────────────────────────────┐     ║
+║       │                                                            │     ║
+║       ├──► [users] ──► [roles] ──► [permissions]                  │     ║
+║       │                                                            │     ║
+║       ├──► [eleves] ──► [parents]                                  │     ║
+║       │        │                                                   │     ║
+║       │        ├──► [inscriptions] ──► [niveaux]                  │     ║
+║       │        ├──► [presences]                                    │     ║
+║       │        ├──► [notes] ──► [evaluations]                     │     ║
+║       │        └──► [paiements] ──► [factures]                    │     ║
+║       │                                                            │     ║
+║       ├──► [enseignants] ──► [contrats]                           │     ║
+║       │        │                                                   │     ║
+║       │        ├──► [matieres_enseignants]                        │     ║
+║       │        ├──► [disponibilites]                              │     ║
+║       │        └──► [paies]                                       │     ║
+║       │                                                            │     ║
+║       ├──► [cours] ──► [groupes] ──► [matieres]                  │     ║
+║       │        │                                                   │     ║
+║       │        └──► [salles]                                      │     ║
+║       │                                                            │     ║
+║       ├──► [notifications] ──► [messages]                         │     ║
+║       │                                                            │     ║
+║       └──► [parametres] ──► [wilayas] ──► [communes]             │     ║
+║                                                                    │     ║
+╚════════════════════════════════════════════════════════════════════╝     ║
+```
+
+---
+
+## 1.2 Tables Complètes avec Champs
+
+### 🏢 DOMAINE : MULTI-TENANT & AUTHENTIFICATION
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : tenants  (Centres / Écoles)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK, DEFAULT gen_random_uuid()
+nom_etablissement VARCHAR(200)    NOT NULL
+slug              VARCHAR(100)    UNIQUE NOT NULL  -- ex: centre-alger
+type_etablissement ENUM           (centre_cours, ecole_privee, 
+                                   lycee_prive, formation)
+wilaya_id         INT             FK → wilayas.id
+commune_id        INT             FK → communes.id
+adresse           TEXT
+telephone         VARCHAR(20)
+email             VARCHAR(150)    UNIQUE
+site_web          VARCHAR(200)
+logo_url          VARCHAR(500)
+nif               VARCHAR(20)     -- Numéro Identification Fiscale
+nis               VARCHAR(20)     -- Numéro Identification Statistique
+registre_commerce VARCHAR(50)
+plan_abonnement   ENUM            (gratuit, pro, premium)
+date_expiration   DATE
+statut            ENUM            (actif, suspendu, expiré)
+settings          JSONB           -- Config personnalisée
+created_at        TIMESTAMP       DEFAULT NOW()
+updated_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : users  (Comptes de connexion)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK → tenants.id
+nom               VARCHAR(100)    NOT NULL
+prenom            VARCHAR(100)    NOT NULL
+email             VARCHAR(150)    UNIQUE NOT NULL
+telephone         VARCHAR(20)
+password          VARCHAR(255)    -- bcrypt hash
+avatar_url        VARCHAR(500)
+langue            ENUM            (fr, ar, dz) DEFAULT 'fr'
+theme             ENUM            (light, dark) DEFAULT 'light'
+role_id           INT             FK → roles.id
+derniere_connexion DATETIME
+remember_token    VARCHAR(100)
+email_verified_at DATETIME
+statut            ENUM            (actif, inactif, bloqué)
+created_at        TIMESTAMP
+updated_at        TIMESTAMP
+deleted_at        TIMESTAMP       -- Soft delete
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : roles
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                SERIAL          PK
+tenant_id         UUID            FK (NULL = rôle système)
+nom               VARCHAR(50)     (super_admin, admin, 
+                                   secretaire, enseignant,
+                                   eleve, parent)
+label_fr          VARCHAR(100)
+label_ar          VARCHAR(100)
+description       TEXT
+is_system         BOOLEAN         DEFAULT false
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : permissions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                SERIAL          PK
+nom               VARCHAR(100)    -- ex: eleves.create
+module            VARCHAR(50)     -- ex: eleves
+action            VARCHAR(50)     -- ex: create, read, update, delete
+description       TEXT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : role_permissions  (Pivot)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+role_id           INT             FK → roles.id
+permission_id     INT             FK → permissions.id
+PRIMARY KEY (role_id, permission_id)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : sessions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                VARCHAR(255)    PK
+user_id           UUID            FK → users.id
+ip_address        VARCHAR(45)
+user_agent        TEXT
+payload           TEXT
+last_activity     INT
+```
+
+---
+
+### 👨‍🎓 DOMAINE : ÉLÈVES & PARENTS
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : eleves
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK → tenants.id
+user_id           UUID            FK → users.id (compte login)
+numero_inscription VARCHAR(20)    UNIQUE NOT NULL  -- AUTO: EL-2026-0001
+nom               VARCHAR(100)    NOT NULL
+prenom            VARCHAR(100)    NOT NULL
+nom_ar            VARCHAR(100)    -- Nom en arabe
+prenom_ar         VARCHAR(100)
+date_naissance    DATE            NOT NULL
+lieu_naissance    VARCHAR(100)
+sexe              ENUM            (M, F)
+nationalite       VARCHAR(50)     DEFAULT 'Algérienne'
+wilaya_id         INT             FK → wilayas.id
+commune_id        INT             FK → communes.id
+adresse           TEXT
+photo_url         VARCHAR(500)
+ecole_origine     VARCHAR(200)
+niveau_scolaire   ENUM            (1AP,2AP,3AP,4AP,5AP,
+                                   1AM,2AM,3AM,4AM,
+                                   1AS,2AS,3AS,
+                                   universitaire, autre)
+statut            ENUM            (actif, inactif, 
+                                   suspendu, diplômé)
+notes_internes    TEXT
+qr_code           VARCHAR(500)    -- Pour présence rapide
+created_at        TIMESTAMP
+updated_at        TIMESTAMP
+deleted_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : parents
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK → tenants.id
+user_id           UUID            FK → users.id
+nom               VARCHAR(100)    NOT NULL
+prenom            VARCHAR(100)    NOT NULL
+lien              ENUM            (père, mère, tuteur, 
+                                   frère, sœur, autre)
+telephone_1       VARCHAR(20)     NOT NULL
+telephone_2       VARCHAR(20)
+email             VARCHAR(150)
+profession        VARCHAR(100)
+lieu_travail      VARCHAR(200)
+est_urgence       BOOLEAN         DEFAULT false
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : eleve_parent  (Pivot)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+eleve_id          UUID            FK → eleves.id
+parent_id         UUID            FK → parents.id
+est_principal     BOOLEAN         DEFAULT false
+PRIMARY KEY (eleve_id, parent_id)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : inscriptions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK → tenants.id
+eleve_id          UUID            FK → eleves.id
+groupe_id         UUID            FK → groupes.id
+annee_scolaire    VARCHAR(10)     -- ex: 2025-2026
+date_inscription  DATE            NOT NULL
+frais_inscription DECIMAL(10,2)   DEFAULT 0
+frais_paye        BOOLEAN         DEFAULT false
+date_debut        DATE
+date_fin          DATE
+statut            ENUM            (en_attente, validée,
+                                   annulée, terminée)
+motif_annulation  TEXT
+inscrit_par       UUID            FK → users.id
+created_at        TIMESTAMP
+```
+
+---
+
+### 👨‍🏫 DOMAINE : ENSEIGNANTS & PERSONNEL
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : enseignants
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK → tenants.id
+user_id           UUID            FK → users.id
+matricule         VARCHAR(20)     UNIQUE -- ENS-2026-001
+nom               VARCHAR(100)    NOT NULL
+prenom            VARCHAR(100)    NOT NULL
+nom_ar            VARCHAR(100)
+prenom_ar         VARCHAR(100)
+date_naissance    DATE
+lieu_naissance    VARCHAR(100)
+sexe              ENUM            (M, F)
+telephone         VARCHAR(20)
+email             VARCHAR(150)
+adresse           TEXT
+wilaya_id         INT             FK → wilayas.id
+photo_url         VARCHAR(500)
+diplome           VARCHAR(200)
+specialite        VARCHAR(200)
+experience_annees INT             DEFAULT 0
+type_contrat      ENUM            (CDI, CDD, vacataire, 
+                                   freelance, stagiaire)
+date_embauche     DATE
+salaire_base      DECIMAL(10,2)
+taux_horaire      DECIMAL(8,2)    -- Pour vacataires
+num_securite_sociale VARCHAR(20)
+num_cnas          VARCHAR(20)
+rib_bancaire      VARCHAR(25)
+banque            VARCHAR(100)
+statut            ENUM            (actif, congé, 
+                                   suspendu, démissionné)
+note_interne      TEXT
+created_at        TIMESTAMP
+updated_at        TIMESTAMP
+deleted_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : contrats
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+enseignant_id     UUID            FK → enseignants.id
+type_contrat      ENUM            (CDI, CDD, vacataire)
+date_debut        DATE            NOT NULL
+date_fin          DATE            -- NULL si CDI
+salaire           DECIMAL(10,2)
+taux_irg          DECIMAL(5,2)    -- % IRG applicable
+taux_cnas         DECIMAL(5,2)    DEFAULT 9.00
+taux_casnos       DECIMAL(5,2)    DEFAULT 0.00
+fichier_url       VARCHAR(500)    -- Scan du contrat
+statut            ENUM            (actif, expiré, résilié)
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : disponibilites
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+enseignant_id     UUID            FK → enseignants.id
+jour_semaine      ENUM            (dimanche, lundi, mardi,
+                                   mercredi, jeudi, 
+                                   vendredi, samedi)
+heure_debut       TIME            NOT NULL
+heure_fin         TIME            NOT NULL
+disponible        BOOLEAN         DEFAULT true
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : paies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+enseignant_id     UUID            FK → enseignants.id
+mois              INT             (1-12)
+annee             INT
+salaire_brut      DECIMAL(10,2)
+heures_effectuees DECIMAL(5,1)    -- Pour vacataires
+primes            DECIMAL(10,2)   DEFAULT 0
+deductions        DECIMAL(10,2)   DEFAULT 0
+irg               DECIMAL(10,2)
+cnas_salarie      DECIMAL(10,2)
+salaire_net       DECIMAL(10,2)
+date_paiement     DATE
+mode_paiement     ENUM            (virement, espèces, chèque)
+bulletin_url      VARCHAR(500)    -- PDF bulletin paie
+statut            ENUM            (brouillon, validé, payé)
+created_at        TIMESTAMP
+```
+
+---
+
+### 📚 DOMAINE : COURS & PLANNING
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : matieres
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+nom_fr            VARCHAR(100)    NOT NULL
+nom_ar            VARCHAR(100)
+code              VARCHAR(10)     -- MATH, PHY, FR...
+couleur           VARCHAR(7)      -- Code hex #RRGGBB
+icone             VARCHAR(50)     -- Nom icône
+niveau_scolaire   ENUM            -- Niveau concerné
+coefficient       DECIMAL(3,1)    DEFAULT 1.0
+is_active         BOOLEAN         DEFAULT true
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : enseignant_matiere  (Pivot)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+enseignant_id     UUID            FK → enseignants.id
+matiere_id        UUID            FK → matieres.id
+niveau_scolaire   ENUM
+est_principal     BOOLEAN         DEFAULT true
+PRIMARY KEY (enseignant_id, matiere_id, niveau_scolaire)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : salles
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+nom               VARCHAR(100)    NOT NULL -- Salle 1, Labo...
+capacite_max      INT             DEFAULT 10
+type_salle        ENUM            (classe, labo, info, 
+                                   amphi, en_ligne)
+equipements       JSONB           -- [tableau, vidéo, PC...]
+etage             INT             DEFAULT 0
+is_active         BOOLEAN         DEFAULT true
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : groupes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+nom               VARCHAR(100)    NOT NULL
+code              VARCHAR(20)     -- G-MATH-3AS-A
+matiere_id        UUID            FK → matieres.id
+niveau_scolaire   ENUM
+capacite_max      INT             DEFAULT 8
+type_groupe       ENUM            (individuel, groupe,
+                                   intensif, en_ligne)
+annee_scolaire    VARCHAR(10)
+statut            ENUM            (actif, complet, fermé)
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : cours  (Séances planifiées)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+enseignant_id     UUID            FK → enseignants.id
+groupe_id         UUID            FK → groupes.id
+salle_id          UUID            FK → salles.id
+jour_semaine      ENUM            (0=Dim .. 6=Sam)
+heure_debut       TIME            NOT NULL
+heure_fin         TIME            NOT NULL
+recurrence        ENUM            (unique, hebdo, 
+                                   bimensuel, mensuel)
+date_debut        DATE            NOT NULL
+date_fin          DATE
+tarif_seance      DECIMAL(8,2)    -- DA par séance
+statut            ENUM            (actif, suspendu, terminé)
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : seances  (Occurrences réelles des cours)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+cours_id          UUID            FK → cours.id
+date_seance       DATE            NOT NULL
+heure_debut       TIME
+heure_fin         TIME
+statut            ENUM            (planifiée, en_cours,
+                                   terminée, annulée,
+                                   reportée)
+motif_annulation  TEXT
+rapport_enseignant TEXT
+created_at        TIMESTAMP
+```
+
+---
+
+### ✅ DOMAINE : PRÉSENCES & PÉDAGOGIE
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : presences
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+seance_id         UUID            FK → seances.id
+eleve_id          UUID            FK → eleves.id
+statut            ENUM            (présent, absent, 
+                                   retard, excusé)
+heure_arrivee     TIME
+motif             TEXT
+note_comportement ENUM            (excellent, bien,
+                                   passable, mauvais)
+saisi_par         UUID            FK → users.id
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : evaluations
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+groupe_id         UUID            FK → groupes.id
+titre             VARCHAR(200)    NOT NULL
+type_eval         ENUM            (devoir_classe, 
+                                   devoir_maison,
+                                   test_rapide,
+                                   examen_mensuel,
+                                   examen_module)
+date_evaluation   DATE
+note_sur          DECIMAL(5,2)    DEFAULT 20.00
+coefficient       DECIMAL(3,1)    DEFAULT 1.0
+trimestre         ENUM            (T1, T2, T3)
+description       TEXT
+created_by        UUID            FK → users.id
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : notes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+evaluation_id     UUID            FK → evaluations.id
+eleve_id          UUID            FK → eleves.id
+note              DECIMAL(5,2)    -- NULL si absent
+appreciation      ENUM            (excellent, très_bien,
+                                   bien, assez_bien,
+                                   passable, insuffisant)
+absent            BOOLEAN         DEFAULT false
+commentaire       TEXT
+saisie_par        UUID            FK → users.id
+created_at        TIMESTAMP
+updated_at        TIMESTAMP
+UNIQUE (evaluation_id, eleve_id)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : bulletins
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+eleve_id          UUID            FK → eleves.id
+groupe_id         UUID            FK → groupes.id
+trimestre         ENUM            (T1, T2, T3, annuel)
+annee_scolaire    VARCHAR(10)
+moyenne_generale  DECIMAL(5,2)
+rang              INT
+effectif_classe   INT
+appreciation_gen  TEXT
+conseil_enseignant TEXT
+fichier_url       VARCHAR(500)    -- PDF généré
+genere_le         DATETIME
+genere_par        UUID
+```
+
+---
+
+### 💰 DOMAINE : FINANCE & PAIEMENTS
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : tarifs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+nom               VARCHAR(200)    NOT NULL
+type_tarif        ENUM            (inscription, mensualite,
+                                   seance, module, annuel)
+niveau_scolaire   ENUM
+type_groupe       ENUM            (individuel, groupe)
+montant           DECIMAL(10,2)   NOT NULL
+devise            VARCHAR(3)      DEFAULT 'DZD'
+is_active         BOOLEAN         DEFAULT true
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : factures
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+numero_facture    VARCHAR(30)     UNIQUE  -- FAC-2026-00001
+eleve_id          UUID            FK → eleves.id
+mois              INT
+annee             INT
+date_emission     DATE            NOT NULL
+date_echeance     DATE            NOT NULL
+sous_total        DECIMAL(10,2)
+remise_pct        DECIMAL(5,2)    DEFAULT 0
+remise_montant    DECIMAL(10,2)   DEFAULT 0
+total_ttc         DECIMAL(10,2)   NOT NULL
+statut            ENUM            (brouillon, émise,
+                                   payée, partiellement_payée,
+                                   annulée, en_retard)
+notes             TEXT
+fichier_url       VARCHAR(500)
+created_by        UUID
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : lignes_facture
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+facture_id        UUID            FK → factures.id
+description       VARCHAR(300)
+quantite          DECIMAL(8,2)    DEFAULT 1
+prix_unitaire     DECIMAL(10,2)
+total             DECIMAL(10,2)
+type_ligne        ENUM            (cours, inscription, 
+                                   materiel, remise)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : paiements
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+facture_id        UUID            FK → factures.id
+eleve_id          UUID            FK → eleves.id
+montant           DECIMAL(10,2)   NOT NULL
+mode_paiement     ENUM            (espèces, cib,
+                                   dahabia, baridimob,
+                                   virement, chèque)
+reference_trans   VARCHAR(100)    -- N° transaction CB
+date_paiement     DATE            NOT NULL
+recu_par          UUID            FK → users.id
+recu_url          VARCHAR(500)    -- PDF reçu
+notes             TEXT
+statut            ENUM            (confirmé, en_attente,
+                                   annulé, remboursé)
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : echeanciers
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+facture_id        UUID            FK
+numero_tranche    INT
+montant           DECIMAL(10,2)
+date_echeance     DATE
+statut            ENUM            (en_attente, payé, retard)
+```
+
+---
+
+### 🔔 DOMAINE : NOTIFICATIONS & COMMUNICATION
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : notifications
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+user_id           UUID            FK → users.id
+type              ENUM            (info, alerte, paiement,
+                                   cours, absence, bulletin)
+titre             VARCHAR(200)
+message           TEXT
+canal             ENUM            (push, sms, email, in_app)
+statut            ENUM            (non_lu, lu, archivé)
+lien              VARCHAR(500)
+lu_le             DATETIME
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : messages  (Chat interne)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+conversation_id   UUID            FK → conversations.id
+expediteur_id     UUID            FK → users.id
+contenu           TEXT
+type_message      ENUM            (texte, fichier, image)
+fichier_url       VARCHAR(500)
+lu_par            JSONB           -- {user_id: datetime}
+created_at        TIMESTAMP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : conversations
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+tenant_id         UUID            FK
+participants      JSONB           -- [user_id1, user_id2]
+sujet             VARCHAR(200)
+created_at        TIMESTAMP
+last_message_at   TIMESTAMP
+```
+
+---
+
+### 🌍 DOMAINE : RÉFÉRENTIELS ALGÉRIENS
+
+```sql
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : wilayas  (48 wilayas d'Algérie)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                INT             PK (1-58)
+code              VARCHAR(5)      -- 01, 02 ... 58
+nom_fr            VARCHAR(100)    NOT NULL
+nom_ar            VARCHAR(100)    NOT NULL
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : communes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                INT             PK
+wilaya_id         INT             FK → wilayas.id
+code_postal       VARCHAR(10)
+nom_fr            VARCHAR(150)
+nom_ar            VARCHAR(150)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : calendrier_scolaire
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                UUID            PK
+annee_scolaire    VARCHAR(10)     -- 2025-2026
+evenement         VARCHAR(200)
+type              ENUM            (vacances, ferie,
+                                   exam, rentree)
+date_debut        DATE
+date_fin          DATE
+wilaya_id         INT             NULL = national
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE : audit_logs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+id                BIGSERIAL       PK
+tenant_id         UUID
+user_id           UUID
+action            VARCHAR(100)    -- eleve.create, note.update
+table_concernee   VARCHAR(50)
+enregistrement_id UUID
+anciennes_valeurs JSONB
+nouvelles_valeurs JSONB
+ip_address        VARCHAR(45)
+user_agent        TEXT
+created_at        TIMESTAMP
+```
+
+---
+
+## 1.3 Index de Performance
+
+```sql
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- INDEX CRITIQUES POUR LA PERFORMANCE
+-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+-- Isolation multi-tenant (sur toutes les tables)
+CREATE INDEX idx_eleves_tenant       ON eleves(tenant_id, statut);
+CREATE INDEX idx_enseignants_tenant  ON enseignants(tenant_id, statut);
+CREATE INDEX idx_cours_tenant        ON cours(tenant_id);
+CREATE INDEX idx_paiements_tenant    ON paiements(tenant_id, date_paiement);
+
+-- Recherche rapide
+CREATE INDEX idx_eleves_search       ON eleves(tenant_id, nom, prenom);
+CREATE INDEX idx_eleves_niveau       ON eleves(tenant_id, niveau_scolaire);
+CREATE INDEX idx_notes_eleve         ON notes(eleve_id, evaluation_id);
+CREATE INDEX idx_presences_seance    ON presences(seance_id, eleve_id);
+CREATE INDEX idx_factures_statut     ON factures(tenant_id, statut, date_echeance);
+CREATE INDEX idx_seances_date        ON seances(cours_id, date_seance);
+
+-- Audit
+CREATE INDEX idx_audit_tenant_date   ON audit_logs(tenant_id, created_at DESC);
+```
+
+---
+
+# 🎨 PARTIE 2 — MAQUETTES UI/UX (Wireframes Détaillés)
+
+---
+
+## 2.1 Design System
+
+```
+🎨 PALETTE DE COULEURS :
+┌──────────────────────────────────────────────────────┐
+│  Primaire    #1E5EBC  ████  Bleu institutionnel       │
+│  Secondaire  #27AE60  ████  Vert succès               │
+│  Accent      #F39C12  ████  Orange alerte             │
+│  Danger      #E74C3C  ████  Rouge erreur              │
+│  Info        #3498DB  ████  Bleu info                 │
+│  Fond        #F0F4F8  ████  Gris très clair           │
+│  Texte       #2C3E50  ████  Gris foncé                │
+│  Bordure     #DEE2E6  ████  Gris clair                │
+└──────────────────────────────────────────────────────┘
+
+📐 ESPACEMENT (Spacing Scale) :
+  xs : 4px   | sm : 8px  | md : 16px
+  lg : 24px  | xl : 32px | 2xl: 48px | 3xl: 64px
+
+🔤 TYPOGRAPHIE :
+  H1 : Inter Bold 32px      | Noto Sans Arabic Bold 32px
+  H2 : Inter SemiBold 24px  | Noto Sans Arabic SemiBold 24px
+  H3 : Inter SemiBold 18px  | Noto Sans Arabic SemiBold 18px
+  Body: Inter Regular 14px  | Noto Sans Arabic Regular 14px
+  Small: Inter Regular 12px
+```
+
+---
+
+## 2.2 ÉCRAN 01 — Page de Connexion
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│                    🏫 EduGest DZ                           │
+│              إدارة مراكز الدروس الخصوصية                   │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                    SE CONNECTER                       │  │
+│  │                                                       │  │
+│  │   📧 Adresse email ou téléphone                      │  │
+│  │   ┌─────────────────────────────────────────────┐    │  │
+│  │   │ exemple@centre.dz                           │    │  │
+│  │   └─────────────────────────────────────────────┘    │  │
+│  │                                                       │  │
+│  │   🔒 Mot de passe                                    │  │
+│  │   ┌─────────────────────────────────────────────┐    │  │
+│  │   │ ••••••••••••                          [👁]  │    │  │
+│  │   └─────────────────────────────────────────────┘    │  │
+│  │                                                       │  │
+│  │   [ ] Se souvenir de moi    [Mot de passe oublié ?]  │  │
+│  │                                                       │  │
+│  │   ┌─────────────────────────────────────────────┐    │  │
+│  │   │           🔑  SE CONNECTER                  │    │  │
+│  │   └─────────────────────────────────────────────┘    │  │
+│  │                                                       │  │
+│  │            ──────── ou ────────                      │  │
+│  │                                                       │  │
+│  │   [ 🌐 Français ]   [ 🌐 العربية ]   [ 🌐 Darija ]  │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│           v2.0.1 © 2026 EduGest DZ — Tous droits réservés  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.3 ÉCRAN 02 — Dashboard Admin
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ [≡] 🏫 EduGest DZ - Centre Horizon Alger   [🔔 5] [🌐] [👤 ▼]│
+├──────────────┬──────────────────────────────────────────────────┤
+│              │                                                  │
+│  📊 Dashboard│   Bonjour, Directeur Ahmed ! 👋  Lundi 09/06/26 │
+│  👥 Élèves   │   ─────────────────────────────────────────────  │
+│  👨‍🏫 Profs   │                                                  │
+│  📅 Planning │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────┐│
+│  📚 Cours    │  │ 👥 Élèves│ │📅 Séances│ │💰 CA Mois│ │⚠️  ││
+│  💰 Finance  │  │   247    │ │ Auj: 12  │ │ 187.500  │ │ 18  ││
+│  📝 Notes    │  │  actifs  │ │ sem: 67  │ │    DA    │ │Imp. ││
+│  👔 Personnel│  │  [+12%]  │ │          │ │  [+8%] ↑ │ │     ││
+│  📩 Messages │  └──────────┘ └──────────┘ └──────────┘ └─────┘│
+│  📊 Rapports │                                                  │
+│  ⚙️ Paramètres│  ┌─────────────────────┐ ┌────────────────────┐│
+│              │  │  📅 PLANNING AUJD'HUI│ │  💰 DERNIERS PAIEM.││
+│  ─────────── │  │ ─────────────────── │ │ ────────────────── ││
+│  📦 Mon Plan │  │ 08h00 Maths  G3  S1 │ │ ✅ Sara B.  5.000  ││
+│  Pro ✅      │  │ 09h30 Phys.  G1  S2 │ │ ✅ Ahmed M. 3.500  ││
+│  Exp: 12/26  │  │ 14h00 Franç. G2  S1 │ │ ⏳ Karim T. 2.000  ││
+│              │  │ 16h00 Arab.  G4  S3 │ │ ❌ Nadia H. 4.500  ││
+│  [Mettre à  ]│  │ 18h00 Math.  G1  S2 │ │ ❌ Omar K.  3.000  ││
+│  [jour plan ]│  │ [Voir tout →]       │ │ [Voir tout →]      ││
+│              │  └─────────────────────┘ └────────────────────┘│
+│              │                                                  │
+│              │  ┌──────────────────────────────────────────┐   │
+│              │  │   📈 ÉVOLUTION CA — 6 DERNIERS MOIS      │   │
+│              │  │                                           │   │
+│              │  │ 200k┤                        ▄▄          │   │
+│              │  │ 150k┤              ▄▄    ▄▄  ██          │   │
+│              │  │ 100k┤    ▄▄   ▄▄  ██    ██  ██          │   │
+│              │  │  50k┤    ██   ██  ██    ██  ██          │   │
+│              │  │     └────Jan─Fev─Mar─Avr─Mai─Jun        │   │
+│              │  └──────────────────────────────────────────┘   │
+│              │                                                  │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.4 ÉCRAN 03 — Liste des Élèves
+
+```
+┌──────────────┬──────────────────────────────────────────────────┐
+│  [Sidebar]   │  👥 GESTION DES ÉLÈVES                          │
+│              │  ─────────────────────────────────────────────── │
+│              │  [🔍 Rechercher un élève...    ] [+ Ajouter] [⬇]│
+│              │                                                  │
+│              │  Filtres: [Tous ▼] [Niveau ▼] [Groupe ▼] [🔄]  │
+│              │                                                  │
+│              │  247 élèves actifs                               │
+│              │  ┌────────────────────────────────────────────┐  │
+│              │  │ □ │ Photo │ Nom & Prénom    │Niv │Groupe│ $ ││
+│              │  ├────────────────────────────────────────────┤  │
+│              │  │ □ │  👤   │ AMARI Sara      │3AS │G-M01 │✅││
+│              │  │ □ │  👤   │ BENALI Karim    │2AS │G-P02 │⏳││
+│              │  │ □ │  👤   │ CHERIF Nadia    │4AM │G-F01 │❌││
+│              │  │ □ │  👤   │ DAOUD Omar      │1AS │G-M03 │✅││
+│              │  │ □ │  👤   │ FERHAT Amina    │3AS │G-A01 │✅││
+│              │  │ ...│      │                 │    │      │   ││
+│              │  ├────────────────────────────────────────────┤  │
+│              │  │ Actions: [SMS] [Email] [Exporter] [Supp.]  │  │
+│              │  └────────────────────────────────────────────┘  │
+│              │                                                  │
+│              │  Page [1] 2  3 ... 25   Afficher [10 ▼] / page  │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.5 ÉCRAN 04 — Fiche Élève Détaillée
+
+```
+┌──────────────┬──────────────────────────────────────────────────┐
+│  [Sidebar]   │  ← Retour   👤 FICHE ÉLÈVE                       │
+│              │  ─────────────────────────────────────────────── │
+│              │  ┌────────────────────────────────────────────┐  │
+│              │  │  👤          AMARI Sara                    │  │
+│              │  │  [Photo]     N°: EL-2026-0042              │  │
+│              │  │              3ème AS Scientifique          │  │
+│              │  │              📍 Bir Mourad Raïs, Alger     │  │
+│              │  │  [✏️ Modifier] [📄 Bulletin] [💬 Message] │  │
+│              │  └────────────────────────────────────────────┘  │
+│              │                                                  │
+│              │  [Info Perso.] [Notes] [Présences] [Paiements]  │
+│              │  ─── onglets ──────────────────────────────────  │
+│              │                                                  │
+│              │  ┌─────────────────┐  ┌──────────────────────┐  │
+│              │  │ 📊 MOYENNES     │  │ ✅ PRÉSENCES         │  │
+│              │  │ Maths    : 17.5 │  │ Ce mois:             │  │
+│              │  │ Physique : 15.0 │  │ ✅ 18 présences      │  │
+│              │  │ Français : 14.5 │  │ ❌ 2 absences        │  │
+│              │  │ Anglais  : 16.0 │  │ Taux: 90%            │  │
+│              │  │ ─────────────── │  └──────────────────────┘  │
+│              │  │ Moy. Gén.: 15.75│                            │
+│              │  │ Rang: 3/24      │  ┌──────────────────────┐  │
+│              │  └─────────────────┘  │ 💰 PAIEMENTS         │  │
+│              │                       │ Mensualité: ✅ Payée  │  │
+│              │                       │ Mois: Juin 2026       │  │
+│              │                       │ Solde: 0 DA           │  │
+│              │                       │ [Voir historique]     │  │
+│              │                       └──────────────────────┘  │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.6 ÉCRAN 05 — Planning Hebdomadaire
+
+```
+┌──────────────┬──────────────────────────────────────────────────┐
+│  [Sidebar]   │  📅 PLANNING HEBDOMADAIRE — Semaine 23/2026      │
+│              │  [← Semaine préc.]  09-14 Juin 2026  [Suiv. →]  │
+│              │  [+ Ajouter Cours]  [Vue: Semaine▼]  [Imprimer] │
+│              │  ──────────────────────────────────────────────  │
+│              │                                                  │
+│              │       Dim    Lun    Mar    Mer    Jeu    Sam     │
+│              │       09     10     11     12     13     14      │
+│              │  ─────┼──────┼──────┼──────┼──────┼──────┼────  │
+│              │  08h00│      │MATH  │      │MATH  │      │PHYS  │
+│              │       │      │G-M01 │      │G-M02 │      │G-P01 │
+│              │       │      │S.1   │      │S.2   │      │S.1   │
+│              │  ─────┼──────┼──────┼──────┼──────┼──────┼────  │
+│              │  10h00│ARAB  │      │PHYS  │      │ARAB  │      │
+│              │       │G-A01 │      │G-P02 │      │G-A02 │      │
+│              │       │S.3   │      │S.1   │      │S.3   │      │
+│              │  ─────┼──────┼──────┼──────┼──────┼──────┼────  │
+│              │  14h00│      │FRAN  │      │ANGL  │      │MATH  │
+│              │       │      │G-F01 │      │G-E01 │      │G-M03 │
+│              │       │      │S.2   │      │S.1   │      │S.2   │
+│              │  ─────┼──────┼──────┼──────┼──────┼──────┼────  │
+│              │  16h00│MATH  │      │MATH  │      │PHYS  │      │
+│              │       │G-M04 │      │G-M01 │      │G-P01 │      │
+│              │  ─────┴──────┴──────┴──────┴──────┴──────┴────  │
+│              │  Légende: MATH=🔵  PHYS=🟢  FRAN=🟡  ARAB=🟠   │
+└──────────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.7 ÉCRAN 06 — Application Mobile (Parent)
+
+```
+ ┌──────────────────────┐   ┌──────────────────────┐
+ │  📱 APP PARENT       │   │  📱 NOTES & RÉSULTATS │
+ │  ──────────────────  │   │  ──────────────────── │
+ │  Bonjour Mme Amari! 👋│  │  ← Sara — Juin 2026  │
+ │  Sara AMARI - 3AS    │   │                       │
+ │  ─────────────────── │   │  Mathématiques  17.5  │
+ │                      │   │  ████████████░░ 87.5% │
+ │  📅 Prochain cours   │   │                       │
+ │  ┌──────────────────┐│   │  Physique       15.0  │
+ │  │ Lundi 10/06/26   ││   │  ███████████░░░ 75.0% │
+ │  │ Mathématiques    ││   │                       │
+ │  │ 08h00 → 10h00   ││   │  Français       14.5  │
+ │  │ Prof: M. Benali  ││   │  ██████████░░░░ 72.5% │
+ │  └──────────────────┘│   │                       │
+ │                      │   │  Anglais        16.0  │
+ │  💰 Paiement         │   │  ████████████░░ 80.0% │
+ │  ┌──────────────────┐│   │  ─────────────────── │
+ │  │ Juin 2026        ││   │  Moy. Générale  15.75 │
+ │  │ Mensualité 3.500 ││   │  Rang: 3ème / 24      │
+ │  │ [✅ PAYER]       ││   │                       │
+ │  └──────────────────┘│   │  [📄 Télécharger      │
+ │                      │   │     Bulletin PDF]     │
+ │  ✅ Présence: 90%    │   │                       │
+ │  📩 Messages: 2 nvx  │   │                       │
+ │  ─────────────────── │   │  ─────────────────── │
+ │  [🏠][📅][📊][💬][⚙]│   │  [🏠][📅][📊][💬][⚙]│
+ └──────────────────────┘   └──────────────────────┘
+```
+
+---
+
+# ⚙️ PARTIE 3 — ARCHITECTURE API (Documentation Endpoints)
+
+---
+
+## 3.1 Convention Globale API
+
+```
+BASE URL     : https://api.edugestdz.com/v1
+AUTH         : Bearer Token (JWT) dans header Authorization
+FORMAT       : JSON (Content-Type: application/json)
+VERSIONING   : /v1/, /v2/ dans l'URL
+PAGINATION   : ?page=1&per_page=15
+TENANT       : Résolu automatiquement via le token JWT
+RATE LIMIT   : 100 req/min (standard), 500 req/min (premium)
+
+─────────────────────────────────────────────────────
+STRUCTURE RÉPONSE SUCCÈS :
+{
+  "success": true,
+  "data": { ... },
+  "meta": {
+    "page": 1,
+    "per_page": 15,
+    "total": 247,
+    "last_page": 17
+  },
+  "message": "Opération réussie"
+}
+
+STRUCTURE RÉPONSE ERREUR :
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Les données sont invalides",
+    "details": {
+      "email": ["L'email est requis"],
+      "telephone": ["Format invalide"]
+    }
+  },
+  "status": 422
+}
+```
+
+---
+
+## 3.2 Endpoints — Authentification
+
+```
+🔐 AUTH MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST   /auth/login
+──────────────────────────────────────────────────────
+Body:
+{
+  "email": "admin@centre.dz",
+  "password": "MonMotDePasse123",
+  "remember_me": false
+}
+Réponse 200:
+{
+  "success": true,
+  "data": {
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "expires_in": 3600,
+    "user": {
+      "id": "uuid",
+      "nom": "ADMIN",
+      "prenom": "Centre",
+      "email": "admin@centre.dz",
+      "role": "admin",
+      "tenant": {
+        "id": "uuid",
+        "nom": "Centre Horizon Alger",
+        "plan": "pro"
+      }
+    }
+  }
+}
+
+POST   /auth/refresh-token
+POST   /auth/logout
+POST   /auth/forgot-password
+POST   /auth/reset-password
+GET    /auth/me
+PUT    /auth/change-password
+```
+
+---
+
+## 3.3 Endpoints — Élèves
+
+```
+👥 ÉLÈVES MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /eleves
+──────────────────────────────────────────────────────
+Query params:
+  ?page=1
+  &per_page=15
+  &search=sara amari
+  &niveau_scolaire=3AS
+  &statut=actif
+  &groupe_id=uuid
+  &sort=nom&order=asc
+Réponse 200: Liste paginée des élèves
+
+POST   /eleves
+──────────────────────────────────────────────────────
+Body:
+{
+  "nom": "AMARI",
+  "prenom": "Sara",
+  "nom_ar": "عمري",
+  "prenom_ar": "سارة",
+  "date_naissance": "2007-03-15",
+  "sexe": "F",
+  "wilaya_id": 16,
+  "commune_id": 1620,
+  "adresse": "12 Rue Didouche Mourad",
+  "niveau_scolaire": "3AS",
+  "ecole_origine": "Lycée Amirouche",
+  "parents": [
+    {
+      "nom": "AMARI",
+      "prenom": "Mohamed",
+      "lien": "père",
+      "telephone_1": "0555123456",
+      "email": "amari.m@gmail.com"
+    }
+  ]
+}
+
+GET    /eleves/{id}              -- Fiche complète
+PUT    /eleves/{id}              -- Modifier
+DELETE /eleves/{id}              -- Supprimer (soft)
+POST   /eleves/{id}/photo        -- Upload photo
+GET    /eleves/{id}/notes        -- Notes de l'élève
+GET    /eleves/{id}/presences    -- Historique présences
+GET    /eleves/{id}/paiements    -- Historique paiements
+GET    /eleves/{id}/bulletins    -- Bulletins
+POST   /eleves/{id}/inscription  -- Inscrire à un groupe
+GET    /eleves/{id}/statistiques -- Stats complètes
+POST   /eleves/import-excel      -- Import en masse
+GET    /eleves/export            -- Export Excel/CSV
+```
+
+---
+
+## 3.4 Endpoints — Planning & Cours
+
+```
+📅 PLANNING MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /cours                    -- Liste des cours
+POST   /cours                    -- Créer un cours
+GET    /cours/{id}               -- Détail cours
+PUT    /cours/{id}               -- Modifier cours
+DELETE /cours/{id}               -- Supprimer cours
+
+GET    /planning
+──────────────────────────────────────────────────────
+Query params:
+  ?date_debut=2026-06-09
+  &date_fin=2026-06-14
+  &enseignant_id=uuid
+  &salle_id=uuid
+  &groupe_id=uuid
+Réponse: Planning hebdomadaire formaté
+
+GET    /planning/conflits        -- Vérifier conflits
+POST   /planning/generer         -- Génération automatique
+
+GET    /seances
+POST   /seances/{id}/annuler
+POST   /seances/{id}/reporter
+POST   /seances/{id}/demarrer
+POST   /seances/{id}/terminer
+
+GET    /groupes                  -- Liste groupes
+POST   /groupes                  -- Créer groupe
+GET    /groupes/{id}/eleves      -- Élèves du groupe
+POST   /groupes/{id}/eleves      -- Ajouter élève
+DELETE /groupes/{id}/eleves/{eleve_id}
+
+GET    /salles                   -- Liste salles
+POST   /salles                   -- Créer salle
+GET    /salles/{id}/disponibilites
+```
+
+---
+
+## 3.5 Endpoints — Finance
+
+```
+💰 FINANCE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /factures                 -- Liste factures
+POST   /factures                 -- Créer facture
+GET    /factures/{id}            -- Détail facture
+PUT    /factures/{id}            -- Modifier
+DELETE /factures/{id}            -- Annuler
+GET    /factures/{id}/pdf        -- Télécharger PDF
+POST   /factures/{id}/envoyer    -- Envoyer par email
+
+GET    /paiements
+POST   /paiements
+──────────────────────────────────────────────────────
+Body:
+{
+  "facture_id": "uuid",
+  "montant": 3500.00,
+  "mode_paiement": "espèces",
+  "date_paiement": "2026-06-09",
+  "notes": "Paiement partiel"
+}
+
+GET    /paiements/{id}/recu      -- Reçu PDF
+GET    /paiements/caisse-du-jour -- Récap caisse
+
+GET    /finance/tableau-bord     -- KPIs financiers
+GET    /finance/impayés          -- Liste impayés
+POST   /finance/relance-sms      -- Envoyer relances
+GET    /finance/bilan-mensuel    -- Bilan du mois
+GET    /finance/bilan-annuel     -- Bilan annuel
+
+GET    /tarifs
+POST   /tarifs
+PUT    /tarifs/{id}
+```
+
+---
+
+## 3.6 Endpoints — Pédagogie
+
+```
+📚 PÉDAGOGIE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /evaluations
+POST   /evaluations
+──────────────────────────────────────────────────────
+Body:
+{
+  "groupe_id": "uuid",
+  "titre": "Examen du 1er trimestre",
+  "type_eval": "examen_mensuel",
+  "date_evaluation": "2026-06-15",
+  "note_sur": 20,
+  "coefficient": 2,
+  "trimestre": "T3"
+}
+
+GET    /evaluations/{id}/notes       -- Notes de l'éval.
+POST   /evaluations/{id}/notes       -- Saisir toutes notes
+──────────────────────────────────────────────────────
+Body:
+{
+  "notes": [
+    { "eleve_id": "uuid", "note": 17.5, "commentaire": "" },
+    { "eleve_id": "uuid", "note": null, "absent": true },
+    ...
+  ]
+}
+
+PUT    /notes/{id}                   -- Modifier note
+GET    /presences/seance/{seance_id} -- Présences séance
+POST   /presences/seance/{seance_id} -- Saisir présences
+──────────────────────────────────────────────────────
+Body:
+{
+  "presences": [
+    { "eleve_id": "uuid", "statut": "présent" },
+    { "eleve_id": "uuid", "statut": "absent", "motif": "Maladie" },
+    { "eleve_id": "uuid", "statut": "retard", "heure_arrivee": "08:20" }
+  ]
+}
+
+POST   /bulletins/generer            -- Générer bulletins
+GET    /bulletins/{id}/pdf           -- PDF bulletin
+POST   /bulletins/{id}/envoyer       -- Envoyer aux parents
+```
+
+---
+
+## 3.7 Endpoints — Personnel
+
+```
+👔 PERSONNEL MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /enseignants
+POST   /enseignants
+GET    /enseignants/{id}
+PUT    /enseignants/{id}
+DELETE /enseignants/{id}
+GET    /enseignants/{id}/planning      -- Planning de l'enseignant
+GET    /enseignants/{id}/statistiques  -- Heures, présences...
+POST   /enseignants/{id}/disponibilites -- Définir dispo
+
+GET    /paies
+POST   /paies/calculer-mensuel        -- Calcul auto paie
+──────────────────────────────────────────────────────
+Body: { "mois": 6, "annee": 2026 }
+Réponse: Liste des bulletins calculés
+
+POST   /paies/{id}/valider
+POST   /paies/{id}/payer
+GET    /paies/{id}/bulletin-pdf       -- Bulletin de paie PDF
+```
+
+---
+
+## 3.8 Endpoints — Notifications
+
+```
+🔔 NOTIFICATIONS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GET    /notifications                 -- Mes notifications
+PUT    /notifications/{id}/lire       -- Marquer comme lue
+PUT    /notifications/tout-lire       -- Tout marquer lu
+DELETE /notifications/{id}
+
+POST   /notifications/envoyer
+──────────────────────────────────────────────────────
+Body:
+{
+  "destinataires": ["uuid1", "uuid2"],  // ou "tous"
+  "type": "info",
+  "titre": "Fermeture exceptionnelle",
+  "message": "Le centre sera fermé le 19 Juin",
+  "canaux": ["push", "sms"],
+  "programmer_le": "2026-06-10T08:00:00"
+}
+
+GET    /messages/conversations
+POST   /messages/conversations
+GET    /messages/conversations/{id}
+POST   /messages/conversations/{id}/messages
+```
+
+---
+
+## 3.9 Codes d'Erreurs API
+
+```
+CODES D'ERREUR PERSONNALISÉS :
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTP 400 — BAD_REQUEST
+HTTP 401 — UNAUTHORIZED          (Token invalide/expiré)
+HTTP 403 — FORBIDDEN             (Permission refusée)
+HTTP 404 — NOT_FOUND             (Ressource introuvable)
+HTTP 409 — CONFLICT              (Conflit planning, doublon)
+HTTP 422 — VALIDATION_ERROR      (Données invalides)
+HTTP 429 — TOO_MANY_REQUESTS     (Rate limit dépassé)
+HTTP 500 — SERVER_ERROR          (Erreur interne)
+
+CODES MÉTIER PERSONNALISÉS :
+E001 — PLANNING_CONFLICT         (Conflit emploi du temps)
+E002 — SALLE_FULL                (Salle déjà occupée)
+E003 — GROUPE_COMPLET            (Groupe au maximum)
+E004 — PAIEMENT_DEJA_EFFECTUE    (Doublon paiement)
+E005 — ELEVE_DEJA_INSCRIT        (Déjà dans ce groupe)
+E006 — SOLDE_INSUFFISANT         (Paiement en ligne)
+E007 — TENANT_EXPIRED            (Abonnement expiré)
+E008 — QUOTA_DEPASSE             (Limite plan atteinte)
+```
+
+---
+
+# 🚀 PARTIE 4 — SETUP PROJET (Structure & Environnement Dev)
+
+---
+
+## 4.1 Structure des Dossiers — Backend (Laravel)
+
+```
+📁 edugestdz-backend/
+│
+├── 📁 app/
+│   ├── 📁 Console/
+│   │   └── 📁 Commands/
+│   │       ├── GenererBulletins.php
+│   │       ├── EnvoyerRelancesSMS.php
+│   │       └── CalculerPaiesMensuel.php
+│   │
+│   ├── 📁 Exceptions/
+│   │   ├── Handler.php
+│   │   ├── PlanningConflictException.php
+│   │   └── TenantNotFoundException.php
+│   │
+│   ├── 📁 Http/
+│   │   ├── 📁 Controllers/
+│   │   │   ├── 📁 Api/V1/
+│   │   │   │   ├── AuthController.php
+│   │   │   │   ├── EleveController.php
+│   │   │   │   ├── EnseignantController.php
+│   │   │   │   ├── CoursController.php
+│   │   │   │   ├── PlanningController.php
+│   │   │   │   ├── SeanceController.php
+│   │   │   │   ├── GroupeController.php
+│   │   │   │   ├── SalleController.php
+│   │   │   │   ├── EvaluationController.php
+│   │   │   │   ├── NoteController.php
+│   │   │   │   ├── PresenceController.php
+│   │   │   │   ├── BulletinController.php
+│   │   │   │   ├── FactureController.php
+│   │   │   │   ├── PaiementController.php
+│   │   │   │   ├── PaieController.php
+│   │   │   │   ├── NotificationController.php
+│   │   │   │   ├── MessageController.php
+│   │   │   │   ├── RapportController.php
+│   │   │   │   └── ParametreController.php
+│   │   │   │
+│   │   │   └── 📁 SuperAdmin/
+│   │   │       ├── TenantController.php
+│   │   │       └── AbonnementController.php
+│   │   │
+│   │   ├── 📁 Middleware/
+│   │   │   ├── ResolveTenant.php
+│   │   │   ├── CheckPermission.php
+│   │   │   ├── CheckAbonnement.php
+│   │   │   └── SetLanguage.php
+│   │   │
+│   │   └── 📁 Requests/
+│   │       ├── StoreEleveRequest.php
+│   │       ├── StoreEnseignantRequest.php
+│   │       ├── StoreCoursRequest.php
+│   │       ├── StorePaiementRequest.php
+│   │       └── StoreNoteRequest.php
+│   │
+│   ├── 📁 Models/
+│   │   ├── Tenant.php
+│   │   ├── User.php
+│   │   ├── Role.php
+│   │   ├── Permission.php
+│   │   ├── Eleve.php
+│   │   ├── Parent.php
+│   │   ├── Inscription.php
+│   │   ├── Enseignant.php
+│   │   ├── Contrat.php
+│   │   ├── Disponibilite.php
+│   │   ├── Paie.php
+│   │   ├── Matiere.php
+│   │   ├── Salle.php
+│   │   ├── Groupe.php
+│   │   ├── Cours.php
+│   │   ├── Seance.php
+│   │   ├── Presence.php
+│   │   ├── Evaluation.php
+│   │   ├── Note.php
+│   │   ├── Bulletin.php
+│   │   ├── Tarif.php
+│   │   ├── Facture.php
+│   │   ├── LigneFacture.php
+│   │   ├── Paiement.php
+│   │   ├── Notification.php
+│   │   ├── Message.php
+│   │   ├── Wilaya.php
+│   │   ├── Commune.php
+│   │   └── AuditLog.php
+│   │
+│   ├── 📁 Services/
+│   │   ├── PlanningService.php       -- Logique planning
+│   │   ├── FacturationService.php    -- Calcul factures
+│   │   ├── PaieService.php           -- Calcul paie + IRG
+│   │   ├── BulletinService.php       -- Génération PDF
+│   │   ├── NotificationService.php   -- SMS/Push/Email
+│   │   ├── PaiementService.php       -- Gestion paiements
+│   │   ├── IRGCalculator.php         -- Barème IRG algérien
+│   │   └── StatistiquesService.php   -- Analytics
+│   │
+│   ├── 📁 Repositories/
+│   │   ├── EleveRepository.php
+│   │   ├── CoursRepository.php
+│   │   └── PaiementRepository.php
+│   │
+│   ├── 📁 Jobs/ (Queue)
+│   │   ├── EnvoyerSMSJob.php
+│   │   ├── EnvoyerEmailJob.php
+│   │   ├── GenererBulletinPDFJob.php
+│   │   └── GenererFacturePDFJob.php
+│   │
+│   ├── 📁 Events/
+│   │   ├── PaiementRecu.php
+│   │   ├── EleveInscrit.php
+│   │   └── SeanceAnnulee.php
+│   │
+│   └── 📁 Listeners/
+│       ├── EnvoyerConfirmationPaiement.php
+│       └── NotifierParentInscription.php
+│
+├── 📁 database/
+│   ├── 📁 migrations/
+│   │   ├── 0001_create_tenants_table.php
+│   │   ├── 0002_create_users_table.php
+│   │   ├── 0003_create_roles_permissions_tables.php
+│   │   ├── 0004_create_wilayas_communes_tables.php
+│   │   ├── 0005_create_eleves_parents_tables.php
+│   │   ├── 0006_create_enseignants_table.php
+│   │   ├── 0007_create_matieres_salles_tables.php
+│   │   ├── 0008_create_groupes_cours_tables.php
+│   │   ├── 0009_create_seances_presences_tables.php
+│   │   ├── 0010_create_evaluations_notes_tables.php
+│   │   ├── 0011_create_finance_tables.php
+│   │   └── 0012_create_notifications_tables.php
+│   │
+│   ├── 📁 seeders/
+│   │   ├── DatabaseSeeder.php
+│   │   ├── WilayasSeeder.php        -- 48 wilayas DZ
+│   │   ├── CommunesSeeder.php       -- Toutes communes
+│   │   ├── RolesPermissionsSeeder.php
+│   │   ├── MatieresSeeder.php       -- Matières MEN
+│   │   ├── CalendrierSeeder.php     -- Vacances scolaires
+│   │   └── DemoTenantSeeder.php     -- Données de démo
+│   │
+│   └── 📁 factories/
+│       ├── EleveFactory.php
+│       └── EnseignantFactory.php
+│
+├── 📁 routes/
+│   ├── api.php                      -- Routes V1
+│   ├── api_v2.php                   -- Routes V2 (future)
+│   └── console.php
+│
+├── 📁 resources/
+│   └── 📁 views/
+│       ├── 📁 pdf/
+│       │   ├── bulletin.blade.php
+│       │   ├── facture.blade.php
+│       │   ├── recu_paiement.blade.php
+│       │   └── bulletin_paie.blade.php
+│       └── 📁 emails/
+│           ├── bienvenue.blade.php
+│           └── relance_paiement.blade.php
+│
+├── 📁 storage/
+│   ├── 📁 app/public/
+│   │   ├── 📁 photos/eleves/
+│   │   ├── 📁 photos/enseignants/
+│   │   ├── 📁 documents/contrats/
+│   │   ├── 📁 bulletins/
+│   │   └── 📁 factures/
+│   └── 📁 logs/
+│
+├── 📁 tests/
+│   ├── 📁 Unit/
+│   │   ├── IRGCalculatorTest.php
+│   │   ├── PlanningServiceTest.php
+│   │   └── FacturationServiceTest.php
+│   └── 📁 Feature/
+│       ├── AuthTest.php
+│       ├── EleveTest.php
+│       ├── PlanningTest.php
+│       └── PaiementTest.php
+│
+├── .env.example
+├── .env
+├── composer.json
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## 4.2 Structure des Dossiers — Frontend (React.js)
+
+```
+📁 edugestdz-frontend/
+│
+├── 📁 public/
+│   ├── index.html
+│   ├── favicon.ico
+│   └── 📁 assets/
+│       ├── logo.svg
+│       └── 📁 icons/
+│
+├── 📁 src/
+│   ├── 📁 api/                       -- Appels API
+│   │   ├── axiosInstance.js           -- Config Axios + intercepteurs
+│   │   ├── auth.api.js
+│   │   ├── eleves.api.js
+│   │   ├── enseignants.api.js
+│   │   ├── cours.api.js
+│   │   ├── planning.api.js
+│   │   ├── finance.api.js
+│   │   ├── notes.api.js
+│   │   └── notifications.api.js
+│   │
+│   ├── 📁 components/                -- Composants réutilisables
+│   │   ├── 📁 common/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Select.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── Table.jsx
+│   │   │   ├── Pagination.jsx
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Avatar.jsx
+│   │   │   ├── LoadingSpinner.jsx
+│   │   │   ├── EmptyState.jsx
+│   │   │   └── Breadcrumb.jsx
+│   │   │
+│   │   ├── 📁 layout/
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   └── MainLayout.jsx
+│   │   │
+│   │   ├── 📁 dashboard/
+│   │   │   ├── StatCard.jsx
+│   │   │   ├── PlanningWidget.jsx
+│   │   │   ├── ImpaiesWidget.jsx
+│   │   │   └── CAChart.jsx
+│   │   │
+│   │   ├── 📁 planning/
+│   │   │   ├── CalendrierHebdo.jsx
+│   │   │   ├── CoursCard.jsx
+│   │   │   └── ConflitAlert.jsx
+│   │   │
+│   │   ├── 📁 eleves/
+│   │   │   ├── EleveCard.jsx
+│   │   │   ├── EleveForm.jsx
+│   │   │   └── EleveStats.jsx
+│   │   │
+│   │   ├── 📁 finance/
+│   │   │   ├── FactureForm.jsx
+│   │   │   ├── PaiementModal.jsx
+│   │   │   └── CaisseWidget.jsx
+│   │   │
+│   │   └── 📁 pdf/
+│   │       ├── BulletinPDF.jsx
+│   │       └── FacturePDF.jsx
+│   │
+│   ├── 📁 pages/                     -- Pages/Écrans
+│   │   ├── 📁 auth/
+│   │   │   ├── LoginPage.jsx
+│   │   │   └── ForgotPasswordPage.jsx
+│   │   │
+│   │   ├── 📁 dashboard/
+│   │   │   └── DashboardPage.jsx
+│   │   │
+│   │   ├── 📁 eleves/
+│   │   │   ├── ElevesListPage.jsx
+│   │   │   ├── EleveDetailPage.jsx
+│   │   │   └── EleveCreatePage.jsx
+│   │   │
+│   │   ├── 📁 enseignants/
+│   │   │   ├── EnseignantsListPage.jsx
+│   │   │   └── EnseignantDetailPage.jsx
+│   │   │
+│   │   ├── 📁 planning/
+│   │   │   └── PlanningPage.jsx
+│   │   │
+│   │   ├── 📁 cours/
+│   │   │   ├── CoursListPage.jsx
+│   │   │   └── GroupesPage.jsx
+│   │   │
+│   │   ├── 📁 pedagogie/
+│   │   │   ├── EvaluationsPage.jsx
+│   │   │   ├── NotesPage.jsx
+│   │   │   ├── PresencesPage.jsx
+│   │   │   └── BulletinsPage.jsx
+│   │   │
+│   │   ├── 📁 finance/
+│   │   │   ├── FacturesPage.jsx
+│   │   │   ├── PaiementsPage.jsx
+│   │   │   └── CaissePage.jsx
+│   │   │
+│   │   ├── 📁 personnel/
+│   │   │   ├── EnseignantsPage.jsx
+│   │   │   └── PaiesPage.jsx
+│   │   │
+│   │   ├── 📁 rapports/
+│   │   │   └── RapportsPage.jsx
+│   │   │
+│   │   └── 📁 parametres/
+│   │       └── ParametresPage.jsx
+│   │
+│   ├── 📁 store/                     -- Redux
+│   │   ├── store.js
+│   │   ├── 📁 slices/
+│   │   │   ├── authSlice.js
+│   │   │   ├── elevesSlice.js
+│   │   │   ├── planningSlice.js
+│   │   │   ├── financeSlice.js
+│   │   │   └── notificationsSlice.js
+│   │   └── 📁 thunks/
+│   │       ├── elevesThunks.js
+│   │       └── planningThunks.js
+│   │
+│   ├── 📁 hooks/                     -- Custom Hooks
+│   │   ├── useAuth.js
+│   │   ├── useTenant.js
+│   │   ├── usePermissions.js
+│   │   ├── usePagination.js
+│   │   └── useRTL.js                 -- Support Arabe/RTL
+│   │
+│   ├── 📁 utils/
+│   │   ├── formatters.js             -- DA, dates, noms
+│   │   ├── validators.js             -- Validations forms
+│   │   ├── permissions.js            -- Vérif. droits
+│   │   ├── constants.js              -- Constantes (niveaux...)
+│   │   └── algerianData.js           -- Wilayas, calendrier
+│   │
+│   ├── 📁 i18n/                      -- Internationalisation
+│   │   ├── index.js
+│   │   ├── 📁 fr/
+│   │   │   └── translation.json
+│   │   ├── 📁 ar/
+│   │   │   └── translation.json
+│   │   └── 📁 dz/                    -- Darija
+│   │       └── translation.json
+│   │
+│   ├── 📁 styles/
+│   │   ├── globals.css
+│   │   ├── variables.css
+│   │   └── rtl.css                   -- Styles RTL arabe
+│   │
+│   ├── App.jsx
+│   ├── Router.jsx
+│   └── main.jsx
+│
+├── 📁 tests/
+│   └── 📁 components/
+│
+├── .env.development
+├── .env.production
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+└── README.md
+```
+
+---
+
+## 4.3 Fichiers de Configuration
+
+### 📄 .env Backend (Laravel)
+
+```env
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# EDUGEST DZ — CONFIGURATION ENVIRONNEMENT
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+APP_NAME="EduGest DZ"
+APP_ENV=local
+APP_KEY=base64:GENERER_AVEC_php_artisan_key_generate
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+APP_LOCALE=fr
+
+# Base de Données
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=edugestdz
+DB_USERNAME=edugest_user
+DB_PASSWORD=VotreMotDePasseSecurisé
+
+# Redis (Cache & Queue)
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+
+# JWT Authentication
+JWT_SECRET=GENERER_AVEC_php_artisan_jwt_secret
+JWT_TTL=60                    # Minutes
+JWT_REFRESH_TTL=10080         # 7 jours en minutes
+
+# Email (SMTP)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=noreply@edugestdz.com
+MAIL_PASSWORD=VotreMotDePasseEmail
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@edugestdz.com
+MAIL_FROM_NAME="EduGest DZ"
+
+# SMS (Twilio)
+TWILIO_SID=ACxxxxxxxxxxxxxx
+TWILIO_TOKEN=xxxxxxxxxxxxxx
+TWILIO_FROM=+213XXXXXXXXX
+
+# Firebase (Push Notifications)
+FIREBASE_PROJECT_ID=edugestdz
+FIREBASE_CREDENTIALS=storage/firebase-credentials.json
+
+# Stockage Fichiers
+FILESYSTEM_DISK=s3
+AWS_ACCESS_KEY_ID=XXXXXXXX
+AWS_SECRET_ACCESS_KEY=XXXXXXXX
+AWS_DEFAULT_REGION=eu-west-3
+AWS_BUCKET=edugestdz-storage
+
+# Paiement Satim (CIB/Dahabia)
+SATIM_TERMINAL_ID=XXXXXXXX
+SATIM_MERCHANT_ID=XXXXXXXX
+SATIM_PASSWORD=XXXXXXXX
+SATIM_URL=https://satim.dz/payment/rest
+
+# Meilisearch (Recherche)
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_KEY=VotreCleMeilisearch
+
+# Sentry (Monitoring)
+SENTRY_LARAVEL_DSN=https://xxx@sentry.io/xxx
+```
+
+---
+
+### 📄 docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # APPLICATION LARAVEL
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edugestdz_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=local
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # BASE DE DONNÉES POSTGRESQL
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  postgres:
+    image: postgres:16-alpine
+    container_name: edugestdz_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: edugestdz
+      POSTGRES_USER: edugest_user
+      POSTGRES_PASSWORD: VotreMotDePasseSecurisé
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # REDIS (Cache & Queue)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  redis:
+    image: redis:7-alpine
+    container_name: edugestdz_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # MEILISEARCH (Recherche)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: edugestdz_search
+    restart: unless-stopped
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # QUEUE WORKER
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  queue_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edugestdz_queue
+    restart: unless-stopped
+    command: php artisan queue:work redis --sleep=3 --tries=3
+    depends_on:
+      - app
+      - redis
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # SCHEDULER (Tâches Planifiées)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edugestdz_scheduler
+    restart: unless-stopped
+    command: >
+      sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    depends_on:
+      - app
+    networks:
+      - edugestdz_network
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # NGINX (Reverse Proxy)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  nginx:
+    image: nginx:alpine
+    container_name: edugestdz_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - edugestdz_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  meilisearch_data:
+
+networks:
+  edugestdz_network:
+    driver: bridge
+```
+
+---
+
+## 4.4 Commandes d'Installation & Démarrage
+
+```bash
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🚀 INSTALLATION COMPLÈTE DU PROJET
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. Cloner le projet
+git clone https://github.com/votre-org/edugestdz-backend.git
+git clone https://github.com/votre-org/edugestdz-frontend.git
+
+# ─────────────────────────────────────────────────
+# BACKEND SETUP
+# ─────────────────────────────────────────────────
+cd edugestdz-backend
+
+# 2. Installer les dépendances PHP
+composer install
+
+# 3. Copier et configurer .env
+cp .env.example .env
+php artisan key:generate
+php artisan jwt:secret
+
+# 4. Lancer Docker
+docker-compose up -d
+
+# 5. Migrations + Seeders
+php artisan migrate:fresh --seed
+
+# 6. Créer les liens symboliques
+php artisan storage:link
+
+# 7. Optimiser pour le développement
+php artisan config:cache
+php artisan route:cache
+
+# ─────────────────────────────────────────────────
+# FRONTEND SETUP
+# ─────────────────────────────────────────────────
+cd ../edugestdz-frontend
+
+# 8. Installer les dépendances Node.js
+npm install
+
+# 9. Configurer l'environnement
+cp .env.development.example .env.development
+
+# 10. Lancer le serveur de dev
+npm run dev
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 📦 COMMANDES UTILES QUOTIDIENNES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Backend
+php artisan serve                      # Démarrer le serveur
+php artisan queue:work                 # Démarrer les workers
+php artisan schedule:run               # Tâches planifiées
+php artisan migrate                    # Nouvelles migrations
+php artisan make:model NomModel -mcr   # Créer Model+Migration+Controller
+php artisan make:request NomRequest    # Créer une Request
+php artisan make:job NomJob            # Créer un Job
+php artisan tinker                     # Console interactive
+php artisan test                       # Lancer les tests
+
+# Frontend
+npm run dev                            # Serveur dev (Vite)
+npm run build                          # Build production
+npm run preview                        # Preview build
+npm run lint                           # Linter ESLint
+npm run test                           # Tests Vitest
+```
+
+---
+
+## 4.5 GitHub Actions — CI/CD Pipeline
+
+```yaml
+# .github/workflows/deploy.yml
+name: 🚀 EduGest DZ — CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━
+  test-backend:
+    name: ✅ Tests Backend Laravel
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: edugestdz_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports: ['5432:5432']
+      
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pgsql, redis
+      
+      - name: Install Dependencies
+        run: composer install --no-interaction
+      
+      - name: Setup Environment
+        run: |
+          cp .env.testing .env
+          php artisan key:generate
+          php artisan migrate --seed
+      
+      - name: Run Tests
+        run: php artisan test --coverage
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━
+  test-frontend:
+    name: ✅ Tests Frontend React
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━
+  deploy-staging:
+    name: 🌐 Deploy → Staging
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+      - name: Deploy to Staging
+        run: |
+          echo "Déploiement sur staging.edugestdz.com"
+          # SSH + rsync + artisan migrate
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━
+  deploy-production:
+    name: 🚀 Deploy → Production
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "Déploiement sur api.edugestdz.com"
+          # SSH + rsync + artisan migrate + config:cache
+```
+
+---
+
+## 4.6 Roadmap des Sprints Détaillée
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 PHASE 1 — SPRINTS DÉTAILLÉS (MVP - 4 mois)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔷 SPRINT 0 — Setup & Architecture (Semaine 1-2)
+  ├── ✅ Création repos GitHub (backend + frontend)
+  ├── ✅ Configuration Docker (PG + Redis + Nginx)
+  ├── ✅ Structure Laravel (Modules, Middleware Tenant)
+  ├── ✅ Structure React (Composants, Redux, i18n)
+  ├── ✅ CI/CD GitHub Actions
+  ├── ✅ Domaine + SSL staging
+  └── ✅ Figma Design System
+
+🔷 SPRINT 1 — Auth & Tenant (Semaine 3-4)
+  ├── ✅ Multi-tenant middleware
+  ├── ✅ Inscription tenant (centre)
+  ├── ✅ Login/Logout JWT
+  ├── ✅ Gestion des rôles RBAC
+  ├── ✅ Page login Frontend
+  └── ✅ Dashboard squelette
+
+🔷 SPRINT 2 — Module Élèves (Semaine 5-6)
+  ├── ✅ CRUD complet élèves
+  ├── ✅ Gestion parents
+  ├── ✅ Upload photo
+  ├── ✅ Import Excel élèves
+  ├── ✅ Liste + recherche + filtres
+  └── ✅ Fiche détaillée élève
+
+🔷 SPRINT 3 — Module Planning (Semaine 7-8)
+  ├── ✅ CRUD Matières, Salles, Groupes
+  ├── ✅ CRUD Cours (récurrents)
+  ├── ✅ Gestion Séances
+  ├── ✅ Détection conflits planning
+  ├── ✅ Calendrier hebdomadaire UI
+  └── ✅ Inscription élèves aux groupes
+
+🔷 SPRINT 4 — Module Finance (Semaine 9-10)
+  ├── ✅ Gestion Tarifs
+  ├── ✅ Génération Factures auto
+  ├── ✅ Paiements (espèces)
+  ├── ✅ Caisse du jour
+  ├── ✅ Suivi impayés
+  └── ✅ PDF Factures + Reçus
+
+🔷 SPRINT 5 — Module Pédagogie (Semaine 11-12)
+  ├── ✅ Saisie des présences (QR Code)
+  ├── ✅ Création évaluations
+  ├── ✅ Saisie notes (en masse)
+  ├── ✅ Calcul moyennes automatique
+  ├── ✅ Génération bulletins PDF
+  └── ✅ Historique par élève
+
+🔷 SPRINT 6 — Module Personnel (Semaine 13-14)
+  ├── ✅ CRUD enseignants
+  ├── ✅ Gestion contrats
+  ├── ✅ Calcul paie + IRG DZ
+  ├── ✅ Bulletin de paie PDF
+  ├── ✅ Planning par enseignant
+  └── ✅ Disponibilités
+
+🔷 SPRINT 7 — Rapports & Dashboard (Semaine 15-16)
+  ├── ✅ Dashboard Admin complet
+  ├── ✅ Rapports financiers Excel
+  ├── ✅ Statistiques pédagogiques
+  ├── ✅ Export données
+  └── ✅ KPIs temps réel
+
+🔷 SPRINT 8 — Tests & Déploiement (Semaine 17-18)
+  ├── ✅ Tests unitaires (70% couverture min)
+  ├── ✅ Tests d'intégration
+  ├── ✅ Tests utilisateurs (UAT)
+  ├── ✅ Correction bugs
+  ├── ✅ Optimisation performances
+  ├── ✅ Déploiement production
+  └── ✅ Documentation utilisateur
+```
+
+---
+
+## 4.7 Récapitulatif des Livrables Phase 2
+
+```
+┌────────────────────────────────────────────────────────────┐
+│           ✅ RÉCAPITULATIF PHASE 2 — LIVRABLES             │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  📐 BDD ERD      → 35 tables documentées + index SQL      │
+│  🎨 UI/UX        → 7 écrans wireframes détaillés          │
+│  ⚙️  API          → 60+ endpoints documentés               │
+│  🚀 Setup        → Structure complète Backend+Frontend     │
+│  🐳 Docker       → docker-compose.yml prêt                │
+│  🔄 CI/CD        → GitHub Actions configuré               │
+│  📅 Planning     → 8 sprints × 2 semaines = 4 mois        │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 PROCHAINES PHASES DISPONIBLES
+
+> **Quelle phase voulez-vous démarrer maintenant ?**
+
+| # | Phase | Contenu |
+|---|---|---|
+| **A** | 💻 **Développement Sprint 0** | Initialisation code Laravel + React, Docker up |
+| **B** | 🗄️ **Migrations SQL** | Code complet des migrations Laravel |
+| **C** | 🔐 **Module Auth** | Code complet authentification + multi-tenant |
+| **D** | 🎨 **Maquettes Figma** | Design complet des écrans en détail |
+| **E** | 📱 **App Mobile** | Structure React Native (iOS + Android) |
+
+**Dites-moi par quelle lettre vous souhaitez continuer !** 🚀
