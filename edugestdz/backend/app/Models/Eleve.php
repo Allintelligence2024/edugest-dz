@@ -74,9 +74,10 @@ class Eleve extends BaseModel
                     ->withPivot('est_principal');
     }
 
-    public function parentPrincipal(): BelongsTo
+    public function parentsPrincipaux(): BelongsToMany
     {
-        return $this->belongsTo(ParentEleve::class, 'id')
+        return $this->belongsToMany(ParentEleve::class, 'eleve_parent')
+                    ->withPivot('est_principal')
                     ->wherePivot('est_principal', true);
     }
 
