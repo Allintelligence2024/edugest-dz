@@ -1,0 +1,103 @@
+name: CI — EduGest DZ
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['backend/**', '.github/workflows/ci.yml']
+  pull_request:
+    branches: [main]
+    paths: ['backend/**']
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: edugestdz_test
+          POSTGRES_USER: edugest_user
+          POSTGRES_PASSWORD: EduGest@2026!
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo_pgsql, intl, gd, xml, json, fileinfo, redis
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Setup environment
+        run: |
+          cp .env.example .env
+          sed -i 's/DB_HOST=postgres/DB_HOST=127.0.0.1/' .env
+          sed -i 's/DB_DATABASE=edugestdz/DB_DATABASE=edugestdz_test/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=EduGest@2026!/' .env
+          sed -i 's/REDIS_HOST=redis/REDIS_HOST=127.0.0.1/' .env
+          php artisan key:generate
+          php artisan jwt:secret
+
+      - name: Run migrations
+        run: php artisan migrate --seed --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: edugestdz_test
+          DB_USERNAME: edugest_user
+          DB_PASSWORD: EduGest@2026!
+          REDIS_HOST: 127.0.0.1
+
+      - name: Run tests with coverage
+        run: php artisan test --coverage --min=80
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: edugestdz_test
+          DB_USERNAME: edugest_user
+          DB_PASSWORD: EduGest@2026!
+          REDIS_HOST: 127.0.0.1
+          XDEBUG_MODE: coverage

@@ -1,79 +1,160 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\{User, Message};
+use App\Models\{Conversation, Message, User};
 use Illuminate\Http\{Request, JsonResponse};
+use Illuminate\Support\Facades\{DB, Storage};
+use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
-    public function conversations(): JsonResponse
+    public function conversations(Request $request): JsonResponse
     {
-        $userId = auth()->id();
+        $user = auth()->user();
 
-        $conversations = Message::where('expediteur_id', $userId)
-            ->orWhere('destinataire_id', $userId)
-            ->selectRaw('CASE WHEN expediteur_id = ? THEN destinataire_id ELSE expediteur_id END AS autre_user_id', [$userId])
-            ->selectRaw('MAX(created_at) as dernier_message')
-            ->selectRaw('(SELECT message FROM messages m2 WHERE (m2.expediteur_id = messages.expediteur_id AND m2.destinataire_id = messages.destinataire_id) OR (m2.expediteur_id = messages.destinataire_id AND m2.destinataire_id = messages.expediteur_id) ORDER BY created_at DESC LIMIT 1) as dernier_texte')
-            ->groupBy('autre_user_id')
-            ->orderBy('dernier_message', 'desc')
-            ->get();
+        $conversations = Conversation::where('tenant_id', config('tenant.current_id'))
+            ->whereJsonContains('participants', $user->id)
+            ->with(['dernierMessage.expediteur'])
+            ->orderByDesc('last_message_at')
+            ->paginate($request->per_page ?? 20);
 
-        $conversations->load(['autreUser' => fn($q) => $q->select('id', 'nom', 'prenom', 'email')]);
+        $nonLu = $conversations->filter(fn($c) =>
+            !in_array($user->id, $c->lu_par ?? [])
+        )->count();
 
-        return response()->json(['success' => true, 'data' => $conversations]);
+        return response()->json([
+            'success' => true,
+            'data'    => $conversations->items(),
+            'meta'    => ['total' => $conversations->total(), 'non_lu' => $nonLu],
+        ]);
     }
 
     public function creerConversation(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'destinataire_id' => 'required|uuid|exists:users,id',
-            'message'         => 'required|string|max:2000',
+            'sujet'       => 'nullable|string|max:200',
+            'participants' => 'required|array|min:1',
+            'participants.*' => 'uuid|exists:users,id',
+            'message'     => 'required|string',
         ]);
 
-        $message = Message::create([
-            'expediteur_id'  => auth()->id(),
-            'destinataire_id'=> $validated['destinataire_id'],
-            'message'        => $validated['message'],
-        ]);
+        $user = auth()->user();
+        $participants = array_unique([$user->id, ...$validated['participants']]);
 
-        return response()->json(['success' => true, 'message' => 'Message envoyé', 'data' => $message->load('expediteur:id,nom,prenom')], 201);
+        $conversation = DB::transaction(function () use ($validated, $participants, $user) {
+            $conv = Conversation::create([
+                'tenant_id'      => config('tenant.current_id'),
+                'sujet'          => $validated['sujet'] ?? null,
+                'participants'   => $participants,
+                'lu_par'         => [$user->id],
+                'last_message_at' => now(),
+            ]);
+
+            Message::create([
+                'conversation_id' => $conv->id,
+                'expediteur_id'   => $user->id,
+                'message'         => $validated['message'],
+                'type_message'    => 'texte',
+            ]);
+
+            return $conv;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data'    => $conversation->load('messages.expediteur'),
+            'message' => 'Conversation créée',
+        ], 201);
     }
 
-    public function conversation(string $id, Request $request): JsonResponse
+    public function conversation(string $id): JsonResponse
     {
-        $userId = auth()->id();
+        $conv = Conversation::where('tenant_id', config('tenant.current_id'))
+            ->findOrFail($id);
 
-        $messages = Message::where(function($q) use ($userId, $id) {
-                $q->where('expediteur_id', $userId)->where('destinataire_id', $id);
-            })->orWhere(function($q) use ($userId, $id) {
-                $q->where('expediteur_id', $id)->where('destinataire_id', $userId);
-            })
-            ->with('expediteur:id,nom,prenom')
+        $user = auth()->user();
+        if (!in_array($user->id, $conv->participants ?? [])) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'FORBIDDEN', 'message' => 'Vous n\'êtes pas participant à cette conversation'],
+            ], 403);
+        }
+
+        $messages = Message::where('conversation_id', $conv->id)
+            ->with('expediteur:id,nom,prenom,photo_url')
             ->orderBy('created_at')
-            ->paginate($request->per_page ?? 50);
+            ->paginate(50);
 
-        Message::where('expediteur_id', $id)
-            ->where('destinataire_id', $userId)
-            ->whereNull('lu_at')
-            ->update(['lu_at' => now()]);
+        $luPar = $conv->lu_par ?? [];
+        if (!in_array($user->id, $luPar)) {
+            $luPar[] = $user->id;
+            $conv->update(['lu_par' => $luPar]);
+        }
 
-        return response()->json(['success' => true, 'data' => $messages]);
+        return response()->json([
+            'success' => true,
+            'data'    => ['conversation' => $conv, 'messages' => $messages->items()],
+            'meta'    => ['total' => $messages->total()],
+        ]);
     }
 
     public function envoyer(Request $request, string $id): JsonResponse
     {
         $validated = $request->validate([
-            'message' => 'required|string|max:2000',
+            'message'     => 'required_without:fichier|string',
+            'fichier'     => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:10240',
+            'type_message' => 'sometimes|in:texte,fichier,image',
         ]);
 
-        $message = Message::create([
-            'expediteur_id'  => auth()->id(),
-            'destinataire_id'=> $id,
-            'message'        => $validated['message'],
-        ]);
+        $conv = Conversation::where('tenant_id', config('tenant.current_id'))
+            ->findOrFail($id);
 
-        return response()->json(['success' => true, 'message' => 'Message envoyé', 'data' => $message->load('expediteur:id,nom,prenom')], 201);
+        $user = auth()->user();
+        if (!in_array($user->id, $conv->participants ?? [])) {
+            return response()->json(['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Accès refusé']], 403);
+        }
+
+        $data = [
+            'conversation_id' => $conv->id,
+            'expediteur_id'   => $user->id,
+            'message'         => $validated['message'] ?? null,
+            'type_message'    => $validated['type_message'] ?? 'texte',
+        ];
+
+        if ($request->hasFile('fichier')) {
+            $path = $request->file('fichier')->store(
+                "messages/{$conv->tenant_id}/{$conv->id}", 'public'
+            );
+            $data['fichier_url'] = $path;
+            $data['fichier_nom'] = $request->file('fichier')->getClientOriginalName();
+            $data['type_message'] = in_array($request->file('fichier')->getClientOriginalExtension(), ['jpg','jpeg','png'])
+                ? 'image' : 'fichier';
+        }
+
+        $message = Message::create($data);
+        $conv->update(['last_message_at' => now(), 'lu_par' => [$user->id]]);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $message->load('expediteur:id,nom,prenom'),
+            'message' => 'Message envoyé',
+        ], 201);
+    }
+
+    public function marquerLu(Request $request, string $id): JsonResponse
+    {
+        $conv = Conversation::where('tenant_id', config('tenant.current_id'))
+            ->findOrFail($id);
+
+        $user = auth()->user();
+        $luPar = $conv->lu_par ?? [];
+        if (!in_array($user->id, $luPar)) {
+            $luPar[] = $user->id;
+            $conv->update(['lu_par' => $luPar]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Conversation marquée comme lue']);
     }
 }

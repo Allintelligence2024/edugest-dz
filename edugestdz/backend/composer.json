@@ -35,7 +35,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/phone.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -75,6 +78,14 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": []
+        }
+    },
+    "policy": {
+        "advisories": {
+            "block": false
         }
     },
     "minimum-stability": "stable",

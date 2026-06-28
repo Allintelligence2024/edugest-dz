@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import fr from '../lang/fr.json';
 import ar from '../lang/ar.json';
+import dz from '../lang/dz.json';
 
-const LANGUAGES = { fr, ar };
+const LANGUAGES = { fr, ar, dz };
+const RTL_LANGS = ['ar', 'dz'];
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
@@ -25,7 +27,7 @@ export function I18nProvider({ children }) {
     if (LANGUAGES[newLang]) {
       setLang(newLang);
       localStorage.setItem('lang', newLang);
-      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.dir = RTL_LANGS.includes(newLang) ? 'rtl' : 'ltr';
       document.documentElement.lang = newLang;
     }
   }, []);

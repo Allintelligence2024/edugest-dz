@@ -3,8 +3,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\TwoFactorService;
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\{Hash, Password};
+use Illuminate\Support\Facades\{Cache, Hash, Password};
+use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
@@ -16,14 +18,117 @@ class AuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        if (!$token = JWTAuth::attempt($credentials)) {
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            if ($user) {
+                app(TwoFactorService::class)->incrementLoginAttempts($user);
+            }
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
             ], 401);
         }
 
-        $user  = auth()->user();
+        if ($user->statut !== 'actif') {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'ACCOUNT_INACTIVE', 'message' => 'Compte désactivé'],
+            ], 403);
+        }
+
+        $twoFactorService = app(TwoFactorService::class);
+
+        if ($twoFactorService->isLocked($user)) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'ACCOUNT_LOCKED', 'message' => 'Compte temporairement verrouillé après trop de tentatives'],
+            ], 423);
+        }
+
+        $twoFactorService->resetLoginAttempts($user);
+
+        if ($user->two_factor_confirmed_at !== null) {
+            $tempToken = Str::random(60);
+            Cache::put('2fa_temp_' . $tempToken, $user->id, now()->addMinutes(5));
+
+            return response()->json([
+                'success'             => true,
+                'two_factor_required' => true,
+                'two_factor_type'     => $user->two_factor_type,
+                'user_id'             => $user->id,
+                'temp_token'          => $tempToken,
+            ]);
+        }
+
+        $token  = JWTAuth::fromUser($user);
+        $tenant = $user->tenant;
+
+        return response()->json([
+            'success'       => true,
+            'access_token'  => $token,
+            'token_type'    => 'bearer',
+            'expires_in'    => auth()->factory()->getTTL() * 60,
+            'user'          => $this->formatUser($user),
+            'tenant'        => $tenant ? [
+                'id'               => $tenant->id,
+                'nom'              => $tenant->nom_etablissement,
+                'slug'             => $tenant->slug,
+                'statut'           => $tenant->statut,
+                'date_expiration'  => $tenant->date_expiration,
+                'wilaya_id'        => $tenant->wilaya_id,
+                'commune_id'       => $tenant->commune_id,
+                'telephone'        => $tenant->telephone,
+            ] : null,
+        ]);
+    }
+
+    public function complete2fa(Request $request): JsonResponse
+    {
+        $request->validate([
+            'temp_token' => 'required|string',
+            'code'       => 'required|string',
+        ]);
+
+        $userId = Cache::pull('2fa_temp_' . $request->temp_token);
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'INVALID_TEMP_TOKEN', 'message' => 'Session 2FA expirée ou invalide'],
+            ], 422);
+        }
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'USER_NOT_FOUND', 'message' => 'Utilisateur introuvable'],
+            ], 404);
+        }
+
+        $twoFactorService = app(TwoFactorService::class);
+        $valid = false;
+
+        if ($user->two_factor_type === 'totp') {
+            $valid = $twoFactorService->verifyCode($user->two_factor_secret, $request->code);
+
+            if (!$valid) {
+                $valid = $twoFactorService->validateRecoveryCode($request->code, $user);
+            }
+        } elseif ($user->two_factor_type === 'sms') {
+            $valid = $twoFactorService->verifySmsOtp($user, $request->code);
+        }
+
+        if (!$valid) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'INVALID_2FA_CODE', 'message' => 'Code 2FA invalide'],
+            ], 422);
+        }
+
+        $token  = JWTAuth::fromUser($user);
         $tenant = $user->tenant;
 
         return response()->json([
@@ -152,13 +257,15 @@ class AuthController extends Controller
     private function formatUser(User $u): array
     {
         return [
-            'id'        => $u->id,
-            'nom'       => $u->nom,
-            'prenom'    => $u->prenom,
-            'email'     => $u->email,
-            'telephone' => $u->telephone,
-            'role'      => $u->getRoleNames()->first(),
-            'langue'    => $u->langue,
+            'id'                 => $u->id,
+            'nom'                => $u->nom,
+            'prenom'             => $u->prenom,
+            'email'              => $u->email,
+            'telephone'          => $u->telephone,
+            'role'               => $u->role?->nom,
+            'langue'             => $u->langue,
+            'two_factor_enabled' => $u->two_factor_confirmed_at !== null,
+            'two_factor_type'    => $u->two_factor_type,
         ];
     }
 }

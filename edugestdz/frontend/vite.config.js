@@ -15,11 +15,12 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: 5173,
+    open: true,
     proxy: {
       '/api': {
-        target: 'http://nginx',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },

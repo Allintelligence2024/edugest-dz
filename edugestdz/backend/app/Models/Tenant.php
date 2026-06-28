@@ -1,9 +1,18 @@
 <?php
 namespace App\Models;
 
-class Tenant extends BaseModel
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
+
+class Tenant extends Model
 {
+    use HasFactory;
+
     protected $table = 'tenants';
+
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'nom_etablissement', 'slug', 'type_etablissement',
@@ -16,6 +25,16 @@ class Tenant extends BaseModel
         'date_expiration' => 'date',
         'settings' => 'array',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = Str::uuid()->toString();
+            }
+        });
+    }
 
     public function users()
     {

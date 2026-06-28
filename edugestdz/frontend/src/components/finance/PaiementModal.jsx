@@ -1,102 +1,137 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'react-hot-toast';
-import api from '@api/axiosInstance';
+import { paiementApi } from '@api/facture.api';
+import toast from 'react-hot-toast';
 
-const MODES = [
-  { value: 'espèces',   label: '💵 Espèces' },
-  { value: 'cib',       label: '💳 CIB' },
-  { value: 'dahabia',   label: '💳 Dahabia' },
-  { value: 'baridimob', label: '📱 BaridiMob' },
-  { value: 'virement',  label: '🏦 Virement Bancaire' },
-  { value: 'chèque',    label: '📋 Chèque' },
+const MODES_PAIEMENT = [
+  { value: 'especes', label: 'Espèces', icon: '💵' },
+  { value: 'cib', label: 'CIB', icon: '💳' },
+  { value: 'dahabia', label: 'Dahabia', icon: '💳' },
+  { value: 'baridimob', label: 'BaridiMob', icon: '📱' },
+  { value: 'virement', label: 'Virement', icon: '🏦' },
+  { value: 'cheque', label: 'Chèque', icon: '📄' },
 ];
 
-export default function PaiementModal({ isOpen, facture, onClose, onSuccess }) {
-  const [isLoading, setIsLoading] = useState(false);
+export default function PaiementModal({ facture, onClose, onSuccess }) {
+  const [mode, setMode] = useState('');
+  const [montant, setMontant] = useState(facture?.total_ttc || 0);
+  const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm({
-    defaultValues: {
-      mode_paiement: 'espèces',
-      date_paiement: new Date().toISOString().split('T')[0],
-    }
-  });
+  const isEnLigne = ['cib', 'dahabia', 'baridimob'].includes(mode);
 
-  const montantRestant = facture
-    ? facture.total_ttc - (facture.paiements?.filter(p => p.statut === 'confirmé')
-                                             .reduce((s, p) => s + Number(p.montant), 0) || 0)
-    : 0;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!mode) return toast.error('Sélectionnez un mode de paiement');
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
+    setLoading(true);
     try {
-      await api.post('/paiements', {
-        ...data,
-        facture_id: facture.id,
-        montant: parseFloat(data.montant),
-      });
-      toast.success(`Paiement de ${Number(data.montant).toLocaleString()} DA enregistré ! ✅`);
-      reset();
-      onSuccess();
-    } catch (err) {
-      toast.error(err?.error?.message || 'Erreur lors de l\'enregistrement');
+      if (isEnLigne) {
+        const res = await paiementApi.create({
+          facture_id: facture.id,
+          mode_paiement: mode,
+          montant,
+          statut: mode === 'baridimob' ? 'en_attente' : 'confirme',
+        });
+
+        toast.success('Paiement initié');
+
+        if (res.data?.redirect_url) {
+          window.open(res.data.redirect_url, '_blank');
+        }
+      } else {
+        await paiementApi.create({
+          facture_id: facture.id,
+          mode_paiement: mode,
+          montant,
+          statut: 'confirme',
+        });
+        toast.success('Paiement enregistré');
+      }
+
+      onSuccess?.();
+      onClose();
+    } catch (e) {
+      toast.error(e?.error?.message || 'Erreur paiement');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (!isOpen || !facture) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-md animate-slide-up">
-        <div className="bg-gradient-to-r from-green-600 to-green-500 p-6 rounded-t-2xl">
-          <div className="flex items-center justify-between">
+    <>
+      <div className="fixed inset-0 bg-black/20 z-50" onClick={onClose} />
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg font-bold text-neutral-800">Enregistrer un paiement</h2>
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-100 text-neutral-400">&times;</button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-white">💳 Enregistrer un paiement</h2>
-              <p className="text-green-100 text-sm mt-1">Facture {facture.numero_facture}</p>
+              <p className="text-sm text-neutral-500 mb-1">Facture</p>
+              <p className="text-sm font-medium text-neutral-700">{facture?.numero_facture || '-'}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white">✕</button>
-          </div>
-          <div className="mt-4 bg-white/15 rounded-xl p-3 text-white">
-            <div className="flex justify-between text-sm"><span>Total facture :</span><span className="font-bold">{Number(facture.total_ttc).toLocaleString()} DA</span></div>
-            <div className="flex justify-between text-sm mt-1"><span>Montant restant :</span><span className="font-bold text-yellow-200">{Number(montantRestant).toLocaleString()} DA</span></div>
-          </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-600 mb-2">Montant (DZD)</label>
+              <input
+                type="number"
+                value={montant}
+                onChange={(e) => setMontant(Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-neutral-300 rounded-xl text-sm"
+                min={100}
+                step={100}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-600 mb-2">Mode de paiement</label>
+              <div className="grid grid-cols-3 gap-2">
+                {MODES_PAIEMENT.map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    onClick={() => setMode(m.value)}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-sm transition-colors ${
+                      mode === m.value
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
+                    }`}
+                  >
+                    <span className="text-xl">{m.icon}</span>
+                    <span>{m.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {isEnLigne && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-700">
+                {mode === 'baridimob'
+                  ? 'Une référence de virement sera générée. Confirmez manuellement après réception.'
+                  : 'Vous serez redirigé vers la plateforme de paiement sécurisée Satim.'}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-2.5 border border-neutral-300 rounded-xl text-sm font-medium text-neutral-600 hover:bg-neutral-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !mode}
+                className="flex-1 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+              >
+                {loading ? 'Traitement...' : 'Confirmer le paiement'}
+              </button>
+            </div>
+          </form>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">💰 Montant (DA) *</label>
-            <input type="number" step="0.01" {...register('montant', { required: 'Le montant est requis', min: { value: 1, message: 'Montant minimum : 1 DA' }, max: { value: montantRestant, message: `Maximum : ${montantRestant} DA` } })} defaultValue={montantRestant} className={`w-full px-4 py-3 rounded-xl border-2 text-sm outline-none font-bold text-lg transition-colors ${errors.montant ? 'border-danger-400 bg-red-50' : 'border-neutral-200 focus:border-green-500'}`} />
-            {errors.montant && <p className="text-xs text-danger-600 mt-1">{errors.montant.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-2">🏧 Mode de paiement *</label>
-            <div className="grid grid-cols-2 gap-2">
-              {MODES.map(mode => (
-                <label key={mode.value} className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${watch('mode_paiement') === mode.value ? 'border-green-500 bg-green-50' : 'border-neutral-200 hover:border-neutral-300'}`}>
-                  <input type="radio" value={mode.value} {...register('mode_paiement')} className="sr-only" />
-                  <span className="text-sm font-medium text-neutral-700">{mode.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📅 Date du paiement *</label>
-            <input type="date" {...register('date_paiement', { required: 'Date requise' })} className="w-full px-4 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-green-500" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📝 Notes (optionnel)</label>
-            <input type="text" {...register('notes')} placeholder="Référence chèque, transaction..." className="w-full px-4 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-green-500" />
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border-2 border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50">Annuler</button>
-            <button type="submit" disabled={isLoading} className="flex-1 py-3 rounded-xl bg-green-600 text-white font-semibold text-sm hover:bg-green-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-              {isLoading ? <><span className="animate-spin">⏳</span> Traitement...</> : '✅ Confirmer le paiement'}
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </>
   );
 }

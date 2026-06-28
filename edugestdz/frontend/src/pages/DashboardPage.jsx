@@ -1,20 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@hooks/useAuth';
 import api from '@api/axiosInstance';
 import StatCard from '@components/dashboard/StatCard';
 
+// ── Données de démo pour le tableau de bord ────────────────
+const DEMO_DATA = {
+  stats: {
+    eleves_actifs: 147,
+    nouveaux_eleves_mois: 12,
+    enseignants_actifs: 18,
+    groupes_actifs: 24,
+    seances_semaine: 56,
+    seances_ajd: 8,
+    revenu_mensuel: 485000,
+    impayes: 62000,
+    factures_impayees: 7,
+  },
+  seances_aujourdhui: [
+    { id: 1, matiere: 'Mathématiques', groupe: '1AS G1', enseignant: 'M. Benali', heure_debut: '08:30', heure_fin: '10:00' },
+    { id: 2, matiere: 'Physique', groupe: '2AS G2', enseignant: 'Mme Hadj', heure_debut: '10:15', heure_fin: '11:45' },
+    { id: 3, matiere: 'Sciences naturelles', groupe: '3AS G1', enseignant: 'M. Amrani', heure_debut: '13:00', heure_fin: '14:30' },
+    { id: 4, matiere: 'Français', groupe: '4AM G3', enseignant: 'Mme Slimane', heure_debut: '14:45', heure_fin: '16:15' },
+    { id: 5, matiere: 'Anglais', groupe: '1AS G2', enseignant: 'M. Khedim', heure_debut: '16:30', heure_fin: '18:00' },
+  ],
+  paiements_recents: [
+    { id: 1, eleve: 'Amine Boudiaf', montant: 4500, mode_paiement: 'Espèces', date: '2026-06-15' },
+    { id: 2, eleve: 'Sara Mekki', montant: 3000, mode_paiement: 'Virement CCP', date: '2026-06-14' },
+    { id: 3, eleve: 'Karim Rezgui', montant: 6000, mode_paiement: 'Espèces', date: '2026-06-14' },
+    { id: 4, eleve: 'Lina Bouzid', montant: 4500, mode_paiement: 'BaridiMob', date: '2026-06-13' },
+  ],
+};
+
 export default function DashboardPage() {
   const [data, setData] = useState(null);
+  const { isDemoMode } = useAuth();
 
   useEffect(() => {
     const load = async () => {
+      if (isDemoMode) {
+        // Simuler un petit délai de chargement pour le réalisme
+        setTimeout(() => setData(DEMO_DATA), 400);
+        return;
+      }
       try {
         const res = await api.get('/dashboard');
         setData(res);
-      } catch { /* silent */ }
+      } catch {
+        // Fallback : données de démo si API inaccessible
+        setData(DEMO_DATA);
+      }
     };
     load();
-  }, []);
+  }, [isDemoMode]);
 
   if (!data) {
     return (
@@ -31,6 +69,11 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-neutral-800">Tableau de bord</h1>
         <p className="text-neutral-500 mt-1">Vue d'ensemble de votre centre</p>
+        {isDemoMode && (
+          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-700">
+            ⚡ Mode démo — données fictives
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link to="/eleves">

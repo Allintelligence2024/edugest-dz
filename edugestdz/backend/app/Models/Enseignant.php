@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\{HasMany, BelongsTo};
+use Illuminate\Database\Eloquent\Relations\{HasMany, BelongsTo, BelongsToMany};
 
 class Enseignant extends BaseModel
 {
@@ -15,7 +15,7 @@ class Enseignant extends BaseModel
         'photo_url', 'diplome', 'specialite', 'experience_annees',
         'type_contrat', 'date_embauche', 'salaire_base', 'taux_horaire',
         'num_securite_sociale', 'num_cnas', 'rib_bancaire', 'banque',
-        'statut', 'note_interne',
+        'statut', 'note_interne', 'disponibilites',
     ];
 
     protected $casts = [
@@ -23,11 +23,24 @@ class Enseignant extends BaseModel
         'date_embauche'  => 'date',
         'salaire_base'   => 'decimal:2',
         'taux_horaire'   => 'decimal:2',
+        'disponibilites' => 'array',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function wilaya(): BelongsTo
+    {
+        return $this->belongsTo(Wilaya::class);
+    }
+
+    public function matieres(): BelongsToMany
+    {
+        return $this->belongsToMany(Matiere::class, 'enseignant_matiere')
+                    ->withPivot('niveau_scolaire', 'est_principal')
+                    ->withTimestamps();
     }
 
     public function cours(): HasMany

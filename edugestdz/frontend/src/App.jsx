@@ -10,6 +10,23 @@ import DashboardPage from '@pages/DashboardPage';
 import PlanningPage from '@pages/PlanningPage';
 import PresencesPage from '@pages/PresencesPage';
 import FacturesPage from '@pages/FacturesPage';
+import ElevesListPage from '@pages/ElevesListPage';
+import NotesPage from '@pages/NotesPage';
+import GroupesPage from '@pages/GroupesPage';
+import EnseignantsListPage from '@pages/EnseignantsListPage';
+import SallesPage from '@pages/SallesPage';
+import MatieresPage from '@pages/MatieresPage';
+import PaiesPage from '@pages/PaiesPage';
+import MessagesPage from '@pages/MessagesPage';
+import BulletinsPage from '@pages/BulletinsPage';
+import AuditLogPage from '@pages/AuditLogPage';
+import CampagnesPage from '@pages/CampagnesPage';
+import SuperAdminPage from '@pages/SuperAdminPage';
+import TwoFactorSetupPage from '@pages/TwoFactorSetupPage';
+import MarketplaceSearchPage from '@pages/MarketplaceSearchPage';
+import MarketplaceOffreDetailPage from '@pages/MarketplaceOffreDetailPage';
+import MarketplaceReservationPage from '@pages/MarketplaceReservationPage';
+import MesReservationsPage from '@pages/MesReservationsPage';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -68,8 +85,25 @@ export default function App() {
               <Route path="planning" element={<PlanningPage />} />
               <Route path="presences" element={<PresencesPage />} />
               <Route path="factures" element={<FacturesPage />} />
+              <Route path="eleves" element={<ElevesListPage />} />
+              <Route path="notes" element={<NotesPage />} />
+              <Route path="groupes" element={<GroupesPage />} />
+              <Route path="enseignants" element={<EnseignantsListPage />} />
+              <Route path="salles" element={<SallesPage />} />
+              <Route path="matieres" element={<MatieresPage />} />
+              <Route path="paie" element={<PaiesPage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="bulletins" element={<BulletinsPage />} />
+              <Route path="audit-logs" element={<AuditLogPage />} />
+              <Route path="campagnes" element={<CampagnesPage />} />
+              <Route path="super-admin" element={<SuperAdminPage />} />
+              <Route path="parametres/securite" element={<TwoFactorSetupPage />} />
+            <Route path="marketplace/reservation/:id" element={<MarketplaceReservationPage />} />
+            <Route path="mes-reservations" element={<MesReservationsPage />} />
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="marketplace" element={<MarketplaceSearchPage />} />
+            <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </I18nProvider>

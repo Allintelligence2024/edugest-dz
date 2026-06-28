@@ -10,7 +10,7 @@ class TestUserSeeder extends Seeder
     public function run(): void
     {
         $tenant = Tenant::create([
-            'nom'             => 'Centre Alpha',
+            'nom_etablissement' => 'Centre Alpha',
             'slug'            => 'centre-alpha',
             'email'           => 'contact@centrealpha.dz',
             'telephone'       => '0550123456',
@@ -30,7 +30,7 @@ class TestUserSeeder extends Seeder
             'telephone' => '0550123456',
             'langue'    => 'fr',
             'role_id'   => 2,
-            'is_actif'  => true,
+            'statut'    => 'actif',
         ]);
         // Role already assigned via role_id = 2 (admin)
     }

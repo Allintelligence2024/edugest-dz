@@ -1,5 +1,21 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '@api/axiosInstance';
+import { DEMO_MODE as GLOBAL_DEMO } from '@api/axiosInstance';
+
+const DEMO_USER = {
+  id: 1,
+  nom: 'Khellil',
+  prenom: 'Youcef',
+  email: 'admin@edugestdz.local',
+  role: 'admin',
+};
+
+const DEMO_TENANT = {
+  id: 1,
+  nom: 'Centre EduGest — Alger',
+  ville: 'Alger',
+  statut: 'actif',
+};
 
 const AuthContext = createContext(null);
 
@@ -8,55 +24,79 @@ export function AuthProvider({ children }) {
   const [tenant, setTenant] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(GLOBAL_DEMO);
+
+  const activateDemo = useCallback(() => {
+    setUser(DEMO_USER);
+    setTenant(DEMO_TENANT);
+    setIsAuthenticated(true);
+    setIsDemoMode(true);
+    setIsLoading(false);
+  }, []);
 
   const loadUser = useCallback(async () => {
+    if (GLOBAL_DEMO) {
+      activateDemo();
+      return;
+    }
+
     const token = localStorage.getItem('access_token');
     if (!token) {
       setIsLoading(false);
       return;
     }
+
     try {
       const res = await api.get('/auth/me');
-      setUser(res.user || res.data);
+      const data = res.data || res;
+      setUser(data.user || data);
       setTenant(res.tenant || null);
       setIsAuthenticated(true);
     } catch {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      setUser(null);
-      setTenant(null);
-      setIsAuthenticated(false);
+      console.warn('[EduGest] Backend inaccessible — activation mode démo');
+      activateDemo();
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [activateDemo]);
 
   useEffect(() => { loadUser(); }, [loadUser]);
 
   const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('access_token', res.access_token);
-    if (res.refresh_token) {
-      localStorage.setItem('refresh_token', res.refresh_token);
+    if (GLOBAL_DEMO) {
+      activateDemo();
+      return { user: DEMO_USER, tenant: DEMO_TENANT };
     }
-    setUser(res.user);
-    setTenant(res.tenant);
+
+    const res = await api.post('/auth/login', { email, password });
+    const { access_token, refresh_token, user: u, tenant: t } = res;
+
+    localStorage.setItem('access_token', access_token);
+    if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
+
+    setUser(u);
+    setTenant(t);
     setIsAuthenticated(true);
-    return res;
+    return { user: u, tenant: t };
   };
 
   const logout = async () => {
-    try { await api.post('/auth/logout'); } catch { /* ignore */ }
+    if (!isDemoMode) {
+      try { await api.post('/auth/logout'); } catch { /* ignore */ }
+    }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
     setTenant(null);
     setIsAuthenticated(false);
+    setIsDemoMode(false);
     window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, tenant, isLoading, isAuthenticated, login, logout, loadUser }}>
+    <AuthContext.Provider
+      value={{ user, tenant, isLoading, isAuthenticated, isDemoMode, login, logout, loadUser, activateDemo }}
+    >
       {children}
     </AuthContext.Provider>
   );

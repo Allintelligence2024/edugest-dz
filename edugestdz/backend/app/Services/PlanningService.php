@@ -3,105 +3,75 @@ namespace App\Services;
 
 use App\Models\{Cours, Seance, Salle, Enseignant};
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PlanningService
 {
-    public function genererSeances(Cours $cours): int
+    private array $jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+
+    public function getPlanningHebdomadaire(string $debut, string $fin, array $filtres = []): array
     {
-        $dateDebut = Carbon::parse($cours->date_debut);
-        $dateFin   = $cours->date_fin
-            ? Carbon::parse($cours->date_fin)
-            : $dateDebut->copy()->addMonths(3);
+        $query = Cours::with(['groupe.matiere', 'enseignant', 'salle'])
+            ->where('statut', 'actif');
 
-        $seancesCreees = 0;
-        $current       = $dateDebut->copy();
-
-        while ($current->lte($dateFin)) {
-            if ($current->dayOfWeek == $cours->jour_semaine) {
-                if (!$this->aConflitSeance($cours, $current)) {
-                    Seance::firstOrCreate(
-                        [
-                            'cours_id'    => $cours->id,
-                            'date_seance' => $current->toDateString(),
-                        ],
-                        [
-                            'heure_debut' => $cours->heure_debut,
-                            'heure_fin'   => $cours->heure_fin,
-                            'statut'      => 'planifiée',
-                        ]
-                    );
-                    $seancesCreees++;
-                }
-            }
-
-            match ($cours->recurrence) {
-                'hebdo'      => $current->addWeek(),
-                'bimensuel'  => $current->addWeeks(2),
-                'mensuel'    => $current->addMonth(),
-                default      => $current->addDay(),
-            };
-
-            if ($cours->recurrence === 'unique') break;
+        if (!empty($filtres['enseignant_id'])) {
+            $query->where('enseignant_id', $filtres['enseignant_id']);
+        }
+        if (!empty($filtres['salle_id'])) {
+            $query->where('salle_id', $filtres['salle_id']);
+        }
+        if (!empty($filtres['groupe_id'])) {
+            $query->where('groupe_id', $filtres['groupe_id']);
         }
 
-        return $seancesCreees;
+        $cours = $query->get();
+
+        $debutDate = Carbon::parse($debut);
+        $finDate   = Carbon::parse($fin);
+        $planning  = [];
+
+        for ($date = $debutDate->copy(); $date->lte($finDate); $date->addDay()) {
+        $jourSemaine = $this->getJourIndex($date->dayOfWeek);
+            $seancesDuJour = $cours->filter(fn($c) => $c->jour_semaine === $jourSemaine);
+
+            if ($seancesDuJour->isNotEmpty()) {
+                $planning[] = [
+                    'date'     => $date->toDateString(),
+                    'jour'     => $this->jours[$jourSemaine] ?? 'inconnu',
+                    'seances'  => $seancesDuJour->values()->toArray(),
+                ];
+            }
+        }
+
+        return $planning;
     }
 
-    public function detecterConflits(array $data): array
+    public function verifierConflits(string $enseignantId, string $jourSemaine, string $heureDebut, string $heureFin, ?string $excludeCoursId = null): array
     {
-        $conflits = [];
+        $query = Cours::where('enseignant_id', $enseignantId)
+            ->where('jour_semaine', $jourSemaine)
+            ->where('statut', 'actif');
 
-        $conflitEnseignant = Cours::where('enseignant_id', $data['enseignant_id'])
-            ->where('jour_semaine', $data['jour_semaine'])
-            ->where('statut', 'actif')
-            ->where(function ($q) use ($data) {
-                $q->where(function ($inner) use ($data) {
-                    $inner->where('heure_debut', '<', $data['heure_fin'])
-                          ->where('heure_fin',   '>', $data['heure_debut']);
-                });
-            })
-            ->when(isset($data['exclude_id']), fn($q) =>
-                $q->where('id', '!=', $data['exclude_id'])
-            )
-            ->with('enseignant', 'groupe.matiere')
-            ->first();
-
-        if ($conflitEnseignant) {
-            $conflits[] = [
-                'type'    => 'ENSEIGNANT_OCCUPÉ',
-                'message' => "L'enseignant a déjà un cours à ce créneau",
-                'details' => [
-                    'cours_id'  => $conflitEnseignant->id,
-                    'groupe'    => $conflitEnseignant->groupe->nom,
-                    'matiere'   => $conflitEnseignant->groupe->matiere?->nom_fr,
-                    'heure'     => $conflitEnseignant->heure_debut . ' - ' . $conflitEnseignant->heure_fin,
-                ],
-            ];
+        if ($excludeCoursId) {
+            $query->where('id', '!=', $excludeCoursId);
         }
 
-        if (!empty($data['salle_id'])) {
-            $conflitSalle = Cours::where('salle_id', $data['salle_id'])
-                ->where('jour_semaine', $data['jour_semaine'])
-                ->where('statut', 'actif')
-                ->where(function ($q) use ($data) {
-                    $q->where('heure_debut', '<', $data['heure_fin'])
-                      ->where('heure_fin',   '>', $data['heure_debut']);
-                })
-                ->when(isset($data['exclude_id']), fn($q) =>
-                    $q->where('id', '!=', $data['exclude_id'])
-                )
-                ->with('salle')
-                ->first();
+        $coursExistants = $query->get();
+        $conflits = [];
 
-            if ($conflitSalle) {
+        $nouveauDebut = Carbon::parse($heureDebut);
+        $nouveauFin   = Carbon::parse($heureFin);
+
+        foreach ($coursExistants as $c) {
+            $existantDebut = Carbon::parse($c->heure_debut);
+            $existantFin   = Carbon::parse($c->heure_fin);
+
+            if ($nouveauDebut->lt($existantFin) && $nouveauFin->gt($existantDebut)) {
                 $conflits[] = [
-                    'type'    => 'SALLE_OCCUPÉE',
-                    'message' => "La salle est déjà occupée à ce créneau",
-                    'details' => [
-                        'salle' => $conflitSalle->salle->nom,
-                        'heure' => $conflitSalle->heure_debut . ' - ' . $conflitSalle->heure_fin,
-                    ],
+                    'cours_id'    => $c->id,
+                    'groupe'      => $c->groupe->nom ?? 'N/A',
+                    'heure_debut' => $c->heure_debut,
+                    'heure_fin'   => $c->heure_fin,
                 ];
             }
         }
@@ -109,57 +79,80 @@ class PlanningService
         return $conflits;
     }
 
-    public function getPlanningHebdomadaire(
-        string $dateDebut,
-        string $dateFin,
-        array  $filtres = []
-    ): array {
-        $seances = Seance::with([
-                'cours.enseignant',
-                'cours.groupe.matiere',
-                'cours.salle',
-            ])
-            ->whereHas('cours', function ($q) use ($filtres) {
-                $q->where('statut', 'actif');
-                if (!empty($filtres['enseignant_id'])) {
-                    $q->where('enseignant_id', $filtres['enseignant_id']);
-                }
-                if (!empty($filtres['groupe_id'])) {
-                    $q->where('groupe_id', $filtres['groupe_id']);
-                }
-            })
-            ->whereBetween('date_seance', [$dateDebut, $dateFin])
-            ->orderBy('date_seance')
-            ->orderBy('heure_debut')
-            ->get();
+    public function verifierDisponibiliteSalle(string $salleId, string $jourSemaine, string $heureDebut, string $heureFin, ?string $excludeCoursId = null): bool
+    {
+        $query = Cours::where('salle_id', $salleId)
+            ->where('jour_semaine', $jourSemaine)
+            ->where('statut', 'actif');
 
-        return $seances->groupBy(fn($s) =>
-            Carbon::parse($s->date_seance)->dayOfWeek
-        )->map(fn($daySeances) =>
-            $daySeances->map(fn($seance) => [
-                'id'          => $seance->id,
-                'date'        => $seance->date_seance,
-                'heure_debut' => $seance->heure_debut ?? $seance->cours->heure_debut,
-                'heure_fin'   => $seance->heure_fin   ?? $seance->cours->heure_fin,
-                'statut'      => $seance->statut,
-                'matiere'     => $seance->cours->groupe->matiere?->nom_fr,
-                'couleur'     => $seance->cours->groupe->matiere?->couleur ?? '#1E5EBC',
-                'groupe'      => $seance->cours->groupe->nom,
-                'enseignant'  => $seance->cours->enseignant->nom . ' '
-                              . $seance->cours->enseignant->prenom,
-                'salle'       => $seance->cours->salle?->nom,
-                'cours_id'    => $seance->cours->id,
-            ])
-        )->toArray();
+        if ($excludeCoursId) {
+            $query->where('id', '!=', $excludeCoursId);
+        }
+
+        $nouveauDebut = Carbon::parse($heureDebut);
+        $nouveauFin   = Carbon::parse($heureFin);
+
+        return !$query->get()->contains(function ($c) use ($nouveauDebut, $nouveauFin) {
+            $debut = Carbon::parse($c->heure_debut);
+            $fin   = Carbon::parse($c->heure_fin);
+            return $nouveauDebut->lt($fin) && $nouveauFin->gt($debut);
+        });
     }
 
-    private function aConflitSeance(Cours $cours, Carbon $date): bool
+    public function genererSeances(Cours $cours): int
     {
-        $estFerie = \App\Models\CalendrierScolaire::where('type', 'ferie')
-            ->whereDate('date_debut', '<=', $date)
-            ->whereDate('date_fin',   '>=', $date)
-            ->exists();
+        $generated = 0;
+        $debut     = now()->addWeek()->startOfWeek();
+        $fin       = now()->addWeek()->endOfWeek();
+        $jourIndex = $this->getJourIndex($debut->dayOfWeek);
 
-        return $estFerie;
+        for ($date = $debut->copy(); $date->lte($fin); $date->addDay()) {
+            if ($date->dayOfWeek == $this->getDayOfWeekFromJourIndex($jourIndex)) {
+                $existe = Seance::where('cours_id', $cours->id)
+                    ->where('date_seance', $date->toDateString())
+                    ->exists();
+
+                if (!$existe) {
+                    Seance::create([
+                        'tenant_id'   => $cours->tenant_id,
+                        'cours_id'    => $cours->id,
+                        'groupe_id'   => $cours->groupe_id,
+                        'date_seance' => $date->toDateString(),
+                        'statut'      => 'planifiée',
+                    ]);
+                    $generated++;
+                }
+            }
+        }
+
+        return $generated;
+    }
+
+    private function getJourIndex(int $dayOfWeek): int
+    {
+        return match ($dayOfWeek) {
+            Carbon::SUNDAY    => 0,
+            Carbon::MONDAY    => 1,
+            Carbon::TUESDAY   => 2,
+            Carbon::WEDNESDAY => 3,
+            Carbon::THURSDAY  => 4,
+            Carbon::FRIDAY    => 5,
+            Carbon::SATURDAY  => 6,
+            default           => 0,
+        };
+    }
+
+    private function getDayOfWeekFromJourIndex(int $index): int
+    {
+        return match ($index) {
+            0 => Carbon::SUNDAY,
+            1 => Carbon::MONDAY,
+            2 => Carbon::TUESDAY,
+            3 => Carbon::WEDNESDAY,
+            4 => Carbon::THURSDAY,
+            5 => Carbon::FRIDAY,
+            6 => Carbon::SATURDAY,
+            default => Carbon::SUNDAY,
+        };
     }
 }

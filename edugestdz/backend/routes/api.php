@@ -30,22 +30,32 @@ use App\Http\Controllers\Api\V1\{
     NotificationController,
     MessageController,
     RapportController,
-    ParametreController
+    ParametreController,
+    TwoFactorController
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // VERSION 1 — Préfixe /api/v1
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Route::prefix('v1')->group(function () {
+    Route::prefix('v1')->group(function () {
+
+        // ── Marketplace Public ──
+        Route::prefix('marketplace')->group(function () {
+            Route::get('offres',                     [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'recherche']);
+            Route::get('offres/{id}',                [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'show']);
+            Route::get('avis/enseignant/{id}',       [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'byEnseignant']);
+        });
 
     // ────────────────────────────────────────────
     // 🔐 AUTH — Public (sans authentification)
     // ────────────────────────────────────────────
     Route::prefix('auth')->group(function () {
-        Route::post('login',           [AuthController::class, 'login']);
-        Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
-        Route::post('reset-password',  [AuthController::class, 'resetPassword']);
-    });
+            Route::post('login',           [AuthController::class, 'login']);
+            Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+            Route::post('reset-password',  [AuthController::class, 'resetPassword']);
+            Route::post('2fa/challenge',   [TwoFactorController::class, 'challenge']);
+            Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
+        });
 
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
@@ -60,6 +70,15 @@ Route::prefix('v1')->group(function () {
             Route::get('me',               [AuthController::class, 'me']);
             Route::put('change-password',  [AuthController::class, 'changePassword']);
             Route::put('profile',          [AuthController::class, 'updateProfile']);
+
+            // ── 2FA ──
+            Route::prefix('2fa')->group(function () {
+                Route::get('status',         [TwoFactorController::class, 'status']);
+                Route::post('enable',        [TwoFactorController::class, 'enable']);
+                Route::post('confirm',       [TwoFactorController::class, 'confirm']);
+                Route::post('disable',       [TwoFactorController::class, 'disable']);
+                Route::get('recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
+            });
         });
 
         // ── Élèves ──
@@ -141,7 +160,11 @@ Route::prefix('v1')->group(function () {
             Route::post('seance/{seanceId}',     [PresenceController::class, 'saisir']);
             Route::put('{id}',                   [PresenceController::class, 'update']);
             Route::get('rapport',                [PresenceController::class, 'rapport']);
+            Route::post('scan',                  [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'scan']);
         });
+
+        // ── QR Code élève ──
+        Route::get('eleves/{id}/qrcode',         [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'qrcode']);
 
         // ── Évaluations ──
         Route::apiResource('evaluations', EvaluationController::class);
@@ -197,12 +220,30 @@ Route::prefix('v1')->group(function () {
             Route::post('envoyer',              [NotificationController::class, 'envoyer']);
         });
 
+        // ── Device Tokens (Push Notifications) ──
+        Route::prefix('device-tokens')->group(function () {
+            Route::post('/',                     [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'register']);
+            Route::delete('/',                   [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'unregister']);
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'list']);
+        });
+
+        // ── Campagnes ──
+        Route::apiResource('campagnes',          \App\Http\Controllers\Api\V1\CampagneController::class);
+        Route::post('campagnes/{id}/envoyer',    [\App\Http\Controllers\Api\V1\CampagneController::class, 'envoyer']);
+
+        // ── Audit Logs ──
+        Route::prefix('audit-logs')->group(function () {
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\AuditLogController::class, 'index']);
+            Route::get('{id}',                   [\App\Http\Controllers\Api\V1\AuditLogController::class, 'show']);
+        });
+
         // ── Messagerie ──
         Route::prefix('messages')->group(function () {
-            Route::get('conversations',          [MessageController::class, 'conversations']);
-            Route::post('conversations',         [MessageController::class, 'creerConversation']);
-            Route::get('conversations/{id}',     [MessageController::class, 'conversation']);
-            Route::post('conversations/{id}',    [MessageController::class, 'envoyer']);
+            Route::get('conversations',               [MessageController::class, 'conversations']);
+            Route::post('conversations',              [MessageController::class, 'creerConversation']);
+            Route::get('conversations/{id}',          [MessageController::class, 'conversation']);
+            Route::post('conversations/{id}',         [MessageController::class, 'envoyer']);
+            Route::put('conversations/{id}/lu',       [MessageController::class, 'marquerLu']);
         });
 
         // ── Rapports ──
@@ -221,5 +262,49 @@ Route::prefix('v1')->group(function () {
             Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
         });
+
+        // ── Matching IA ──
+        Route::prefix('matching')->group(function () {
+            Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
+        });
+
+        // ── Marketplace Authenticated ──
+        Route::prefix('marketplace')->group(function () {
+            Route::post('offres',                [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'store']);
+            Route::put('offres/{id}',            [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'update']);
+            Route::delete('offres/{id}',         [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'destroy']);
+            Route::get('mes-offres',             [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'mesOffres']);
+            Route::post('reservations',          [\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'store']);
+            Route::post('reservations/{id}/payer',[\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'payer']);
+            Route::get('mes-reservations',       [\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'mesReservations']);
+            Route::post('reservations/{id}/annuler',[\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'annuler']);
+            Route::post('reservations/{id}/terminer',[\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'terminer']);
+            Route::post('avis',                  [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'store']);
+        });
+
+        // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──
+        Route::prefix('paiements')->group(function () {
+            Route::post('online/initier',        [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'initier']);
+            Route::get('online/retour',          [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'retour']);
+            Route::post('online/callback',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'callback']);
+        });
+    });
+
+    // ────────────────────────────────────────────
+    // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
+    // ────────────────────────────────────────────
+    Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+        Route::get('tenants',                    [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'index']);
+        Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
+        Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
+        Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);
+        Route::get('stats',                      [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'stats']);
+        Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
+    });
+
+    // ── WhatsApp Webhook (public) ──
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('webhook',                [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'verify']);
+        Route::post('webhook',               [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'handle']);
     });
 });
