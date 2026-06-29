@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Modules Manquants</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 32px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .intro {
+    background: #0a1628; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #94a3b8; line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .intro strong { color: #60a5fa; }
+
+  /* ── MODULE CARD ── */
+  .module-card {
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .module-header {
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .module-icon { font-size: 28px; flex-shrink: 0; }
+  .module-info { flex: 1; }
+  .module-name { font-size: 17px; font-weight: 800; }
+  .module-sub  { font-size: 11px; margin-top: 3px; opacity: 0.7; }
+  .module-tags { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+
+  .badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 20px; font-size: 10px; font-weight: 700;
+  }
+  .b-priority-high   { background: #450a0a; color: #f87171; }
+  .b-priority-mid    { background: #422006; color: #fb923c; }
+  .b-priority-low    { background: #1e293b; color: #94a3b8; }
+  .b-phase2 { background: #0c2a4a; color: #60a5fa; }
+  .b-phase3 { background: #2e1065; color: #c084fc; }
+  .b-phase1 { background: #14532d; color: #4ade80; }
+  .b-unique { background: #1a1a0f; color: #facc15; }
+
+  .module-body {
+    padding: 0 22px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* colors per module */
+  .m-transport  { background: #0a1a10; border-color: #1a4d2a; }
+  .m-transport .module-header  { background: #0d2015; }
+  .m-transport .module-name    { color: #4ade80; }
+
+  .m-restauration { background: #1a0f0a; border-color: #7c2d12; }
+  .m-restauration .module-header { background: #1f1008; }
+  .m-restauration .module-name   { color: #fb923c; }
+
+  .m-stock { background: #0a1628; border-color: #1e3a5f; }
+  .m-stock .module-header { background: #091220; }
+  .m-stock .module-name   { color: #60a5fa; }
+
+  .m-personnel { background: #1a1028; border-color: #4c1d95; }
+  .m-personnel .module-header { background: #150d22; }
+  .m-personnel .module-name   { color: #c084fc; }
+
+  .m-budget { background: #1a1a0a; border-color: #713f12; }
+  .m-budget .module-header { background: #151508; }
+  .m-budget .module-name   { color: #fbbf24; }
+
+  .m-entretien { background: #0f1a1a; border-color: #134e4a; }
+  .m-entretien .module-header { background: #0b1515; }
+  .m-entretien .module-name   { color: #2dd4bf; }
+
+  /* Sub-section */
+  .sub-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #475569;
+    margin-bottom: 8px; padding-bottom: 4px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  /* Feature list */
+  .feat-list { list-style: none; }
+  .feat-list li {
+    font-size: 12px; color: #94a3b8;
+    padding: 5px 0;
+    border-bottom: 1px solid #0f1a25;
+    display: flex; align-items: flex-start; gap: 8px;
+    line-height: 1.5;
+  }
+  .feat-list li:last-child { border-bottom: none; }
+  .feat-list li .fi { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .feat-list li strong { color: #e2e8f0; }
+
+  /* Schema SQL */
+  .sql-block {
+    background: #0a0f1a;
+    border: 1px solid #1e2d3d;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 10px;
+    color: #7dd3fc;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .sql-block .kw  { color: #a78bfa; }
+  .sql-block .typ { color: #34d399; }
+  .sql-block .cmt { color: #475569; font-style: italic; }
+
+  /* Impact */
+  .impact-box {
+    background: #0f1117;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .impact-box .ib-row {
+    display: flex; justify-content: space-between;
+    font-size: 11px; padding: 4px 0;
+    border-bottom: 1px solid #1a2232;
+  }
+  .impact-box .ib-row:last-child { border-bottom: none; }
+  .impact-box .ib-key { color: #64748b; }
+  .impact-box .ib-val { font-weight: 700; color: #e2e8f0; }
+  .impact-box .ib-val.green  { color: #4ade80; }
+  .impact-box .ib-val.orange { color: #fb923c; }
+  .impact-box .ib-val.blue   { color: #60a5fa; }
+
+  /* Résumé */
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 24px; }
+  .summary-table th {
+    background: #1e293b; color: #94a3b8;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 10px 14px; text-align: left;
+  }
+  .summary-table td { padding: 10px 14px; border-bottom: 1px solid #1a2232; vertical-align: middle; }
+  .summary-table tr:hover td { background: #131a25; }
+
+  .stitle {
+    font-size: 13px; font-weight: 700; color: #60a5fa;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 8px; margin: 32px 0 16px;
+  }
+
+  .warn {
+    background: #1a130f; border: 1px solid #7a4a1a;
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #fb923c; line-height: 1.7;
+    margin-top: 24px;
+  }
+  .warn strong { color: #f97316; }
+</style>
+</head>
+<body>
+
+<h1>🔍 EduGest DZ — Modules manquants identifiés par enquête terrain</h1>
+<div class="meta">Analyse basée sur retour terrain · Juin 2026</div>
+
+<div class="intro">
+  Ton enquête terrain a révélé 6 besoins réels non couverts par EduGest DZ dans sa version actuelle.
+  Ce document détaille chaque module manquant : fonctionnalités concrètes, schéma de données, priorité de développement et impact sur le produit.
+  <strong>Ces modules transforment EduGest DZ d'un logiciel de cours particuliers en un ERP scolaire complet — ce qu'aucun concurrent algérien ne propose aujourd'hui.</strong>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M09 — TRANSPORT -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-transport">
+  <div class="module-header">
+    <div class="module-icon">🚌</div>
+    <div class="module-info">
+      <div class="module-name">M09 — Gestion du Transport Scolaire</div>
+      <div class="module-sub">Chauffeurs · Circuits · Élèves transportés · Facturation transport</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-high">Priorité haute</span>
+      <span class="badge b-phase2">Phase 2</span>
+      <span class="badge b-unique">⭐ Aucun concurrent DZ</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">🗂️</span><strong>Dossier chauffeur</strong> — permis, contrat, véhicule affecté, numéro de téléphone</li>
+        <li><span class="fi">🗺️</span><strong>Circuits de ramassage</strong> — liste des arrêts par circuit, ordre de passage, wilaya/commune</li>
+        <li><span class="fi">👦</span><strong>Affectation élèves/circuit</strong> — quel élève monte à quel arrêt, matin/soir séparé</li>
+        <li><span class="fi">💰</span><strong>Facturation transport</strong> — mensualité transport ajoutée à la facture élève (séparée ou combinée)</li>
+        <li><span class="fi">📱</span><strong>Notification parent</strong> — SMS/Push "le bus est parti", "arrivée dans 10 min"</li>
+        <li><span class="fi">✅</span><strong>Pointage élèves dans le bus</strong> — l'assistant enregistre qui est monté ce matin</li>
+        <li><span class="fi">⚠️</span><strong>Alerte absence bus</strong> — élève absent du bus → SMS au parent automatique</li>
+        <li><span class="fi">🔧</span><strong>Maintenance véhicule</strong> — vidange, contrôle technique, assurance — dates d'échéance avec alerte</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> circuits_transport<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span> <span class="cmt">-- isolation</span><br>
+nom         <span class="typ">VARCHAR</span> <span class="cmt">-- "Circuit Nord"</span><br>
+chauffeur_id <span class="typ">UUID FK</span><br>
+vehicule    <span class="typ">VARCHAR</span> <span class="cmt">-- immat. bus</span><br>
+capacite    <span class="typ">INT</span><br>
+tarif_mensuel <span class="typ">DECIMAL</span><br>
+actif       <span class="typ">BOOLEAN</span><br>
+<br>
+<span class="kw">TABLE</span> arrets_bus<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+circuit_id  <span class="typ">UUID FK</span><br>
+nom_arret   <span class="typ">VARCHAR</span><br>
+ordre       <span class="typ">INT</span><br>
+heure_matin <span class="typ">TIME</span><br>
+heure_soir  <span class="typ">TIME</span><br>
+<br>
+<span class="kw">TABLE</span> transport_eleves<br>
+──────────────────────────<br>
+eleve_id    <span class="typ">UUID FK</span><br>
+arret_id    <span class="typ">UUID FK</span><br>
+abonnement  <span class="typ">ENUM</span>(matin,soir,aller-retour)<br>
+date_debut  <span class="typ">DATE</span><br>
+date_fin    <span class="typ">DATE</span>
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Revenu additionnel</span><span class="ib-val green">+500 à 3000 DA/élève/mois</span></div>
+        <div class="ib-row"><span class="ib-key">Différenciateur</span><span class="ib-val green">0 concurrent DZ ne le propose</span></div>
+        <div class="ib-row"><span class="ib-key">Rétention parent</span><span class="ib-val green">Fort — usage quotidien</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Moyenne (pas de GPS requis v1)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M10 — RESTAURATION -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-restauration">
+  <div class="module-header">
+    <div class="module-icon">🍽️</div>
+    <div class="module-info">
+      <div class="module-name">M10 — Gestion de la Restauration (Cantine)</div>
+      <div class="module-sub">Menus · Inscriptions repas · Régimes · Facturation · Stock cuisine</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-high">Priorité haute</span>
+      <span class="badge b-phase2">Phase 2</span>
+      <span class="badge b-unique">⭐ Aucun concurrent DZ</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">📅</span><strong>Planning des menus</strong> — semaine par semaine, plat principal + dessert + boisson</li>
+        <li><span class="fi">👦</span><strong>Inscription à la cantine</strong> — par élève, par jour ou forfait mensuel</li>
+        <li><span class="fi">🥗</span><strong>Régimes alimentaires</strong> — sans porc, végétarien, allergies (arachides, gluten...)</li>
+        <li><span class="fi">📊</span><strong>Comptage repas</strong> — nombre de repas à préparer chaque jour par classe</li>
+        <li><span class="fi">💰</span><strong>Facturation cantine</strong> — intégrée à la facture mensuelle élève ou séparée</li>
+        <li><span class="fi">🛒</span><strong>Commandes fournisseurs</strong> — quantité de denrées selon le nombre de repas prévus</li>
+        <li><span class="fi">📦</span><strong>Stock cuisine</strong> — entrées/sorties matières premières, alertes rupture</li>
+        <li><span class="fi">📱</span><strong>Menu visible parents</strong> — menu de la semaine affiché dans l'app parent</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> menus_cantine<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+date_repas  <span class="typ">DATE</span><br>
+plat_principal <span class="typ">VARCHAR</span><br>
+accompagnement <span class="typ">VARCHAR</span><br>
+dessert     <span class="typ">VARCHAR</span><br>
+prix_unitaire <span class="typ">DECIMAL</span><br>
+<br>
+<span class="kw">TABLE</span> inscriptions_cantine<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+eleve_id    <span class="typ">UUID FK</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+type        <span class="typ">ENUM</span>(journalier,mensuel)<br>
+regime      <span class="typ">ENUM</span>(normal,sans_porc,végétarien)<br>
+allergies   <span class="typ">JSONB</span><br>
+date_debut  <span class="typ">DATE</span><br>
+<br>
+<span class="kw">TABLE</span> repas_journalier<br>
+──────────────────────────<br>
+eleve_id    <span class="typ">UUID FK</span><br>
+menu_id     <span class="typ">UUID FK</span><br>
+present     <span class="typ">BOOLEAN</span><br>
+facture     <span class="typ">BOOLEAN</span>
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Revenu additionnel</span><span class="ib-val green">+800 à 2000 DA/élève/mois</span></div>
+        <div class="ib-row"><span class="ib-key">Usage quotidien</span><span class="ib-val green">Le directeur ouvre l'app chaque matin</span></div>
+        <div class="ib-row"><span class="ib-key">Gaspillage évité</span><span class="ib-val green">Comptage exact des repas à préparer</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Moyenne</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M11 — STOCK & INVENTAIRE -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-stock">
+  <div class="module-header">
+    <div class="module-icon">📦</div>
+    <div class="module-info">
+      <div class="module-name">M11 — Gestion des Stocks & Inventaire</div>
+      <div class="module-sub">Mobilier · Fournitures · Équipements · Tableaux · Matériel pédagogique</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-mid">Priorité moyenne</span>
+      <span class="badge b-phase2">Phase 2</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">🪑</span><strong>Inventaire mobilier</strong> — chaises, tables, tableaux par salle avec état (bon/usé/hors service)</li>
+        <li><span class="fi">📚</span><strong>Stock fournitures</strong> — craies, marqueurs, cahiers, feuilles — quantité en stock en temps réel</li>
+        <li><span class="fi">⚠️</span><strong>Alertes seuil bas</strong> — notification quand le stock d'un article passe sous le seuil minimum</li>
+        <li><span class="fi">🛒</span><strong>Bons de commande</strong> — générer un bon de commande fournisseur depuis les besoins détectés</li>
+        <li><span class="fi">📋</span><strong>Réception livraisons</strong> — enregistrer les entrées de stock avec facture fournisseur</li>
+        <li><span class="fi">🔖</span><strong>Étiquetage QR</strong> — chaque bien immobilisé porte un QR code pour inventaire rapide au smartphone</li>
+        <li><span class="fi">📊</span><strong>Rapport d'inventaire annuel</strong> — liste des immobilisations, valeur, état — export PDF/Excel</li>
+        <li><span class="fi">🔄</span><strong>Prêt de matériel</strong> — qui a emprunté quoi, depuis quand, retour attendu le</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> articles_stock<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+nom         <span class="typ">VARCHAR</span><br>
+categorie   <span class="typ">ENUM</span>(mobilier,fourniture,équipement)<br>
+qr_code     <span class="typ">VARCHAR</span> <span class="cmt">-- unique</span><br>
+quantite    <span class="typ">INT</span><br>
+seuil_min   <span class="typ">INT</span><br>
+salle_id    <span class="typ">UUID FK</span> <span class="cmt">-- localisation</span><br>
+etat        <span class="typ">ENUM</span>(bon,usé,hors_service)<br>
+valeur_achat <span class="typ">DECIMAL</span><br>
+date_achat  <span class="typ">DATE</span><br>
+<br>
+<span class="kw">TABLE</span> mouvements_stock<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+article_id  <span class="typ">UUID FK</span><br>
+type        <span class="typ">ENUM</span>(entrée,sortie,prêt,retour)<br>
+quantite    <span class="typ">INT</span><br>
+responsable <span class="typ">UUID FK</span> <span class="cmt">-- user</span><br>
+motif       <span class="typ">TEXT</span><br>
+date        <span class="typ">TIMESTAMP</span>
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Problème résolu</span><span class="ib-val green">Fin des pertes de matériel</span></div>
+        <div class="ib-row"><span class="ib-key">Usage</span><span class="ib-val blue">Inventaire annuel obligatoire</span></div>
+        <div class="ib-row"><span class="ib-key">Valeur perçue</span><span class="ib-val green">Forte chez les directeurs organisés</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Faible (CRUD + alertes)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M12 — PERSONNEL NON-ENSEIGNANT -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-personnel">
+  <div class="module-header">
+    <div class="module-icon">👷</div>
+    <div class="module-info">
+      <div class="module-name">M12 — Personnel Non-Enseignant</div>
+      <div class="module-sub">Femmes de ménage · Surveillants · Chauffeurs · Proviseur · Personnel administratif</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-high">Priorité haute</span>
+      <span class="badge b-phase2">Phase 2</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">👤</span><strong>Dossier agent</strong> — poste (femme de ménage, surveillant, chauffeur, proviseur), contrat, salaire</li>
+        <li><span class="fi">⏰</span><strong>Présences du personnel</strong> — pointage entrée/sortie, absences, retards</li>
+        <li><span class="fi">📅</span><strong>Planning des tâches</strong> — qui fait quoi, quel jour, quelle zone (salle, couloir, cour...)</li>
+        <li><span class="fi">💰</span><strong>Fiche de paie</strong> — salaire fixe + IRG + CNAS + primes + retenues sur absences</li>
+        <li><span class="fi">🏖️</span><strong>Congés & permissions</strong> — demande, validation, suivi du solde de congés</li>
+        <li><span class="fi">📋</span><strong>Évaluation annuelle</strong> — note de performance, observations</li>
+        <li><span class="fi">🔐</span><strong>Accès limité</strong> — ce personnel n'a pas accès à l'app principale, uniquement au pointage</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> personnel_admin<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+nom         <span class="typ">VARCHAR</span><br>
+prenom      <span class="typ">VARCHAR</span><br>
+poste       <span class="typ">ENUM</span>(femme_menage,<br>
+            surveillant,chauffeur,<br>
+            proviseur,secretaire,autre)<br>
+type_contrat <span class="typ">ENUM</span>(CDI,CDD,vacataire)<br>
+salaire_base <span class="typ">DECIMAL</span><br>
+date_embauche <span class="typ">DATE</span><br>
+telephone   <span class="typ">VARCHAR</span><br>
+<br>
+<span class="kw">TABLE</span> pointage_personnel<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+agent_id    <span class="typ">UUID FK</span><br>
+date        <span class="typ">DATE</span><br>
+heure_arrivee <span class="typ">TIME</span><br>
+heure_depart  <span class="typ">TIME</span><br>
+statut      <span class="typ">ENUM</span>(présent,absent,<br>
+            retard,congé,maladie)
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Problème résolu</span><span class="ib-val green">Paie et suivi sur 1 seul outil</span></div>
+        <div class="ib-row"><span class="ib-key">Lien avec M05</span><span class="ib-val blue">Extension naturelle du module Personnel</span></div>
+        <div class="ib-row"><span class="ib-key">Valeur perçue</span><span class="ib-val green">Très forte — douleur quotidienne</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Faible (extension M05 existant)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M13 — BUDGET ANNUEL -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-budget">
+  <div class="module-header">
+    <div class="module-icon">📊</div>
+    <div class="module-info">
+      <div class="module-name">M13 — Budget Annuel & Comptabilité Complète</div>
+      <div class="module-sub">Prévisionnel · Réalisé · Centres de coûts · Bilan annuel · Fiscalité DZ</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-high">Priorité haute</span>
+      <span class="badge b-phase2">Phase 2</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">📋</span><strong>Budget prévisionnel annuel</strong> — par poste (salaires, loyer, fournitures, transport, cantine, entretien)</li>
+        <li><span class="fi">📈</span><strong>Suivi réalisé vs prévu</strong> — dashboard mensuel écart budget/réel</li>
+        <li><span class="fi">🏷️</span><strong>Centres de coûts</strong> — ventiler les dépenses par département (pédagogie, administration, restauration...)</li>
+        <li><span class="fi">💸</span><strong>Dépenses enregistrées</strong> — chaque sortie d'argent avec catégorie, fournisseur, justificatif scanné</li>
+        <li><span class="fi">📄</span><strong>Bilan annuel automatique</strong> — recettes - dépenses = résultat net, export PDF</li>
+        <li><span class="fi">🧾</span><strong>Taxes algériennes</strong> — IBS, TVA (si applicable), TAP — aide au calcul déclaratif</li>
+        <li><span class="fi">🏦</span><strong>Rapprochement bancaire</strong> — import relevé bancaire et rapprochement avec les opérations enregistrées</li>
+        <li><span class="fi">📅</span><strong>Alertes échéances</strong> — loyer, assurance, taxe — rappel 30 jours avant</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> budget_annuel<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+annee       <span class="typ">INT</span><br>
+poste       <span class="typ">VARCHAR</span> <span class="cmt">-- "Salaires"</span><br>
+montant_prevu <span class="typ">DECIMAL</span><br>
+<br>
+<span class="kw">TABLE</span> depenses<br>
+──────────────────────────<br>
+id          <span class="typ">UUID</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+date        <span class="typ">DATE</span><br>
+categorie   <span class="typ">ENUM</span>(salaire,loyer,<br>
+            fourniture,transport,<br>
+            cantine,entretien,autre)<br>
+montant     <span class="typ">DECIMAL</span><br>
+fournisseur <span class="typ">VARCHAR</span><br>
+justificatif <span class="typ">VARCHAR</span> <span class="cmt">-- URL scan</span><br>
+mode_paiement <span class="typ">ENUM</span>(cash,virement,CIB)
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Problème résolu</span><span class="ib-val green">Fin du Excel annuel bricolé</span></div>
+        <div class="ib-row"><span class="ib-key">Argument vente</span><span class="ib-val green">"Votre comptable peut exporter en 1 clic"</span></div>
+        <div class="ib-row"><span class="ib-key">Justification prix Premium</span><span class="ib-val blue">Oui — fonctionnalité différenciante</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Moyenne — extension M03 existant</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- MODULE M14 — ENTRETIEN BÂTIMENT -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="module-card m-entretien">
+  <div class="module-header">
+    <div class="module-icon">🔧</div>
+    <div class="module-info">
+      <div class="module-name">M14 — Entretien & Maintenance du Bâtiment</div>
+      <div class="module-sub">Interventions · Prestataires · Contrats entretien · Suivi travaux</div>
+    </div>
+    <div class="module-tags">
+      <span class="badge b-priority-mid">Priorité moyenne</span>
+      <span class="badge b-phase3">Phase 3</span>
+    </div>
+  </div>
+  <div class="module-body">
+    <div>
+      <div class="sub-title">Fonctionnalités requises</div>
+      <ul class="feat-list">
+        <li><span class="fi">🏫</span><strong>Registre des locaux</strong> — liste des salles, surfaces, état général (bon/dégradé/à rénover)</li>
+        <li><span class="fi">🔨</span><strong>Tickets d'intervention</strong> — signalement d'une panne ou dégradation (fuite, vitre cassée, climatisation HS)</li>
+        <li><span class="fi">👷</span><strong>Prestataires</strong> — plombier, électricien, peintre, entreprise de nettoyage — coordonnées + historique</li>
+        <li><span class="fi">📅</span><strong>Planification entretien préventif</strong> — nettoyage mensuel, peinture annuelle, contrôle électrique tous les 3 ans</li>
+        <li><span class="fi">💰</span><strong>Coûts d'entretien</strong> — chaque intervention liée à une dépense dans M13</li>
+        <li><span class="fi">📸</span><strong>Photos avant/après</strong> — documenter l'état avant et après intervention</li>
+        <li><span class="fi">📊</span><strong>Rapport annuel bâtiment</strong> — coût total entretien par local, état des installations</li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub-title">Schéma de données</div>
+      <div class="sql-block">
+<span class="kw">TABLE</span> interventions<br>
+──────────────────────────<br>
+id           <span class="typ">UUID</span><br>
+tenant_id    <span class="typ">UUID</span><br>
+salle_id     <span class="typ">UUID FK</span><br>
+type         <span class="typ">ENUM</span>(panne,dégradation,<br>
+             entretien_préventif)<br>
+description  <span class="typ">TEXT</span><br>
+priorite     <span class="typ">ENUM</span>(urgent,normal,faible)<br>
+statut       <span class="typ">ENUM</span>(signalé,en_cours,résolu)<br>
+prestataire  <span class="typ">VARCHAR</span><br>
+cout         <span class="typ">DECIMAL</span><br>
+date_signalee <span class="typ">DATE</span><br>
+date_resolue  <span class="typ">DATE</span><br>
+photos       <span class="typ">JSONB</span> <span class="cmt">-- URLs avant/après</span>
+      </div>
+      <div class="sub-title" style="margin-top:14px;">Impact business</div>
+      <div class="impact-box">
+        <div class="ib-row"><span class="ib-key">Problème résolu</span><span class="ib-val green">Traçabilité des dépenses bâtiment</span></div>
+        <div class="ib-row"><span class="ib-key">Lien avec M13</span><span class="ib-val blue">Chaque intervention = une dépense</span></div>
+        <div class="ib-row"><span class="ib-key">Usage</span><span class="ib-val orange">Moins fréquent que les autres modules</span></div>
+        <div class="ib-row"><span class="ib-key">Complexité dev</span><span class="ib-val orange">Faible — CRUD simple</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- TABLEAU DE SYNTHÈSE -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="stitle">Tableau de synthèse — Roadmap modules manquants</div>
+<table class="summary-table">
+  <tr>
+    <th>Module</th>
+    <th>Priorité</th>
+    <th>Phase</th>
+    <th>Effort dev estimé</th>
+    <th>Impact revenu</th>
+    <th>Différenciateur DZ</th>
+    <th>Lien modules existants</th>
+  </tr>
+  <tr>
+    <td>🚌 M09 — Transport</td>
+    <td><span class="badge b-priority-high">Haute</span></td>
+    <td><span class="badge b-phase2">Phase 2</span></td>
+    <td>3 à 4 semaines</td>
+    <td>+500-3000 DA/élève</td>
+    <td>⭐ Unique en DZ</td>
+    <td>M03 Finances, M06 Notif</td>
+  </tr>
+  <tr>
+    <td>🍽️ M10 — Restauration</td>
+    <td><span class="badge b-priority-high">Haute</span></td>
+    <td><span class="badge b-phase2">Phase 2</span></td>
+    <td>3 à 4 semaines</td>
+    <td>+800-2000 DA/élève</td>
+    <td>⭐ Unique en DZ</td>
+    <td>M03 Finances, M07 Reporting</td>
+  </tr>
+  <tr>
+    <td>👷 M12 — Personnel non-enseignant</td>
+    <td><span class="badge b-priority-high">Haute</span></td>
+    <td><span class="badge b-phase2">Phase 2</span></td>
+    <td>1 à 2 semaines</td>
+    <td>Rétention client</td>
+    <td>Partiel chez ASM</td>
+    <td>M05 Personnel existant</td>
+  </tr>
+  <tr>
+    <td>📊 M13 — Budget annuel</td>
+    <td><span class="badge b-priority-high">Haute</span></td>
+    <td><span class="badge b-phase2">Phase 2</span></td>
+    <td>2 à 3 semaines</td>
+    <td>Justifie plan Premium</td>
+    <td>Partiel chez AlgeriaSchool</td>
+    <td>M03 Finances existant</td>
+  </tr>
+  <tr>
+    <td>📦 M11 — Stock & Inventaire</td>
+    <td><span class="badge b-priority-mid">Moyenne</span></td>
+    <td><span class="badge b-phase2">Phase 2</span></td>
+    <td>2 semaines</td>
+    <td>Indirectement (perte évitée)</td>
+    <td>Absent chez tous</td>
+    <td>M13 Budget (dépenses achat)</td>
+  </tr>
+  <tr>
+    <td>🔧 M14 — Entretien bâtiment</td>
+    <td><span class="badge b-priority-mid">Moyenne</span></td>
+    <td><span class="badge b-phase3">Phase 3</span></td>
+    <td>1 à 2 semaines</td>
+    <td>Indirectement</td>
+    <td>Absent chez tous</td>
+    <td>M13 Budget (dépenses entretien)</td>
+  </tr>
+</table>
+
+<div class="warn">
+  <strong>⚠️ Avertissement important :</strong> Ces 6 modules sont réels et validés par ton enquête terrain. Mais ne les développe pas tous en même temps. L'ordre recommandé est strict :<br><br>
+  <strong>1.</strong> Finir et stabiliser les 8 modules core existants → CI vert → 1 pilote<br>
+  <strong>2.</strong> M12 Personnel non-enseignant (extension rapide de M05 existant — 1-2 semaines)<br>
+  <strong>3.</strong> M13 Budget annuel (extension de M03 existant — 2-3 semaines)<br>
+  <strong>4.</strong> M09 Transport (nouveau module — 3-4 semaines)<br>
+  <strong>5.</strong> M10 Restauration (nouveau module — 3-4 semaines)<br>
+  <strong>6.</strong> M11 Stock & M14 Entretien (en parallèle ou séquentiellement)<br><br>
+  <strong>Au total : environ 16 à 20 semaines de développement supplémentaire pour un ERP scolaire complet — le premier en Algérie.</strong>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Architecture Finale & Avancement</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0a0d14;
+  color: #e2e8f0;
+  padding: 28px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 32px; }
+.header h1 { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+.header .sub { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.header-stats { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hstat {
+  background: #131720; border: 1px solid #1e293b;
+  border-radius: 10px; padding: 12px 20px; text-align: center;
+}
+.hstat .val { font-size: 26px; font-weight: 900; display: block; }
+.hstat .lbl { font-size: 10px; color: #64748b; display: block; margin-top: 2px; }
+
+/* ── PROGRESS BAR ── */
+.progress-section { margin-bottom: 32px; }
+.prog-title { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;
+  letter-spacing: 1.5px; margin-bottom: 12px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
+.prog-bar-wrap { background: #1e293b; border-radius: 999px; height: 10px; margin-bottom: 6px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 999px; transition: width 0.3s; }
+.prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.prog-label { font-size: 11px; width: 200px; flex-shrink: 0; color: #94a3b8; }
+.prog-pct { font-size: 11px; font-weight: 700; width: 36px; text-align: right; }
+
+/* ── MODULE GRID ── */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+/* ── MODULE CARD ── */
+.mod {
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  overflow: hidden;
+  position: relative;
+}
+.mod-header {
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.mod-icon { font-size: 22px; flex-shrink: 0; }
+.mod-info { flex: 1; min-width: 0; }
+.mod-code { font-size: 9px; font-weight: 700; color: #475569; letter-spacing: 1px; }
+.mod-name { font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mod-status { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; }
+
+.mod-body { padding: 10px 14px 12px; }
+.mod-pct { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+.mod-bar-wrap { background: #1e293b; border-radius: 999px; height: 5px; margin-bottom: 8px; overflow: hidden; }
+.mod-bar { height: 100%; border-radius: 999px; }
+.mod-items { font-size: 10px; color: #64748b; line-height: 1.8; }
+.mod-items .ok   { color: #4ade80; }
+.mod-items .par  { color: #fb923c; }
+.mod-items .miss { color: #f87171; }
+
+.phase-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 9px; font-weight: 700; padding: 1px 6px;
+  border-radius: 20px;
+}
+
+/* Status colors */
+.s-done   { background: #14532d; color: #4ade80; }
+.s-partial { background: #422006; color: #fb923c; }
+.s-todo   { background: #450a0a; color: #f87171; }
+.s-planned { background: #0c2a4a; color: #60a5fa; }
+
+/* Module header backgrounds */
+.h-done    { background: #0d2515; border-bottom: 1px solid #1a4d2a; }
+.h-done .mod-name { color: #4ade80; }
+.h-partial { background: #1f1008; border-bottom: 1px solid #7c2d12; }
+.h-partial .mod-name { color: #fb923c; }
+.h-todo    { background: #1a0808; border-bottom: 1px solid #7f1d1d; }
+.h-todo .mod-name { color: #f87171; }
+.h-planned { background: #091220; border-bottom: 1px solid #1e3a5f; }
+.h-planned .mod-name { color: #60a5fa; }
+
+/* Phase badges */
+.p1 { background: #14532d; color: #86efac; }
+.p2 { background: #1e3a5f; color: #93c5fd; }
+.p3 { background: #4c1d95; color: #d8b4fe; }
+
+/* ── SECTION TITLE ── */
+.stitle {
+  font-size: 12px; font-weight: 700; color: #60a5fa;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  border-bottom: 1px solid #1e293b; padding-bottom: 7px;
+  margin: 28px 0 14px;
+}
+
+/* ── ROADMAP TABLE ── */
+.road { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 28px; }
+.road th { background: #1e293b; color: #64748b; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; padding: 9px 12px; text-align: left; }
+.road td { padding: 9px 12px; border-bottom: 1px solid #131a25; vertical-align: middle; }
+.road tr:hover td { background: #0f1520; }
+.road .week { font-size: 10px; color: #475569; }
+
+/* ── INFRA GRID ── */
+.infra-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+.infra-box {
+  background: #131720; border: 1px solid #1e293b;
+  border-radius: 8px; padding: 12px; text-align: center;
+}
+.infra-box .ib-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+.infra-box .ib-name { font-size: 11px; font-weight: 700; display: block; margin-bottom: 2px; }
+.infra-box .ib-tech { font-size: 9px; color: #64748b; display: block; }
+.infra-box .ib-status { font-size: 9px; font-weight: 700; margin-top: 6px; display: block; }
+
+/* ── LEGEND ── */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #64748b; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── CRITICAL PATH ── */
+.critical {
+  background: #0a1628; border: 2px solid #3b82f6;
+  border-radius: 10px; padding: 16px 20px; margin-bottom: 28px;
+}
+.critical .ct { font-size: 13px; font-weight: 800; color: #60a5fa; margin-bottom: 12px; }
+.critical-steps { display: flex; align-items: center; gap: 0; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.cstep {
+  background: #131720; border: 1px solid #1e293b;
+  border-radius: 8px; padding: 8px 12px; text-align: center;
+  font-size: 10px;
+}
+.cstep .cs-num { font-size: 16px; font-weight: 900; display: block; margin-bottom: 2px; }
+.cstep .cs-lbl { color: #94a3b8; display: block; }
+.carrow { font-size: 16px; color: #1e3a5f; font-weight: 900; }
+
+.summary-box {
+  background: #0f1117; border: 1px solid #1e293b;
+  border-radius: 10px; padding: 16px 20px;
+  font-size: 12px; line-height: 1.9; color: #94a3b8;
+}
+.summary-box strong { color: #60a5fa; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<div class="header">
+  <h1>🎓 EduGest DZ — Architecture & Avancement</h1>
+  <div class="sub">État réel basé sur le code GitHub · 29 Juin 2026</div>
+  <div class="header-stats">
+    <div class="hstat"><span class="val" style="color:#4ade80;">8</span><span class="lbl">Modules existants</span></div>
+    <div class="hstat"><span class="val" style="color:#fb923c;">6</span><span class="lbl">Modules partiels/à compléter</span></div>
+    <div class="hstat"><span class="val" style="color:#f87171;">8</span><span class="lbl">Modules à créer</span></div>
+    <div class="hstat"><span class="val" style="color:#c084fc;">38%</span><span class="lbl">Avancement global</span></div>
+    <div class="hstat"><span class="val" style="color:#fbbf24;">~30</span><span class="lbl">Semaines restantes</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════ LÉGENDE ══════════════════ -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div> Existant dans le code</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div> Partiel — à compléter</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div> À créer de zéro</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60a5fa;"></div> Planifié Phase 2/3</div>
+</div>
+
+<!-- ══════════════════ PROGRESS GLOBAL ══════════════════ -->
+<div class="progress-section">
+  <div class="prog-title">Avancement par domaine</div>
+
+  <div class="prog-row">
+    <div class="prog-label">🔐 Auth & Sécurité</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:90%;background:#4ade80;"></div></div>
+    <div class="prog-pct" style="color:#4ade80;">90%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">👦 Inscriptions & Élèves</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:75%;background:#4ade80;"></div></div>
+    <div class="prog-pct" style="color:#4ade80;">75%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">📅 Planning & Séances</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:70%;background:#4ade80;"></div></div>
+    <div class="prog-pct" style="color:#4ade80;">70%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">💰 Finance & Paiements</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:65%;background:#fb923c;"></div></div>
+    <div class="prog-pct" style="color:#fb923c;">65%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">📚 Pédagogie & Curriculum</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:55%;background:#fb923c;"></div></div>
+    <div class="prog-pct" style="color:#fb923c;">55%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">👷 Personnel (enseignants)</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:60%;background:#fb923c;"></div></div>
+    <div class="prog-pct" style="color:#fb923c;">60%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">✅ Présences & Pointage</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:25%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">25%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">🚌 Transport</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">0%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">🍽️ Restauration/Cantine</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">0%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">📦 Stock & Inventaire</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">0%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">📊 Budget Annuel</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:20%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">20%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">🔧 Entretien Bâtiment</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div>
+    <div class="prog-pct" style="color:#f87171;">0%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">🛒 Marketplace & Matching</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:40%;background:#60a5fa;"></div></div>
+    <div class="prog-pct" style="color:#60a5fa;">40%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">📱 Application Mobile</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:35%;background:#fb923c;"></div></div>
+    <div class="prog-pct" style="color:#fb923c;">35%</div>
+  </div>
+  <div class="prog-row">
+    <div class="prog-label">⚙️ CI / DevOps</div>
+    <div class="prog-bar-wrap" style="flex:1"><div class="prog-bar" style="width:70%;background:#fb923c;"></div></div>
+    <div class="prog-pct" style="color:#fb923c;">70%</div>
+  </div>
+</div>
+
+<!-- ══════════════════ MODULES GRILLE ══════════════════ -->
+<div class="stitle">Tous les modules — État détaillé</div>
+<div class="module-grid">
+
+  <!-- M01 Inscriptions -->
+  <div class="mod">
+    <div class="mod-header h-done">
+      <div class="mod-icon">📋</div>
+      <div class="mod-info">
+        <div class="mod-code">M01</div>
+        <div class="mod-name">Inscriptions & Élèves</div>
+      </div>
+      <span class="mod-status s-done">EXISTANT</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80;">75%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:75%;background:#4ade80;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dossier élève complet + UUID</span><br>
+        <span class="ok">✓ Import/Export CSV</span><br>
+        <span class="ok">✓ Photo upload</span><br>
+        <span class="ok">✓ Gestion parents (BelongsToMany)</span><br>
+        <span class="par">⚠ parentPrincipal() → corrigé en parentsPrincipaux()</span><br>
+        <span class="miss">✗ Curriculum DZ lié (niveaux/branches)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M02 Planning -->
+  <div class="mod">
+    <div class="mod-header h-done">
+      <div class="mod-icon">📅</div>
+      <div class="mod-info">
+        <div class="mod-code">M02</div>
+        <div class="mod-name">Planning & Séances</div>
+      </div>
+      <span class="mod-status s-done">EXISTANT</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80;">70%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:70%;background:#4ade80;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Emploi du temps + règles de conflit</span><br>
+        <span class="ok">✓ Gestion salles & groupes</span><br>
+        <span class="ok">✓ Séances : démarrer/terminer/annuler/reporter</span><br>
+        <span class="ok">✓ Calendrier scolaire algérien (migration)</span><br>
+        <span class="miss">✗ Export iCal/PDF planning</span><br>
+        <span class="miss">✗ Remplacement prof absent automatique</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M03 Finance -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">💰</div>
+      <div class="mod-info">
+        <div class="mod-code">M03</div>
+        <div class="mod-name">Finance & Paiements</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">65%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:65%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Caisse, paiements cash</span><br>
+        <span class="ok">✓ Facturation automatique</span><br>
+        <span class="ok">✓ Cycle de relances impayés J+1/3/7/15</span><br>
+        <span class="ok">✓ Reçu PDF</span><br>
+        <span class="par">⚠ Paiement CIB/Dahabia → Service créé, Satim sandbox non confirmé</span><br>
+        <span class="miss">✗ Budget annuel prévisionnel (→ M13)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M04 Pédagogie -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">📚</div>
+      <div class="mod-info">
+        <div class="mod-code">M04</div>
+        <div class="mod-name">Pédagogie & Curriculum</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">55%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:55%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Saisie notes + coefficients</span><br>
+        <span class="ok">✓ Moyenne pondérée automatique</span><br>
+        <span class="ok">✓ Bulletins PDF</span><br>
+        <span class="miss">✗ Curriculum DZ (1AP→3AS) → seeder SQL livré, à intégrer</span><br>
+        <span class="miss">✗ Matières liées aux branches BAC</span><br>
+        <span class="miss">✗ Calcul BEM / BAC officiel par filière</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M05 Personnel enseignants -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">👨‍🏫</div>
+      <div class="mod-info">
+        <div class="mod-code">M05</div>
+        <div class="mod-name">Personnel Enseignants</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">60%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:60%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dossier enseignant + contrats</span><br>
+        <span class="ok">✓ Calcul paie IRG/CNAS</span><br>
+        <span class="ok">✓ Bulletin de paie PDF</span><br>
+        <span class="miss">✗ Pointage enseignants (→ P2)</span><br>
+        <span class="miss">✗ Absences profs + impact paie auto</span><br>
+        <span class="miss">✗ Demandes de congé workflow</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M06 Communication -->
+  <div class="mod">
+    <div class="mod-header h-done">
+      <div class="mod-icon">💬</div>
+      <div class="mod-info">
+        <div class="mod-code">M06</div>
+        <div class="mod-name">Communication</div>
+      </div>
+      <span class="mod-status s-done">EXISTANT</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80;">80%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:80%;background:#4ade80;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Push Firebase FCM</span><br>
+        <span class="ok">✓ SMS Twilio</span><br>
+        <span class="ok">✓ WhatsApp Webhook</span><br>
+        <span class="ok">✓ Chat parent↔prof</span><br>
+        <span class="ok">✓ Campagnes ciblées</span><br>
+        <span class="miss">✗ SMS absent automatique matin (→ P1)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M07 Reporting -->
+  <div class="mod">
+    <div class="mod-header h-done">
+      <div class="mod-icon">📊</div>
+      <div class="mod-info">
+        <div class="mod-code">M07</div>
+        <div class="mod-name">Reporting & Dashboards</div>
+      </div>
+      <span class="mod-status s-done">EXISTANT</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80;">70%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:70%;background:#4ade80;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dashboard Admin/Prof/Parent</span><br>
+        <span class="ok">✓ Export Excel/PDF</span><br>
+        <span class="ok">✓ Audit logs (spatie/activitylog)</span><br>
+        <span class="miss">✗ Dashboard absences temps réel</span><br>
+        <span class="miss">✗ Rapport mensuel absences PDF</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M08 Admin & Multi-tenant -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">🔐</div>
+      <div class="mod-info">
+        <div class="mod-code">M08</div>
+        <div class="mod-name">Auth · RBAC · Multi-tenant</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80;">85%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:85%;background:#4ade80;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ JWT + 2FA TOTP</span><br>
+        <span class="ok">✓ RBAC spatie/permission</span><br>
+        <span class="ok">✓ Middleware ResolveTenant</span><br>
+        <span class="ok">✓ Super-Admin routes</span><br>
+        <span class="par">⚠ BelongsToTenant fail-safe → corrigé (patch livré)</span><br>
+        <span class="miss">✗ Tests isolation tenant → à intégrer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M09 Transport -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">🚌</div>
+      <div class="mod-info">
+        <div class="mod-code">M09</div>
+        <div class="mod-name">Transport Scolaire</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Circuits & arrêts de bus</span><br>
+        <span class="miss">✗ Dossier chauffeur</span><br>
+        <span class="miss">✗ Affectation élèves/circuit</span><br>
+        <span class="miss">✗ Facturation transport mensuelle</span><br>
+        <span class="miss">✗ SMS parent "bus parti / arrivé"</span><br>
+        <span class="miss">✗ Maintenance véhicule (alertes)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M10 Restauration -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">🍽️</div>
+      <div class="mod-info">
+        <div class="mod-code">M10</div>
+        <div class="mod-name">Restauration / Cantine</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Planning menus hebdomadaire</span><br>
+        <span class="miss">✗ Inscription cantine par élève</span><br>
+        <span class="miss">✗ Régimes alimentaires / allergies</span><br>
+        <span class="miss">✗ Comptage repas journalier</span><br>
+        <span class="miss">✗ Facturation cantine intégrée</span><br>
+        <span class="miss">✗ Menu visible app parent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M11 Stock -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">📦</div>
+      <div class="mod-info">
+        <div class="mod-code">M11</div>
+        <div class="mod-name">Stock & Inventaire</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Inventaire mobilier (chaises, tables, tableaux)</span><br>
+        <span class="miss">✗ Stock fournitures avec seuil bas</span><br>
+        <span class="miss">✗ QR code étiquetage biens</span><br>
+        <span class="miss">✗ Bons de commande fournisseurs</span><br>
+        <span class="miss">✗ Rapport inventaire annuel PDF</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M12 Personnel non-enseignant -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">👷</div>
+      <div class="mod-info">
+        <div class="mod-code">M12</div>
+        <div class="mod-name">Personnel Non-Enseignant</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Dossier : femme ménage / surveillant / chauffeur</span><br>
+        <span class="miss">✗ Pointage entrée/sortie (badge/manuel)</span><br>
+        <span class="miss">✗ Planning de service par zone</span><br>
+        <span class="miss">✗ Congés & permissions workflow</span><br>
+        <span class="miss">✗ Fiche de paie mensuelle</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M13 Budget -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">📈</div>
+      <div class="mod-info">
+        <div class="mod-code">M13</div>
+        <div class="mod-name">Budget Annuel & Comptabilité</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">20%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:20%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Recettes (via M03 Finance)</span><br>
+        <span class="miss">✗ Budget prévisionnel annuel par poste</span><br>
+        <span class="miss">✗ Suivi dépenses (loyer, fournitures, entretien)</span><br>
+        <span class="miss">✗ Dashboard réalisé vs prévu</span><br>
+        <span class="miss">✗ Bilan annuel PDF + taxes DZ (IBS/TAP)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M14 Entretien -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">🔧</div>
+      <div class="mod-info">
+        <div class="mod-code">M14</div>
+        <div class="mod-name">Entretien Bâtiment</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p3">Phase 3</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Registre des locaux + état</span><br>
+        <span class="miss">✗ Tickets d'intervention (panne/dégradation)</span><br>
+        <span class="miss">✗ Prestataires (plombier, électricien)</span><br>
+        <span class="miss">✗ Entretien préventif planifié</span><br>
+        <span class="miss">✗ Coûts liés à M13</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- P1 Absences élèves -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">✅</div>
+      <div class="mod-info">
+        <div class="mod-code">P1</div>
+        <div class="mod-name">Absences Élèves (Complet)</div>
+      </div>
+      <span class="mod-status s-partial">PARTIEL</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">30%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:30%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Pointage par séance (QR code)</span><br>
+        <span class="ok">✓ Statuts présent/absent/retard/excusé</span><br>
+        <span class="miss">✗ Absences journalières (entrée école)</span><br>
+        <span class="miss">✗ SMS parent auto à 8h si absent</span><br>
+        <span class="miss">✗ Justificatifs + workflow validation</span><br>
+        <span class="miss">✗ Compteur cumulé + seuils d'alerte</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2 Pointage profs -->
+  <div class="mod">
+    <div class="mod-header h-todo">
+      <div class="mod-icon">🏷️</div>
+      <div class="mod-info">
+        <div class="mod-code">P2</div>
+        <div class="mod-name">Pointage Profs & Badge RFID</div>
+      </div>
+      <span class="mod-status s-todo">À CRÉER</span>
+    </div>
+    <span class="phase-badge p2">Phase 2</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#f87171;">0%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:0%;background:#f87171;"></div></div>
+      <div class="mod-items">
+        <span class="miss">✗ Pointage arrivée/départ enseignants</span><br>
+        <span class="miss">✗ Absences profs → notif élèves/parents</span><br>
+        <span class="miss">✗ Route API badge RFID/NFC</span><br>
+        <span class="miss">✗ Table badges (badge_uid → personne)</span><br>
+        <span class="miss">✗ Impact paie automatique si absent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Curriculum DZ -->
+  <div class="mod">
+    <div class="mod-header h-partial">
+      <div class="mod-icon">🎓</div>
+      <div class="mod-info">
+        <div class="mod-code">CUR</div>
+        <div class="mod-name">Curriculum Algérien DZ</div>
+      </div>
+      <span class="mod-status s-partial">LIVRÉ</span>
+    </div>
+    <span class="phase-badge p1">Phase 1</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c;">50%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:50%;background:#fb923c;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Seeder SQL 1AP→3AS livré (7 branches)</span><br>
+        <span class="ok">✓ Tous coefficients BAC 2026 ONEC</span><br>
+        <span class="ok">✓ Matières AR/FR bilingues</span><br>
+        <span class="miss">✗ Migration Laravel à créer</span><br>
+        <span class="miss">✗ Lier matières aux évaluations/notes</span><br>
+        <span class="miss">✗ Calcul moyen BEM/BAC par filière</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marketplace -->
+  <div class="mod">
+    <div class="mod-header h-planned">
+      <div class="mod-icon">🛒</div>
+      <div class="mod-info">
+        <div class="mod-code">MKT</div>
+        <div class="mod-name">Marketplace & Matching IA</div>
+      </div>
+      <span class="mod-status s-planned">PLANIFIÉ</span>
+    </div>
+    <span class="phase-badge p3">Phase 3</span>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#60a5fa;">40%</div>
+      <div class="mod-bar-wrap"><div class="mod-bar" style="width:40%;background:#60a5fa;"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ OffrePublique model + controller</span><br>
+        <span class="ok">✓ Avis/Notation enseignants</span><br>
+        <span class="ok">✓ MatchingService (score algorithme)</span><br>
+        <span class="miss">✗ Réservations + paiement en ligne</span><br>
+        <span class="miss">✗ Interface publique (hors auth)</span><br>
+        <span class="miss">✗ Nécessite 50+ centres actifs d'abord</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════ INFRASTRUCTURE ══════════════════ -->
+<div class="stitle">Infrastructure & DevOps</div>
+<div class="infra-grid">
+  <div class="infra-box">
+    <span class="ib-icon">🐳</span>
+    <span class="ib-name">Docker Compose</span>
+    <span class="ib-tech">9 services · réseau isolé</span>
+    <span class="ib-status" style="color:#4ade80;">✅ Opérationnel</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">⚙️</span>
+    <span class="ib-name">GitHub Actions CI</span>
+    <span class="ib-tech">PHP 8.2 · PG16 · Redis</span>
+    <span class="ib-status" style="color:#fb923c;">⚠ Corrigé (à pousser)</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🌿</span>
+    <span class="ib-name">Branches Git</span>
+    <span class="ib-tech">main + develop</span>
+    <span class="ib-status" style="color:#4ade80;">✅ develop créée</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🔒</span>
+    <span class="ib-name">Branch Protection</span>
+    <span class="ib-tech">main protégé</span>
+    <span class="ib-status" style="color:#f87171;">❌ À configurer</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🐘</span>
+    <span class="ib-name">PostgreSQL 16</span>
+    <span class="ib-tech">UUID · JSONB · ACID</span>
+    <span class="ib-status" style="color:#4ade80;">✅ OK</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🔴</span>
+    <span class="ib-name">Redis 7</span>
+    <span class="ib-tech">Cache · Queue · 256MB</span>
+    <span class="ib-status" style="color:#4ade80;">✅ OK</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🔍</span>
+    <span class="ib-name">Meilisearch v1.8</span>
+    <span class="ib-tech">Fulltext élèves/profs</span>
+    <span class="ib-status" style="color:#4ade80;">✅ Configuré</span>
+  </div>
+  <div class="infra-box">
+    <span class="ib-icon">🧪</span>
+    <span class="ib-name">Tests coverage</span>
+    <span class="ib-tech">Seuil 50% (→ 80%)</span>
+    <span class="ib-status" style="color:#fb923c;">⚠ Non bloquant</span>
+  </div>
+</div>
+
+<!-- ══════════════════ CHEMIN CRITIQUE ══════════════════ -->
+<div class="critical">
+  <div class="ct">🚦 Chemin critique — Ce qui débloque tout le reste</div>
+  <div class="critical-steps">
+    <div class="cstep">
+      <span class="cs-num" style="color:#f87171;">1</span>
+      <span class="cs-lbl">CI vert<br>sur develop</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#fb923c;">2</span>
+      <span class="cs-lbl">1 centre<br>pilote prod</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#fb923c;">3</span>
+      <span class="cs-lbl">SMS absent<br>auto matin</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#fb923c;">4</span>
+      <span class="cs-lbl">Curriculum DZ<br>intégré</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#60a5fa;">5</span>
+      <span class="cs-lbl">M12 Personnel<br>non-ens.</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#60a5fa;">6</span>
+      <span class="cs-lbl">M09 Transport<br>+ M10 Cantine</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#60a5fa;">7</span>
+      <span class="cs-lbl">Paiement<br>CIB/Dahabia</span>
+    </div>
+    <div class="carrow">→</div>
+    <div class="cstep">
+      <span class="cs-num" style="color:#c084fc;">8</span>
+      <span class="cs-lbl">Marketplace<br>50+ centres</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ROADMAP DÉTAILLÉE ══════════════════ -->
+<div class="stitle">Roadmap détaillée — Ce qui reste à faire</div>
+<table class="road">
+  <tr>
+    <th>#</th><th>Module</th><th>Tâche prioritaire</th><th>Effort</th><th>Phase</th><th>Bloque</th>
+  </tr>
+  <tr>
+    <td>1</td><td>⚙️ CI/DevOps</td>
+    <td>Pousser ci.yml corrigé + branch protection main</td>
+    <td class="week">1 jour</td>
+    <td><span style="color:#4ade80;font-weight:700;">MAINTENANT</span></td>
+    <td>Tout le reste</td>
+  </tr>
+  <tr>
+    <td>2</td><td>🔒 M08 Tenant</td>
+    <td>Intégrer TenantIsolationTest.php + patch BelongsToTenant</td>
+    <td class="week">1 jour</td>
+    <td><span style="color:#4ade80;font-weight:700;">MAINTENANT</span></td>
+    <td>Sécurité prod</td>
+  </tr>
+  <tr>
+    <td>3</td><td>📋 M01 Élèves</td>
+    <td>Lier élève aux niveaux/branches du curriculum DZ</td>
+    <td class="week">2 jours</td>
+    <td><span style="color:#4ade80;font-weight:700;">Phase 1</span></td>
+    <td>Bulletins corrects</td>
+  </tr>
+  <tr>
+    <td>4</td><td>🎓 Curriculum DZ</td>
+    <td>Créer migration + lancer seeder + lier aux évaluations</td>
+    <td class="week">3 jours</td>
+    <td><span style="color:#4ade80;font-weight:700;">Phase 1</span></td>
+    <td>M04 Pédagogie</td>
+  </tr>
+  <tr>
+    <td>5</td><td>✅ P1 Absences</td>
+    <td>Absences journalières élèves + SMS parent auto 8h</td>
+    <td class="week">3 jours</td>
+    <td><span style="color:#4ade80;font-weight:700;">Phase 1</span></td>
+    <td>Valeur pilote N°1</td>
+  </tr>
+  <tr>
+    <td>6</td><td>✅ P1 Absences</td>
+    <td>Workflow justificatifs + compteur cumulé + seuils alerte</td>
+    <td class="week">2 jours</td>
+    <td><span style="color:#4ade80;font-weight:700;">Phase 1</span></td>
+    <td>Exigence légale</td>
+  </tr>
+  <tr>
+    <td>7</td><td>👨‍🏫 M05 Profs</td>
+    <td>Pointage enseignants + absences + impact paie auto</td>
+    <td class="week">4 jours</td>
+    <td><span style="color:#4ade80;font-weight:700;">Phase 1</span></td>
+    <td>Gestion RH complète</td>
+  </tr>
+  <tr>
+    <td>8</td><td>💰 M03 Finance</td>
+    <td>Confirmer sandbox Satim + tester CIB/Dahabia</td>
+    <td class="week">Variable (admin)</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Différenciateur N°1</td>
+  </tr>
+  <tr>
+    <td>9</td><td>👷 M12 Personnel</td>
+    <td>Dossier + pointage + paie femmes ménage/surveillants/chauffeurs</td>
+    <td class="week">2 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>ERP scolaire complet</td>
+  </tr>
+  <tr>
+    <td>10</td><td>📈 M13 Budget</td>
+    <td>Prévisionnel annuel + dépenses + bilan PDF</td>
+    <td class="week">2 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Plan Premium</td>
+  </tr>
+  <tr>
+    <td>11</td><td>🏷️ P2 Badge RFID</td>
+    <td>Route API badge_uid + table badges + intégration lecteur</td>
+    <td class="week">2 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Option hardware</td>
+  </tr>
+  <tr>
+    <td>12</td><td>🚌 M09 Transport</td>
+    <td>Circuits + chauffeurs + SMS parent + facturation</td>
+    <td class="week">3-4 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Revenu additionnel</td>
+  </tr>
+  <tr>
+    <td>13</td><td>🍽️ M10 Cantine</td>
+    <td>Menus + inscriptions + régimes + facturation + stock</td>
+    <td class="week">3-4 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Usage quotidien</td>
+  </tr>
+  <tr>
+    <td>14</td><td>📦 M11 Stock</td>
+    <td>Inventaire mobilier + QR + alertes + bons commande</td>
+    <td class="week">2 semaines</td>
+    <td><span style="color:#60a5fa;font-weight:700;">Phase 2</span></td>
+    <td>Gestion patrimoine</td>
+  </tr>
+  <tr>
+    <td>15</td><td>🔧 M14 Entretien</td>
+    <td>Tickets + prestataires + coûts liés M13</td>
+    <td class="week">1-2 semaines</td>
+    <td><span style="color:#c084fc;font-weight:700;">Phase 3</span></td>
+    <td>ERP complet</td>
+  </tr>
+  <tr>
+    <td>16</td><td>🛒 Marketplace</td>
+    <td>Réservations + paiement + interface publique</td>
+    <td class="week">4-6 semaines</td>
+    <td><span style="color:#c084fc;font-weight:700;">Phase 3</span></td>
+    <td>Après 50 centres</td>
+  </tr>
+</table>
+
+<!-- ══════════════════ RÉSUMÉ ══════════════════ -->
+<div class="summary-box">
+  <strong>État au 29 juin 2026 — Résumé honnête</strong><br><br>
+  EduGest DZ a une <strong>base technique solide</strong> : architecture Docker propre, API Laravel versionnée, modèles Eloquent bien écrits, 2FA, multi-tenant, marketplace partielle, mobile React Native. C'est le travail de 2 semaines intense et c'est au-dessus de la moyenne des projets solo.<br><br>
+  <strong>Ce qui manque pour aller en production</strong> : le CI vert (corrigé, à pousser), 1 client pilote réel, les absences journalières avec SMS parent, le curriculum DZ intégré dans les bulletins. Ces 4 points sont faisables en <strong>2 semaines</strong>.<br><br>
+  <strong>Ce qui manque pour être un ERP scolaire complet</strong> : M09 Transport, M10 Cantine, M11 Stock, M12 Personnel non-enseignant, M13 Budget, M14 Entretien, Badge RFID. Soit environ <strong>20-25 semaines de développement supplémentaires</strong>.<br><br>
+  <strong>La vérité sur le N°1 en Algérie</strong> : aucun concurrent ne propose aujourd'hui Transport + Cantine + Stock + Badge + Paiement CIB dans un seul SaaS. Si EduGest DZ livre ces modules, il n'y a pas de concurrence directe. Mais cela ne vaut rien sans utilisateurs réels en production. <strong>1 centre pilote cette semaine prime sur tout le reste.</strong>
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a13569f33afb5715',t:'MTc4Mjc0MTE2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

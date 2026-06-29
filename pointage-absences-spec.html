@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Pointage & Absences : Diagnostic complet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 32px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 28px; }
+
+  /* ── STATUS BANNER ── */
+  .banner {
+    border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 28px; font-size: 12px; line-height: 1.8;
+  }
+  .banner-ok    { background: #0f2a1a; border: 1px solid #1a5c32; }
+  .banner-warn  { background: #1a130f; border: 1px solid #7a4a1a; }
+  .banner strong { font-size: 13px; display: block; margin-bottom: 6px; }
+  .banner-ok strong  { color: #4ade80; }
+  .banner-warn strong { color: #fb923c; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 32px; }
+  .stitle {
+    font-size: 12px; font-weight: 700; color: #60a5fa;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 7px; margin-bottom: 16px;
+  }
+
+  /* ── ÉTAT ACTUEL ── */
+  .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .status-card {
+    border-radius: 10px; border: 1px solid #1e293b;
+    background: #131720; padding: 16px;
+  }
+  .status-card .sc-title { font-weight: 700; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .status-card ul { list-style: none; font-size: 11px; color: #94a3b8; line-height: 2.1; }
+  .status-card ul li { display: flex; align-items: flex-start; gap: 8px; }
+  .ok   { color: #4ade80; font-weight: 700; }
+  .miss { color: #f87171; font-weight: 700; }
+  .warn-c { color: #fb923c; font-weight: 700; }
+
+  /* ── MODULE CARD ── */
+  .mod {
+    border-radius: 12px; border: 1px solid #1e293b;
+    margin-bottom: 20px; overflow: hidden;
+  }
+  .mod-header {
+    padding: 16px 20px; display: flex;
+    align-items: center; gap: 14px;
+  }
+  .mod-icon { font-size: 26px; flex-shrink: 0; }
+  .mod-name { font-size: 15px; font-weight: 800; }
+  .mod-sub  { font-size: 11px; margin-top: 2px; color: #64748b; }
+  .mod-tags { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .badge {
+    display: inline-block; padding: 2px 9px;
+    border-radius: 20px; font-size: 10px; font-weight: 700;
+  }
+  .b-exists  { background: #14532d; color: #4ade80; }
+  .b-partial { background: #422006; color: #fb923c; }
+  .b-missing { background: #450a0a; color: #f87171; }
+  .b-new     { background: #0c2a4a; color: #60a5fa; }
+  .b-hw      { background: #2e1065; color: #c084fc; }
+  .b-p1      { background: #14532d; color: #86efac; }
+  .b-p2      { background: #0c2a4a; color: #93c5fd; }
+
+  .mod-body { padding: 0 20px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+  /* Colors */
+  .m-eleve   { background: #0a1f0a; border-color: #1a4d2a; }
+  .m-eleve .mod-header { background: #0d2515; }
+  .m-eleve .mod-name   { color: #4ade80; }
+
+  .m-prof    { background: #0a1628; border-color: #1e3a5f; }
+  .m-prof .mod-header  { background: #091220; }
+  .m-prof .mod-name    { color: #60a5fa; }
+
+  .m-staff   { background: #1a1028; border-color: #4c1d95; }
+  .m-staff .mod-header { background: #150d22; }
+  .m-staff .mod-name   { color: #c084fc; }
+
+  .m-badge   { background: #1a1a0a; border-color: #713f12; }
+  .m-badge .mod-header { background: #151508; }
+  .m-badge .mod-name   { color: #fbbf24; }
+
+  .m-report  { background: #0f1a1a; border-color: #134e4a; }
+  .m-report .mod-header { background: #0b1515; }
+  .m-report .mod-name  { color: #2dd4bf; }
+
+  /* Sub-section */
+  .sub { font-size: 10px; font-weight: 700; text-transform: uppercase;
+         letter-spacing: 1.5px; color: #475569;
+         margin-bottom: 8px; padding-bottom: 4px;
+         border-bottom: 1px solid #1e293b; }
+
+  /* Feature list */
+  .flist { list-style: none; }
+  .flist li {
+    font-size: 11px; color: #94a3b8;
+    padding: 5px 0; border-bottom: 1px solid #0f1a25;
+    display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
+  }
+  .flist li:last-child { border-bottom: none; }
+  .flist li .fi { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+  .flist li strong { color: #e2e8f0; }
+  .flist li .tag-ok   { color: #4ade80; font-size: 10px; }
+  .flist li .tag-miss { color: #f87171; font-size: 10px; }
+  .flist li .tag-par  { color: #fb923c; font-size: 10px; }
+
+  /* SQL */
+  .sql {
+    background: #0a0f1a; border: 1px solid #1e2d3d;
+    border-radius: 6px; padding: 12px 14px;
+    font-family: 'Consolas', monospace;
+    font-size: 10px; color: #7dd3fc;
+    line-height: 1.8; overflow-x: auto;
+  }
+  .sql .kw  { color: #a78bfa; }
+  .sql .typ { color: #34d399; }
+  .sql .cmt { color: #475569; font-style: italic; }
+  .sql .str { color: #fbbf24; }
+
+  /* Hardware box */
+  .hw-box {
+    background: #1a1a0a; border: 1px solid #713f12;
+    border-radius: 8px; padding: 14px;
+    font-size: 11px; margin-top: 10px;
+  }
+  .hw-box .hw-title { color: #fbbf24; font-weight: 700; margin-bottom: 8px; }
+  .hw-box ul { list-style: none; color: #94a3b8; line-height: 2; }
+  .hw-box ul li::before { content: '→ '; color: #fbbf24; }
+
+  /* Architecture diagram */
+  .arch-box {
+    background: #0a1628; border: 1px solid #1e3a5f;
+    border-radius: 10px; padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .arch-row {
+    display: flex; align-items: center;
+    gap: 0; justify-content: center;
+    flex-wrap: wrap; gap: 6px; margin: 10px 0;
+  }
+  .arch-node {
+    background: #131720; border: 1px solid #1e293b;
+    border-radius: 8px; padding: 10px 14px;
+    text-align: center; font-size: 11px;
+  }
+  .arch-node .an-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+  .arch-node .an-name { font-weight: 700; display: block; }
+  .arch-node .an-tech { font-size: 9px; color: #64748b; display: block; margin-top: 2px; }
+  .arch-arrow { font-size: 18px; color: #334155; font-weight: 700; }
+
+  /* Impact table */
+  .imp { width: 100%; font-size: 11px; border-collapse: collapse; }
+  .imp th { background: #1e293b; color: #64748b; font-size: 10px; text-transform: uppercase; padding: 8px 10px; text-align: left; }
+  .imp td { padding: 8px 10px; border-bottom: 1px solid #1a2232; }
+  .imp tr:hover td { background: #131a25; }
+
+  /* Warning */
+  .warn-box {
+    background: #1a0f0f; border: 1px solid #7f1d1d;
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #fca5a5; line-height: 1.7;
+    margin-top: 24px;
+  }
+  .warn-box strong { color: #f87171; }
+</style>
+</head>
+<body>
+
+<h1>🎯 EduGest DZ — Pointage & Absences : Diagnostic complet</h1>
+<div class="meta">Basé sur lecture du code réel · Juin 2026</div>
+
+<!-- ══════════ CE QUI EXISTE DÉJÀ ══════════ -->
+<div class="banner banner-ok">
+  <strong>✅ Ce qui existe déjà dans le code (vérifié)</strong>
+  • Pointage élèves par QR code → <code>PresenceQRController.php</code> — fonctionnel, avec détection retard automatique (>10 min)<br>
+  • Présences élèves par séance → table <code>presences</code> (présent/absent/retard/excusé)<br>
+  • Routes API : <code>POST /presences/scan</code> et <code>GET /eleves/{id}/qrcode</code><br>
+  • Modèle <code>Presence</code> lié à <code>Seance</code> et <code>Eleve</code>
+</div>
+
+<div class="banner banner-warn">
+  <strong>⚠️ Ce qui manque — identifié par l'analyse du code + ton enquête terrain</strong>
+  • Aucune table de pointage pour les <strong>enseignants</strong> — 0 ligne de code<br>
+  • Aucune table de pointage pour le <strong>personnel non-enseignant</strong> (surveillants, femmes de ménage, chauffeurs)<br>
+  • Le QR code élève existe mais <strong>pas de lecture par badge RFID/NFC</strong><br>
+  • Absences élèves liées aux séances uniquement — <strong>pas de gestion des absences journalières</strong> (entrée/sortie de l'établissement)<br>
+  • <strong>Pas de notification parent automatique</strong> quand un élève est absent le matin<br>
+  • <strong>Pas de justification d'absence</strong> avec workflow : signalement → validation admin → archivage<br>
+  • <strong>Pas de rapport d'absences cumulées</strong> avec seuils d'alerte (ex : 3 absences non justifiées → convocation)
+</div>
+
+<!-- ══════════ MODULE P1 : ABSENCES ÉLÈVES ══════════ -->
+<div class="section">
+  <div class="stitle">Module P1 — Absences élèves : compléter l'existant</div>
+
+  <div class="mod m-eleve">
+    <div class="mod-header">
+      <div class="mod-icon">👦</div>
+      <div>
+        <div class="mod-name">Gestion complète des absences élèves</div>
+        <div class="mod-sub">Extension de l'existant · Journalier + Par séance + Justificatifs + Alertes</div>
+      </div>
+      <div class="mod-tags">
+        <span class="badge b-partial">Partiel dans le code</span>
+        <span class="badge b-p1">Phase 1 — Priorité max</span>
+      </div>
+    </div>
+    <div class="mod-body">
+      <div>
+        <div class="sub">Ce qui manque concrètement</div>
+        <ul class="flist">
+          <li>
+            <span class="fi">✅</span>
+            <div><strong>Pointage par séance</strong> — présent/absent/retard/excusé <span class="tag-ok">EXISTE</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>Pointage journalier entrée établissement</strong> — élève arrivé/non arrivé à l'école ce matin <span class="tag-miss">MANQUE</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>SMS parent automatique</strong> si absent non signalé avant 9h <span class="tag-miss">MANQUE</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>Workflow justificatif</strong> — parent soumet justif → admin valide → archivé <span class="tag-miss">MANQUE</span></div>
+          </li>
+          <li>
+            <span class="fi">⚠️</span>
+            <div><strong>Compteur absences cumulées</strong> — total par trimestre, par élève <span class="tag-par">PARTIEL</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>Seuils d'alerte automatiques</strong> — 3 absences → alerte admin, 5 → convocation parent <span class="tag-miss">MANQUE</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>Demande d'absence préalable</strong> — parent signale que l'enfant sera absent demain <span class="tag-miss">MANQUE</span></div>
+          </li>
+          <li>
+            <span class="fi">❌</span>
+            <div><strong>Rapport mensuel absences</strong> — par élève, par classe, export PDF <span class="tag-miss">MANQUE</span></div>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <div class="sub">Nouvelles tables SQL à créer</div>
+        <div class="sql">
+<span class="kw">TABLE</span> absences_journalieres<br>
+────────────────────────────<br>
+id           <span class="typ">UUID PK</span><br>
+tenant_id    <span class="typ">UUID</span><br>
+eleve_id     <span class="typ">UUID FK</span><br>
+date_absence <span class="typ">DATE</span><br>
+statut       <span class="typ">ENUM</span>(<span class="str">'absent','présent',<br>
+             'retard','demi-journée'</span>)<br>
+heure_arrivee <span class="typ">TIME</span> <span class="cmt">-- si retard</span><br>
+signale_par  <span class="typ">ENUM</span>(<span class="str">'admin','parent','badge'</span>)<br>
+sms_envoye   <span class="typ">BOOLEAN</span> <span class="cmt">-- notif parent</span><br>
+<br>
+<span class="kw">TABLE</span> justificatifs_absence<br>
+────────────────────────────<br>
+id           <span class="typ">UUID PK</span><br>
+tenant_id    <span class="typ">UUID</span><br>
+eleve_id     <span class="typ">UUID FK</span><br>
+absence_id   <span class="typ">UUID FK</span><br>
+motif        <span class="typ">TEXT</span><br>
+document_url <span class="typ">VARCHAR</span> <span class="cmt">-- scan certificat</span><br>
+statut       <span class="typ">ENUM</span>(<span class="str">'en_attente',<br>
+             'validé','refusé'</span>)<br>
+valide_par   <span class="typ">UUID FK</span> <span class="cmt">-- admin</span><br>
+date_soumis  <span class="typ">TIMESTAMP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODULE P2 : ABSENCES PROFS ══════════ -->
+<div class="section">
+  <div class="stitle">Module P2 — Pointage & Absences enseignants : à créer de zéro</div>
+
+  <div class="mod m-prof">
+    <div class="mod-header">
+      <div class="mod-icon">👨‍🏫</div>
+      <div>
+        <div class="mod-name">Pointage & Absences enseignants</div>
+        <div class="mod-sub">0 ligne de code actuellement · À construire complètement</div>
+      </div>
+      <div class="mod-tags">
+        <span class="badge b-missing">Absent du code</span>
+        <span class="badge b-p1">Phase 1 — Critique</span>
+      </div>
+    </div>
+    <div class="mod-body">
+      <div>
+        <div class="sub">Fonctionnalités à développer</div>
+        <ul class="flist">
+          <li><span class="fi">🕐</span><div><strong>Pointage arrivée/départ</strong> — par badge, QR ou saisie admin</div></li>
+          <li><span class="fi">📅</span><div><strong>Absence par séance</strong> — prof absent → séance annulée ou remplacée</div></li>
+          <li><span class="fi">🔄</span><div><strong>Remplacement automatique</strong> — liste des profs disponibles pour prendre la séance</div></li>
+          <li><span class="fi">📱</span><div><strong>Notification élèves/parents</strong> — "cours de maths annulé ce matin" → SMS/Push immédiat</div></li>
+          <li><span class="fi">💰</span><div><strong>Impact paie automatique</strong> — absence injustifiée → retenue sur salaire du mois</div></li>
+          <li><span class="fi">📋</span><div><strong>Rapport mensuel prof</strong> — total heures effectuées vs planning, absences, retards</div></li>
+          <li><span class="fi">✍️</span><div><strong>Demande de congé</strong> — prof soumet → directeur valide/refuse dans l'app</div></li>
+          <li><span class="fi">⚠️</span><div><strong>Alerte directeur</strong> — prof absent non justifié → notification immédiate</div></li>
+        </ul>
+      </div>
+      <div>
+        <div class="sub">Tables SQL à créer</div>
+        <div class="sql">
+<span class="kw">TABLE</span> pointage_enseignants<br>
+────────────────────────────<br>
+id            <span class="typ">UUID PK</span><br>
+tenant_id     <span class="typ">UUID</span><br>
+enseignant_id <span class="typ">UUID FK</span><br>
+date          <span class="typ">DATE</span><br>
+heure_arrivee <span class="typ">TIME</span><br>
+heure_depart  <span class="typ">TIME</span><br>
+methode       <span class="typ">ENUM</span>(<span class="str">'badge','qr','manuel'</span>)<br>
+badge_uid     <span class="typ">VARCHAR</span> <span class="cmt">-- ID badge physique</span><br>
+statut        <span class="typ">ENUM</span>(<span class="str">'présent','absent',<br>
+              'retard','congé','maladie'</span>)<br>
+<br>
+<span class="kw">TABLE</span> absences_enseignants<br>
+────────────────────────────<br>
+id            <span class="typ">UUID PK</span><br>
+tenant_id     <span class="typ">UUID</span><br>
+enseignant_id <span class="typ">UUID FK</span><br>
+seance_id     <span class="typ">UUID FK</span> <span class="cmt">-- séance concernée</span><br>
+type          <span class="typ">ENUM</span>(<span class="str">'injustifiée',<br>
+              'maladie','congé','autre'</span>)<br>
+remplacant_id <span class="typ">UUID FK</span> <span class="cmt">-- si remplacé</span><br>
+impact_paie   <span class="typ">BOOLEAN</span><br>
+retenue_dzd   <span class="typ">DECIMAL</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODULE P3 : PERSONNEL ══════════ -->
+<div class="section">
+  <div class="stitle">Module P3 — Pointage personnel non-enseignant : à créer de zéro</div>
+
+  <div class="mod m-staff">
+    <div class="mod-header">
+      <div class="mod-icon">👷</div>
+      <div>
+        <div class="mod-name">Pointage Surveillants · Femmes de ménage · Chauffeurs · Admin</div>
+        <div class="mod-sub">Gestion unifiée de tout le personnel non-pédagogique</div>
+      </div>
+      <div class="mod-tags">
+        <span class="badge b-missing">Absent du code</span>
+        <span class="badge b-p2">Phase 2</span>
+      </div>
+    </div>
+    <div class="mod-body">
+      <div>
+        <div class="sub">Fonctionnalités à développer</div>
+        <ul class="flist">
+          <li><span class="fi">🕐</span><div><strong>Pointage entrée/sortie</strong> — par badge RFID ou saisie admin selon le poste</div></li>
+          <li><span class="fi">📅</span><div><strong>Planning de service</strong> — qui est de garde ce jour, quel surveillant surveille quelle cour</div></li>
+          <li><span class="fi">🏖️</span><div><strong>Congés & absences</strong> — solde de congés, validation directeur</div></li>
+          <li><span class="fi">💰</span><div><strong>Calcul heures travaillées</strong> — base pour la fiche de paie mensuelle</div></li>
+          <li><span class="fi">⚠️</span><div><strong>Alerte absence imprévue</strong> — surveillance en défaut → alerte directeur immédiate</div></li>
+          <li><span class="fi">📊</span><div><strong>Rapport mensuel</strong> — heures réelles vs contrat, absences, retards, heures sup</div></li>
+        </ul>
+        <div class="sql" style="margin-top:12px;">
+<span class="kw">TABLE</span> pointage_personnel<br>
+────────────────────────────<br>
+id          <span class="typ">UUID PK</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+agent_id    <span class="typ">UUID FK</span> <span class="cmt">→ personnel_admin</span><br>
+date        <span class="typ">DATE</span><br>
+heure_arrivee <span class="typ">TIME</span><br>
+heure_depart  <span class="typ">TIME</span><br>
+methode     <span class="typ">ENUM</span>(<span class="str">'badge','manuel'</span>)<br>
+badge_uid   <span class="typ">VARCHAR</span><br>
+statut      <span class="typ">ENUM</span>(<span class="str">'présent','absent',<br>
+            'retard','congé','maladie'</span>)<br>
+note        <span class="typ">TEXT</span>
+        </div>
+      </div>
+      <div>
+        <div class="sub">Rôles couverts</div>
+        <ul class="flist">
+          <li><span class="fi">👁️</span><div><strong>Surveillant</strong> — planning de surveillance par zone (cour, couloir, entrée)</div></li>
+          <li><span class="fi">🧹</span><div><strong>Femme de ménage</strong> — salles assignées, planning hebdomadaire de nettoyage</div></li>
+          <li><span class="fi">🚌</span><div><strong>Chauffeur</strong> — lié au module Transport M09, horaires de ramassage</div></li>
+          <li><span class="fi">🏫</span><div><strong>Proviseur</strong> — présence administrative, congés</div></li>
+          <li><span class="fi">💼</span><div><strong>Secrétaire</strong> — horaires bureau, absences</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODULE P4 : BADGE RFID/NFC ══════════ -->
+<div class="section">
+  <div class="stitle">Module P4 — Système de pointage par badge RFID/NFC : architecture complète</div>
+
+  <div class="mod m-badge">
+    <div class="mod-header">
+      <div class="mod-icon">🏷️</div>
+      <div>
+        <div class="mod-name">Pointage par badge RFID / NFC / QR Code</div>
+        <div class="mod-sub">Architecture hardware + software · Élèves + Profs + Personnel</div>
+      </div>
+      <div class="mod-tags">
+        <span class="badge b-partial">QR élève existe</span>
+        <span class="badge b-hw">Hardware requis</span>
+        <span class="badge b-p2">Phase 2</span>
+      </div>
+    </div>
+    <div class="mod-body">
+      <div>
+        <div class="sub">Architecture du système</div>
+        <div class="arch-box" style="padding:12px;">
+          <div class="arch-row">
+            <div class="arch-node">
+              <span class="an-icon">🏷️</span>
+              <span class="an-name">Badge RFID</span>
+              <span class="an-tech">13.56 MHz · MIFARE<br>ou NFC Ultralight</span>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <span class="an-icon">📡</span>
+              <span class="an-name">Lecteur USB</span>
+              <span class="an-tech">ACR122U ou HID<br>branché sur tablette</span>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <span class="an-icon">📱</span>
+              <span class="an-name">App EduGest DZ</span>
+              <span class="an-tech">Tablette à l'entrée<br>Mode kiosque</span>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <span class="an-icon">☁️</span>
+              <span class="an-name">API Laravel</span>
+              <span class="an-tech">POST /pointage/badge<br>Enregistrement temps réel</span>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node">
+              <span class="an-icon">📱</span>
+              <span class="an-name">SMS Parent</span>
+              <span class="an-tech">"Votre enfant est<br>arrivé à 8h12"</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sub" style="margin-top:14px;">3 modes de pointage supportés</div>
+        <ul class="flist">
+          <li><span class="fi">🏷️</span><div><strong>Badge RFID/NFC physique</strong> — lecture instantanée, 0.1 seconde, idéal entrée établissement</div></li>
+          <li><span class="fi">📱</span><div><strong>QR Code</strong> — sur smartphone ou carte imprimée, scan par tablet admin (EXISTE déjà)</div></li>
+          <li><span class="fi">✋</span><div><strong>Saisie manuelle</strong> — admin pointe manuellement si oubli de badge</div></li>
+        </ul>
+      </div>
+      <div>
+        <div class="sub">Nouvelle route API à créer</div>
+        <div class="sql">
+<span class="cmt">-- Route dédiée badge RFID (à ajouter dans api.php)</span><br>
+<span class="kw">POST</span> /api/v1/pointage/badge<br>
+<br>
+<span class="cmt">-- Payload reçu du lecteur</span><br>
+{<br>
+  <span class="str">"badge_uid"</span>: <span class="str">"04:A3:B2:1F"</span>, <span class="cmt">-- ID unique badge</span><br>
+  <span class="str">"type"</span>: <span class="str">"entrée"</span>, <span class="cmt">-- ou "sortie"</span><br>
+  <span class="str">"terminal_id"</span>: <span class="str">"borne-entrée-1"</span><br>
+}<br>
+<br>
+<span class="cmt">-- Réponse immédiate</span><br>
+{<br>
+  <span class="str">"personne"</span>: <span class="str">"AMARI Ahmed"</span>,<br>
+  <span class="str">"role"</span>: <span class="str">"élève"</span>,<span class="cmt">-- ou prof/staff</span><br>
+  <span class="str">"statut"</span>: <span class="str">"présent"</span>,<br>
+  <span class="str">"heure"</span>: <span class="str">"08:12:34"</span>,<br>
+  <span class="str">"sms_parent_envoye"</span>: <span class="kw">true</span><br>
+}<br>
+<br>
+<span class="kw">TABLE</span> badges<br>
+────────────────────────────<br>
+id          <span class="typ">UUID PK</span><br>
+tenant_id   <span class="typ">UUID</span><br>
+badge_uid   <span class="typ">VARCHAR UNIQUE</span><br>
+proprietaire_id <span class="typ">UUID</span><br>
+type_proprietaire <span class="typ">ENUM</span>(<span class="str">'eleve',<br>
+              'enseignant','personnel'</span>)<br>
+actif       <span class="typ">BOOLEAN</span><br>
+date_emission <span class="typ">DATE</span>
+        </div>
+
+        <div class="hw-box">
+          <div class="hw-title">🔧 Matériel recommandé pour l'Algérie</div>
+          <ul>
+            <li>Lecteur USB RFID : <strong>ACR122U</strong> (~3 000 DA) — plug & play</li>
+            <li>Badges MIFARE Classic 1K : <strong>~80 DA/badge</strong> en Algérie</li>
+            <li>Tablette Android 10" mode kiosque : <strong>~25 000 DA</strong></li>
+            <li>Alternative 0 hardware : <strong>NFC sur smartphone</strong> Android (gratuit)</li>
+            <li>Alternative économique : <strong>QR Code imprimé sur carte</strong> (déjà dans le code)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODULE P5 : RAPPORTS ══════════ -->
+<div class="section">
+  <div class="stitle">Module P5 — Rapports d'absences unifiés : tableau de bord directeur</div>
+
+  <div class="mod m-report">
+    <div class="mod-header">
+      <div class="mod-icon">📊</div>
+      <div>
+        <div class="mod-name">Dashboard absences & pointage — Vue directeur</div>
+        <div class="mod-sub">Élèves + Profs + Personnel · Temps réel + Historique + Export</div>
+      </div>
+      <div class="mod-tags">
+        <span class="badge b-missing">Absent du code</span>
+        <span class="badge b-p2">Phase 2</span>
+      </div>
+    </div>
+    <div class="mod-body">
+      <div>
+        <div class="sub">Ce que voit le directeur chaque matin</div>
+        <ul class="flist">
+          <li><span class="fi">🔴</span><div><strong>Élèves absents aujourd'hui</strong> — liste en temps réel, avec ou sans justificatif</div></li>
+          <li><span class="fi">🔴</span><div><strong>Profs absents aujourd'hui</strong> — avec séances concernées et remplacement proposé</div></li>
+          <li><span class="fi">🟠</span><div><strong>Retards de la journée</strong> — élèves et personnel avec heure d'arrivée réelle</div></li>
+          <li><span class="fi">📈</span><div><strong>Taux de présence global</strong> — par classe, par matière, par semaine</div></li>
+          <li><span class="fi">⚠️</span><div><strong>Alertes seuils</strong> — élèves avec 3+ absences non justifiées ce mois</div></li>
+          <li><span class="fi">📄</span><div><strong>Export PDF/Excel</strong> — rapport mensuel d'absences par classe ou par individu</div></li>
+        </ul>
+      </div>
+      <div>
+        <div class="sub">Récapitulatif des manques par cible</div>
+        <table class="imp">
+          <tr>
+            <th>Cible</th>
+            <th>Pointage</th>
+            <th>Absences</th>
+            <th>Justificatifs</th>
+            <th>Notif auto</th>
+            <th>Impact paie</th>
+          </tr>
+          <tr>
+            <td>👦 Élèves</td>
+            <td style="color:#fb923c;">⚠️ QR seul</td>
+            <td style="color:#fb923c;">⚠️ Partiel</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>👨‍🏫 Profs</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+          </tr>
+          <tr>
+            <td>👷 Personnel</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+            <td style="color:#f87171;">❌</td>
+          </tr>
+          <tr>
+            <td>🏷️ Badge RFID</td>
+            <td colspan="5" style="color:#f87171; text-align:center;">❌ Architecture hardware non développée</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ROADMAP ══════════ -->
+<div class="section">
+  <div class="stitle">Roadmap de développement — Dans quel ordre</div>
+  <table class="imp" style="font-size:12px;">
+    <tr>
+      <th>#</th>
+      <th>Tâche</th>
+      <th>Effort</th>
+      <th>Priorité</th>
+      <th>Bloque quoi</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Absences journalières élèves + SMS parent auto</td>
+      <td>3 jours</td>
+      <td><span class="badge b-p1">Critique</span></td>
+      <td>Valeur immédiate pour le pilote</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Workflow justificatifs d'absence élèves</td>
+      <td>2 jours</td>
+      <td><span class="badge b-p1">Critique</span></td>
+      <td>Exigence légale établissements</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Pointage & absences enseignants (tables + API)</td>
+      <td>4 jours</td>
+      <td><span class="badge b-p1">Critique</span></td>
+      <td>Impact paie profs</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Alertes absences profs → notif élèves/parents</td>
+      <td>1 jour</td>
+      <td><span class="badge b-p1">Critique</span></td>
+      <td>Satisfaction parents</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Pointage personnel non-enseignant</td>
+      <td>3 jours</td>
+      <td><span class="badge b-p2">Importante</span></td>
+      <td>Module M12 personnel</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Route API badge RFID + table badges</td>
+      <td>2 jours</td>
+      <td><span class="badge b-p2">Importante</span></td>
+      <td>Intégration matériel</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Dashboard absences directeur (temps réel)</td>
+      <td>3 jours</td>
+      <td><span class="badge b-p2">Importante</span></td>
+      <td>Rétention clients</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Rapports mensuels absences export PDF/Excel</td>
+      <td>2 jours</td>
+      <td><span class="badge b-p2">Importante</span></td>
+      <td>Exigence administrative</td>
+    </tr>
+  </table>
+  <p style="margin-top:12px;font-size:11px;color:#475569;">
+    Total estimé : <strong style="color:#60a5fa;">20 jours de développement</strong> pour couvrir 100% du besoin pointage/absences toutes cibles.
+  </p>
+</div>
+
+<div class="warn-box">
+  <strong>⚠️ Vérité sur le badge RFID en Algérie</strong><br><br>
+  Le badge RFID hardware c'est bien, mais ne le présente pas comme un prérequis au lancement. Voici pourquoi :<br><br>
+  1. <strong>Le QR Code existe déjà dans le code</strong> — c'est suffisant pour un pilote. Un directeur peut pointer ses élèves avec une tablette et un scanner QR dès aujourd'hui.<br>
+  2. <strong>Le badge RFID nécessite un investissement hardware</strong> (lecteur + badges + tablette) que certains petits centres ne voudront pas faire avant de voir la valeur du logiciel.<br>
+  3. <strong>Stratégie recommandée</strong> : lancer avec QR Code (coût zéro), puis proposer l'upgrade badge RFID comme option Premium à 15 000 DA/installation.<br><br>
+  <strong>Le vrai différenciateur n'est pas le badge — c'est le SMS parent automatique à 8h01 quand l'enfant n'est pas arrivé.</strong> C'est ça que le directeur va vendre aux parents. Développe ça en premier.
+</div>
+
+</body>
+</html>

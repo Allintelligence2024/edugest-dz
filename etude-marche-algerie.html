@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Étude de Marché — Logiciels Gestion Éducative Algérie 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 32px 24px;
+  }
+
+  h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 36px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 13px; font-weight: 700; color: #60a5fa;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 8px; margin-bottom: 16px;
+  }
+
+  /* ── KPI ROW ── */
+  .kpi-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .kpi {
+    flex: 1; min-width: 160px;
+    background: #131720; border: 1px solid #1e293b;
+    border-radius: 10px; padding: 16px;
+    text-align: center;
+  }
+  .kpi .k-val { font-size: 28px; font-weight: 800; color: #60a5fa; display: block; }
+  .kpi .k-label { font-size: 11px; color: #64748b; margin-top: 4px; display: block; }
+  .kpi .k-src { font-size: 9px; color: #334155; margin-top: 6px; display: block; font-style: italic; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    background: #1e293b; color: #94a3b8; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 10px 12px; text-align: left;
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #1a2232; vertical-align: top; }
+  tr:hover td { background: #131a25; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 20px; font-size: 10px; font-weight: 700;
+  }
+  .b-green  { background: #14532d; color: #4ade80; }
+  .b-red    { background: #450a0a; color: #f87171; }
+  .b-yellow { background: #422006; color: #fb923c; }
+  .b-blue   { background: #0c2a4a; color: #60a5fa; }
+  .b-purple { background: #2e1065; color: #c084fc; }
+  .b-gray   { background: #1e293b; color: #94a3b8; }
+
+  /* ── CARDS ── */
+  .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .card {
+    background: #131720; border: 1px solid #1e293b;
+    border-radius: 10px; padding: 16px;
+  }
+  .card .c-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .card .c-type { font-size: 10px; color: #64748b; margin-bottom: 10px; }
+  .card .c-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; }
+  .card .c-key { color: #64748b; }
+  .card .c-val { color: #e2e8f0; font-weight: 600; text-align: right; max-width: 60%; }
+  .card .c-pro { margin-top: 10px; }
+  .card .c-pro-title { font-size: 10px; color: #4ade80; font-weight: 700; margin-bottom: 4px; }
+  .card .c-con-title { font-size: 10px; color: #f87171; font-weight: 700; margin-bottom: 4px; }
+  .card ul { list-style: none; font-size: 10px; color: #94a3b8; line-height: 1.9; }
+  .card ul li::before { content: '· '; }
+
+  /* ── OPPORTUNITÉ ── */
+  .opp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .opp {
+    border-radius: 10px; padding: 16px;
+    border: 1px solid #1e3a5f; background: #0a1628;
+  }
+  .opp .o-title { font-weight: 700; color: #60a5fa; font-size: 13px; margin-bottom: 8px; }
+  .opp p { font-size: 12px; color: #94a3b8; line-height: 1.7; }
+
+  /* ── SWOT ── */
+  .swot { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .swot-box { border-radius: 8px; padding: 14px; }
+  .swot-box .sw-title { font-weight: 700; font-size: 12px; margin-bottom: 8px; }
+  .swot-box ul { list-style: none; font-size: 11px; color: #cbd5e1; line-height: 2; }
+  .swot-box ul li::before { content: '→ '; }
+  .sw-s { background: #0f2a1a; border: 1px solid #1a5c32; }
+  .sw-s .sw-title { color: #4ade80; }
+  .sw-w { background: #1a0f0f; border: 1px solid #7a2d2d; }
+  .sw-w .sw-title { color: #f87171; }
+  .sw-o { background: #0c1a2e; border: 1px solid #1a3a6a; }
+  .sw-o .sw-title { color: #60a5fa; }
+  .sw-t { background: #1a130f; border: 1px solid #7a4a1a; }
+  .sw-t .sw-title { color: #fb923c; }
+
+  /* ── WARNING BOX ── */
+  .warning {
+    background: #1a130f; border: 1px solid #7a4a1a;
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #fb923c; line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .warning strong { color: #f97316; }
+
+  /* ── CONCLUSION ── */
+  .conclusion {
+    background: #0a1628; border: 1px solid #1e3a5f;
+    border-radius: 10px; padding: 20px;
+    font-size: 13px; line-height: 1.8; color: #cbd5e1;
+  }
+  .conclusion strong { color: #60a5fa; }
+
+  hr { border: none; border-top: 1px solid #1e293b; margin: 32px 0; }
+
+  .star { color: #fbbf24; }
+</style>
+</head>
+<body>
+
+<h1>📊 Étude de Marché — Logiciels de Gestion Éducative en Algérie</h1>
+<div class="meta">EduGest DZ · Analyse concurrentielle · Juin 2026 · Sources vérifiées</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 1. CHIFFRES CLÉS DU MARCHÉ -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">1. Chiffres clés du marché algérien</div>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <span class="k-val">~680</span>
+      <span class="k-label">Écoles privées agréées</span>
+      <span class="k-src">Min. Éducation nationale, oct. 2024</span>
+    </div>
+    <div class="kpi">
+      <span class="k-val">5 828</span>
+      <span class="k-label">Établissements privés tous niveaux</span>
+      <span class="k-src">Medias24, 2019 — en forte croissance</span>
+    </div>
+    <div class="kpi">
+      <span class="k-val">+143%</span>
+      <span class="k-label">Croissance du privé en 10 ans</span>
+      <span class="k-src">2008→2019, Medias24</span>
+    </div>
+    <div class="kpi">
+      <span class="k-val">~400K</span>
+      <span class="k-label">Élèves dans le privé (estimé 2025)</span>
+      <span class="k-src">Extrapolation tendance +14%/an</span>
+    </div>
+    <div class="kpi">
+      <span class="k-val">20 000+</span>
+      <span class="k-label">Écoles primaires publiques</span>
+      <span class="k-src">Cour des comptes, rapport 2024</span>
+    </div>
+    <div class="kpi">
+      <span class="k-val">~0%</span>
+      <span class="k-label">Logiciel SaaS dominant sur le marché</span>
+      <span class="k-src">Analyse terrain — marché non consolidé</span>
+    </div>
+  </div>
+
+  <div class="warning">
+    <strong>⚠️ Données à traiter avec prudence :</strong> Il n'existe pas de statistiques officielles publiées sur le nombre de centres de cours particuliers en Algérie. Les chiffres sur l'enseignement privé concernent les écoles agréées. Le marché des cours particuliers (soutien scolaire) est très largement informel et non comptabilisé. Les estimations de taille de marché dans ce document sont des extrapolations raisonnées, pas des données certifiées.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 2. SECTEUR PUBLIC — CE QUI EXISTE -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">2. Secteur public — Systèmes officiels du Ministère</div>
+  <table>
+    <tr>
+      <th>Système</th>
+      <th>Périmètre</th>
+      <th>État 2025-2026</th>
+      <th>Limites connues</th>
+    </tr>
+    <tr>
+      <td><strong>Rakmana (رقمنة)</strong><br><span style="color:#64748b;font-size:10px;">Ministère Éducation Nationale</span></td>
+      <td>Saisie des notes, bulletins, transfert vers serveurs MEN. Intégré dans les lycées et collèges publics.</td>
+      <td><span class="badge b-yellow">En révision</span><br><span style="font-size:10px;color:#64748b;">Version 2025 annoncée mars 2025</span></td>
+      <td>Dysfonctionnements signalés sur inscriptions et transferts. Connexion internet instable dans les zones rurales. Interface vieillissante.</td>
+    </tr>
+    <tr>
+      <td><strong>Plateforme MEN (inscriptions)</strong><br><span style="color:#64748b;font-size:10px;">Ministère</span></td>
+      <td>Réinscriptions, réorientations, documents scolaires numériques. Déployé rentrée 2023-2024.</td>
+      <td><span class="badge b-blue">Actif</span></td>
+      <td>Usage obligatoire mais partiel. Formations insuffisantes. Pas d'API publique pour les éditeurs privés.</td>
+    </tr>
+    <tr>
+      <td><strong>PWGESCO / Scolarex</strong><br><span style="color:#64748b;font-size:10px;">Scolarex.com</span></td>
+      <td>Gestion scolarité primaire : notes, présences, statistiques. Bilingue AR/FR. Compatible Rakmana.</td>
+      <td><span class="badge b-gray">Desktop local</span></td>
+      <td>Windows uniquement. Réseau local. Pas de cloud, pas de mobile. Pas de SaaS.</td>
+    </tr>
+    <tr>
+      <td><strong>Algérie Numérique 2030</strong><br><span style="color:#64748b;font-size:10px;">Haut-commissariat numérisation</span></td>
+      <td>Stratégie nationale de transformation digitale. Formation = l'un des 5 axes prioritaires.</td>
+      <td><span class="badge b-purple">En cours</span></td>
+      <td>Horizon 2030. Pas de déploiement opérationnel aujourd'hui. 1 informaticien affecté par établissement prévu.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 3. CONCURRENTS PRIVÉS ALGÉRIENS -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">3. Concurrents privés — Logiciels algériens</div>
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="c-name">🏫 AlgeriaSchool</div>
+      <div class="c-type">SaaS cloud · algeriaschool.com</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">Cloud, abonnement</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Écoles privées, tous niveaux</span></div>
+      <div class="c-row"><span class="c-key">Langues</span><span class="c-val">AR / FR</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-green">Oui</span></span></div>
+      <div class="c-row"><span class="c-key">Prix</span><span class="c-val">Non publié</span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>Solution cloud complète</li>
+          <li>Portail parent inclus</li>
+          <li>Gestion permissions par rôle</li>
+          <li>Dépenses + comptabilité</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Pas de marketplace</li>
+          <li>Pas de paiement CIB/Dahabia intégré</li>
+          <li>Pas de cours particuliers</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-name">🌱 Innova Scholar</div>
+      <div class="c-type">SaaS cloud · innovascholar.com · 2025</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">Freemium (10 élèves gratuit)</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Écoles privées DZ</span></div>
+      <div class="c-row"><span class="c-key">Note</span><span class="c-val"><span class="star">★★★★★</span> 4.8/5 (150 avis)</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-yellow">Web responsive</span></span></div>
+      <div class="c-row"><span class="c-key">Prix beta</span><span class="c-val">-50% permanent si inscription beta</span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>100% algérien, récent</li>
+          <li>Freemium — barrière faible</li>
+          <li>Note très élevée</li>
+          <li>Modulaire (écoles + cliniques)</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Encore en beta</li>
+          <li>Pas de cours particuliers/soutien</li>
+          <li>Pas de matching prof/élève</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-name">📐 Algeriasm (ASM)</div>
+      <div class="c-type">Desktop / réseau local · algeriasm.net</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">Licence perpétuelle</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Lycées, collèges, primaires</span></div>
+      <div class="c-row"><span class="c-key">Langues</span><span class="c-val">AR / FR</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-red">Non</span></span></div>
+      <div class="c-row"><span class="c-key">Prix</span><span class="c-val">Sur devis</span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>Présence terrain établie</li>
+          <li>Emploi du temps automatique</li>
+          <li>Module cours de soutien existant</li>
+          <li>Multi-utilisateur réseau</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Pas de cloud, pas de SaaS</li>
+          <li>Pas de mobile</li>
+          <li>Interface vieillissante</li>
+          <li>Pas de paiement en ligne</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-name">⚙️ PULSAR</div>
+      <div class="c-type">Desktop / réseau local · pulsar-dz.com</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">Licence + installation</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Écoles, universités, académies</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-red">Non</span></span></div>
+      <div class="c-row"><span class="c-key">Prix</span><span class="c-val">Sur devis</span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>Export de données flexible</li>
+          <li>Génération de documents auto</li>
+          <li>Groupes de contacts</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Pas de cloud</li>
+          <li>Pas de mobile</li>
+          <li>Pas de paiement intégré</li>
+          <li>Pas de module parents</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-name">🏢 SchoolWay (FMSoft)</div>
+      <div class="c-type">Desktop réseau local · fmsoft-dz.com</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">Clé en main, licence</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Centres de formation privés</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-red">Non</span></span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>Spécialisé formation professionnelle</li>
+          <li>Auto-inscription en réseau local</li>
+          <li>Gestion caisse journalière</li>
+          <li>Attestations, diplômes, reçus</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Réseau local uniquement</li>
+          <li>Pas de cloud, pas de mobile</li>
+          <li>Pas de portail parent/élève</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="c-name">🔍 Symloop / MyScol</div>
+      <div class="c-type">SaaS international · présence DZ 2026</div>
+      <div class="c-row"><span class="c-key">Modèle</span><span class="c-val">SaaS abonnement</span></div>
+      <div class="c-row"><span class="c-key">Cible</span><span class="c-val">Tous établissements</span></div>
+      <div class="c-row"><span class="c-key">Langues</span><span class="c-val">AR / FR (adapté DZ)</span></div>
+      <div class="c-row"><span class="c-key">Mobile</span><span class="c-val"><span class="badge b-green">Oui</span></span></div>
+      <div class="c-pro">
+        <div class="c-pro-title">✅ Points forts</div>
+        <ul>
+          <li>Programme national algérien intégré</li>
+          <li>Calendrier scolaire DZ</li>
+          <li>Démo gratuite</li>
+          <li>Pédagogie avancée (cahier de texte)</li>
+        </ul>
+      </div>
+      <div class="c-pro" style="margin-top:8px;">
+        <div class="c-con-title">❌ Limites</div>
+        <ul>
+          <li>Pas de paiement CIB/Dahabia</li>
+          <li>Pas adapté cours particuliers</li>
+          <li>Éditeur étranger (confiance DZ ?)</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 4. TABLEAU COMPARATIF -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">4. Comparatif fonctionnel — EduGest DZ vs concurrents</div>
+  <table>
+    <tr>
+      <th>Fonctionnalité</th>
+      <th>EduGest DZ</th>
+      <th>AlgeriaSchool</th>
+      <th>Innova</th>
+      <th>ASM / PULSAR / SchoolWay</th>
+      <th>Symloop</th>
+    </tr>
+    <tr>
+      <td>Cloud / SaaS</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-red">❌ Desktop</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+    </tr>
+    <tr>
+      <td>Application mobile native</td>
+      <td><span class="badge b-green">✅ iOS + Android</span></td>
+      <td><span class="badge b-yellow">Partiel</span></td>
+      <td><span class="badge b-yellow">Web responsive</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-yellow">Partiel</span></td>
+    </tr>
+    <tr>
+      <td>Multi-tenant (plusieurs centres)</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-yellow">Limité</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-yellow">Partiel</span></td>
+    </tr>
+    <tr>
+      <td>Paiement CIB / Dahabia / BaridiMob</td>
+      <td><span class="badge b-yellow">🔧 En cours</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+    </tr>
+    <tr>
+      <td>Cours particuliers / soutien</td>
+      <td><span class="badge b-green">✅ Cœur de cible</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-yellow">Partiel (ASM)</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+    </tr>
+    <tr>
+      <td>Marketplace prof/élève</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+    </tr>
+    <tr>
+      <td>IA Matching prof/élève</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+    </tr>
+    <tr>
+      <td>2FA sécurité</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+    </tr>
+    <tr>
+      <td>Calcul IRG / CNAS algérien</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+      <td><span class="badge b-yellow">Partiel</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+    </tr>
+    <tr>
+      <td>Portail parent / élève</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+    </tr>
+    <tr>
+      <td>Notifications SMS / WhatsApp</td>
+      <td><span class="badge b-green">✅ Oui</span></td>
+      <td><span class="badge b-yellow">SMS seulement</span></td>
+      <td><span class="badge b-gray">Inconnu</span></td>
+      <td><span class="badge b-red">❌ Non</span></td>
+      <td><span class="badge b-yellow">Email seulement</span></td>
+    </tr>
+    <tr>
+      <td>Darija (langue algérienne)</td>
+      <td><span class="badge b-green">✅ FR / AR / Darija</span></td>
+      <td><span class="badge b-yellow">FR / AR</span></td>
+      <td><span class="badge b-yellow">FR / AR</span></td>
+      <td><span class="badge b-yellow">FR / AR</span></td>
+      <td><span class="badge b-yellow">FR / AR</span></td>
+    </tr>
+    <tr>
+      <td>Open source / prix transparent</td>
+      <td><span class="badge b-red">Non (SaaS)</span></td>
+      <td><span class="badge b-red">Non publié</span></td>
+      <td><span class="badge b-green">Freemium affiché</span></td>
+      <td><span class="badge b-red">Sur devis</span></td>
+      <td><span class="badge b-yellow">Démo gratuite</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 5. OPPORTUNITÉS DE MARCHÉ -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">5. Opportunités identifiées pour EduGest DZ</div>
+  <div class="opp-grid">
+    <div class="opp">
+      <div class="o-title">🎯 Niche #1 — Cours particuliers non adressée</div>
+      <p>Aucun concurrent ne cible spécifiquement les centres de cours particuliers et de soutien scolaire. Ce segment est immense, informel, et géré entièrement sur papier ou Excel. C'est la fenêtre la plus grande et la moins disputée du marché.</p>
+    </div>
+    <div class="opp">
+      <div class="o-title">💳 Niche #2 — Paiement en ligne algérien</div>
+      <p>Aucun concurrent n'intègre CIB, Dahabia ou BaridiMob. Si EduGest DZ réussit l'intégration Satim, c'est un avantage différenciateur unique, durable, et difficile à copier rapidement.</p>
+    </div>
+    <div class="opp">
+      <div class="o-title">📱 Niche #3 — Application mobile native</div>
+      <p>Les solutions desktop (ASM, PULSAR, SchoolWay) dominent le terrain actuel mais n'ont aucune mobilité. Les parents algériens sont sur smartphone. Une app mobile fonctionnelle est un avantage décisif sur ce segment.</p>
+    </div>
+    <div class="opp">
+      <div class="o-title">🤖 Niche #4 — Marketplace + IA Matching</div>
+      <p>La mise en relation prof-élève est un marché B2C inexistant en Algérie (comparable à Superprof en France). EduGest DZ peut être le premier acteur structuré sur ce créneau. Attention : c'est une Phase 3, pas une priorité immédiate.</p>
+    </div>
+    <div class="opp">
+      <div class="o-title">🏛️ Opportunité #5 — Vague de numérisation publique</div>
+      <p>La stratégie "Algérie Numérique 2030" et la Version 2025 du SI du MEN créent une demande publique de numérisation. Les établissements privés cherchent des solutions compatibles avec les exigences de l'État (Rakmana, inscriptions en ligne).</p>
+    </div>
+    <div class="opp">
+      <div class="o-title">🌍 Opportunité #6 — Expansion régionale</div>
+      <p>Le modèle SaaS multi-tenant est exportable vers la Tunisie et le Maroc avec des adaptations mineures (fiscalité locale, langues). Ces marchés ont les mêmes problèmes, les mêmes acteurs faibles, et une base smartphone comparable.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 6. SWOT -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">6. SWOT — EduGest DZ dans ce marché</div>
+  <div class="swot">
+    <div class="swot-box sw-s">
+      <div class="sw-title">💪 Forces</div>
+      <ul>
+        <li>Seul SaaS ciblant les cours particuliers</li>
+        <li>App mobile native iOS/Android</li>
+        <li>Multi-tenant, architecture scalable</li>
+        <li>Darija + AR + FR (3 langues)</li>
+        <li>Intégration IRG/CNAS algérien</li>
+        <li>Marketplace + IA Matching (unique)</li>
+        <li>Paiement CIB/Dahabia (en cours)</li>
+      </ul>
+    </div>
+    <div class="swot-box sw-w">
+      <div class="sw-title">⚠️ Faiblesses</div>
+      <ul>
+        <li>CI cassé → fiabilité non prouvée</li>
+        <li>0 utilisateurs en prod actuellement</li>
+        <li>API Satim non confirmée (sandbox)</li>
+        <li>Pas de README → projet non onboardable</li>
+        <li>Scope trop large pour une petite équipe</li>
+        <li>Pas de pricing public visible</li>
+      </ul>
+    </div>
+    <div class="swot-box sw-o">
+      <div class="sw-title">🚀 Opportunités</div>
+      <ul>
+        <li>Marché cours particuliers vierge</li>
+        <li>Numérisation publique en cours (MEN)</li>
+        <li>+143% de croissance du privé sur 10 ans</li>
+        <li>Aucun concurrent avec mobile natif</li>
+        <li>Aucun paiement en ligne chez les concurrents</li>
+        <li>Exportable Tunisie / Maroc</li>
+      </ul>
+    </div>
+    <div class="swot-box sw-t">
+      <div class="sw-title">🔴 Menaces</div>
+      <ul>
+        <li>Innova Scholar en beta active — copie possible</li>
+        <li>Résistance au changement des directeurs</li>
+        <li>Marché cours particuliers très informel</li>
+        <li>Accès internet instable en zones rurales</li>
+        <li>Satim : intégration complexe, délais longs</li>
+        <li>Réglementation changeante enseignement privé</li>
+        <li>Aucune protection brevets / facilement copié</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- 7. CONCLUSION -->
+<!-- ══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">7. Verdict — Ce que ça signifie pour EduGest DZ</div>
+  <div class="conclusion">
+    Le marché existe et est largement non adressé. <strong>La majorité des logiciels présents sont des solutions desktop sur réseau local, sans cloud, sans mobile, sans paiement intégré.</strong> Le seul concurrent sérieux sur le SaaS est AlgeriaSchool, mais il ne cible pas les cours particuliers.<br><br>
+    <strong>L'avantage concurrentiel réel d'EduGest DZ n'est pas la gestion scolaire standard — c'est la combinaison cours particuliers + mobile natif + paiement algérien + marketplace.</strong> Ces trois éléments ensemble n'existent nulle part sur le marché aujourd'hui.<br><br>
+    Mais voilà le problème : tu as cet avantage sur le papier et dans le code. Tu ne l'as pas encore sur le terrain. <strong>Un seul centre pilote qui utilise l'application en production vaut plus que tout ce cahier des charges.</strong> Le marché ne te choisira pas parce que ton architecture est propre — il te choisira parce que le directeur d'un centre à Alger ou Oran a essayé le produit et a dit "ça marche, ça m'économise 3 heures par semaine".<br><br>
+    <strong>Priorité immédiate :</strong> 1 centre pilote. 3 modules. En prod. Avec de vrais utilisateurs. Tout le reste est secondaire.
+  </div>
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a130420309a333c9',t:'MTc4MjY4NzEwNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
