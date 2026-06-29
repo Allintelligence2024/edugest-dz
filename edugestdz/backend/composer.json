@@ -13,6 +13,7 @@
         "laravel/scout": "^10.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "maennchen/zipstream-php": "^2.4",
         "meilisearch/meilisearch-php": "^1.0",
         "pusher/pusher-php-server": "^7.0",
         "spatie/laravel-activitylog": "^4.0",
