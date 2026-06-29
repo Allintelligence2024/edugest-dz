@@ -164,6 +164,15 @@ use App\Http\Controllers\Api\V1\{
             Route::post('scan',                  [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'scan']);
         });
 
+        // ── Absences journalières élèves ──
+        Route::prefix('absences')->group(function () {
+            Route::get('/',                          [\App\Http\Controllers\Api\V1\AbsenceController::class, 'index']);
+            Route::post('/{eleveId}',                [\App\Http\Controllers\Api\V1\AbsenceController::class, 'marquerPresent']);
+            Route::put('/{id}/justifier',            [\App\Http\Controllers\Api\V1\AbsenceController::class, 'justifier']);
+            Route::get('/rapport',                   [\App\Http\Controllers\Api\V1\AbsenceController::class, 'rapport']);
+            Route::post('/badges/assigner',          [\App\Http\Controllers\Api\V1\AbsenceController::class, 'assignerBadge']);
+        });
+
         // ── QR Code élève ──
         Route::get('eleves/{id}/qrcode',         [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'qrcode']);
 
