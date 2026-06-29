@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\{HasMany, HasManyThrough, BelongsTo, BelongsToMany};
+use Illuminate\Database\Eloquent\Relations\{HasMany, HasManyThrough, HasOne, BelongsTo, BelongsToMany};
 
 class Enseignant extends BaseModel
 {
@@ -66,5 +66,21 @@ class Enseignant extends BaseModel
     public function paies(): HasMany
     {
         return $this->hasMany(Paie::class);
+    }
+
+    public function pointages(): HasMany
+    {
+        return $this->hasMany(PointageEnseignant::class);
+    }
+
+    public function pointageAujourdhui(): HasOne
+    {
+        return $this->hasOne(PointageEnseignant::class)
+            ->whereDate('date', today());
+    }
+
+    public function isPresent(): bool
+    {
+        return $this->pointageAujourdhui()->whereNotNull('heure_arrivee')->exists();
     }
 }

@@ -164,6 +164,15 @@ use App\Http\Controllers\Api\V1\{
             Route::post('scan',                  [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'scan']);
         });
 
+        // ── Absences journalières élèves ──
+        Route::prefix('absences')->group(function () {
+            Route::get('/',                          [\App\Http\Controllers\Api\V1\AbsenceController::class, 'index']);
+            Route::post('/{eleveId}',                [\App\Http\Controllers\Api\V1\AbsenceController::class, 'marquerPresent']);
+            Route::put('/{id}/justifier',            [\App\Http\Controllers\Api\V1\AbsenceController::class, 'justifier']);
+            Route::get('/rapport',                   [\App\Http\Controllers\Api\V1\AbsenceController::class, 'rapport']);
+            Route::post('/badges/assigner',          [\App\Http\Controllers\Api\V1\AbsenceController::class, 'assignerBadge']);
+        });
+
         // ── QR Code élève ──
         Route::get('eleves/{id}/qrcode',         [\App\Http\Controllers\Api\V1\PresenceQRController::class, 'qrcode']);
 
@@ -212,6 +221,21 @@ use App\Http\Controllers\Api\V1\{
             Route::post('relances',              [FinanceController::class, 'envoyerRelances']);
             Route::get('bilan-mensuel',          [FinanceController::class, 'bilanMensuel']);
             Route::get('bilan-annuel',           [FinanceController::class, 'bilanAnnuel']);
+        });
+
+        // ── Budget Annuel & Comptabilite (M13) ──
+        Route::prefix('budget')->group(function () {
+            Route::get('dashboard',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'dashboard']);
+            Route::get('categories',                  [\App\Http\Controllers\Api\V1\BudgetController::class, 'categories']);
+            Route::get('bilan-mensuel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanMensuel']);
+            Route::get('bilan-annuel',                [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanAnnuel']);
+            Route::get('depenses',                    [\App\Http\Controllers\Api\V1\BudgetController::class, 'indexDepenses']);
+            Route::post('depenses',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'storeDepense']);
+            Route::put('depenses/{id}',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'updateDepense']);
+            Route::delete('depenses/{id}',            [\App\Http\Controllers\Api\V1\BudgetController::class, 'destroyDepense']);
+            Route::post('depenses/{id}/justificatif', [\App\Http\Controllers\Api\V1\BudgetController::class, 'uploadJustificatif']);
+            Route::get('previsionnel',                [\App\Http\Controllers\Api\V1\BudgetController::class, 'previsionnel']);
+            Route::post('previsionnel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'setPrevisionnel']);
         });
 
         // ── Notifications ──
@@ -273,6 +297,65 @@ use App\Http\Controllers\Api\V1\{
             Route::get('wilayas',                [ParametreController::class, 'wilayas']);
             Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
+        });
+
+        // ── Personnel Non-Enseignant (M12) ──
+        Route::prefix('personnel')->group(function () {
+            Route::get('tableau-bord',           [\App\Http\Controllers\Api\V1\PersonnelController::class, 'tableauBord']);
+            Route::get('/',                       [\App\Http\Controllers\Api\V1\PersonnelController::class, 'index']);
+            Route::post('/',                      [\App\Http\Controllers\Api\V1\PersonnelController::class, 'store']);
+            Route::get('{id}',                    [\App\Http\Controllers\Api\V1\PersonnelController::class, 'show']);
+            Route::put('{id}',                    [\App\Http\Controllers\Api\V1\PersonnelController::class, 'update']);
+            Route::delete('{id}',                 [\App\Http\Controllers\Api\V1\PersonnelController::class, 'destroy']);
+
+            // Congés
+            Route::get('{id}/conges',             [\App\Http\Controllers\Api\V1\PersonnelController::class, 'conges']);
+            Route::post('{id}/conges',            [\App\Http\Controllers\Api\V1\PersonnelController::class, 'demanderConge']);
+            Route::put('conges/{congeId}/statut', [\App\Http\Controllers\Api\V1\PersonnelController::class, 'statuerConge']);
+
+            // Pointage
+            Route::post('{id}/pointer/arrivee',   [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'arrivee']);
+            Route::post('{id}/pointer/depart',    [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'depart']);
+            Route::get('{id}/pointer/historique', [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'historique']);
+        });
+
+        // ── Transport Scolaire (M09) ──
+        Route::prefix('transport')->group(function () {
+            Route::get('dashboard',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'dashboard']);
+            Route::get('circuits',                            [\App\Http\Controllers\Api\V1\TransportController::class, 'indexCircuits']);
+            Route::post('circuits',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'storeCircuit']);
+            Route::get('circuits/{id}',                       [\App\Http\Controllers\Api\V1\TransportController::class, 'showCircuit']);
+            Route::put('circuits/{id}',                       [\App\Http\Controllers\Api\V1\TransportController::class, 'updateCircuit']);
+            Route::delete('circuits/{id}',                    [\App\Http\Controllers\Api\V1\TransportController::class, 'destroyCircuit']);
+            Route::get('circuits/{id}/arrets',                [\App\Http\Controllers\Api\V1\TransportController::class, 'indexArrets']);
+            Route::post('circuits/{id}/arrets',               [\App\Http\Controllers\Api\V1\TransportController::class, 'storeArret']);
+            Route::put('arrets/{id}',                         [\App\Http\Controllers\Api\V1\TransportController::class, 'updateArret']);
+            Route::delete('arrets/{id}',                      [\App\Http\Controllers\Api\V1\TransportController::class, 'destroyArret']);
+            Route::post('inscrire',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'inscrireEleve']);
+            Route::delete('inscrire/{id}',                    [\App\Http\Controllers\Api\V1\TransportController::class, 'desinscrireEleve']);
+            Route::get('eleve/{eleveId}',                     [\App\Http\Controllers\Api\V1\TransportController::class, 'circuitsEleve']);
+            Route::post('pointage',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'pointer']);
+            Route::get('circuits/{id}/pointage',              [\App\Http\Controllers\Api\V1\TransportController::class, 'pointageDuJour']);
+        });
+
+        // ── Cantine / Restauration (M10) ──
+        Route::prefix('cantine')->group(function () {
+            Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'dashboard']);
+            Route::get('menus',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexMenus']);
+            Route::get('menus/semaine',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'menuSemaine']);
+            Route::post('menus',                          [\App\Http\Controllers\Api\V1\CantineController::class, 'storeMenu']);
+            Route::put('menus/{id}',                      [\App\Http\Controllers\Api\V1\CantineController::class, 'updateMenu']);
+            Route::delete('menus/{id}',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'destroyMenu']);
+            Route::get('inscriptions',                    [\App\Http\Controllers\Api\V1\CantineController::class, 'indexInscriptions']);
+            Route::post('inscriptions',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'inscrireEleve']);
+            Route::put('inscriptions/{id}',               [\App\Http\Controllers\Api\V1\CantineController::class, 'updateInscription']);
+            Route::delete('inscriptions/{id}',            [\App\Http\Controllers\Api\V1\CantineController::class, 'desinscrireEleve']);
+            Route::post('pointage',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'pointer']);
+            Route::get('pointage/{date}',                 [\App\Http\Controllers\Api\V1\CantineController::class, 'pointageDate']);
+            Route::get('stock',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexStock']);
+            Route::post('stock',                          [\App\Http\Controllers\Api\V1\CantineController::class, 'storeStock']);
+            Route::post('stock/{id}/mouvement',           [\App\Http\Controllers\Api\V1\CantineController::class, 'mouvementStock']);
+            Route::get('stock/alertes',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'alertesStock']);
         });
 
         // ── Matching IA ──
