@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 32px 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 36px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── LAYOUT GLOBAL ── */
+  .arch {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── LAYER LABEL ── */
+  .layer-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #475569;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  /* ── COUCHE ── */
+  .layer {
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 16px 20px;
+    background: #131720;
+    position: relative;
+  }
+
+  .layer-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── BOX générique ── */
+  .box {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    border: 1px solid transparent;
+  }
+  .box .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .box .name { font-weight: 700; font-size: 13px; display: block; }
+  .box .tech { font-size: 10px; color: #94a3b8; display: block; margin-top: 2px; }
+  .box .badge {
+    position: absolute;
+    top: -8px; right: -8px;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* Couleurs par rôle */
+  .c-client   { background: #1e293b; border-color: #334155; }
+  .c-gateway  { background: #1a1f2e; border-color: #3b4a6b; }
+  .c-auth     { background: #1c1a2e; border-color: #4c3b8a; }
+  .c-core     { background: #0f2a1a; border-color: #1a5c32; }
+  .c-notif    { background: #1a1f2e; border-color: #2d4a7a; }
+  .c-queue    { background: #1a1a0f; border-color: #5c5a10; }
+  .c-data     { background: #1a0f0f; border-color: #7a2d2d; }
+  .c-infra    { background: #0f1a1a; border-color: #1a5c5c; }
+  .c-external { background: #1a0f1a; border-color: #5c2d7a; }
+  .c-security { background: #1a130f; border-color: #7a4a1a; }
+
+  .badge-warning { background: #f59e0b; color: #000; }
+  .badge-ok      { background: #22c55e; color: #000; }
+  .badge-todo    { background: #6366f1; color: #fff; }
+  .badge-risk    { background: #ef4444; color: #fff; }
+
+  /* ── FLÈCHES SVG ── */
+  .arrows {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 28px;
+  }
+  .arrow-down {
+    width: 2px;
+    height: 28px;
+    background: linear-gradient(to bottom, #334155, #475569);
+    position: relative;
+    margin: 0 auto;
+  }
+  .arrow-down::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #475569;
+  }
+
+  /* ── MIDDLEWARE PIPELINE ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .pipe-step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pipe-arrow {
+    color: #475569;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* ── MODULES MÉTIER ── */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .module {
+    background: #0f2a1a;
+    border: 1px solid #1a5c32;
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .module .m-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #4ade80;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .module .m-items {
+    list-style: none;
+    font-size: 10px;
+    color: #94a3b8;
+    line-height: 1.8;
+  }
+  .module .m-items li::before { content: '· '; color: #4ade80; }
+
+  /* ── DATA LAYER ── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .data-box {
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    font-size: 11px;
+  }
+  .data-box .d-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .data-box .d-name { font-weight: 700; display: block; }
+  .data-box .d-role { font-size: 10px; color: #94a3b8; display: block; margin-top: 2px; }
+
+  /* ── SÉCURITÉ ── */
+  .security-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .sec-box {
+    background: #1a130f;
+    border: 1px solid #7a4a1a;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+  .sec-box .s-title { font-weight: 700; color: #fb923c; margin-bottom: 4px; }
+  .sec-box .s-items { color: #94a3b8; line-height: 1.8; }
+
+  /* ── LÉGENDE ── */
+  .legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #64748b;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* ── DIVIDER ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 6px;
+  }
+
+  /* ── TENANT BOX ── */
+  .tenant-isolation {
+    background: #0a1628;
+    border: 2px dashed #2d4a7a;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+  }
+  .tenant-isolation .t-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tenant-row {
+    display: flex;
+    gap: 10px;
+  }
+  .tenant-card {
+    flex: 1;
+    background: #131720;
+    border: 1px solid #1e3a5f;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+  .tenant-card .tc-name { font-weight: 700; color: #93c5fd; display: block; margin-bottom: 2px; }
+  .tenant-card .tc-data { color: #475569; }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #1e3a5f;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎓 EduGest DZ</h1>
+<div class="subtitle">Architecture logicielle complète · SaaS Multi-tenant · Juin 2026</div>
+
+<div class="arch">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 1 : CLIENTS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 1 — Clients</div>
+    <div class="layer-row">
+
+      <div class="box c-client">
+        <span class="icon">🖥️</span>
+        <span class="name">Web Admin</span>
+        <span class="tech">React 18 + Vite<br>Tailwind CSS</span>
+      </div>
+
+      <div class="box c-client">
+        <span class="icon">📱</span>
+        <span class="name">App Mobile</span>
+        <span class="tech">React Native 0.76<br>Expo 52</span>
+        <span class="badge badge-todo">iOS + Android</span>
+      </div>
+
+      <div class="box c-client">
+        <span class="icon">👨‍👩‍👧</span>
+        <span class="name">Portail Parent</span>
+        <span class="tech">React 18<br>Vue lecture seule</span>
+      </div>
+
+      <div class="box c-client">
+        <span class="icon">👑</span>
+        <span class="name">Super Admin</span>
+        <span class="tech">Dashboard séparé<br>Cross-tenant</span>
+        <span class="badge badge-risk">Accès total</span>
+      </div>
+
+    </div>
+
+    <!-- Isolation tenant visuelle -->
+    <div class="tenant-isolation">
+      <div class="t-title">🔒 Isolation Multi-tenant — chaque client voit uniquement son centre</div>
+      <div class="tenant-row">
+        <div class="tenant-card">
+          <span class="tc-name">🏫 Tenant A — Centre Alger</span>
+          <span class="tc-data">Données isolées par tenant_id</span>
+        </div>
+        <div class="separator">|</div>
+        <div class="tenant-card">
+          <span class="tc-name">🏫 Tenant B — École Oran</span>
+          <span class="tc-data">Données isolées par tenant_id</span>
+        </div>
+        <div class="separator">|</div>
+        <div class="tenant-card">
+          <span class="tc-name">🏫 Tenant N — ...</span>
+          <span class="tc-data">BDD partagée, scope global</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrows"><div class="arrow-down"></div></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 2 : GATEWAY -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 2 — Gateway & Réseau</div>
+    <div class="layer-row">
+
+      <div class="box c-gateway">
+        <span class="icon">🌐</span>
+        <span class="name">Cloudflare CDN</span>
+        <span class="tech">DDoS · Cache · SSL<br>DNS Algérie</span>
+      </div>
+
+      <div class="box c-gateway">
+        <span class="icon">⚙️</span>
+        <span class="name">Nginx</span>
+        <span class="tech">Reverse proxy<br>Rate limiting<br>:80 / :443</span>
+      </div>
+
+      <div class="box c-gateway" style="min-width:200px;">
+        <span class="icon">🔁</span>
+        <span class="name">Middleware Pipeline</span>
+        <div class="pipeline" style="margin-top:8px;">
+          <div class="pipe-step">JWT</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">ResolveTenant</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">CheckSubscription</div>
+          <div class="pipe-arrow">→</div>
+          <div class="pipe-step">Controller</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arrows"><div class="arrow-down"></div></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 3 : SERVICES APPLICATIFS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 3 — Services applicatifs (Laravel 11 · PHP 8.2)</div>
+
+    <div class="section-title">API REST · /api/v1/</div>
+    <div class="layer-row" style="margin-bottom:14px;">
+      <div class="box c-auth">
+        <span class="icon">🔐</span>
+        <span class="name">Auth Service</span>
+        <span class="tech">JWT + Sanctum<br>2FA TOTP<br>Refresh tokens</span>
+      </div>
+      <div class="box c-auth">
+        <span class="icon">🔑</span>
+        <span class="name">RBAC</span>
+        <span class="tech">spatie/permission<br>Super-admin · Admin<br>Secrétaire · Prof · Parent</span>
+      </div>
+      <div class="box c-notif">
+        <span class="icon">🔔</span>
+        <span class="name">Notif Service</span>
+        <span class="tech">Firebase FCM<br>SMS Twilio/DZ<br>WhatsApp API</span>
+      </div>
+      <div class="box c-core">
+        <span class="icon">🔍</span>
+        <span class="name">Search</span>
+        <span class="tech">Meilisearch<br>laravel/scout<br>:7700</span>
+      </div>
+      <div class="box c-core">
+        <span class="icon">📄</span>
+        <span class="name">PDF / Excel</span>
+        <span class="tech">dompdf<br>maatwebsite/excel<br>Bulletins · Fiches paie</span>
+      </div>
+    </div>
+
+    <div class="section-title">Modules métier</div>
+    <div class="modules-grid">
+      <div class="module">
+        <div class="m-title">📋 M01 — Inscriptions</div>
+        <ul class="m-items">
+          <li>Dossier élève numérique</li>
+          <li>N° inscription auto</li>
+          <li>Import / Export CSV</li>
+          <li>QR Code présence</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">📅 M02 — Planning</div>
+        <ul class="m-items">
+          <li>Emploi du temps</li>
+          <li>Détection conflits</li>
+          <li>Calendrier scolaire DZ</li>
+          <li>Réservation créneaux</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">💰 M03 — Finance</div>
+        <ul class="m-items">
+          <li>Caisse & paiements</li>
+          <li>Facturation auto</li>
+          <li>Relances impayés J+1/3/7/15</li>
+          <li>CIB · Dahabia · BaridiMob</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">📚 M04 — Pédagogie</div>
+        <ul class="m-items">
+          <li>Saisie notes + coeff.</li>
+          <li>Suivi présences</li>
+          <li>Bulletins PDF</li>
+          <li>Moyenne pondérée</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">👨‍🏫 M05 — Personnel</div>
+        <ul class="m-items">
+          <li>Contrats CDI/CDD/Vacataire</li>
+          <li>Calcul IRG + CNAS</li>
+          <li>Bulletins paie PDF</li>
+          <li>Disponibilités</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">💬 M06 — Communication</div>
+        <ul class="m-items">
+          <li>Push notifications</li>
+          <li>SMS automatiques</li>
+          <li>Chat parent ↔ prof</li>
+          <li>Campagnes ciblées</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">📊 M07 — Reporting</div>
+        <ul class="m-items">
+          <li>Dashboard Admin/Prof/Parent</li>
+          <li>Export Excel/PDF</li>
+          <li>KPIs financiers</li>
+          <li>Audit logs (spatie)</li>
+        </ul>
+      </div>
+      <div class="module">
+        <div class="m-title">🛒 M08 — Marketplace</div>
+        <ul class="m-items">
+          <li>Offres publiques profs</li>
+          <li>Réservations</li>
+          <li>Avis & notation</li>
+          <li>Matching IA (score)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrows"><div class="arrow-down"></div></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 4 : ASYNC -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 4 — Traitement asynchrone</div>
+    <div class="layer-row">
+      <div class="box c-queue">
+        <span class="icon">⚡</span>
+        <span class="name">Queue Worker</span>
+        <span class="tech">Laravel Queue + Redis<br>3 essais · max 1h</span>
+      </div>
+      <div class="box c-queue">
+        <span class="icon">⏰</span>
+        <span class="name">Scheduler</span>
+        <span class="tech">Laravel Task Scheduling<br>cron toutes les 60s</span>
+      </div>
+      <div class="box c-queue">
+        <span class="icon">📨</span>
+        <span class="name">Jobs</span>
+        <span class="tech">Relances impayés<br>Envoi SMS/Push<br>Génération PDF</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrows"><div class="arrow-down"></div></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 5 : DATA -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 5 — Données & Stockage</div>
+    <div class="data-grid">
+      <div class="data-box" style="background:#1a0f0f;border:1px solid #7a2d2d;border-radius:8px;">
+        <span class="d-icon">🐘</span>
+        <span class="d-name" style="color:#f87171;">PostgreSQL 16</span>
+        <span class="d-role">BDD principale<br>ACID · UUID · JSONB<br>Multi-tenant par tenant_id</span>
+      </div>
+      <div class="data-box" style="background:#1a1a0f;border:1px solid #5c5a10;border-radius:8px;">
+        <span class="d-icon">🔴</span>
+        <span class="d-name" style="color:#fbbf24;">Redis 7</span>
+        <span class="d-role">Cache sessions<br>Queue jobs<br>256 MB · LRU</span>
+      </div>
+      <div class="data-box" style="background:#0f1a1a;border:1px solid #1a5c5c;border-radius:8px;">
+        <span class="d-icon">🔍</span>
+        <span class="d-name" style="color:#34d399;">Meilisearch v1.8</span>
+        <span class="d-role">Recherche fulltext<br>Élèves · Profs<br>Typo-tolerant</span>
+      </div>
+      <div class="data-box" style="background:#0f1a2a;border:1px solid #1a3a6a;border-radius:8px;">
+        <span class="d-icon">☁️</span>
+        <span class="d-name" style="color:#60a5fa;">File Storage</span>
+        <span class="d-role">OVH S3 / Local<br>Photos · PDFs<br>Isolé par tenant</span>
+      </div>
+      <div class="data-box" style="background:#1a0f1a;border:1px solid #5c2d7a;border-radius:8px;">
+        <span class="d-icon">💾</span>
+        <span class="d-name" style="color:#c084fc;">Backup</span>
+        <span class="d-role">Quotidien auto<br>PostgreSQL dump<br>Rétention 30j</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrows"><div class="arrow-down"></div></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 6 : INFRA -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 6 — Infrastructure & CI/CD</div>
+    <div class="layer-row">
+      <div class="box c-infra">
+        <span class="icon">🐳</span>
+        <span class="name">Docker Compose</span>
+        <span class="tech">9 services<br>Réseau isolé<br>172.20.0.0/16</span>
+      </div>
+      <div class="box c-infra">
+        <span class="icon">🏗️</span>
+        <span class="name">GitHub Actions</span>
+        <span class="tech">CI sur push main/develop<br>Tests + Coverage<br>PHP 8.2 · PG16 · Redis</span>
+        <span class="badge badge-ok">Corrigé</span>
+      </div>
+      <div class="box c-infra">
+        <span class="icon">🌍</span>
+        <span class="name">OVH / Hetzner</span>
+        <span class="tech">France · faible latence DZ<br>Let's Encrypt SSL<br>HTTPS forcé</span>
+      </div>
+      <div class="box c-infra">
+        <span class="icon">📡</span>
+        <span class="name">Monitoring</span>
+        <span class="tech">Sentry (erreurs)<br>Uptime Robot<br>pgAdmin · Redis UI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- COUCHE 7 : EXTERNAL -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Couche 7 — Intégrations externes</div>
+    <div class="layer-row">
+      <div class="box c-external">
+        <span class="icon">💳</span>
+        <span class="name">Satim / CIB</span>
+        <span class="tech">Dahabia · BaridiMob<br>Paiement en ligne DZ</span>
+        <span class="badge badge-warning">Sandbox requis</span>
+      </div>
+      <div class="box c-external">
+        <span class="icon">📱</span>
+        <span class="name">Firebase FCM</span>
+        <span class="tech">Push notifications<br>iOS + Android</span>
+      </div>
+      <div class="box c-external">
+        <span class="icon">📩</span>
+        <span class="name">SMS Gateway</span>
+        <span class="tech">Twilio / Solution DZ<br>Relances · Alertes</span>
+      </div>
+      <div class="box c-external">
+        <span class="icon">💬</span>
+        <span class="name">WhatsApp API</span>
+        <span class="tech">Webhook verify + handle<br>Messages automatiques</span>
+      </div>
+      <div class="box c-external">
+        <span class="icon">📧</span>
+        <span class="name">SMTP / SendGrid</span>
+        <span class="tech">Bulletins · Factures<br>Emails transactionnels</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SÉCURITÉ -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="layer">
+    <div class="layer-label">Sécurité transversale</div>
+    <div class="security-grid">
+      <div class="sec-box">
+        <div class="s-title">🔐 Authentification</div>
+        <div class="s-items">JWT + Sanctum<br>2FA TOTP<br>Codes de récupération<br>Refresh token rotation</div>
+      </div>
+      <div class="sec-box">
+        <div class="s-title">🏠 Isolation tenant</div>
+        <div class="s-items">BelongsToTenant trait<br>Global scope auto<br>Fail-safe null → 0 résultats<br>Tests d'étanchéité ✅</div>
+      </div>
+      <div class="sec-box">
+        <div class="s-title">🛡️ Données</div>
+        <div class="s-items">AES-256 chiffrement<br>RGPD + Loi 18-07 DZ<br>Soft deletes<br>Audit log (spatie)</div>
+      </div>
+      <div class="sec-box">
+        <div class="s-title">🚦 Réseau</div>
+        <div class="s-items">Rate limiting Nginx<br>HTTPS forcé<br>Cloudflare WAF<br>Réseau Docker isolé</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LÉGENDE -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#22c55e;"></div> Corrigé / OK
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#f59e0b;"></div> Attention / En cours
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#6366f1;"></div> Planifié Phase 2/3
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#ef4444;"></div> Risque identifié
+    </div>
+  </div>
+
+</div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a130203d1dc8647c',t:'MTc4MjY4NTcyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

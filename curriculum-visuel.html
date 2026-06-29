@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Curriculum Algérien</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; padding: 24px; }
+  h1 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .meta { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+
+  .warn { background: #1a130f; border: 1px solid #7a4a1a; border-radius: 8px; padding: 12px 16px;
+    font-size: 11px; color: #fb923c; margin-bottom: 20px; line-height: 1.7; }
+  .warn strong { color: #f97316; }
+
+  .palier { margin-bottom: 28px; }
+  .palier-title {
+    font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.5px; padding: 10px 16px; border-radius: 8px 8px 0 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .p-primaire  { background: #0d2515; color: #4ade80; border: 1px solid #1a4d2a; }
+  .p-moyen     { background: #091220; color: #60a5fa; border: 1px solid #1e3a5f; }
+  .p-lycee     { background: #150d22; color: #c084fc; border: 1px solid #4c1d95; }
+
+  .niveau-tabs { display: flex; gap: 0; flex-wrap: wrap; }
+  .niveau-tab {
+    padding: 8px 16px; font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1px solid #1e293b; border-top: none; background: #131720; color: #64748b;
+  }
+  .niveau-tab.active { background: #1e293b; color: #e2e8f0; }
+
+  .niveau-content { border: 1px solid #1e293b; border-top: none; border-radius: 0 0 8px 8px; }
+
+  .branche-section { padding: 16px; border-bottom: 1px solid #1e293b; }
+  .branche-section:last-child { border-bottom: none; }
+  .branche-label {
+    font-size: 11px; font-weight: 700; color: #fbbf24;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { background: #1e293b; color: #64748b; font-size: 10px; text-transform: uppercase;
+       letter-spacing: 1px; padding: 8px 10px; text-align: left; }
+  td { padding: 7px 10px; border-bottom: 1px solid #1a2232; }
+  tr:hover td { background: #131a25; }
+  .coeff { font-weight: 800; font-size: 14px; text-align: center; }
+  .coeff-high { color: #f87171; }
+  .coeff-mid  { color: #fb923c; }
+  .coeff-low  { color: #60a5fa; }
+  .coeff-fac  { color: #475569; }
+  .principale { color: #fbbf24; font-size: 9px; font-weight: 700; }
+  .matiere-ar { color: #64748b; font-size: 10px; display: block; }
+</style>
+</head>
+<body>
+
+<h1>📚 Curriculum Scolaire Algérien — Matières & Coefficients</h1>
+<div class="meta">1AP → 3AS · Toutes branches · BAC 2026 · EduGest DZ</div>
+
+<div class="warn">
+  <strong>⚠️ Sources et précisions :</strong>
+  BAC 2026 : ONEC / JoliMatin (vérifié). Cycle moyen : MEN correspondance 1547/2017 (El Watan).
+  Primaire : pratiques courantes — coefficients non publiés officiellement par le MEN.
+  <strong>Faire valider par un pédagogue algérien avant intégration en production.</strong>
+</div>
+
+<!-- ══════════ PRIMAIRE ══════════ -->
+<div class="palier">
+  <div class="palier-title p-primaire">🌱 Enseignement Primaire — التعليم الابتدائي</div>
+  <div class="niveau-content">
+
+    <div class="branche-section">
+      <div class="branche-label">📘 1ère & 2ème Année Primaire (1AP / 2AP)</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th><th>H/sem</th><th>Principale</th></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td><td>10h</td><td class="principale">★ OUI</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">3</td><td>5h</td><td class="principale">★ OUI</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td><td>3h</td><td></td></tr>
+        <tr><td>Éveil / Sciences</td><td>التربية العلمية</td><td class="coeff coeff-low">1</td><td>2h</td><td></td></tr>
+        <tr><td>Éducation Artistique</td><td>التربية الفنية</td><td class="coeff coeff-low">1</td><td>1h</td><td></td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td><td>2h</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">📗 3ème Année Primaire (3AP) — Début du Français</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th><th>H/sem</th><th>Principale</th></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td><td>8h</td><td class="principale">★ OUI</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">3</td><td>5h</td><td class="principale">★ OUI</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td><td>4h</td><td class="principale">★ OUI</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td><td>3h</td><td></td></tr>
+        <tr><td>Éveil / Sciences</td><td>التربية العلمية</td><td class="coeff coeff-low">1</td><td>2h</td><td></td></tr>
+        <tr><td>Éducation Artistique</td><td>التربية الفنية</td><td class="coeff coeff-low">1</td><td>1h</td><td></td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td><td>2h</td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">📕 4ème & 5ème Année Primaire (4AP / 5AP) — Examen CFE</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff. 4AP</th><th style="text-align:center">Coeff. 5AP</th><th>H/sem</th></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td><td class="coeff coeff-high">3</td><td>8h</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">3</td><td class="coeff coeff-high">3</td><td>5h</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-mid">2</td><td>4h</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-mid">2</td><td>3h</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td><td>2h</td></tr>
+        <tr><td>Sciences Naturelles</td><td>العلوم الطبيعية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td>2h</td></tr>
+        <tr><td>Éducation Civique</td><td>التربية المدنية</td><td class="coeff coeff-low">—</td><td class="coeff coeff-low">1</td><td>1h</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td>2h</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MOYEN ══════════ -->
+<div class="palier">
+  <div class="palier-title p-moyen">🏫 Enseignement Moyen (CEM) — التعليم المتوسط</div>
+  <div class="niveau-content">
+    <div class="branche-section">
+      <div class="branche-label">📘 1AM / 2AM / 3AM / 4AM (BEM) — Source : MEN 2017</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">1AM</th><th style="text-align:center">2AM</th><th style="text-align:center">3AM</th><th style="text-align:center">4AM (BEM)</th></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-high">3</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-high">3</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-mid">2</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Histoire</td><td>التاريخ</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Géographie</td><td>الجغرافيا</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Sciences Naturelles</td><td>العلوم الطبيعية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Sciences Physiques</td><td>العلوم الفيزيائية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Technologie</td><td>التكنولوجيا</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td></tr>
+        <tr><td>Tamazight</td><td>الأمازيغية</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LYCÉE ══════════ -->
+<div class="palier">
+  <div class="palier-title p-lycee">🎓 Enseignement Secondaire — Lycée · BAC 2026 (ONEC)</div>
+  <div class="niveau-content">
+
+    <!-- 1AS Tronc Commun -->
+    <div class="branche-section">
+      <div class="branche-label">⬛ 1ère AS — Tronc Commun (جذع مشترك)</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th><th>H/sem</th></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">4</td><td>5h</td></tr>
+        <tr><td>Sciences Physiques</td><td>العلوم الفيزيائية</td><td class="coeff coeff-high">3</td><td>4h</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td><td>4h</td></tr>
+        <tr><td>Sciences Naturelles</td><td>علوم الطبيعة والحياة</td><td class="coeff coeff-mid">2</td><td>3h</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td><td>3h</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td><td>3h</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-mid">2</td><td>2h</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td><td>2h</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-low">1</td><td>2h</td></tr>
+        <tr><td>Technologie</td><td>التكنولوجيا</td><td class="coeff coeff-low">1</td><td>2h</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td><td>2h</td></tr>
+      </table>
+    </div>
+
+    <!-- BAC par filière -->
+    <div class="branche-section">
+      <div class="branche-label">🔬 3AS Sciences Expérimentales — علوم تجريبية</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Sciences Naturelles</td><td>علوم الطبيعة والحياة</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Sciences Physiques</td><td>العلوم الفيزيائية</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+        <tr><td>Tamazight</td><td>الأمازيغية</td><td class="coeff coeff-fac">Facultatif</td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">📐 3AS Mathématiques — رياضيات</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">7</td></tr>
+        <tr><td>Sciences Physiques</td><td>العلوم الفيزيائية</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Sciences Naturelles</td><td>علوم الطبيعة والحياة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">⚙️ 3AS Technique-Mathématiques — تقني رياضي</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Technologie</td><td>التكنولوجيا</td><td class="coeff coeff-high">7</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Sciences Physiques</td><td>العلوم الفيزيائية</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">📖 3AS Lettres et Philosophie — آداب وفلسفة</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">💼 3AS Gestion et Économie — تسيير واقتصاد</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Comptabilité et Management</td><td>المحاسبة والتسيير</td><td class="coeff coeff-high">6</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Économie</td><td>الاقتصاد</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Droit</td><td>القانون</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+
+    <div class="branche-section">
+      <div class="branche-label">🌍 3AS Langues Étrangères — لغات أجنبية</div>
+      <table>
+        <tr><th>Matière</th><th>Arabe</th><th style="text-align:center">Coeff.</th></tr>
+        <tr><td>Langue Française</td><td>اللغة الفرنسية</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Langue Anglaise</td><td>اللغة الإنجليزية</td><td class="coeff coeff-high">5</td></tr>
+        <tr><td>Langue Arabe</td><td>اللغة العربية</td><td class="coeff coeff-high">4</td></tr>
+        <tr><td>Traduction</td><td>الترجمة</td><td class="coeff coeff-high">3</td></tr>
+        <tr><td>Philosophie</td><td>الفلسفة</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Histoire-Géographie</td><td>التاريخ والجغرافيا</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Éducation Islamique</td><td>التربية الإسلامية</td><td class="coeff coeff-mid">2</td></tr>
+        <tr><td>Mathématiques</td><td>الرياضيات</td><td class="coeff coeff-low">1</td></tr>
+        <tr><td>Éducation Physique</td><td>التربية البدنية</td><td class="coeff coeff-low">1</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1355fb9af9bd959',t:'MTc4Mjc0MDc1MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

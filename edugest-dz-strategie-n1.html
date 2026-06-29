@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Stratégie N°1 Algérie</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    padding: 32px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 36px; }
+
+  .phase {
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #1e293b;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .phase-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .phase-title { font-size: 17px; font-weight: 800; }
+  .phase-sub { font-size: 11px; margin-top: 2px; }
+  .phase-duration {
+    margin-left: auto;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* Phase colors */
+  .p1 { background: #0a1f0a; border-color: #1a4d1a; }
+  .p1 .phase-num { background: #14532d; color: #4ade80; }
+  .p1 .phase-title { color: #4ade80; }
+  .p1 .phase-sub { color: #166534; }
+  .p1 .phase-duration { background: #14532d; color: #4ade80; }
+
+  .p2 { background: #0a1628; border-color: #1e3a5f; }
+  .p2 .phase-num { background: #1e3a5f; color: #60a5fa; }
+  .p2 .phase-title { color: #60a5fa; }
+  .p2 .phase-sub { color: #1e40af; }
+  .p2 .phase-duration { background: #1e3a5f; color: #60a5fa; }
+
+  .p3 { background: #1a1028; border-color: #4c1d95; }
+  .p3 .phase-num { background: #4c1d95; color: #c084fc; }
+  .p3 .phase-title { color: #c084fc; }
+  .p3 .phase-sub { color: #6d28d9; }
+  .p3 .phase-duration { background: #4c1d95; color: #c084fc; }
+
+  .p4 { background: #1a100a; border-color: #7c2d12; }
+  .p4 .phase-num { background: #7c2d12; color: #fb923c; }
+  .p4 .phase-title { color: #fb923c; }
+  .p4 .phase-sub { color: #9a3412; }
+  .p4 .phase-duration { background: #7c2d12; color: #fb923c; }
+
+  /* Action items */
+  .actions { display: grid; gap: 10px; }
+  .action {
+    background: #131720;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .action-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .action-body { flex: 1; }
+  .action-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .action-desc { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .action-tag {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 20px; font-size: 10px; font-weight: 700;
+    margin-top: 6px;
+  }
+  .tag-now    { background: #14532d; color: #4ade80; }
+  .tag-week   { background: #1e3a5f; color: #60a5fa; }
+  .tag-month  { background: #4c1d95; color: #c084fc; }
+  .tag-later  { background: #422006; color: #fb923c; }
+  .tag-never  { background: #450a0a; color: #f87171; }
+
+  /* KPI targets */
+  .kpi-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .kpi-target {
+    flex: 1; min-width: 120px;
+    background: #0f1117;
+    border: 1px solid #1e293b;
+    border-radius: 8px; padding: 12px;
+    text-align: center;
+  }
+  .kpi-target .kt-val { font-size: 22px; font-weight: 800; display: block; }
+  .kpi-target .kt-label { font-size: 10px; color: #64748b; display: block; margin-top: 2px; }
+
+  /* Warning */
+  .warn {
+    background: #1a0f0f; border: 1px solid #7f1d1d;
+    border-radius: 8px; padding: 14px 16px;
+    font-size: 12px; color: #fca5a5; line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .warn strong { color: #f87171; }
+
+  /* Truth box */
+  .truth {
+    background: #0a1628; border: 2px solid #3b82f6;
+    border-radius: 10px; padding: 20px;
+    font-size: 13px; line-height: 1.9; color: #cbd5e1;
+    margin-bottom: 24px;
+  }
+  .truth strong { color: #60a5fa; }
+
+  /* Pricing */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .plan {
+    border-radius: 10px; padding: 18px;
+    border: 1px solid #1e293b; background: #131720;
+    text-align: center;
+  }
+  .plan.recommended { border-color: #3b82f6; background: #0a1628; }
+  .plan .p-name { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .plan .p-price { font-size: 26px; font-weight: 900; margin: 10px 0 4px; }
+  .plan .p-period { font-size: 10px; color: #64748b; margin-bottom: 12px; }
+  .plan ul { list-style: none; font-size: 11px; color: #94a3b8; line-height: 2; text-align: left; }
+  .plan ul li::before { content: '✓ '; color: #4ade80; }
+  .rec-badge {
+    background: #3b82f6; color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 10px; border-radius: 20px;
+    display: inline-block; margin-bottom: 8px;
+  }
+
+  /* Checklist */
+  .checklist { display: flex; flex-direction: column; gap: 6px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 12px; color: #94a3b8; line-height: 1.6;
+    background: #131720; border: 1px solid #1e293b;
+    border-radius: 6px; padding: 10px 12px;
+  }
+  .check-item .ci { font-size: 16px; flex-shrink: 0; }
+
+  /* Section title */
+  .stitle {
+    font-size: 11px; font-weight: 700; color: #475569;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin: 20px 0 10px;
+    border-bottom: 1px solid #1e293b; padding-bottom: 6px;
+  }
+
+  hr { border: none; border-top: 1px solid #1e293b; margin: 8px 0 20px; }
+</style>
+</head>
+<body>
+
+<h1>🏆 EduGest DZ — Stratégie pour devenir N°1 en Algérie</h1>
+<div class="meta">Solo founder · 0 utilisateurs · Budget 500–5000 USD/mois · Juin 2026</div>
+
+<!-- ═══════════════════════ VÉRITÉ ═══════════════════════ -->
+<div class="truth">
+  <strong>Le seul chemin vers le N°1 : aller chercher le premier client cette semaine.</strong><br>
+  Pas dans 3 mois quand le code sera parfait. Cette semaine. Un directeur de centre, dans ta ville, qui accepte de tester gratuitement. Tout le reste dans ce document découle de ça. Si tu ne fais pas ça, aucune des étapes suivantes ne sert à rien.
+</div>
+
+<!-- ═══════════════════════ PHASE 1 ═══════════════════════ -->
+<div class="phase p1">
+  <div class="phase-header">
+    <div class="phase-num">1</div>
+    <div>
+      <div class="phase-title">SURVIVRE — 1 client pilote en production</div>
+      <div class="phase-sub">La phase que 80% des fondateurs sautent. C'est celle qui compte le plus.</div>
+    </div>
+    <div class="phase-duration">Semaines 1 à 6</div>
+  </div>
+
+  <div class="stitle">Ce que tu dois faire — dans cet ordre</div>
+  <div class="actions">
+
+    <div class="action">
+      <div class="action-icon">🚶</div>
+      <div class="action-body">
+        <div class="action-title">Aller physiquement dans 20 centres de ta ville</div>
+        <div class="action-desc">Pas par téléphone. Pas par email. En personne. Parle au directeur. Pose une seule question : "Comment tu gères tes inscriptions et tes paiements aujourd'hui ?" Écoute. Ne vends rien encore. Tu veux comprendre leur douleur exacte, pas leur vendre une solution imaginaire.</div>
+        <span class="action-tag tag-now">Cette semaine</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🎁</div>
+      <div class="action-body">
+        <div class="action-title">Proposer 3 mois gratuits à 1 centre pilote</div>
+        <div class="action-desc">Tu cherches 1 directeur motivé, pas 10 sceptiques. Le critère de sélection : il doit avoir un vrai problème aujourd'hui (carnets papier, Excel, WhatsApp pour les paiements) et être prêt à y consacrer 1h par semaine pour te donner du feedback. En échange de 3 mois gratuits.</div>
+        <span class="action-tag tag-now">Semaine 1-2</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">✂️</div>
+      <div class="action-body">
+        <div class="action-title">Réduire le produit à 3 modules seulement</div>
+        <div class="action-desc">Pour le pilote : Inscriptions + Paiements (espèces d'abord, pas CIB) + Planning. Désactiver tout le reste. Marketplace, matching IA, WhatsApp, 2FA avancé — tout ça est désactivé. Un produit simple qui marche vaut infiniment plus qu'un produit complet qui bug.</div>
+        <span class="action-tag tag-now">Semaine 1-2</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">📞</div>
+      <div class="action-body">
+        <div class="action-title">Être disponible 24/7 pour ce 1er client</div>
+        <div class="action-desc">Quand il appelle à 22h parce que quelque chose ne marche pas, tu réponds. Ce niveau de service ne durera pas, mais pour le premier client, il est non-négociable. C'est lui qui va te dire exactement quoi corriger et quoi prioriser. Il vaut plus que 6 mois de brainstorming.</div>
+        <span class="action-tag tag-now">Permanence</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">📋</div>
+      <div class="action-body">
+        <div class="action-title">Note chaque friction, chaque erreur, chaque "c'est compliqué"</div>
+        <div class="action-desc">Chaque fois que le directeur hésite, recharge la page, te demande comment faire quelque chose — c'est un bug d'UX. Liste-les tous. C'est ton backlog réel. Pas ce que tu penses être important : ce que l'utilisateur trouve difficile.</div>
+        <span class="action-tag tag-now">En continu</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stitle">Objectifs de fin de Phase 1</div>
+  <div class="kpi-row">
+    <div class="kpi-target"><span class="kt-val" style="color:#4ade80;">1</span><span class="kt-label">Centre en production réelle</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#4ade80;">3</span><span class="kt-label">Modules fonctionnels et stables</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#4ade80;">CI ✅</span><span class="kt-label">Pipeline vert sur develop</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#4ade80;">1</span><span class="kt-label">Témoignage client écrit</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PHASE 2 ═══════════════════════ -->
+<div class="phase p2">
+  <div class="phase-header">
+    <div class="phase-num">2</div>
+    <div>
+      <div class="phase-title">CROÎTRE — 10 centres payants</div>
+      <div class="phase-sub">Le product-market fit est trouvé. On commence à vendre.</div>
+    </div>
+    <div class="phase-duration">Mois 2 à 6</div>
+  </div>
+
+  <div class="stitle">Pricing — Commence simple</div>
+  <div class="pricing-grid">
+    <div class="plan">
+      <div class="p-name">🌱 Starter</div>
+      <div class="p-price" style="color:#4ade80;">2 000 DA</div>
+      <div class="p-period">/ mois · ≈ 15 USD</div>
+      <ul>
+        <li>Jusqu'à 50 élèves</li>
+        <li>Inscriptions + Paiements</li>
+        <li>Planning basique</li>
+        <li>1 utilisateur admin</li>
+      </ul>
+    </div>
+    <div class="plan recommended">
+      <div class="rec-badge">⭐ RECOMMANDÉ</div>
+      <div class="p-name" style="color:#60a5fa;">🚀 Pro</div>
+      <div class="p-price" style="color:#60a5fa;">5 000 DA</div>
+      <div class="p-period">/ mois · ≈ 37 USD</div>
+      <ul>
+        <li>Élèves illimités</li>
+        <li>Tous les modules core</li>
+        <li>App mobile parents</li>
+        <li>Notifications SMS</li>
+        <li>Export PDF/Excel</li>
+        <li>3 utilisateurs admin</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <div class="p-name">🏢 Premium</div>
+      <div class="p-price" style="color:#c084fc;">12 000 DA</div>
+      <div class="p-period">/ mois · ≈ 89 USD</div>
+      <ul>
+        <li>Tout Pro inclus</li>
+        <li>Multi-centres</li>
+        <li>Marketplace accès</li>
+        <li>Paiement CIB/Dahabia</li>
+        <li>Support prioritaire</li>
+        <li>Utilisateurs illimités</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="stitle" style="margin-top:20px;">Actions de croissance</div>
+  <div class="actions">
+
+    <div class="action">
+      <div class="action-icon">🗣️</div>
+      <div class="action-body">
+        <div class="action-title">Bouche-à-oreille dirigé — les 9 premiers clients</div>
+        <div class="action-desc">Demande à ton premier client de te recommander 3 directeurs de centres dans son réseau. Offre-lui 1 mois gratuit par recommandation convertie. En Algérie, la confiance se transmet par les pairs — un directeur qui dit "j'utilise ça et ça marche" vaut 100x mieux qu'une publicité Facebook.</div>
+        <span class="action-tag tag-week">Mois 2</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">📹</div>
+      <div class="action-body">
+        <div class="action-title">1 vidéo démo de 3 minutes — YouTube + Facebook</div>
+        <div class="action-desc">Filmée dans un vrai centre (avec permission). Montre le problème (carnet papier, Excel) puis la solution (inscription en 30 secondes, paiement tracé, SMS au parent). Pas de présentation PowerPoint. Du concret. En Darija ou Français selon ton marché cible. Facebook Algérie est le canal numéro 1 pour toucher les directeurs de centres privés.</div>
+        <span class="action-tag tag-week">Mois 2-3</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🏫</div>
+      <div class="action-body">
+        <div class="action-title">Partenariat avec les fédérations et associations de l'enseignement privé</div>
+        <div class="action-desc">Il existe des associations de directeurs d'établissements privés au niveau wilaya. Un accord avec l'une d'elles (tarif groupé, formation gratuite) peut t'amener 20-50 centres d'un coup. C'est du B2B2B : tu vends à l'association, l'association recommande à ses membres.</div>
+        <span class="action-tag tag-month">Mois 3-4</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🎓</div>
+      <div class="action-body">
+        <div class="action-title">Formation d'onboarding de 2h — en présentiel</div>
+        <div class="action-desc">Les directeurs algériens n'ont pas le temps de lire une documentation. Tu vas chez eux, tu installes, tu formes en 2h. Pour les 10 premiers clients, fais-le toi-même. Après, tu crées des vidéos de 5 minutes par module. Le taux de rétention est directement corrélé à la qualité de l'onboarding.</div>
+        <span class="action-tag tag-week">Dès le 1er client</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stitle">Objectifs de fin de Phase 2</div>
+  <div class="kpi-row">
+    <div class="kpi-target"><span class="kt-val" style="color:#60a5fa;">10</span><span class="kt-label">Centres payants</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#60a5fa;">50K DA</span><span class="kt-label">MRR mensuel</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#60a5fa;">&lt;5%</span><span class="kt-label">Taux de churn</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#60a5fa;">3</span><span class="kt-label">Wilayas couvertes</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PHASE 3 ═══════════════════════ -->
+<div class="phase p3">
+  <div class="phase-header">
+    <div class="phase-num">3</div>
+    <div>
+      <div class="phase-title">DOMINER — 100 centres, marketplace active</div>
+      <div class="phase-sub">Le fossé concurrentiel. Là où les copies deviennent difficiles.</div>
+    </div>
+    <div class="phase-duration">Mois 6 à 18</div>
+  </div>
+
+  <div class="actions">
+
+    <div class="action">
+      <div class="action-icon">💳</div>
+      <div class="action-body">
+        <div class="action-title">Activer le paiement CIB / Dahabia / BaridiMob</div>
+        <div class="action-desc">C'est l'avantage différenciateur le plus durable. Aucun concurrent ne l'a. Mais c'est aussi le plus difficile : l'intégration Satim nécessite un contrat commercial, un sandbox, des tests de conformité. Lance le processus dès la Phase 1 — les délais administratifs sont longs. Cible : actif en mois 6.</div>
+        <span class="action-tag tag-month">Mois 6</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🛒</div>
+      <div class="action-body">
+        <div class="action-title">Lancer la marketplace publique prof/élève</div>
+        <div class="action-desc">Une fois 50+ centres actifs, tu as suffisamment de profs pour alimenter une marketplace. Les parents cherchent des profs de maths à Alger ? Ils trouvent sur EduGest DZ. Commission de 10-15% sur la première séance. Ce mécanisme crée une boucle : plus de centres → plus de profs → plus de parents → plus de centres.</div>
+        <span class="action-tag tag-month">Mois 8-10</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🤝</div>
+      <div class="action-body">
+        <div class="action-title">Recruter 5 commerciaux terrain (1 par grande wilaya)</div>
+        <div class="action-desc">Alger, Oran, Constantine, Annaba, Tizi Ouzou. Pas des commerciaux classiques : des anciens directeurs de centres ou des profs reconvertis. Ils comprennent le métier, ils parlent la même langue que les clients. Rémunération : fixe léger + commission sur MRR généré.</div>
+        <span class="action-tag tag-month">Mois 9-12</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🔗</div>
+      <div class="action-body">
+        <div class="action-title">Intégration avec le système Rakmana / MEN</div>
+        <div class="action-desc">Si EduGest DZ peut exporter les notes directement vers la plateforme officielle du Ministère, c'est une raison de plus pour les écoles privées de choisir ton logiciel. Contacte le Centre National de l'Informatique et des Statistiques (CNIS) pour explorer les APIs disponibles.</div>
+        <span class="action-tag tag-month">Mois 10-15</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🌍</div>
+      <div class="action-body">
+        <div class="action-title">Expansion Tunisie / Maroc</div>
+        <div class="action-desc">Le modèle multi-tenant et multilingue est déjà conçu pour ça. Adapte la fiscalité (TVA locale, pas d'IRG DZ), le calendrier scolaire et la devise. Le code ne change pas. Tu crées juste une instance dédiée par pays. Commence par un partenaire local dans chaque pays.</div>
+        <span class="action-tag tag-later">Mois 15-18</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stitle">Objectifs de fin de Phase 3</div>
+  <div class="kpi-row">
+    <div class="kpi-target"><span class="kt-val" style="color:#c084fc;">100+</span><span class="kt-label">Centres actifs</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#c084fc;">500K DA</span><span class="kt-label">MRR</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#c084fc;">5</span><span class="kt-label">Wilayas couvertes</span></div>
+    <div class="kpi-target"><span class="kt-val" style="color:#c084fc;">Marketplace</span><span class="kt-label">Active avec transactions</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PHASE 4 ═══════════════════════ -->
+<div class="phase p4">
+  <div class="phase-header">
+    <div class="phase-num">4</div>
+    <div>
+      <div class="phase-title">N°1 ALGÉRIE — Le fossé infranchissable</div>
+      <div class="phase-sub">Quand les données réseau rendent la copie inutile.</div>
+    </div>
+    <div class="phase-duration">Mois 18 → ∞</div>
+  </div>
+
+  <div class="actions">
+
+    <div class="action">
+      <div class="action-icon">📊</div>
+      <div class="action-body">
+        <div class="action-title">Monétiser les données agrégées (anonymisées)</div>
+        <div class="action-desc">Avec 100+ centres, tu as des données uniques : quelles matières sont les plus demandées par wilaya, quels profils de profs retiennent le mieux les élèves, quels créneaux horaires convertissent le mieux. Ces insights valent de l'argent pour les éditeurs de manuels, les organismes de formation, les collectivités. RGPD + Loi 18-07 : toujours anonymisé.</div>
+        <span class="action-tag tag-later">Mois 18+</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🏦</div>
+      <div class="action-body">
+        <div class="action-title">Lever des fonds — Startup DZ / Fonds d'amorçage algériens</div>
+        <div class="action-desc">À ce stade, tu as des métriques (MRR, churn, NPS). C'est le bon moment pour lever. En Algérie : Caisse des Dépôts (CDC), Algeria Venture, Flat6Labs Algérie, ou des business angels privés. L'objectif : accélérer le déploiement commercial, pas payer le développement.</div>
+        <span class="action-tag tag-later">Mois 15-20</span>
+      </div>
+    </div>
+
+    <div class="action">
+      <div class="action-icon">🤖</div>
+      <div class="action-body">
+        <div class="action-title">IA prédictive — décrochage scolaire et impayés</div>
+        <div class="action-desc">Avec 12+ mois de données réelles : prédire quels élèves risquent de décrocher (présences en baisse + notes en chute), et quels paiements vont être en retard. Alerter le directeur avant que le problème arrive. C'est de la valeur métier réelle, pas du gadget IA.</div>
+        <span class="action-tag tag-later">Mois 24+</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stitle">Fossé concurrentiel à construire</div>
+  <div class="checklist">
+    <div class="check-item"><div class="ci">🔒</div>Plus tu as de centres, plus tu as de profs sur la marketplace → les concurrents ne peuvent pas te copier sans avoir ces profs.</div>
+    <div class="check-item"><div class="ci">📈</div>Plus tu as de données, plus ton IA de matching est précise → les centres qui arrivent après toi ont un produit inférieur.</div>
+    <div class="check-item"><div class="ci">💳</div>Si tu es le seul intégré avec Satim, les parents préfèrent payer en ligne → les centres qui n'ont pas EduGest DZ perdent des clients.</div>
+    <div class="check-item"><div class="ci">🤝</div>Si tu es intégré avec le MEN (Rakmana), changer de logiciel devient douloureux → ton taux de rétention explose.</div>
+    <div class="check-item"><div class="ci">🏆</div>La marque "EduGest DZ" devient synonyme de gestion scolaire en Algérie → comme Photoshop pour les photos.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ CE QU'IL NE FAUT PAS FAIRE ═══════════════════════ -->
+<div class="warn" style="margin-top:24px;">
+  <strong>⛔ Les 5 erreurs qui t'empêcheront d'être N°1</strong><br><br>
+  1. <strong>Continuer à coder sans utilisateur</strong> — chaque feature ajoutée sans feedback client est du code potentiellement inutile.<br>
+  2. <strong>Lancer sur toute l'Algérie d'un coup</strong> — commence par 1 ville, maîtrise-la, puis étends.<br>
+  3. <strong>Faire du marketing avant d'avoir un produit stable</strong> — 100 visiteurs sur une app qui bug = 100 clients perdus définitivement.<br>
+  4. <strong>Baisser le prix pour convaincre</strong> — un directeur qui ne paie pas ne valorise pas ton produit. Le prix bas ne compense pas un mauvais produit.<br>
+  5. <strong>Ajouter la marketplace avant d'avoir 50 centres</strong> — une marketplace vide n'attire personne. C'est un œuf et poule. Résous-le dans l'ordre.
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a130503e1dd1d19c',t:'MTc4MjY4NzY4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
