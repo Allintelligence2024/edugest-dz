@@ -338,6 +338,26 @@ use App\Http\Controllers\Api\V1\{
             Route::get('circuits/{id}/pointage',              [\App\Http\Controllers\Api\V1\TransportController::class, 'pointageDuJour']);
         });
 
+        // ── Cantine / Restauration (M10) ──
+        Route::prefix('cantine')->group(function () {
+            Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'dashboard']);
+            Route::get('menus',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexMenus']);
+            Route::get('menus/semaine',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'menuSemaine']);
+            Route::post('menus',                          [\App\Http\Controllers\Api\V1\CantineController::class, 'storeMenu']);
+            Route::put('menus/{id}',                      [\App\Http\Controllers\Api\V1\CantineController::class, 'updateMenu']);
+            Route::delete('menus/{id}',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'destroyMenu']);
+            Route::get('inscriptions',                    [\App\Http\Controllers\Api\V1\CantineController::class, 'indexInscriptions']);
+            Route::post('inscriptions',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'inscrireEleve']);
+            Route::put('inscriptions/{id}',               [\App\Http\Controllers\Api\V1\CantineController::class, 'updateInscription']);
+            Route::delete('inscriptions/{id}',            [\App\Http\Controllers\Api\V1\CantineController::class, 'desinscrireEleve']);
+            Route::post('pointage',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'pointer']);
+            Route::get('pointage/{date}',                 [\App\Http\Controllers\Api\V1\CantineController::class, 'pointageDate']);
+            Route::get('stock',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexStock']);
+            Route::post('stock',                          [\App\Http\Controllers\Api\V1\CantineController::class, 'storeStock']);
+            Route::post('stock/{id}/mouvement',           [\App\Http\Controllers\Api\V1\CantineController::class, 'mouvementStock']);
+            Route::get('stock/alertes',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'alertesStock']);
+        });
+
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
