@@ -84,7 +84,7 @@ class CampagneController extends Controller
     public function show(string $id): JsonResponse
     {
         $campagne = Campagne::where('tenant_id', config('tenant.current_id'))
-            ->with('destinataires')
+            ->with('lignesDestinataires')
             ->findOrFail($id);
 
         return response()->json(['success' => true, 'data' => $campagne]);
@@ -104,7 +104,7 @@ class CampagneController extends Controller
     {
         $campagne->update(['statut' => 'en_cours', 'envoyee_le' => now()]);
 
-        $destinataires = $campagne->destinataires;
+        $destinataires = $campagne->lignesDestinataires;
 
         foreach ($destinataires as $dest) {
             $user = User::find($dest->destinataire_id);

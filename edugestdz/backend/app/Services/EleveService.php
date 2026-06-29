@@ -52,6 +52,10 @@ class EleveService
 
     public function verifierTokenQR(string $token): ?array
     {
+        if (!str_starts_with($token, '$2y$') && !str_starts_with($token, '$2a$')) {
+            return null;
+        }
+
         // Parcourt les tokens stockés (en production, utiliser cache/index)
         $eleves = Eleve::where('tenant_id', config('tenant.current_id'))
             ->whereNotNull('qr_code')

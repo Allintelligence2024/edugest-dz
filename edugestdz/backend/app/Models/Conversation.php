@@ -26,6 +26,6 @@ class Conversation extends BaseModel
 
     public function dernierMessage()
     {
-        return $this->hasOne(Message::class)->latestOfMany();
+        return $this->hasOne(Message::class)->latest('created_at');
     }
 }

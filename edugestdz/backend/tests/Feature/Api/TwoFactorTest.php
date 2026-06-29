@@ -5,6 +5,7 @@ use App\Models\{User, Tenant, Role};
 use App\Services\TwoFactorService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class TwoFactorTest extends TestCase
@@ -28,7 +29,7 @@ class TwoFactorTest extends TestCase
             'statut'    => 'actif',
         ]);
 
-        $this->token = auth('api')->login($this->admin);
+        $this->token = JWTAuth::fromUser($this->admin);
     }
 
     public function test_enable_totp(): void

@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\Marketplace;
 use App\Models\{OffrePublique, Reservation, Avis, Enseignant, Eleve, User, Tenant, Role, Matiere};
 use App\Services\Marketplace\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class MarketplaceTest extends TestCase
@@ -44,7 +45,7 @@ class MarketplaceTest extends TestCase
             'user_id'   => $userEleve->id,
         ]);
 
-        $this->token = auth('api')->login($userEleve);
+        $this->token = JWTAuth::fromUser($userEleve);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Campagne extends BaseModel
 {
     protected $table = 'campagnes';
@@ -20,7 +22,12 @@ class Campagne extends BaseModel
         'envoyee_le'     => 'datetime',
     ];
 
-    public function destinataires()
+    public function destinataires(): HasMany
+    {
+        return $this->hasMany(CampagneDestinataire::class);
+    }
+
+    public function lignesDestinataires(): HasMany
     {
         return $this->hasMany(CampagneDestinataire::class);
     }

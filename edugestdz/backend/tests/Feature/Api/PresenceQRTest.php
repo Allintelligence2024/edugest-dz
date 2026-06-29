@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\{Eleve, Seance, Cours, Groupe, User, Tenant, Role};
 use App\Services\EleveService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class PresenceQRTest extends TestCase
@@ -22,10 +23,10 @@ class PresenceQRTest extends TestCase
         $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
         $role  = Role::factory()->create(['nom' => 'admin']);
         $admin = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
 
-        $this->eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
+        $this->eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id, 'qr_code' => 'dummy']);
         $matiere = \App\Models\Matiere::factory()->create(['tenant_id' => $this->tenant->id]);
         $groupe  = Groupe::factory()->create(['tenant_id' => $this->tenant->id, 'matiere_id' => $matiere->id]);
         $cours   = Cours::factory()->create(['tenant_id' => $this->tenant->id, 'groupe_id' => $groupe->id, 'matiere_id' => $matiere->id, 'heure_debut' => '08:00', 'heure_fin' => '10:00', 'statut' => 'actif']);

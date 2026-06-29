@@ -4,6 +4,8 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Tenant, User, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class SuperAdminTest extends TestCase
@@ -16,14 +18,14 @@ class SuperAdminTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(\Database\Seeders\WilayaSeeder::class);
         $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
         $role  = Role::factory()->create(['nom' => 'super_admin']);
         $admin = User::factory()->create([
             'tenant_id' => $this->tenant->id,
             'role_id'   => $role->id,
-            'role'      => 'super_admin',
         ]);
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 
@@ -41,7 +43,7 @@ class SuperAdminTest extends TestCase
             ->postJson('/api/v1/super-admin/tenants', [
                 'nom_etablissement' => 'Nouveau Centre',
                 'slug'              => 'nouveau-centre',
-                'type_etablissement'=> 'centre',
+                'type_etablissement'=> 'centre_cours',
                 'wilaya_id'         => 1,
                 'email'             => 'centre@test.dz',
                 'telephone'         => '0555123456',
@@ -69,9 +71,8 @@ class SuperAdminTest extends TestCase
         $user = User::factory()->create([
             'tenant_id' => $this->tenant->id,
             'role_id'   => $roleUser->id,
-            'role'      => 'admin',
         ]);
-        $tokenUser = auth('api')->login($user);
+        $tokenUser = JWTAuth::fromUser($user);
 
         $this->withToken($tokenUser)
             ->getJson('/api/v1/super-admin/tenants')

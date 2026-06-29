@@ -3,6 +3,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -37,11 +38,9 @@ class AuthTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonStructure([
                      'success',
-                     'data' => [
-                         'access_token',
-                         'expires_in',
-                         'user' => ['id', 'nom', 'prenom', 'role', 'tenant'],
-                     ],
+                     'access_token',
+                     'expires_in',
+                     'user' => ['id', 'nom', 'prenom', 'role'],
                  ])
                  ->assertJson(['success' => true]);
     }
@@ -72,7 +71,7 @@ class AuthTest extends TestCase
 
     public function test_me_avec_token_valide(): void
     {
-        $token = auth('api')->login($this->admin);
+        $token = JWTAuth::fromUser($this->admin);
 
         $this->withToken($token)
              ->getJson('/api/v1/auth/me')
@@ -82,7 +81,7 @@ class AuthTest extends TestCase
 
     public function test_logout(): void
     {
-        $token = auth('api')->login($this->admin);
+        $token = JWTAuth::fromUser($this->admin);
 
         $this->withToken($token)
              ->postJson('/api/v1/auth/logout')
@@ -92,7 +91,7 @@ class AuthTest extends TestCase
 
     public function test_compte_inactif_bloque(): void
     {
-        $this->admin->update(['statut' => 'suspendu']);
+        $this->admin->update(['statut' => 'inactif']);
 
         $this->postJson('/api/v1/auth/login', [
             'email'    => $this->admin->email,

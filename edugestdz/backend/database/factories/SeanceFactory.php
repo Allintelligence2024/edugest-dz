@@ -13,7 +13,7 @@ class SeanceFactory extends Factory
             'date_seance' => $this->faker->dateTimeBetween('-1 month', '+1 month'),
             'heure_debut' => $this->faker->randomElement(['08:00','09:00','10:00','13:00','14:00']),
             'heure_fin'   => $this->faker->randomElement(['10:00','11:00','12:00','15:00','16:00']),
-            'statut'      => $this->faker->randomElement(['planifiee', 'terminee', 'annulee']),
+            'statut'      => $this->faker->randomElement(['planifiée', 'terminée', 'annulée']),
             'motif_annulation' => null,
         ];
     }

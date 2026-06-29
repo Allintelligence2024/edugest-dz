@@ -234,7 +234,7 @@ class EleveController extends BaseApiController
     {
         $eleve = Eleve::withCount([
             'inscriptions',
-            'presences as total_presences' => fn($q) => $q->where('statut', 'present'),
+            'presences as total_presences' => fn($q) => $q->whereIn('statut', ['présent', 'retard']),
         ])->findOrFail($id);
 
         return $this->success($eleve);

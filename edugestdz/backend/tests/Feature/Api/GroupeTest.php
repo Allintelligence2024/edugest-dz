@@ -3,6 +3,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Groupe, Eleve, User, Tenant, Role, Matiere};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class GroupeTest extends TestCase
@@ -23,7 +24,7 @@ class GroupeTest extends TestCase
             'role_id'   => $role->id,
         ]);
 
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 

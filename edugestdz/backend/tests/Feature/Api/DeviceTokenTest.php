@@ -3,6 +3,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{DeviceToken, User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class DeviceTokenTest extends TestCase
@@ -26,7 +27,7 @@ class DeviceTokenTest extends TestCase
             'statut'    => 'actif',
         ]);
 
-        $this->token = auth('api')->login($this->user);
+        $this->token = JWTAuth::fromUser($this->user);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 

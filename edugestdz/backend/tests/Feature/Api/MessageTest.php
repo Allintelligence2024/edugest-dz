@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Conversation, Message, User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class MessageTest extends TestCase
@@ -21,7 +22,7 @@ class MessageTest extends TestCase
         $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
         $role  = Role::factory()->create(['nom' => 'admin']);
         $this->user = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
-        $this->token = auth('api')->login($this->user);
+        $this->token = JWTAuth::fromUser($this->user);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 
@@ -70,7 +71,7 @@ class MessageTest extends TestCase
     public function test_non_participant_forbidden(): void
     {
         $autreUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => Role::factory()->create()->id]);
-        $token2 = auth('api')->login($autreUser);
+        $token2 = JWTAuth::fromUser($autreUser);
 
         $conv = Conversation::factory()->create([
             'tenant_id'   => $this->tenant->id,

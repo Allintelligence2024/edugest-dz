@@ -9,9 +9,9 @@ class SuperAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
 
-        if (!$user || $user->role !== 'super_admin') {
+        if (!$user || $user->role?->nom !== 'super_admin') {
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'FORBIDDEN', 'message' => 'Accès réservé aux super administrateurs'],

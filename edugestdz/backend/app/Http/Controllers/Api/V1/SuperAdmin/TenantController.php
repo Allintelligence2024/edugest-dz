@@ -10,11 +10,6 @@ use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('super_admin');
-    }
-
     public function index(Request $request): JsonResponse
     {
         $tenants = Tenant::withCount('users', 'eleves')
@@ -42,9 +37,9 @@ class TenantController extends Controller
         $validated = $request->validate([
             'nom_etablissement' => 'required|string|max:200',
             'slug'              => 'required|string|max:100|unique:tenants,slug',
-            'type_etablissement'=> 'required|in:centre,ecole,institut',
+            'type_etablissement'=> 'required|in:centre_cours,ecole_privee,lycee_prive,formation',
             'wilaya_id'         => 'required|exists:wilayas,id',
-            'plan_abonnement'   => 'required|in:gratuit,premium',
+            'plan_abonnement'   => 'required|in:gratuit,pro,premium',
             'date_expiration'   => 'nullable|date',
             'email'             => 'required|email',
             'telephone'         => 'required|string|max:20',
@@ -74,12 +69,11 @@ class TenantController extends Controller
                 'prenom'    => $validated['admin_prenom'],
                 'email'     => $validated['admin_email'],
                 'password'  => Hash::make($validated['admin_password']),
-                'role'      => 'admin',
                 'statut'    => 'actif',
             ]);
 
             SuperAdminAction::create([
-                'super_admin_id' => auth()->id(),
+                'super_admin_id' => auth('api')->id(),
                 'tenant_id'      => $tenant->id,
                 'action'         => 'tenant.created',
                 'details'        => ['plan' => $validated['plan_abonnement']],
@@ -130,7 +124,7 @@ class TenantController extends Controller
         $tenant->update($validated);
 
         SuperAdminAction::create([
-            'super_admin_id' => auth()->id(),
+            'super_admin_id' => auth('api')->id(),
             'tenant_id'      => $tenant->id,
             'action'         => 'tenant.updated',
             'details'        => $validated,
@@ -160,7 +154,7 @@ class TenantController extends Controller
     public function impersonate(Request $request, string $id): JsonResponse
     {
         $tenant = Tenant::findOrFail($id);
-        $admin = $tenant->users()->where('role', 'admin')->first();
+        $admin = $tenant->users()->whereHas('role', fn($q) => $q->where('nom', 'admin'))->first();
 
         if (!$admin) {
             return response()->json(['success' => false, 'error' => ['code' => 'NO_ADMIN', 'message' => 'Aucun admin pour ce tenant']], 404);
@@ -169,7 +163,7 @@ class TenantController extends Controller
         $token = auth('api')->login($admin);
 
         SuperAdminAction::create([
-            'super_admin_id' => auth()->id(),
+            'super_admin_id' => auth('api')->id(),
             'tenant_id'      => $tenant->id,
             'action'         => 'tenant.impersonate',
             'details'        => ['impersonated_user_id' => $admin->id],

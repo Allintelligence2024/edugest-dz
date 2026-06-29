@@ -22,7 +22,7 @@ class RapportController extends Controller
             ->get();
 
         $taux = $presences->sum('total') > 0
-            ? round(($presences->where('statut', 'present')->sum('total') / $presences->sum('total')) * 100, 1)
+            ? round(($presences->whereIn('statut', ['présent', 'retard'])->sum('total') / $presences->sum('total')) * 100, 1)
             : 0;
 
         return response()->json([

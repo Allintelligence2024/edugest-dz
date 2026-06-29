@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Paiement, Facture, Eleve, User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class PaiementTest extends TestCase
@@ -21,7 +22,7 @@ class PaiementTest extends TestCase
         $role  = Role::factory()->create(['nom' => 'admin']);
         $admin = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
 
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 

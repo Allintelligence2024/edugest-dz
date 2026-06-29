@@ -16,7 +16,6 @@ class MessageController extends Controller
 
         $conversations = Conversation::where('tenant_id', config('tenant.current_id'))
             ->whereJsonContains('participants', $user->id)
-            ->with(['dernierMessage.expediteur'])
             ->orderByDesc('last_message_at')
             ->paginate($request->per_page ?? 20);
 

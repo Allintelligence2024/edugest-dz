@@ -84,7 +84,7 @@ class SeanceTest extends TestCase
 
         $this->withToken($this->token)
             ->postJson("/api/v1/seances/{$seance->id}/reporter", [
-                'date_seance' => $nouvelleDate,
+                'nouvelle_date' => $nouvelleDate,
                 'heure_debut' => '10:00',
                 'heure_fin'   => '12:00',
             ])

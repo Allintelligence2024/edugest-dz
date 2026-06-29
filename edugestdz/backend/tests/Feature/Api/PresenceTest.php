@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Presence, Seance, Cours, Eleve, User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class PresenceTest extends TestCase
@@ -21,7 +22,7 @@ class PresenceTest extends TestCase
         $role  = Role::factory()->create(['nom' => 'admin']);
         $admin = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
 
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 
@@ -34,7 +35,7 @@ class PresenceTest extends TestCase
         $this->withToken($this->token)
             ->postJson("/api/v1/presences/seance/{$seance->id}", [
                 'presences' => [
-                    ['eleve_id' => $eleve->id, 'statut' => 'present'],
+                    ['eleve_id' => $eleve->id, 'statut' => 'présent'],
                 ],
             ])
             ->assertStatus(200)

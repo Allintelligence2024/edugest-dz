@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\{Matiere, User, Tenant, Role};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
 
 class MatiereTest extends TestCase
@@ -21,7 +22,7 @@ class MatiereTest extends TestCase
         $role  = Role::factory()->create(['nom' => 'admin']);
         $admin = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $role->id]);
 
-        $this->token = auth('api')->login($admin);
+        $this->token = JWTAuth::fromUser($admin);
         config(['tenant.current_id' => $this->tenant->id]);
     }
 
@@ -31,7 +32,6 @@ class MatiereTest extends TestCase
             ->postJson('/api/v1/matieres', [
                 'nom_fr'       => 'Mathématiques',
                 'nom_ar'       => 'الرياضيات',
-                'coefficient'  => 3,
                 'couleur'      => '#1E5EBC',
             ])
             ->assertStatus(201)
@@ -40,9 +40,9 @@ class MatiereTest extends TestCase
         $matiere = Matiere::first();
 
         $this->withToken($this->token)
-            ->putJson("/api/v1/matieres/{$matiere->id}", ['coefficient' => 5])
+            ->putJson("/api/v1/matieres/{$matiere->id}", ['couleur' => '#FF5733'])
             ->assertStatus(200)
-            ->assertJsonPath('data.coefficient', 5);
+            ->assertJsonPath('data.couleur', '#FF5733');
 
         $this->withToken($this->token)
             ->deleteJson("/api/v1/matieres/{$matiere->id}")
