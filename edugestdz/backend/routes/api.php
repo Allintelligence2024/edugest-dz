@@ -284,6 +284,26 @@ use App\Http\Controllers\Api\V1\{
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
         });
 
+        // ── Personnel Non-Enseignant (M12) ──
+        Route::prefix('personnel')->group(function () {
+            Route::get('tableau-bord',           [\App\Http\Controllers\Api\V1\PersonnelController::class, 'tableauBord']);
+            Route::get('/',                       [\App\Http\Controllers\Api\V1\PersonnelController::class, 'index']);
+            Route::post('/',                      [\App\Http\Controllers\Api\V1\PersonnelController::class, 'store']);
+            Route::get('{id}',                    [\App\Http\Controllers\Api\V1\PersonnelController::class, 'show']);
+            Route::put('{id}',                    [\App\Http\Controllers\Api\V1\PersonnelController::class, 'update']);
+            Route::delete('{id}',                 [\App\Http\Controllers\Api\V1\PersonnelController::class, 'destroy']);
+
+            // Congés
+            Route::get('{id}/conges',             [\App\Http\Controllers\Api\V1\PersonnelController::class, 'conges']);
+            Route::post('{id}/conges',            [\App\Http\Controllers\Api\V1\PersonnelController::class, 'demanderConge']);
+            Route::put('conges/{congeId}/statut', [\App\Http\Controllers\Api\V1\PersonnelController::class, 'statuerConge']);
+
+            // Pointage
+            Route::post('{id}/pointer/arrivee',   [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'arrivee']);
+            Route::post('{id}/pointer/depart',    [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'depart']);
+            Route::get('{id}/pointer/historique', [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'historique']);
+        });
+
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
