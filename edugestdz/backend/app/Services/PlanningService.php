@@ -46,6 +46,17 @@ class PlanningService
         return $planning;
     }
 
+    public function detecterConflits(array $data): array
+    {
+        return $this->verifierConflits(
+            $data['enseignant_id'],
+            $data['jour_semaine'],
+            $data['heure_debut'],
+            $data['heure_fin'],
+            $data['exclude_id'] ?? null,
+        );
+    }
+
     public function verifierConflits(string $enseignantId, string $jourSemaine, string $heureDebut, string $heureFin, ?string $excludeCoursId = null): array
     {
         $query = Cours::where('enseignant_id', $enseignantId)

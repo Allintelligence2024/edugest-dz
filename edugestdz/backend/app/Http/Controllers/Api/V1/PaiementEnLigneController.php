@@ -28,7 +28,7 @@ class PaiementEnLigneController extends Controller
 
         $facture = Facture::findOrFail($validated['facture_id']);
 
-        if (in_array($facture->statut, ['payee', 'annulee'])) {
+        if (in_array($facture->statut, ['payée', 'annulée'])) {
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'E004', 'message' => 'Cette facture est déjà payée ou annulée'],
@@ -194,9 +194,9 @@ class PaiementEnLigneController extends Controller
             ->sum('montant');
 
         if ($totalPaye >= $facture->total_ttc) {
-            $facture->update(['statut' => 'payee']);
+            $facture->update(['statut' => 'payée']);
         } elseif ($totalPaye > 0) {
-            $facture->update(['statut' => 'partiellement_payee']);
+            $facture->update(['statut' => 'partiellement_payée']);
         }
     }
 }

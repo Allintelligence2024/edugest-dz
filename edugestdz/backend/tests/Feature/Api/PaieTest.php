@@ -56,12 +56,19 @@ class PaieTest extends TestCase
             'heure_fin'   => '11:00',
             'statut'      => 'actif',
         ]);
-        Seance::factory()->count(4)->create([
-            'cours_id'    => $cours->id,
-            'date_seance' => now()->startOfMonth()->addDays(rand(2, 25)),
-            'statut'      => 'terminée',
-            'tenant_id'   => $this->tenant->id,
-        ]);
+        Seance::factory()
+            ->count(4)
+            ->sequence(
+                ['date_seance' => now()->startOfMonth()->addDay(2)],
+                ['date_seance' => now()->startOfMonth()->addDay(9)],
+                ['date_seance' => now()->startOfMonth()->addDay(16)],
+                ['date_seance' => now()->startOfMonth()->addDay(23)],
+            )
+            ->create([
+                'cours_id'  => $cours->id,
+                'statut'    => 'terminée',
+                'tenant_id' => $this->tenant->id,
+            ]);
 
         $this->withToken($this->token)
             ->postJson('/api/v1/paies/calculer', [
@@ -78,28 +85,28 @@ class PaieTest extends TestCase
     {
         $paie = Paie::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'statut'    => 'calculée',
+            'statut'    => 'calculé',
         ]);
 
         $this->withToken($this->token)
             ->postJson("/api/v1/paies/{$paie->id}/valider")
             ->assertStatus(200);
 
-        $this->assertEquals('validée', $paie->fresh()->statut);
+        $this->assertEquals('validé', $paie->fresh()->statut);
     }
 
     public function test_payer_paie(): void
     {
         $paie = Paie::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'statut'    => 'validée',
+            'statut'    => 'validé',
         ]);
 
         $this->withToken($this->token)
             ->postJson("/api/v1/paies/{$paie->id}/payer", ['mode_paiement' => 'virement'])
             ->assertStatus(200);
 
-        $this->assertEquals('payée', $paie->fresh()->statut);
+        $this->assertEquals('payé', $paie->fresh()->statut);
         $this->assertNotNull($paie->fresh()->date_paiement);
     }
 

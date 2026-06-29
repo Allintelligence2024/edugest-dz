@@ -18,7 +18,6 @@ class SuperAdminTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\WilayaSeeder::class);
         $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
         $role  = Role::factory()->create(['nom' => 'super_admin']);
         $admin = User::factory()->create([

@@ -80,7 +80,7 @@ class GroupeController extends BaseApiController
             'nom'          => 'sometimes|string|max:100',
             'capacite_max' => 'sometimes|integer|min:1',
             'type_groupe'  => 'sometimes|in:individuel,groupe,intensif,en_ligne',
-            'statut'       => 'sometimes|in:actif,complet,fermé',
+            'statut'       => 'sometimes|in:actif,inactif,complet',
             'description'  => 'nullable|string',
         ]);
 

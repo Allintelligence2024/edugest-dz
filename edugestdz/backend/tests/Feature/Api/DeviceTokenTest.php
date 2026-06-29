@@ -86,7 +86,7 @@ class DeviceTokenTest extends TestCase
              ->assertStatus(200)
              ->assertJsonPath('success', true);
 
-        $this->assertDatabaseMissing('device_tokens', [
+        $this->assertSoftDeleted('device_tokens', [
             'token' => 'fcm-token-123',
         ]);
     }

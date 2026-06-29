@@ -8,6 +8,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('audit_logs', function (Blueprint $table) {
+            $table->string('action', 100)->nullable()->change();
             $table->string('log_name')->nullable()->after('id');
             $table->text('description')->nullable()->after('log_name');
             $table->string('subject_type')->nullable()->after('description');

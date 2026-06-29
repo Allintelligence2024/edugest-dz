@@ -35,10 +35,11 @@ class NoteTest extends TestCase
         $eval = $this->withToken($this->token)
             ->postJson('/api/v1/evaluations', [
                 'groupe_id'       => $groupe->id,
-                'matiere_id'      => $matiere->id,
-                'type_eval'       => 'devoir',
+                'titre'           => 'Test évaluation',
+                'type_eval'       => 'devoir_classe',
                 'note_sur'        => 20,
-                'trimestre'       => 2,
+                'coefficient'     => 1,
+                'trimestre'       => 'T2',
                 'date_evaluation' => now()->toDateString(),
             ])
             ->assertStatus(201)
@@ -61,8 +62,7 @@ class NoteTest extends TestCase
 
         $this->withToken($this->token)
             ->putJson("/api/v1/notes/{$note->id}", [
-                'note' => 18,
-                'appreciation' => 'Excellent',
+                'valeur' => 18,
             ])
             ->assertStatus(200);
 

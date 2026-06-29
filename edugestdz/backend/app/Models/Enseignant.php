@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\{HasMany, BelongsTo, BelongsToMany};
+use Illuminate\Database\Eloquent\Relations\{HasMany, HasManyThrough, BelongsTo, BelongsToMany};
 
 class Enseignant extends BaseModel
 {
@@ -48,9 +48,19 @@ class Enseignant extends BaseModel
         return $this->hasMany(Cours::class);
     }
 
+    public function seances(): HasManyThrough
+    {
+        return $this->hasManyThrough(Seance::class, Cours::class);
+    }
+
     public function contrats(): HasMany
     {
         return $this->hasMany(Contrat::class);
+    }
+
+    public function contratsActifs(): HasMany
+    {
+        return $this->hasMany(Contrat::class)->where('statut', 'actif');
     }
 
     public function paies(): HasMany

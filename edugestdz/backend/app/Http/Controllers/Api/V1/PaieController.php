@@ -31,9 +31,9 @@ class PaieController extends Controller
         $contrat = $enseignant->contratsActifs->first();
 
         $nbSeances = $enseignant->seances()
-            ->whereMonth('date_seance', $validated['mois'])
-            ->whereYear('date_seance', $validated['annee'])
-            ->where('statut', 'terminée')
+            ->whereMonth('seances.date_seance', $validated['mois'])
+            ->whereYear('seances.date_seance', $validated['annee'])
+            ->where('seances.statut', 'terminée')
             ->count();
 
         $montant = $contrat
@@ -44,11 +44,9 @@ class PaieController extends Controller
             'enseignant_id' => $enseignant->id,
             'mois'          => $validated['mois'],
             'annee'         => $validated['annee'],
-            'nb_seances'    => $nbSeances,
-            'montant_brut'  => $montant,
-            'montant_net'   => $montant * 0.91,
-            'statut'        => 'calculée',
-            'date_paie'     => now(),
+            'salaire_base'  => $montant,
+            'salaire_net'   => $montant * 0.91,
+            'statut'        => 'calculé',
         ]);
 
         return response()->json(['success' => true, 'message' => 'Paie calculée', 'data' => $paie->load('enseignant')], 201);
@@ -57,14 +55,14 @@ class PaieController extends Controller
     public function valider(string $id): JsonResponse
     {
         $paie = Paie::findOrFail($id);
-        $paie->update(['statut' => 'validée']);
+        $paie->update(['statut' => 'validé']);
         return response()->json(['success' => true, 'message' => 'Paie validée']);
     }
 
     public function payer(string $id): JsonResponse
     {
         $paie = Paie::findOrFail($id);
-        $paie->update(['statut' => 'payée', 'date_paiement' => now()]);
+        $paie->update(['statut' => 'payé', 'date_paiement' => now()]);
         return response()->json(['success' => true, 'message' => 'Paie effectuée']);
     }
 

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tests\TestCase;
+use Mockery;
 
 class TwoFactorTest extends TestCase
 {
@@ -226,6 +227,10 @@ class TwoFactorTest extends TestCase
     public function test_enable_sms(): void
     {
         $this->admin->update(['telephone' => '+213555123456']);
+
+        $this->mock(TwoFactorService::class, function ($mock) {
+            $mock->shouldReceive('sendSmsOtp')->once()->andReturn(true);
+        });
 
         $response = $this->withToken($this->token)
             ->postJson('/api/v1/auth/2fa/enable', [

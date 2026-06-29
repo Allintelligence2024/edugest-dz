@@ -17,7 +17,7 @@ class OffrePubliqueFactory extends Factory
             'tarif_seance'    => $this->faker->numberBetween(500, 5000),
             'tarif_mensuel'   => $this->faker->optional()->numberBetween(3000, 20000),
             'type_cours'      => $this->faker->randomElement(['presentiel', 'en_ligne', 'les_deux']),
-            'wilaya_id'       => $this->faker->numberBetween(1, 58),
+            'wilaya_id'       => 16,
             'adresse'         => $this->faker->optional()->address(),
             'capacite_max'    => $this->faker->numberBetween(1, 30),
             'places_restantes'=> $this->faker->numberBetween(0, 30),

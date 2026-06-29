@@ -8,6 +8,7 @@ class LigneFacture extends BaseModel
     protected $table = 'lignes_facture';
 
     public $incrementing = false;
+    public $timestamps = false;
     protected $keyType = 'string';
 
     protected $fillable = [

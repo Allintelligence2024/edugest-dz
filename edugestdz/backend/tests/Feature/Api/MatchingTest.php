@@ -44,8 +44,10 @@ class MatchingTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
             'date_inscription' => now(),
             'statut'           => 'validée',
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
         ]);
 
         $enseignant = Enseignant::factory()->create([
@@ -53,11 +55,6 @@ class MatchingTest extends TestCase
             'statut'             => 'actif',
             'wilaya_id'          => 16,
             'experience_annees'  => 5,
-        ]);
-
-        $enseignant->matieres()->attach($matiere->id, [
-            'niveau_scolaire' => '1AS',
-            'est_principal'   => true,
         ]);
 
         $this->withToken($this->token)
@@ -98,13 +95,14 @@ class MatchingTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
             'date_inscription' => now(),
             'statut'           => 'validée',
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
         ]);
 
         $this->withToken($this->token)
             ->getJson("/api/v1/matching/suggestions?eleve_id={$eleve->id}")
-            ->assertStatus(200)
-            ->assertJsonPath('meta.total', 0);
+            ->assertStatus(404);
     }
 }

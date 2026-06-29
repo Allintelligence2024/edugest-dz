@@ -20,10 +20,22 @@ class AuthController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            if ($user) {
-                app(TwoFactorService::class)->incrementLoginAttempts($user);
-            }
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
+            ], 401);
+        }
+
+        if (app(TwoFactorService::class)->isLocked($user)) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'ACCOUNT_LOCKED', 'message' => 'Compte temporairement verrouillé après trop de tentatives'],
+            ], 423);
+        }
+
+        if (!Hash::check($credentials['password'], $user->password)) {
+            app(TwoFactorService::class)->incrementLoginAttempts($user);
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
@@ -37,16 +49,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        $twoFactorService = app(TwoFactorService::class);
-
-        if ($twoFactorService->isLocked($user)) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'ACCOUNT_LOCKED', 'message' => 'Compte temporairement verrouillé après trop de tentatives'],
-            ], 423);
-        }
-
-        $twoFactorService->resetLoginAttempts($user);
+        app(TwoFactorService::class)->resetLoginAttempts($user);
 
         if ($user->two_factor_confirmed_at !== null) {
             $tempToken = Str::random(60);

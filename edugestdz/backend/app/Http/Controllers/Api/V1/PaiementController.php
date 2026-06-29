@@ -29,7 +29,7 @@ class PaiementController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $data = $request->validate([
             'facture_id'    => 'required|uuid|exists:factures,id',
             'montant'       => 'required|numeric|min:1',
             'mode_paiement' => 'required|in:espèces,cib,dahabia,baridimob,virement,chèque',
@@ -37,7 +37,7 @@ class PaiementController extends Controller
             'notes'         => 'nullable|string',
         ]);
 
-        $paiement = $this->service->enregistrerPaiement($request->validated());
+        $paiement = $this->service->enregistrerPaiement($data);
 
         return response()->json([
             'success' => true,

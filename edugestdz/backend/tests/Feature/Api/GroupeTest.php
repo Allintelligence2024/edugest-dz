@@ -116,9 +116,13 @@ class GroupeTest extends TestCase
         ]);
 
         Eleve::factory()->count(2)->create(['tenant_id' => $this->tenant->id])
-            ->each(fn($e) => $groupe->eleves()->attach($e->id, [
+            ->each(fn($e) => \App\Models\Inscription::create([
+                'tenant_id'        => $this->tenant->id,
+                'eleve_id'         => $e->id,
+                'groupe_id'        => $groupe->id,
                 'date_inscription' => now(),
-                'statut'           => 'actif',
+                'statut'           => 'validée',
+                'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             ]));
 
         $this->withToken($this->token)

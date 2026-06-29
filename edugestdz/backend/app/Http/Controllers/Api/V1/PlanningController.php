@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cours;
 use App\Services\PlanningService;
 use Illuminate\Http\{Request, JsonResponse};
 use Carbon\Carbon;

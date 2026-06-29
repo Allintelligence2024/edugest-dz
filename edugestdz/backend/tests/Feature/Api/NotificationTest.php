@@ -76,7 +76,7 @@ class NotificationTest extends TestCase
         ]);
 
         $this->withToken($this->token)
-             ->postJson("/api/v1/notifications/{$notif->id}/lu")
+             ->putJson("/api/v1/notifications/{$notif->id}/lire")
              ->assertStatus(200)
              ->assertJson(['success' => true]);
 
@@ -93,7 +93,7 @@ class NotificationTest extends TestCase
         ]);
 
         $this->withToken($this->token)
-             ->postJson('/api/v1/notifications/tout-lire')
+             ->putJson('/api/v1/notifications/tout-lire')
              ->assertStatus(200)
              ->assertJson(['success' => true]);
     }

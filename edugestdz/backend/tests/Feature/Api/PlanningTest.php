@@ -40,17 +40,23 @@ class PlanningTest extends TestCase
     public function test_planning_conflits(): void
     {
         $this->withToken($this->token)
-            ->getJson('/api/v1/planning/conflits')
+            ->getJson('/api/v1/planning/conflits?' . http_build_query([
+                'enseignant_id' => (string) \Illuminate\Support\Str::uuid(),
+                'jour_semaine'  => 1,
+                'heure_debut'   => '08:00',
+                'heure_fin'     => '10:00',
+            ]))
             ->assertStatus(200)
             ->assertJsonPath('success', true);
     }
 
     public function test_generer_planning(): void
     {
+        $cours = Cours::factory()->create(['tenant_id' => $this->tenant->id, 'statut' => 'actif']);
+
         $this->withToken($this->token)
             ->postJson('/api/v1/planning/generer', [
-                'semaine_debut' => now()->startOfWeek()->toDateString(),
-                'semaine_fin'   => now()->endOfWeek()->toDateString(),
+                'cours_id' => $cours->id,
             ])
             ->assertStatus(200);
     }

@@ -105,6 +105,7 @@ use App\Http\Controllers\Api\V1\{
             Route::get('{id}/statistiques',     [EnseignantController::class, 'statistiques']);
             Route::post('{id}/disponibilites',  [EnseignantController::class, 'setDisponibilites']);
             Route::post('{id}/photo',           [EnseignantController::class, 'uploadPhoto']);
+            Route::post('{id}/toggle-statut',   [EnseignantController::class, 'toggleStatut']);
         });
 
         // ── Contrats ──
@@ -196,10 +197,12 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Paiements ──
+        Route::prefix('paiements')->group(function () {
+            Route::get('caisse-jour',            [PaiementController::class, 'caisseJour']);
+        });
         Route::apiResource('paiements', PaiementController::class);
         Route::prefix('paiements')->group(function () {
             Route::get('{id}/recu',              [PaiementController::class, 'recu']);
-            Route::get('caisse-jour',            [PaiementController::class, 'caisseJour']);
         });
 
         // ── Finance ──

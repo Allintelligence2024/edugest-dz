@@ -82,7 +82,9 @@ class MarketplaceTest extends TestCase
     {
         $matiere = Matiere::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        $response = $this->withToken($this->token)
+        $this->enseignant->user; // ensure user is loaded
+
+        $response = $this->withToken(JWTAuth::fromUser($this->enseignant->user))
             ->postJson('/api/v1/marketplace/offres', [
                 'type_offre'   => 'enseignant',
                 'matiere_id'   => $matiere->id,
@@ -178,10 +180,9 @@ class MarketplaceTest extends TestCase
 
         // Créer réservation terminée
         $reservation = Reservation::factory()->terminee()->create([
-            'tenant_id'    => $this->tenant->id,
-            'offre_id'     => $offre->id,
-            'eleve_id'     => $this->eleve->id,
-            'enseignant_id'=> $this->enseignant->id,
+            'tenant_id' => $this->tenant->id,
+            'offre_id'  => $offre->id,
+            'eleve_id'  => $this->eleve->id,
         ]);
 
         $response = $this->withToken($this->token)

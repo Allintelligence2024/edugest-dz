@@ -61,8 +61,7 @@ class OffreController extends Controller
             'enseignant.user',
             'matiere',
             'wilaya',
-        ])->withAvg('reservations.avis', 'note')
-            ->withCount('reservations as reservations_count')
+        ])->withCount('reservations as reservations_count')
             ->findOrFail($id);
 
         $noteMoyenne = Avis::whereHas('reservation', fn($q) => $q->where('offre_id', $offre->id))

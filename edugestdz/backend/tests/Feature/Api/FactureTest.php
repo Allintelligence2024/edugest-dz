@@ -43,13 +43,9 @@ class FactureTest extends TestCase
         $this->withToken($this->token)
             ->postJson('/api/v1/factures', [
                 'eleve_id'       => $eleve->id,
-                'mois'           => now()->month,
-                'annee'          => now()->year,
-                'sous_total'     => 15000,
-                'total_ttc'      => 15000,
-                'statut'         => 'emise',
+                'date_echeance'  => now()->addMonth()->toDateString(),
                 'lignes'         => [
-                    ['description' => 'Cours Maths 3AS', 'quantite' => 1, 'prix_unitaire' => 15000, 'total' => 15000],
+                    ['description' => 'Cours Maths 3AS', 'quantite' => 1, 'prix_unitaire' => 15000, 'total' => 15000, 'type_ligne' => 'cours'],
                 ],
             ])
             ->assertStatus(201)

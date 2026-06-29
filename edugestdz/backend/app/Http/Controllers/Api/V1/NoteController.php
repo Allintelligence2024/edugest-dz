@@ -16,12 +16,15 @@ class NoteController extends Controller
             'commentaire' => 'nullable|string|max:500',
         ]);
 
-        $note->update($validated);
+        $note->update([
+            'note'        => $validated['valeur'],
+            'commentaire' => $validated['commentaire'] ?? $note->commentaire,
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Note mise à jour',
-            'data'    => $note->fresh(['evaluation', 'inscription.eleve']),
+            'data'    => $note->fresh(['evaluation', 'eleve']),
         ]);
     }
 }

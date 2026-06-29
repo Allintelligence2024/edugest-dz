@@ -31,15 +31,14 @@ class PaiementTest extends TestCase
         $facture = Facture::factory()->create([
             'tenant_id' => $this->tenant->id,
             'total_ttc' => 10000,
-            'statut'    => 'emise',
+            'statut'    => 'émise',
         ]);
 
         $this->withToken($this->token)
             ->postJson('/api/v1/paiements', [
                 'facture_id'    => $facture->id,
                 'montant'       => 10000,
-                'mode_paiement' => 'especes',
-                'statut'        => 'confirme',
+                'mode_paiement' => 'espèces',
                 'date_paiement' => now()->toDateString(),
             ])
             ->assertStatus(201)

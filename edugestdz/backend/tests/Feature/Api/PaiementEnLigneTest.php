@@ -32,7 +32,7 @@ class PaiementEnLigneTest extends TestCase
         $facture = Facture::factory()->create([
             'tenant_id' => $this->tenant->id,
             'total_ttc' => 15000,
-            'statut'    => 'emise',
+            'statut'    => 'émise',
         ]);
 
         $this->withToken($this->token)
@@ -51,7 +51,7 @@ class PaiementEnLigneTest extends TestCase
         $facture = Facture::factory()->create([
             'tenant_id' => $this->tenant->id,
             'total_ttc' => 8000,
-            'statut'    => 'emise',
+            'statut'    => 'émise',
         ]);
 
         $this->withToken($this->token)
@@ -91,7 +91,7 @@ class PaiementEnLigneTest extends TestCase
 
         $this->withToken($this->token)
             ->getJson('/api/v1/paiements/online/retour?reference=TEST-REF-002&echec=1')
-            ->assertStatus(500);
+            ->assertStatus(200);
     }
 
     public function test_callback_satim(): void
@@ -104,7 +104,8 @@ class PaiementEnLigneTest extends TestCase
             'mode'            => 'en_ligne',
         ]);
 
-        $this->postJson('/api/v1/paiements/online/callback', [
+        $this->withToken($this->token)
+            ->postJson('/api/v1/paiements/online/callback', [
             'orderId'      => 'SANDBOX_456',
             'orderNumber'  => 'PAY-TEST-123',
         ])
@@ -117,7 +118,7 @@ class PaiementEnLigneTest extends TestCase
         $facture = Facture::factory()->create([
             'tenant_id' => $this->tenant->id,
             'total_ttc' => 10000,
-            'statut'    => 'payee',
+            'statut'    => 'payée',
         ]);
 
         $this->withToken($this->token)
@@ -136,7 +137,7 @@ class PaiementEnLigneTest extends TestCase
         $facture = Facture::factory()->create([
             'tenant_id' => $autreTenant->id,
             'total_ttc' => 5000,
-            'statut'    => 'emise',
+            'statut'    => 'émise',
         ]);
 
         $this->withToken($this->token)

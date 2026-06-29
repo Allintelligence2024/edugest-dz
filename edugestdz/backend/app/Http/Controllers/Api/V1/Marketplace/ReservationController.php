@@ -107,8 +107,12 @@ class ReservationController extends Controller
             'tenant_id'        => config('tenant.current_id'),
             'eleve_id'         => $eleve->id,
             'numero_facture'   => 'MKT-' . strtoupper(Str::random(10)),
+            'mois'             => now()->month,
+            'annee'            => now()->year,
+            'sous_total'       => $reservation->montant,
             'total_ttc'        => $reservation->montant,
-            'statut'           => 'emise',
+            'statut'           => 'émise',
+            'date_emission'    => now()->toDateString(),
             'date_echeance'    => now()->addDays(7),
         ]);
 

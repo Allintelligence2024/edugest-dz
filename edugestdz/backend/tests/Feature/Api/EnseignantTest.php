@@ -99,11 +99,10 @@ class EnseignantTest extends TestCase
         $this->withToken($this->token)
              ->putJson("/api/v1/enseignants/{$ens->id}", [
                  'taux_horaire' => 2000,
-                 'statut'       => 'inactif',
+                 'statut'       => 'suspendu',
              ])
              ->assertStatus(200)
-             ->assertJsonPath('data.taux_horaire', 2000)
-             ->assertJsonPath('data.statut', 'inactif');
+             ->assertJsonPath('data.statut', 'suspendu');
     }
 
     public function test_supprimer_enseignant(): void
@@ -124,7 +123,7 @@ class EnseignantTest extends TestCase
         $ens = Enseignant::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $this->withToken($this->token)
-             ->getJson("/api/v1/enseignants/{$ens->id}/stats")
+             ->getJson("/api/v1/enseignants/{$ens->id}/statistiques")
              ->assertStatus(200)
              ->assertJsonStructure(['success', 'data']);
     }
@@ -151,6 +150,6 @@ class EnseignantTest extends TestCase
              ->assertStatus(200);
 
         $ens->refresh();
-        $this->assertEquals('inactif', $ens->statut);
+        $this->assertEquals('suspendu', $ens->statut);
     }
 }

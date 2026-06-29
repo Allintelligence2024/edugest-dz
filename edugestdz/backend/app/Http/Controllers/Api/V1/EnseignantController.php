@@ -201,6 +201,14 @@ class EnseignantController extends BaseApiController
         ];
     }
 
+    public function toggleStatut(string $id): JsonResponse
+    {
+        $enseignant = Enseignant::findOrFail($id);
+        $nouveauStatut = $enseignant->statut === 'actif' ? 'suspendu' : 'actif';
+        $enseignant->update(['statut' => $nouveauStatut]);
+        return $this->success($enseignant->fresh($this->with), 'Statut mis à jour');
+    }
+
     private function genererMatricule(): string
     {
         $annee = now()->year;
