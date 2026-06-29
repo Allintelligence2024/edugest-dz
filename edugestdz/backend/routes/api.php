@@ -223,6 +223,21 @@ use App\Http\Controllers\Api\V1\{
             Route::get('bilan-annuel',           [FinanceController::class, 'bilanAnnuel']);
         });
 
+        // ── Budget Annuel & Comptabilite (M13) ──
+        Route::prefix('budget')->group(function () {
+            Route::get('dashboard',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'dashboard']);
+            Route::get('categories',                  [\App\Http\Controllers\Api\V1\BudgetController::class, 'categories']);
+            Route::get('bilan-mensuel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanMensuel']);
+            Route::get('bilan-annuel',                [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanAnnuel']);
+            Route::get('depenses',                    [\App\Http\Controllers\Api\V1\BudgetController::class, 'indexDepenses']);
+            Route::post('depenses',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'storeDepense']);
+            Route::put('depenses/{id}',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'updateDepense']);
+            Route::delete('depenses/{id}',            [\App\Http\Controllers\Api\V1\BudgetController::class, 'destroyDepense']);
+            Route::post('depenses/{id}/justificatif', [\App\Http\Controllers\Api\V1\BudgetController::class, 'uploadJustificatif']);
+            Route::get('previsionnel',                [\App\Http\Controllers\Api\V1\BudgetController::class, 'previsionnel']);
+            Route::post('previsionnel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'setPrevisionnel']);
+        });
+
         // ── Notifications ──
         Route::prefix('notifications')->group(function () {
             Route::get('/',                      [NotificationController::class, 'index']);
