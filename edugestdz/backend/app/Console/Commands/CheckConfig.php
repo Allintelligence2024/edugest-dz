@@ -47,7 +47,8 @@ class CheckConfig extends Command
 
     private function checkSecret(string $key, string $label): void
     {
-        $value = env($key);
+        $map = ['APP_KEY' => 'app.key', 'JWT_SECRET' => 'jwt.secret'];
+        $value = config($map[$key] ?? strtolower($key), env($key));
         if (empty($value)) {
             $this->addFail($label, "$key non définie — exécutez la commande de génération");
         } elseif (strlen($value) < 16) {
@@ -62,15 +63,17 @@ class CheckConfig extends Command
         $driver = config('database.default');
         $host = config("database.connections.$driver.host");
         $port = config("database.connections.$driver.port");
+        $database = config("database.connections.$driver.database", env('DB_DATABASE'));
+        $username = config("database.connections.$driver.username", env('DB_USERNAME'));
 
         if ($driver !== 'pgsql') {
             $this->addWarn('Driver BDD', "Driver = $driver (attendu: pgsql)");
-        } elseif (empty(env('DB_DATABASE'))) {
+        } elseif (empty($database)) {
             $this->addFail('Base de données', 'DB_DATABASE non définie');
-        } elseif (empty(env('DB_USERNAME'))) {
+        } elseif (empty($username)) {
             $this->addFail('Base de données', 'DB_USERNAME non définie');
         } else {
-            $this->addPass('Base de données', "$driver://$host:$port / " . env('DB_DATABASE', '?'));
+            $this->addPass('Base de données', "$driver://$host:$port / $database");
         }
     }
 
@@ -105,7 +108,7 @@ class CheckConfig extends Command
 
     private function checkCacheDriver(): void
     {
-        $store = env('CACHE_STORE');
+        $store = config('cache.default', env('CACHE_STORE'));
         $legacy = env('CACHE_DRIVER');
 
         if ($store && $legacy) {
@@ -121,8 +124,8 @@ class CheckConfig extends Command
 
     private function checkDebugMode(): void
     {
-        $debug = env('APP_DEBUG', false);
-        $env = env('APP_ENV', 'production');
+        $debug = config('app.debug', env('APP_DEBUG', false));
+        $env = config('app.env', env('APP_ENV', 'production'));
 
         if ($env === 'production' && $debug === true) {
             $this->addFail('Sécurité', 'APP_DEBUG=true en production — désactiver');
@@ -135,7 +138,7 @@ class CheckConfig extends Command
 
     private function checkMailFrom(): void
     {
-        $from = env('MAIL_FROM_ADDRESS');
+        $from = config('mail.from.address', env('MAIL_FROM_ADDRESS'));
         if (empty($from)) {
             $this->addWarn('Email', 'MAIL_FROM_ADDRESS non définie');
         } else {
@@ -151,7 +154,8 @@ class CheckConfig extends Command
 
     private function checkOptional(string $key, string $label): void
     {
-        $value = env($key);
+        $map = ['SATIM_TERMINAL_ID' => 'satim.terminal_id', 'TWILIO_SID' => 'twilio.sid', 'FIREBASE_PROJECT_ID' => 'firebase.project_id', 'WHATSAPP_API_TOKEN' => 'services.whatsapp.api_token'];
+        $value = config($map[$key] ?? strtolower($key), env($key));
         if (empty($value)) {
             $this->skip($label, "$key non configurée (optionnel)");
         } else {

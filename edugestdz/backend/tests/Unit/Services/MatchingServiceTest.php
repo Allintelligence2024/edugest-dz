@@ -43,6 +43,8 @@ class MatchingServiceTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
         ]);
@@ -84,6 +86,8 @@ class MatchingServiceTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
         ]);
@@ -113,6 +117,7 @@ class MatchingServiceTest extends TestCase
             'tenant_id'        => $this->tenant->id,
             'wilaya_id'        => 16,
             'niveau_scolaire'  => '1AS',
+            'budget_mensuel'   => 1500,
         ]);
 
         $groupe = Groupe::factory()->create([
@@ -122,6 +127,8 @@ class MatchingServiceTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
         ]);
@@ -161,6 +168,8 @@ class MatchingServiceTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
         ]);
@@ -200,6 +209,8 @@ class MatchingServiceTest extends TestCase
         ]);
 
         $eleve->groupes()->attach($groupe->id, [
+            'tenant_id'        => $this->tenant->id,
+            'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
         ]);

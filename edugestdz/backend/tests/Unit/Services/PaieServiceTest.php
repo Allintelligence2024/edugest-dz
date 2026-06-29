@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Unit\Services;
 
-use App\Models\{Enseignant, Seance, Cours, Groupe, Matiere};
+use App\Models\{Enseignant, Seance, Cours, Groupe, Matiere, Tenant};
 use App\Services\PaieService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,11 +12,14 @@ class PaieServiceTest extends TestCase
     use RefreshDatabase;
 
     private PaieService $service;
+    private Tenant $tenant;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->service = new PaieService();
+        $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
+        config(['tenant.current_id' => $this->tenant->id]);
     }
 
     public function test_calcul_irg_exoneration_smig(): void
@@ -49,13 +52,13 @@ class PaieServiceTest extends TestCase
         $enseignant = Enseignant::factory()->create([
             'type_contrat' => 'vacataire',
             'taux_horaire' => 1500,
-            'tenant_id'    => 1,
+            'tenant_id'    => $this->tenant->id,
         ]);
 
-        $matiere = Matiere::factory()->create(['tenant_id' => 1]);
-        $groupe  = Groupe::factory()->create(['tenant_id' => 1, 'matiere_id' => $matiere->id]);
+        $matiere = Matiere::factory()->create(['tenant_id' => $this->tenant->id]);
+        $groupe  = Groupe::factory()->create(['tenant_id' => $this->tenant->id, 'matiere_id' => $matiere->id]);
         $cours   = Cours::factory()->create([
-            'tenant_id'     => 1,
+            'tenant_id'     => $this->tenant->id,
             'enseignant_id' => $enseignant->id,
             'matiere_id'    => $matiere->id,
             'groupe_id'     => $groupe->id,
@@ -67,7 +70,7 @@ class PaieServiceTest extends TestCase
             'cours_id'   => $cours->id,
             'date_seance' => now()->startOfMonth()->addDays(2),
             'statut'     => 'terminée',
-            'tenant_id'  => 1,
+            'tenant_id'  => $this->tenant->id,
         ]);
 
         $result = $this->service->calculerPaie($enseignant, now()->month, now()->year);
@@ -84,7 +87,7 @@ class PaieServiceTest extends TestCase
         $enseignant = Enseignant::factory()->create([
             'type_contrat' => 'vacataire',
             'taux_horaire' => 1500,
-            'tenant_id'    => 1,
+            'tenant_id'    => $this->tenant->id,
         ]);
 
         $result = $this->service->calculerPaie($enseignant, now()->month, now()->year);
@@ -97,13 +100,13 @@ class PaieServiceTest extends TestCase
         $enseignant = Enseignant::factory()->create([
             'type_contrat' => 'vacataire',
             'taux_horaire' => 1000,
-            'tenant_id'    => 1,
+            'tenant_id'    => $this->tenant->id,
         ]);
 
-        $matiere = Matiere::factory()->create(['tenant_id' => 1]);
-        $groupe  = Groupe::factory()->create(['tenant_id' => 1, 'matiere_id' => $matiere->id]);
+        $matiere = Matiere::factory()->create(['tenant_id' => $this->tenant->id]);
+        $groupe  = Groupe::factory()->create(['tenant_id' => $this->tenant->id, 'matiere_id' => $matiere->id]);
         $cours   = Cours::factory()->create([
-            'tenant_id'     => 1,
+            'tenant_id'     => $this->tenant->id,
             'enseignant_id' => $enseignant->id,
             'matiere_id'    => $matiere->id,
             'groupe_id'     => $groupe->id,
@@ -112,12 +115,14 @@ class PaieServiceTest extends TestCase
             'statut'        => 'actif',
         ]);
 
-        Seance::factory()->count(4)->create([
-            'cours_id'    => $cours->id,
-            'date_seance' => now()->startOfMonth()->addDays(rand(1, 25)),
-            'statut'      => 'terminée',
-            'tenant_id'   => 1,
-        ]);
+        foreach ([1, 8, 15, 22] as $day) {
+            Seance::factory()->create([
+                'cours_id'    => $cours->id,
+                'date_seance' => now()->startOfMonth()->addDays($day),
+                'statut'      => 'terminée',
+                'tenant_id'   => $this->tenant->id,
+            ]);
+        }
 
         $heures = $this->service->calculerHeures($enseignant, now()->month, now()->year);
         $this->assertEquals(8.0, $heures);

@@ -54,6 +54,9 @@ class CheckConfigCommandTest extends TestCase
         config([
             'app.key' => 'base64:' . base64_encode(str_repeat('a', 32)),
             'jwt.secret' => str_repeat('b', 32),
+            'app.timezone' => 'Africa/Algiers',
+            'cache.default' => 'redis',
+            'mail.from.address' => 'test@edugestdz.dz',
         ]);
 
         $exitCode = Artisan::call('edugest:check-config', ['--secrets-only' => true]);

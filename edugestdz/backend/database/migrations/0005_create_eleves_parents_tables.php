@@ -39,6 +39,7 @@ return new class extends Migration
             ])->default('actif');
             $table->text('notes_internes')->nullable();
             $table->string('qr_code', 500)->nullable();
+            $table->decimal('budget_mensuel', 10, 2)->nullable();
             $table->timestamps();
             $table->softDeletes();
 

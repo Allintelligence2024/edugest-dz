@@ -13,6 +13,17 @@ use Tests\TestCase;
 
 class WhatsAppServiceTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'services.whatsapp.api_token' => 'test-token',
+            'services.whatsapp.phone_id'  => 'test-phone-id',
+            'services.whatsapp.api_url'   => 'https://graph.test.com/v17.0/',
+        ]);
+    }
+
     private function mockWhatsAppService(int $statusCode, array $body): WhatsAppService
     {
         $mock = new MockHandler([new Response($statusCode, [], json_encode($body))]);
