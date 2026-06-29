@@ -39,6 +39,7 @@ class FacturationService
 
             foreach ($lignes as $ligne) {
                 LigneFacture::create([
+                    'tenant_id'     => $tenantId,
                     'facture_id'    => $facture->id,
                     'description'   => $ligne['description'],
                     'quantite'      => $ligne['quantite'] ?? 1,

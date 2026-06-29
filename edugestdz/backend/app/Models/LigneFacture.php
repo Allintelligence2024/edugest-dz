@@ -11,7 +11,7 @@ class LigneFacture extends BaseModel
     protected $keyType = 'string';
 
     protected $fillable = [
-        'facture_id', 'description', 'quantite',
+        'tenant_id', 'facture_id', 'description', 'quantite',
         'prix_unitaire', 'total', 'type_ligne',
     ];
 

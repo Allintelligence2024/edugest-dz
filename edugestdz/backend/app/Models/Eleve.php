@@ -70,13 +70,13 @@ class Eleve extends BaseModel
 
     public function parents(): BelongsToMany
     {
-        return $this->belongsToMany(ParentEleve::class, 'eleve_parent')
+        return $this->belongsToMany(ParentEleve::class, 'eleve_parent', 'eleve_id', 'parent_id')
                     ->withPivot('est_principal');
     }
 
     public function parentsPrincipaux(): BelongsToMany
     {
-        return $this->belongsToMany(ParentEleve::class, 'eleve_parent')
+        return $this->belongsToMany(ParentEleve::class, 'eleve_parent', 'eleve_id', 'parent_id')
                     ->withPivot('est_principal')
                     ->wherePivot('est_principal', true);
     }

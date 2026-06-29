@@ -20,7 +20,6 @@ class EleveFactory extends Factory
             'sexe'               => $this->faker->randomElement(['M', 'F']),
             'niveau_scolaire'    => $this->faker->randomElement($niveaux),
             'statut'             => 'actif',
-            'wilaya_id'          => $this->faker->numberBetween(1, 48),
             'nationalite'        => 'Algérienne',
         ];
     }

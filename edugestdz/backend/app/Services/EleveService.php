@@ -33,7 +33,7 @@ class EleveService
             \Storage::disk('public')->put($path, $qr);
             \Storage::disk('public')->put("qrcodes/eleves/{$eleve->tenant_id}/{$eleve->id}.token", $token);
             $eleve->update(['qr_code' => $path]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Log::warning('QR Code generation skipped: ' . $e->getMessage());
         }
     }

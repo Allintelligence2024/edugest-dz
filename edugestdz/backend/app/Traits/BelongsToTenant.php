@@ -12,18 +12,39 @@ trait BelongsToTenant
     {
         // Filtre automatique par tenant sur toutes les requêtes
         static::addGlobalScope('tenant', function (Builder $query) {
-            if ($tenantId = config('tenant.current_id')) {
-                $query->where((new static)->getTable() . '.tenant_id', $tenantId);
+            $tenantId = config('tenant.current_id');
+
+            if ($tenantId === null) {
+                // Fail-safe : aucun contexte tenant → 0 résultats, pas d'exposition
+                $query->whereRaw('1 = 0');
+                return;
             }
+
+            $query->where((new static)->getTable() . '.tenant_id', $tenantId);
         });
 
         // Injection automatique du tenant_id à la création
         static::creating(function ($model) {
             if (!$model->tenant_id) {
-                $model->tenant_id = config('tenant.current_id')
+                $resolved = config('tenant.current_id')
                     ?? Auth::user()?->tenant_id;
+
+                if ($resolved === null) {
+                    throw new \RuntimeException(
+                        'Impossible de créer sans tenant résolu. '
+                        . 'Assurez-vous que config(tenant.current_id) ou Auth::user()->tenant_id est défini.'
+                    );
+                }
+
+                $model->tenant_id = $resolved;
             }
         });
+    }
+
+    // ── Désactiver le scope (Super-Admin uniquement) ──
+    public function scopeWithoutTenantScope(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope('tenant');
     }
 
     // ── Relation vers le tenant ──

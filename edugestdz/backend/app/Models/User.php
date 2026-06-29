@@ -10,7 +10,7 @@ use App\Traits\BelongsToTenant;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, BelongsToTenant;
+    use HasFactory, Notifiable;
 
     public $incrementing = false;
     protected $keyType = 'string';

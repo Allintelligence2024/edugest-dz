@@ -18,7 +18,7 @@ class ParentEleve extends BaseModel
 
     public function eleves(): BelongsToMany
     {
-        return $this->belongsToMany(Eleve::class, 'eleve_parent')
+        return $this->belongsToMany(Eleve::class, 'eleve_parent', 'parent_id', 'eleve_id')
                     ->withPivot('est_principal');
     }
 }
