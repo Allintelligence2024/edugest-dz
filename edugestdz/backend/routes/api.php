@@ -249,6 +249,15 @@ use App\Http\Controllers\Api\V1\{
             Route::put('conversations/{id}/lu',       [MessageController::class, 'marquerLu']);
         });
 
+        // ── Pointage par badge RFID/NFC ──
+        Route::prefix('pointage')->group(function () {
+            Route::post('badge', [\App\Http\Controllers\Api\V1\PointageBadgeController::class, 'scan']);
+            Route::get('enseignants/aujourd-hui', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'aujourdhui']);
+            Route::post('enseignants/{id}/arrivee', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'arrivee']);
+            Route::post('enseignants/{id}/depart', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'depart']);
+            Route::get('enseignants/{id}/historique', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'historique']);
+        });
+
         // ── Rapports ──
         Route::prefix('rapports')->group(function () {
             Route::get('presence',               [RapportController::class, 'presence']);

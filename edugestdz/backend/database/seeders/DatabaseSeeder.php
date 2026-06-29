@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             CommuneSeeder::class,
             RolePermissionSeeder::class,
             TestUserSeeder::class,
+            CurriculumAlgerienSeeder::class,
         ]);
     }
 }
