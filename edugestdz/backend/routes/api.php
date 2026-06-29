@@ -319,6 +319,25 @@ use App\Http\Controllers\Api\V1\{
             Route::get('{id}/pointer/historique', [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'historique']);
         });
 
+        // ── Transport Scolaire (M09) ──
+        Route::prefix('transport')->group(function () {
+            Route::get('dashboard',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'dashboard']);
+            Route::get('circuits',                            [\App\Http\Controllers\Api\V1\TransportController::class, 'indexCircuits']);
+            Route::post('circuits',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'storeCircuit']);
+            Route::get('circuits/{id}',                       [\App\Http\Controllers\Api\V1\TransportController::class, 'showCircuit']);
+            Route::put('circuits/{id}',                       [\App\Http\Controllers\Api\V1\TransportController::class, 'updateCircuit']);
+            Route::delete('circuits/{id}',                    [\App\Http\Controllers\Api\V1\TransportController::class, 'destroyCircuit']);
+            Route::get('circuits/{id}/arrets',                [\App\Http\Controllers\Api\V1\TransportController::class, 'indexArrets']);
+            Route::post('circuits/{id}/arrets',               [\App\Http\Controllers\Api\V1\TransportController::class, 'storeArret']);
+            Route::put('arrets/{id}',                         [\App\Http\Controllers\Api\V1\TransportController::class, 'updateArret']);
+            Route::delete('arrets/{id}',                      [\App\Http\Controllers\Api\V1\TransportController::class, 'destroyArret']);
+            Route::post('inscrire',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'inscrireEleve']);
+            Route::delete('inscrire/{id}',                    [\App\Http\Controllers\Api\V1\TransportController::class, 'desinscrireEleve']);
+            Route::get('eleve/{eleveId}',                     [\App\Http\Controllers\Api\V1\TransportController::class, 'circuitsEleve']);
+            Route::post('pointage',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'pointer']);
+            Route::get('circuits/{id}/pointage',              [\App\Http\Controllers\Api\V1\TransportController::class, 'pointageDuJour']);
+        });
+
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
