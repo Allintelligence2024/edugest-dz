@@ -3,10 +3,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Paie, Enseignant};
+use App\Services\PaieService;
 use Illuminate\Http\{Request, JsonResponse};
 
 class PaieController extends Controller
 {
+    public function __construct(private readonly PaieService $service) {}
+
     public function index(Request $request): JsonResponse
     {
         $paies = Paie::with('enseignant')
@@ -28,28 +31,24 @@ class PaieController extends Controller
         ]);
 
         $enseignant = Enseignant::with('contratsActifs')->findOrFail($validated['enseignant_id']);
-        $contrat = $enseignant->contratsActifs->first();
 
-        $nbSeances = $enseignant->seances()
-            ->whereMonth('seances.date_seance', $validated['mois'])
-            ->whereYear('seances.date_seance', $validated['annee'])
-            ->where('seances.statut', 'terminée')
-            ->count();
+        $calcul = $this->service->calculerPaie($enseignant, $validated['mois'], $validated['annee']);
+        $calcul['statut'] = 'calculé';
 
-        $montant = $contrat
-            ? ($contrat->salaire_base ?? $contrat->tarif_horaire * $nbSeances * 2)
-            : $enseignant->tarif_horaire * $nbSeances * 2;
+        $paie = Paie::updateOrCreate(
+            [
+                'enseignant_id' => $enseignant->id,
+                'mois'          => $validated['mois'],
+                'annee'         => $validated['annee'],
+            ],
+            array_merge($calcul, ['tenant_id' => config('tenant.current_id')])
+        );
 
-        $paie = Paie::create([
-            'enseignant_id' => $enseignant->id,
-            'mois'          => $validated['mois'],
-            'annee'         => $validated['annee'],
-            'salaire_base'  => $montant,
-            'salaire_net'   => $montant * 0.91,
-            'statut'        => 'calculé',
-        ]);
-
-        return response()->json(['success' => true, 'message' => 'Paie calculée', 'data' => $paie->load('enseignant')], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Paie calculée avec IRG et CNAS algériens',
+            'data'    => $paie->load('enseignant'),
+        ], 201);
     }
 
     public function valider(string $id): JsonResponse

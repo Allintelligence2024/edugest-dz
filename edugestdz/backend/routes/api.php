@@ -317,6 +317,14 @@ use App\Http\Controllers\Api\V1\{
             Route::post('{id}/pointer/arrivee',   [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'arrivee']);
             Route::post('{id}/pointer/depart',    [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'depart']);
             Route::get('{id}/pointer/historique', [\App\Http\Controllers\Api\V1\PointagePersonnelController::class, 'historique']);
+
+            // Paies personnel non-enseignant
+            Route::get('paies',                    [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'index']);
+            Route::post('paies/calculer',          [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'calculer']);
+            Route::post('paies/calculer-tous',     [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'calculerTous']);
+            Route::put('paies/{id}/valider',       [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'valider']);
+            Route::put('paies/{id}/payer',         [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'payer']);
+            Route::get('paies/{id}/pdf',           [\App\Http\Controllers\Api\V1\PaiePersonnelController::class, 'pdf']);
         });
 
         // ── Transport Scolaire (M09) ──
@@ -361,6 +369,14 @@ use App\Http\Controllers\Api\V1\{
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
+        });
+
+        // ── Billets (entrée / retard / sortie / convocation) ──
+        Route::prefix('billets')->group(function () {
+            Route::get('/',                    [\App\Http\Controllers\Api\V1\BilletController::class, 'index']);
+            Route::post('/',                   [\App\Http\Controllers\Api\V1\BilletController::class, 'store']);
+            Route::get('{id}/pdf',             [\App\Http\Controllers\Api\V1\BilletController::class, 'pdf']);
+            Route::get('eleve/{eleveId}',      [\App\Http\Controllers\Api\V1\BilletController::class, 'parEleve']);
         });
 
         // ── Marketplace Authenticated ──
