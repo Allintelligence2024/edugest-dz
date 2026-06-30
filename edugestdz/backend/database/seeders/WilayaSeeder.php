@@ -69,13 +69,11 @@ class WilayaSeeder extends Seeder
             [58, '58', 'El Meniaa', 'المنيعة'],
         ];
 
-        foreach ($wilayas as $w) {
-            DB::table('wilayas')->insert([
-                'id'     => $w[0],
-                'code'   => $w[1],
-                'nom_fr' => $w[2],
-                'nom_ar' => $w[3],
-            ]);
-        }
+        DB::table('wilayas')->insertOrIgnore(array_map(fn ($w) => [
+            'id'     => $w[0],
+            'code'   => $w[1],
+            'nom_fr' => $w[2],
+            'nom_ar' => $w[3],
+        ], $wilayas));
     }
 }
