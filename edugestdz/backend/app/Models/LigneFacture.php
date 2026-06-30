@@ -26,4 +26,14 @@ class LigneFacture extends BaseModel
     {
         return $this->belongsTo(Facture::class);
     }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return match ($this->type_ligne) {
+            'cours'     => 'Scolarité',
+            'transport' => 'Transport scolaire',
+            'cantine'   => 'Cantine / Restauration',
+            default     => ucfirst($this->type_ligne),
+        };
+    }
 }

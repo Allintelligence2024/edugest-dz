@@ -169,6 +169,149 @@ class FacturationService
         ];
     }
 
+    /**
+     * Génère la facture mensuelle complète d'un élève :
+     * scolarité + transport (si inscrit) + cantine (si inscrit).
+     * Évite les doublons : ne génère pas si déjà facturé pour ce mois.
+     */
+    public function genererFactureMensuelleEleve(
+        string $eleveId,
+        int $mois,
+        int $annee,
+        float $tarifScolarite = 0
+    ): ?Facture {
+        $eleve     = \App\Models\Eleve::findOrFail($eleveId);
+        $tenantId  = config('tenant.current_id');
+
+        // ── Vérifier qu'une facture n'existe pas déjà ce mois ──
+        $dejaFacturee = Facture::where('eleve_id', $eleveId)
+            ->where('mois', $mois)
+            ->where('annee', $annee)
+            ->exists();
+
+        if ($dejaFacturee) {
+            return null; // idempotent — ne pas doubler
+        }
+
+        $lignes = [];
+
+        // ── Ligne scolarité (si tarif > 0) ──
+        if ($tarifScolarite > 0) {
+            $lignes[] = [
+                'description'   => "Frais de scolarité — " . \Carbon\Carbon::create($annee, $mois)->translatedFormat('F Y'),
+                'quantite'      => 1,
+                'prix_unitaire' => $tarifScolarite,
+                'total'         => $tarifScolarite,
+                'type_ligne'    => 'cours',
+            ];
+        }
+
+        // ── Ligne transport (si inscrit et actif) ──
+        $transport = \App\Models\TransportEleve::where('eleve_id', $eleveId)
+            ->where('actif', true)
+            ->where(fn($q) => $q->whereNull('date_fin')->orWhere('date_fin', '>=', today()))
+            ->with('circuit:id,nom')
+            ->first();
+
+        if ($transport && $transport->tarif_mensuel_applique > 0) {
+            $lignes[] = [
+                'description'   => "Transport scolaire — {$transport->circuit->nom} — " . \Carbon\Carbon::create($annee, $mois)->translatedFormat('F Y'),
+                'quantite'      => 1,
+                'prix_unitaire' => $transport->tarif_mensuel_applique,
+                'total'         => $transport->tarif_mensuel_applique,
+                'type_ligne'    => 'transport',
+            ];
+        }
+
+        // ── Ligne cantine (si inscrit et actif) ──
+        $cantine = \App\Models\InscriptionCantine::where('eleve_id', $eleveId)
+            ->where('actif', true)
+            ->where(fn($q) => $q->whereNull('date_fin')->orWhere('date_fin', '>=', today()))
+            ->first();
+
+        if ($cantine && $cantine->tarif_mensuel > 0) {
+            // Pour abonnement journalier : compter les repas réels du mois
+            if ($cantine->type_abonnement === 'journalier') {
+                $nbRepas = \App\Models\RepasJournalier::where('eleve_id', $eleveId)
+                    ->where('present', true)
+                    ->whereMonth('date_repas', $mois)
+                    ->whereYear('date_repas', $annee)
+                    ->count();
+
+                if ($nbRepas > 0) {
+                    $prixUnitaire = $cantine->tarif_mensuel; // ici = prix par repas
+                    $total        = $nbRepas * $prixUnitaire;
+                    $lignes[]     = [
+                        'description'   => "Cantine ({$nbRepas} repas) — " . \Carbon\Carbon::create($annee, $mois)->translatedFormat('F Y'),
+                        'quantite'      => $nbRepas,
+                        'prix_unitaire' => $prixUnitaire,
+                        'total'         => $total,
+                        'type_ligne'    => 'cantine',
+                    ];
+                }
+            } else {
+                // Forfait mensuel
+                $lignes[] = [
+                    'description'   => "Cantine (forfait mensuel) — " . \Carbon\Carbon::create($annee, $mois)->translatedFormat('F Y'),
+                    'quantite'      => 1,
+                    'prix_unitaire' => $cantine->tarif_mensuel,
+                    'total'         => $cantine->tarif_mensuel,
+                    'type_ligne'    => 'cantine',
+                ];
+            }
+        }
+
+        // ── Si aucune ligne → pas de facture ──
+        if (empty($lignes)) {
+            return null;
+        }
+
+        // ── Créer la facture via la méthode existante ──
+        return $this->creerFacture([
+            'eleve_id'      => $eleveId,
+            'mois'          => $mois,
+            'annee'         => $annee,
+            'date_emission' => today()->toDateString(),
+            'date_echeance' => today()->addDays(15)->toDateString(),
+            'lignes'        => $lignes,
+            'notes'         => "Facture mensuelle auto-générée",
+        ]);
+    }
+
+    /**
+     * Génère les factures mensuelles de TOUS les élèves actifs du tenant.
+     * Utilisé par la commande Artisan mensuelle.
+     */
+    public function genererFacturesMensuelles(int $mois, int $annee, float $tarifScolariteDefaut = 0): array
+    {
+        $eleves  = \App\Models\Eleve::actifs()->get();
+        $resultats = ['generees' => 0, 'ignorees' => 0, 'erreurs' => []];
+
+        foreach ($eleves as $eleve) {
+            try {
+                $facture = $this->genererFactureMensuelleEleve(
+                    $eleve->id,
+                    $mois,
+                    $annee,
+                    $tarifScolariteDefaut
+                );
+
+                if ($facture) {
+                    $resultats['generees']++;
+                } else {
+                    $resultats['ignorees']++; // déjà facturé ou aucune ligne
+                }
+            } catch (\Throwable $e) {
+                $resultats['erreurs'][] = [
+                    'eleve'  => $eleve->nom_complet,
+                    'erreur' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $resultats;
+    }
+
     private function genererNumeroFacture(string $tenantId): string
     {
         $annee = now()->year;

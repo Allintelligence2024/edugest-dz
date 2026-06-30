@@ -13,3 +13,10 @@ Schedule::command('absences:verifier-matin')
     ->dailyAt('08:30')
     ->timezone('Africa/Algiers')
     ->withoutOverlapping();
+
+// Génération automatique des factures le 1er de chaque mois à 6h00 (heure Alger)
+Schedule::command('factures:generer-mensuel')
+    ->monthlyOn(1, '06:00')
+    ->timezone('Africa/Algiers')
+    ->withoutOverlapping()
+    ->runInBackground();
