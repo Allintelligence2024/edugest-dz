@@ -27,6 +27,14 @@ import MarketplaceSearchPage from '@pages/MarketplaceSearchPage';
 import MarketplaceOffreDetailPage from '@pages/MarketplaceOffreDetailPage';
 import MarketplaceReservationPage from '@pages/MarketplaceReservationPage';
 import MesReservationsPage from '@pages/MesReservationsPage';
+import TransportPage from '@pages/TransportPage';
+import CantinePage from '@pages/CantinePage';
+import StockInventairePage from '@pages/StockInventairePage';
+import PersonnelAdminPage from '@pages/PersonnelAdminPage';
+import BudgetPage from '@pages/BudgetPage';
+import EntretienPage from '@pages/EntretienPage';
+import AbsencesPage from '@pages/AbsencesPage';
+import BilletsPage from '@pages/BilletsPage';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -100,6 +108,14 @@ export default function App() {
               <Route path="parametres/securite" element={<TwoFactorSetupPage />} />
             <Route path="marketplace/reservation/:id" element={<MarketplaceReservationPage />} />
             <Route path="mes-reservations" element={<MesReservationsPage />} />
+            <Route path="transport" element={<TransportPage />} />
+            <Route path="cantine" element={<CantinePage />} />
+            <Route path="stock" element={<StockInventairePage />} />
+            <Route path="personnel-admin" element={<PersonnelAdminPage />} />
+            <Route path="budget" element={<BudgetPage />} />
+            <Route path="entretien" element={<EntretienPage />} />
+            <Route path="absences" element={<AbsencesPage />} />
+            <Route path="billets" element={<BilletsPage />} />
             </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
