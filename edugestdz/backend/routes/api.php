@@ -459,6 +459,9 @@ use App\Http\Controllers\Api\V1\{
             Route::post('online/initier',        [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'initier']);
             Route::get('online/retour',          [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'retour']);
             Route::post('online/callback',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'callback']);
+            Route::get('online/dashboard',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'dashboard']);
+            Route::get('online/{id}/statut',     [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'verifierStatut']);
+            Route::post('online/{id}/rembourser',[\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'rembourser']);
         });
     });
 
