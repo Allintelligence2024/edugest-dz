@@ -36,6 +36,7 @@ return new class extends Migration {
             $table->boolean('actif')->default(true);
             $table->date('date_emission')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
