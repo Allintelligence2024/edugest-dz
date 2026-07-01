@@ -203,6 +203,9 @@ use App\Http\Controllers\Api\V1\{
         Route::prefix('factures')->group(function () {
             Route::get('{id}/pdf',               [FactureController::class, 'pdf']);
             Route::post('{id}/envoyer',          [FactureController::class, 'envoyer']);
+            // Génération mensuelle
+            Route::post('generer-mensuelle',      [FactureController::class, 'genererMensuelle']);
+            Route::post('generer-toutes',         [FactureController::class, 'genererToutes']);
         });
 
         // ── Paiements ──

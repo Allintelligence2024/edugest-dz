@@ -114,4 +114,70 @@ class FactureController extends Controller
         }
         return response()->json(['success' => true, 'message' => 'Facture envoyée']);
     }
+
+    /**
+     * Générer la facture mensuelle d'un élève (scolarité + transport + cantine)
+     * POST /api/v1/factures/generer-mensuelle
+     */
+    public function genererMensuelle(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'eleve_id'          => 'required|uuid|exists:eleves,id',
+            'mois'              => 'required|integer|between:1,12',
+            'annee'             => 'required|integer|min:2020',
+            'tarif_scolarite'   => 'nullable|numeric|min:0',
+        ]);
+
+        $facture = $this->service->genererFactureMensuelleEleve(
+            $validated['eleve_id'],
+            $validated['mois'],
+            $validated['annee'],
+            $validated['tarif_scolarite'] ?? 0
+        );
+
+        if (!$facture) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Facture déjà existante pour ce mois ou aucune ligne à facturer',
+                'code'    => 'DEJA_FACTUREE',
+            ], 409);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Facture {$facture->numero_facture} générée",
+            'data'    => $facture->load('lignes', 'eleve'),
+        ], 201);
+    }
+
+    /**
+     * Générer les factures mensuelles de tous les élèves actifs
+     * POST /api/v1/factures/generer-toutes
+     */
+    public function genererToutes(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'mois'            => 'required|integer|between:1,12',
+            'annee'           => 'required|integer|min:2020',
+            'tarif_scolarite' => 'nullable|numeric|min:0',
+        ]);
+
+        // Dispatcher un job en queue pour éviter le timeout HTTP
+        \App\Jobs\GenererFacturesMensuelles::dispatch(
+            $validated['mois'],
+            $validated['annee'],
+            $validated['tarif_scolarite'] ?? 0,
+            config('tenant.current_id')
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Génération des factures de {$validated['mois']}/{$validated['annee']} lancée en arrière-plan",
+            'data'    => [
+                'mois'  => $validated['mois'],
+                'annee' => $validated['annee'],
+                'statut'=> 'en_cours',
+            ],
+        ]);
+    }
 }
