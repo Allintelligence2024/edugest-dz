@@ -33,3 +33,50 @@ export const bulletinsApi = {
   byEleve: (eleveId) => api.get(`/eleves/${eleveId}/bulletins`),
   pdf: (id) => api.get(`/bulletins/${id}/pdf`),
 };
+
+// ── API Enseignant ──
+export const enseignantApi = {
+  planning: (params)          => api.get('/planning', { params }),
+  seances:  (params)          => api.get('/seances', { params }),
+  groupes:  ()                => api.get('/groupes'),
+  presences: {
+    parSeance: (seanceId)     => api.get(`/presences/seance/${seanceId}`),
+    saisir:    (seanceId, data)=> api.post(`/presences/seance/${seanceId}`, data),
+  },
+  evaluations: {
+    list:      (params)       => api.get('/evaluations', { params }),
+    notes:     (evalId)       => api.get(`/evaluations/${evalId}/notes`),
+    saisirNotes: (evalId, data)=> api.post(`/evaluations/${evalId}/notes`, data),
+  },
+  pointage: {
+    arrivee: (id, data)       => api.post(`/pointage/enseignants/${id}/arrivee`, data),
+    depart:  (id, data)       => api.post(`/pointage/enseignants/${id}/depart`, data),
+    aujourdhui: ()            => api.get('/pointage/enseignants/aujourd-hui'),
+  },
+  statistiques: (id)          => api.get(`/enseignants/${id}/statistiques`),
+};
+
+// ── API Admin / Dashboard ──
+export const adminApi = {
+  dashboard: {
+    finance:     ()           => api.get('/finance/tableau-bord'),
+    pedagogique: ()           => api.get('/rapports/pedagogique'),
+  },
+  eleves: {
+    list:    (params)         => api.get('/eleves', { params }),
+    show:    (id)             => api.get(`/eleves/${id}`),
+    notes:   (id)             => api.get(`/eleves/${id}/notes`),
+    paiements:(id)            => api.get(`/eleves/${id}/paiements`),
+    bulletins:(id)            => api.get(`/eleves/${id}/bulletins`),
+    presences:(id)            => api.get(`/eleves/${id}/presences`),
+  },
+  absences: {
+    jour:        (params)     => api.get('/absences/jour', { params }),
+    marquerPresent:(eleveId, data) => api.post(`/absences/${eleveId}/present`, data),
+  },
+  finance: {
+    bilan:   (params)         => api.get('/budget/bilan-mensuel', { params }),
+    factures:(params)         => api.get('/factures', { params }),
+    impayes: ()               => api.get('/finance/impayes'),
+  },
+};
