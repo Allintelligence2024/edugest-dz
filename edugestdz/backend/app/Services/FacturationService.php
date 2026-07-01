@@ -120,52 +120,53 @@ class FacturationService
 
     public function getTableauBord(): array
     {
-        $tenantId   = config('tenant.current_id');
         $moisActuel = now()->month;
         $annee      = now()->year;
+        $tenantId   = config('tenant.current_id');
 
-        $caMois = Paiement::where('statut', 'confirmé')
-            ->whereMonth('date_paiement', $moisActuel)
-            ->whereYear('date_paiement',  $annee)
-            ->sum('montant');
-
-        $caAnnee = Paiement::where('statut', 'confirmé')
+        $paiementsStats = Paiement::where('statut', 'confirmé')
             ->whereYear('date_paiement', $annee)
-            ->sum('montant');
+            ->selectRaw("
+                SUM(montant) as ca_annee,
+                SUM(CASE WHEN EXTRACT(MONTH FROM date_paiement) = ? THEN montant ELSE 0 END) as ca_mois
+            ", [$moisActuel])
+            ->first();
 
-        $impayes = Facture::whereIn('statut', ['émise', 'en_retard', 'partiellement_payée'])
-            ->sum('total_ttc');
+        $impayesStats = Facture::whereIn('statut', ['émise', 'en_retard', 'partiellement_payée'])
+            ->selectRaw("
+                SUM(total_ttc) as total_impayes,
+                COUNT(CASE WHEN date_echeance < CURRENT_DATE THEN 1 END) as nb_impayes
+            ")
+            ->first();
 
-        $nbImpayes = Facture::whereIn('statut', ['émise', 'en_retard'])
-            ->where('date_echeance', '<', today())
-            ->count();
-
-        $caParMois = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date  = now()->subMonths($i);
-            $total = Paiement::where('statut', 'confirmé')
-                ->whereMonth('date_paiement', $date->month)
-                ->whereYear('date_paiement',  $date->year)
-                ->sum('montant');
-            $caParMois[] = [
-                'mois'  => $date->translatedFormat('M Y'),
-                'total' => (float) $total,
-            ];
-        }
+        $caParMois = Paiement::where('statut', 'confirmé')
+            ->where('date_paiement', '>=', now()->subMonths(5)->startOfMonth())
+            ->selectRaw("
+                DATE_TRUNC('month', date_paiement) as mois_date,
+                SUM(montant) as total
+            ")
+            ->groupByRaw("DATE_TRUNC('month', date_paiement)")
+            ->orderBy('mois_date')
+            ->get()
+            ->map(fn($r) => [
+                'mois'  => \Carbon\Carbon::parse($r->mois_date)->translatedFormat('M Y'),
+                'total' => (float) $r->total,
+            ]);
 
         $modesPayment = Paiement::where('statut', 'confirmé')
             ->whereMonth('date_paiement', $moisActuel)
+            ->whereYear('date_paiement', $annee)
             ->selectRaw('mode_paiement, SUM(montant) as total')
             ->groupBy('mode_paiement')
             ->pluck('total', 'mode_paiement');
 
         return [
-            'ca_mois'       => (float) $caMois,
-            'ca_annee'      => (float) $caAnnee,
-            'impayes'       => (float) $impayes,
-            'nb_impayes'    => $nbImpayes,
-            'ca_par_mois'   => $caParMois,
-            'modes_payment' => $modesPayment,
+            'ca_mois'      => (float) ($paiementsStats->ca_mois ?? 0),
+            'ca_annee'     => (float) ($paiementsStats->ca_annee ?? 0),
+            'impayes'      => (float) ($impayesStats->total_impayes ?? 0),
+            'nb_impayes'   => (int)   ($impayesStats->nb_impayes ?? 0),
+            'ca_par_mois'  => $caParMois,
+            'modes_payment'=> $modesPayment,
         ];
     }
 

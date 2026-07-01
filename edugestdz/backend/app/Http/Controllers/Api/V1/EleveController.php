@@ -25,14 +25,29 @@ class EleveController extends BaseApiController
     public function index(Request $request): JsonResponse
     {
         $eleves = $this->indexQuery($request)
-            ->withCount(['inscriptions' => fn($q) => $q->where('statut', 'validée')])
+            ->with([
+                'wilaya:id,nom_fr',
+                'commune:id,nom_fr',
+                'inscriptions' => fn($q) => $q->where('statut', 'validée')
+                    ->with('groupe:id,nom,matiere_id')
+                    ->select('id', 'eleve_id', 'groupe_id', 'statut'),
+            ])
+            ->withCount([
+                'inscriptions as nb_inscriptions' => fn($q) => $q->where('statut', 'validée'),
+                'presences as nb_presences',
+                'presences as nb_absences' => fn($q) => $q->where('statut', 'absent'),
+            ])
             ->paginate($request->per_page ?? $this->perPage);
 
-        $stats = cache()->remember("eleves_stats_" . config('tenant.current_id'), 300, fn() => [
-            'total'   => Eleve::count(),
-            'actifs'  => Eleve::where('statut', 'actif')->count(),
-            'nouveaux' => Eleve::whereMonth('created_at', now()->month)->count(),
-        ]);
+        $stats = cache()->remember(
+            "eleves_stats_" . config('tenant.current_id'),
+            300,
+            fn() => [
+                'total'    => Eleve::count(),
+                'actifs'   => Eleve::where('statut', 'actif')->count(),
+                'nouveaux' => Eleve::whereMonth('created_at', now()->month)->count(),
+            ]
+        );
 
         return $this->paginatedResponse($eleves, 'Élèves récupérés', ['stats' => $stats]);
     }
@@ -75,18 +90,25 @@ class EleveController extends BaseApiController
         $eleve = Eleve::with([
             'wilaya:id,nom_fr,nom_ar',
             'commune:id,nom_fr',
-            'parents',
-            'inscriptions' => fn($q) => $q->with('groupe.matiere')->where('statut', 'validée'),
+            'parents:id,nom,prenom,telephone_1,telephone_2,email',
+            'inscriptions' => fn($q) => $q
+                ->where('statut', 'validée')
+                ->with('groupe:id,nom,matiere_id,enseignant_id')
+                ->with('groupe.matiere:id,nom_fr,coefficient')
+                ->with('groupe.enseignant:id,nom,prenom'),
         ])
         ->withCount([
             'presences',
             'presences as presences_presentes' => fn($q) => $q->whereIn('statut', ['présent', 'retard']),
+            'factures as factures_impayees'    => fn($q) => $q->whereNotIn('statut', ['payée', 'annulée']),
         ])
         ->findOrFail($id);
 
+        $stats = $this->eleveService->getStatsAcademiques($eleve);
+
         return $this->success([
-            'eleve'        => $eleve,
-            'statistiques' => $this->eleveService->getStatsAcademiques($eleve),
+            'eleve'       => $eleve,
+            'statistiques'=> $stats,
         ]);
     }
 

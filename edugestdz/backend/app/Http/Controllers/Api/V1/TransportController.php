@@ -19,22 +19,31 @@ class TransportController extends BaseApiController
 
     public function indexCircuits(Request $request): JsonResponse
     {
-        $circuits = CircuitTransport::with(['chauffeur:id,nom,prenom,telephone', 'arrets'])
-            ->when($request->filled('actif'), fn($q) => $q->where('actif', (bool) $request->actif))
-            ->orderBy('nom')
-            ->get()
-            ->map(fn($c) => array_merge($c->toArray(), [
-                'nb_eleves'        => $c->nb_eleves_actifs,
-                'taux_remplissage' => $c->taux_remplissage,
-                'alertes'          => $c->alertes_maintenance,
-            ]));
+        $circuits = CircuitTransport::with([
+            'chauffeur:id,nom,prenom,telephone',
+            'arrets:id,circuit_id,nom,ordre,heure_matin,heure_soir',
+        ])
+        ->withCount([
+            'inscriptionsActives as nb_eleves_actifs',
+        ])
+        ->when($request->filled('actif'), fn($q) => $q->where('actif', (bool) $request->actif))
+        ->orderBy('nom')
+        ->get()
+        ->map(fn($c) => [
+            ...$c->toArray(),
+            'nb_eleves'        => $c->nb_eleves_actifs,
+            'taux_remplissage' => $c->capacite > 0
+                ? round(($c->nb_eleves_actifs / $c->capacite) * 100, 1)
+                : 0,
+            'alertes'          => $c->alertes_maintenance,
+        ]);
 
         return $this->success([
             'circuits' => $circuits,
             'stats'    => [
-                'total'        => $circuits->count(),
-                'actifs'       => $circuits->where('actif', true)->count(),
-                'total_eleves' => $circuits->sum('nb_eleves'),
+                'total'       => $circuits->count(),
+                'actifs'      => $circuits->where('actif', true)->count(),
+                'total_eleves'=> $circuits->sum('nb_eleves'),
             ],
         ], 'Circuits recuperes');
     }

@@ -9,28 +9,60 @@ class BulletinService
 {
     public function genererBulletins(string $groupeId, string $trimestre, string $anneeScolaire): array
     {
-        $groupe = Groupe::with('matiere')->findOrFail($groupeId);
+        $groupe = Groupe::findOrFail($groupeId);
+
         $eleves = Eleve::whereHas('inscriptions', fn($q) =>
             $q->where('groupe_id', $groupeId)->where('statut', 'validée')
         )->get();
 
-        $bulletinsGeneres = [];
         $effectif = $eleves->count();
 
-        $moyennes = $eleves->map(fn($eleve) => [
-            'eleve_id' => $eleve->id,
-            'moyenne'  => $this->calculerMoyenne($eleve->id, $groupeId, $trimestre),
-        ])->sortByDesc('moyenne');
+        $toutesLesNotes = Note::whereHas('evaluation', fn($q) =>
+            $q->where('groupe_id', $groupeId)->where('trimestre', $trimestre)
+        )
+        ->whereIn('eleve_id', $eleves->pluck('id'))
+        ->whereNotNull('note')
+        ->with('evaluation:id,coefficient,groupe_id,trimestre')
+        ->get()
+        ->groupBy('eleve_id');
+
+        $toutesLesPresences = Presence::whereHas('seance.cours', fn($q) =>
+            $q->where('groupe_id', $groupeId)
+        )
+        ->whereIn('eleve_id', $eleves->pluck('id'))
+        ->selectRaw('eleve_id, statut, COUNT(*) as total')
+        ->groupBy('eleve_id', 'statut')
+        ->get()
+        ->groupBy('eleve_id');
+
+        $moyennes = $eleves->map(function ($eleve) use ($toutesLesNotes) {
+            $notesEleve = $toutesLesNotes->get($eleve->id, collect());
+
+            if ($notesEleve->isEmpty()) {
+                return ['eleve_id' => $eleve->id, 'moyenne' => 0.0];
+            }
+
+            $totalPondere = $notesEleve->sum(fn($n) => $n->note * $n->evaluation->coefficient);
+            $totalCoeff   = $notesEleve->sum(fn($n) => $n->evaluation->coefficient);
+            $moyenne      = $totalCoeff > 0 ? round($totalPondere / $totalCoeff, 2) : 0.0;
+
+            return ['eleve_id' => $eleve->id, 'moyenne' => $moyenne];
+        })->sortByDesc('moyenne');
 
         $rang = 1;
-        $moyennesAvecRang = $moyennes->map(function ($item) use (&$rang) {
-            return [...$item, 'rang' => $rang++];
-        })->keyBy('eleve_id');
+        $moyennesAvecRang = $moyennes->map(fn($item) => [...$item, 'rang' => $rang++])->keyBy('eleve_id');
 
-        DB::transaction(function () use ($eleves, $groupe, $trimestre, $anneeScolaire,
-                                         $effectif, $moyennesAvecRang, &$bulletinsGeneres) {
+        $bulletinsGeneres = [];
+        DB::transaction(function () use (
+            $eleves, $groupe, $trimestre, $anneeScolaire,
+            $effectif, $moyennesAvecRang, $toutesLesPresences, &$bulletinsGeneres
+        ) {
             foreach ($eleves as $eleve) {
-                $data = $moyennesAvecRang[$eleve->id];
+                $data = $moyennesAvecRang[$eleve->id] ?? ['moyenne' => 0, 'rang' => $effectif];
+
+                $presenceEleve = $toutesLesPresences->get($eleve->id, collect());
+                $nbPresent     = $presenceEleve->where('statut', 'présent')->sum('total');
+                $nbAbsent      = $presenceEleve->where('statut', 'absent')->sum('total');
 
                 $bulletin = Bulletin::updateOrCreate(
                     [
