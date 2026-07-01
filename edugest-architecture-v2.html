@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Architecture v2 · 29 Juin 2026</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0a0d14;
+  color: #e2e8f0;
+  padding: 28px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+.header .sub { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.header-stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.hstat { background: #131720; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 18px; text-align: center; }
+.hstat .val { font-size: 24px; font-weight: 900; display: block; }
+.hstat .lbl { font-size: 10px; color: #64748b; display: block; margin-top: 2px; }
+
+/* ── SECTION ── */
+.stitle { font-size: 12px; font-weight: 700; color: #60a5fa; text-transform: uppercase;
+  letter-spacing: 1.5px; border-bottom: 1px solid #1e293b; padding-bottom: 7px; margin: 24px 0 14px; }
+
+/* ── MODULE GRID ── */
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+
+/* ── MODULE CARD ── */
+.mod { border-radius: 10px; border: 1px solid #1e293b; overflow: hidden; position: relative; }
+.mod-h { padding: 11px 14px; display: flex; align-items: center; gap: 10px; }
+.mod-icon { font-size: 20px; flex-shrink: 0; }
+.mod-info { flex: 1; min-width: 0; }
+.mod-code { font-size: 9px; font-weight: 700; color: #475569; letter-spacing: 1px; }
+.mod-name { font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge { display: inline-block; padding: 2px 7px; border-radius: 20px; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+
+/* Status colors */
+.s-done   { background: #14532d; color: #4ade80; }
+.s-next   { background: #1e3a5f; color: #60a5fa; }
+.s-future { background: #2e1065; color: #c084fc; }
+.s-fix    { background: #422006; color: #fb923c; }
+
+/* Header backgrounds */
+.h-done  { background: #0d2515; border-bottom: 1px solid #1a4d2a; }
+.h-done .mod-name { color: #4ade80; }
+.h-next  { background: #091220; border-bottom: 1px solid #1e3a5f; }
+.h-next .mod-name { color: #60a5fa; }
+.h-future{ background: #150d22; border-bottom: 1px solid #4c1d95; }
+.h-future .mod-name { color: #c084fc; }
+.h-fix   { background: #1f1008; border-bottom: 1px solid #7c2d12; }
+.h-fix .mod-name { color: #fb923c; }
+
+.mod-body { padding: 10px 14px 12px; }
+.mod-pct { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+.bar-w { background: #1e293b; border-radius: 999px; height: 4px; margin-bottom: 8px; overflow: hidden; }
+.bar { height: 100%; border-radius: 999px; }
+.items { font-size: 10px; color: #64748b; line-height: 1.9; }
+.items .ok   { color: #4ade80; }
+.items .nxt  { color: #60a5fa; }
+.items .fix  { color: #fb923c; }
+.items .miss { color: #f87171; }
+
+/* ── PROGRESS GLOBAL ── */
+.prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 7px; }
+.prog-label { font-size: 11px; width: 210px; flex-shrink: 0; color: #94a3b8; }
+.prog-bar-wrap { flex: 1; background: #1e293b; border-radius: 999px; height: 8px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 999px; }
+.prog-pct { font-size: 11px; font-weight: 700; width: 38px; text-align: right; }
+
+/* ── NEXT PRIORITIES ── */
+.prio-list { display: flex; flex-direction: column; gap: 10px; }
+.prio {
+  border-radius: 10px; padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 16px;
+}
+.prio-num { font-size: 28px; font-weight: 900; flex-shrink: 0; margin-top: 2px; }
+.prio-content { flex: 1; }
+.prio-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.prio-why { font-size: 11px; color: #94a3b8; line-height: 1.7; }
+.prio-effort { font-size: 10px; font-weight: 700; margin-top: 6px; }
+
+.p-urgent { background: #1a0808; border: 1px solid #7f1d1d; }
+.p-urgent .prio-num { color: #f87171; }
+.p-urgent .prio-title { color: #f87171; }
+.p-urgent .prio-effort { color: #fb923c; }
+
+.p-high { background: #0a1628; border: 1px solid #1e3a5f; }
+.p-high .prio-num { color: #60a5fa; }
+.p-high .prio-title { color: #60a5fa; }
+.p-high .prio-effort { color: #60a5fa; }
+
+.p-medium { background: #150d22; border: 1px solid #4c1d95; }
+.p-medium .prio-num { color: #c084fc; }
+.p-medium .prio-title { color: #c084fc; }
+.p-medium .prio-effort { color: #c084fc; }
+
+/* ── CI STATUS ── */
+.ci-bar {
+  display: flex; gap: 8px; align-items: center;
+  background: #0f2a1a; border: 1px solid #1a4d2a;
+  border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+}
+.ci-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.ci-text { font-size: 12px; }
+
+/* ── INFRA ROW ── */
+.infra-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.infra-box {
+  flex: 1; min-width: 120px;
+  background: #131720; border: 1px solid #1e293b;
+  border-radius: 8px; padding: 10px; text-align: center;
+}
+.infra-box .ib-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+.infra-box .ib-name { font-size: 10px; font-weight: 700; display: block; }
+.infra-box .ib-status { font-size: 9px; margin-top: 4px; display: block; }
+
+/* ── LEGEND ── */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #64748b; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── CONCLUSION ── */
+.conclusion { background: #0a1628; border: 2px solid #3b82f6; border-radius: 10px;
+  padding: 18px 20px; font-size: 12px; line-height: 1.9; color: #cbd5e1; margin-top: 20px; }
+.conclusion strong { color: #60a5fa; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎓 EduGest DZ — Architecture v2</h1>
+  <div class="sub">État réel après journée de développement · 29 Juin 2026 · 24 CI runs</div>
+  <div class="header-stats">
+    <div class="hstat"><span class="val" style="color:#4ade80;">260+</span><span class="lbl">Tests verts sur main</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">13</span><span class="lbl">Modules actifs</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">3</span><span class="lbl">PRs mergées</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">~72%</span><span class="lbl">Avancement global</span></div>
+    <div class="hstat"><span class="val" style="color:#fb923c;">5</span><span class="lbl">Modules restants</span></div>
+    <div class="hstat"><span class="val" style="color:#fbbf24;">~14</span><span class="lbl">Semaines restantes</span></div>
+  </div>
+</div>
+
+<!-- CI STATUS -->
+<div class="ci-bar">
+  <div class="ci-dot" style="background:#4ade80;"></div>
+  <div class="ci-text">
+    <strong style="color:#4ade80;">CI main ✅ VERT</strong> — Run #24 · commit <code>c4d57ec</code> · Hotfix composer-php82 mergé ·
+    zipstream-php contraint à ^2.4 · PHP 8.2 compatible · <strong>0 PR ouvertes</strong>
+  </div>
+</div>
+
+<!-- LÉGENDE -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80;"></div> Dans main · CI vert</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60a5fa;"></div> Prochaine priorité</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c084fc;"></div> Phase 3 — Plus tard</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div> Partiel — à compléter</div>
+</div>
+
+<!-- PROGRESSION GLOBALE -->
+<div class="stitle">Avancement par domaine</div>
+
+<div class="prog-row"><div class="prog-label">🔐 Auth & Sécurité & Multi-tenant</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:95%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">95%</div></div>
+<div class="prog-row"><div class="prog-label">👦 Inscriptions & Élèves</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:85%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">85%</div></div>
+<div class="prog-row"><div class="prog-label">📅 Planning & Séances</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:75%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">75%</div></div>
+<div class="prog-row"><div class="prog-label">💰 Finance & Paiements</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:70%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">70%</div></div>
+<div class="prog-row"><div class="prog-label">📚 Pédagogie & Curriculum DZ</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:75%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">75%</div></div>
+<div class="prog-row"><div class="prog-label">✅ Présences & Pointage (élèves+profs)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:70%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">70%</div></div>
+<div class="prog-row"><div class="prog-label">🏷️ Badge RFID / NFC</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:60%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">60%</div></div>
+<div class="prog-row"><div class="prog-label">👷 Personnel non-enseignant (M12)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:90%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">90%</div></div>
+<div class="prog-row"><div class="prog-label">📊 Budget Annuel & Dépenses (M13)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:85%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">85%</div></div>
+<div class="prog-row"><div class="prog-label">🚌 Transport Scolaire (M09)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:85%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">85%</div></div>
+<div class="prog-row"><div class="prog-label">🍽️ Cantine / Restauration (M10)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:85%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">85%</div></div>
+<div class="prog-row"><div class="prog-label">📦 Stock & Inventaire (M11)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div><div class="prog-pct" style="color:#f87171;">0%</div></div>
+<div class="prog-row"><div class="prog-label">🔧 Entretien Bâtiment (M14)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:0%;background:#f87171;"></div></div><div class="prog-pct" style="color:#f87171;">0%</div></div>
+<div class="prog-row"><div class="prog-label">💳 Paiement CIB/Dahabia (Satim)</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:30%;background:#fb923c;"></div></div><div class="prog-pct" style="color:#fb923c;">30%</div></div>
+<div class="prog-row"><div class="prog-label">🛒 Marketplace & Matching IA</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:40%;background:#c084fc;"></div></div><div class="prog-pct" style="color:#c084fc;">40%</div></div>
+<div class="prog-row"><div class="prog-label">📱 Application Mobile</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:35%;background:#fb923c;"></div></div><div class="prog-pct" style="color:#fb923c;">35%</div></div>
+<div class="prog-row"><div class="prog-label">⚙️ CI / DevOps / Branch protection</div><div class="prog-bar-wrap"><div class="prog-bar" style="width:85%;background:#4ade80;"></div></div><div class="prog-pct" style="color:#4ade80;">85%</div></div>
+
+<!-- TOUS LES MODULES -->
+<div class="stitle">Tous les modules — État actuel sur main</div>
+
+<div class="grid3">
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">🔐</div><div class="mod-info"><div class="mod-code">M08</div><div class="mod-name">Auth · 2FA · RBAC · Multi-tenant</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">95%</div><div class="bar-w"><div class="bar" style="width:95%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ JWT + 2FA TOTP + recovery codes</span><br><span class="ok">✓ RBAC spatie/permission 6 rôles</span><br><span class="ok">✓ BelongsToTenant fail-safe</span><br><span class="ok">✓ 16 tests isolation tenant</span><br><span class="nxt">→ Branch protection à activer</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">📋</div><div class="mod-info"><div class="mod-code">M01</div><div class="mod-name">Inscriptions & Élèves</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">85%</div><div class="bar-w"><div class="bar" style="width:85%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Dossier élève complet + UUID</span><br><span class="ok">✓ Import/Export CSV</span><br><span class="ok">✓ parentsPrincipaux() corrigé</span><br><span class="ok">✓ Curriculum DZ lié (niveaux/branches)</span><br><span class="nxt">→ Calcul BEM/BAC par filière à finaliser</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">📅</div><div class="mod-info"><div class="mod-code">M02</div><div class="mod-name">Planning & Séances</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">75%</div><div class="bar-w"><div class="bar" style="width:75%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Emploi du temps + détection conflits</span><br><span class="ok">✓ Séances démarrer/terminer/annuler</span><br><span class="ok">✓ Calendrier scolaire algérien</span><br><span class="nxt">→ Remplacement prof absent auto</span><br><span class="nxt">→ Export iCal/PDF</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">💰</div><div class="mod-info"><div class="mod-code">M03</div><div class="mod-name">Finance & Paiements</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">70%</div><div class="bar-w"><div class="bar" style="width:70%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Caisse + facturation + relances</span><br><span class="ok">✓ Reçus PDF</span><br><span class="fix">⚠ Paiement CIB/Dahabia → service créé, Satim sandbox non confirmé</span><br><span class="nxt">→ Activer Satim (démarche admin)</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">📚</div><div class="mod-info"><div class="mod-code">M04</div><div class="mod-name">Pédagogie & Curriculum</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">75%</div><div class="bar-w"><div class="bar" style="width:75%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Notes + coefficients + moyenne pondérée</span><br><span class="ok">✓ Bulletins PDF</span><br><span class="ok">✓ Curriculum 1AP→3AS, 7 branches BAC</span><br><span class="nxt">→ Calcul officiel BEM/BAC par filière</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">👨‍🏫</div><div class="mod-info"><div class="mod-code">M05</div><div class="mod-name">Personnel Enseignants</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">80%</div><div class="bar-w"><div class="bar" style="width:80%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Dossier + contrats + paie IRG/CNAS</span><br><span class="ok">✓ Pointage arrivée/départ</span><br><span class="ok">✓ Absences avec impact paie</span><br><span class="nxt">→ Workflow congés à compléter</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">💬</div><div class="mod-info"><div class="mod-code">M06</div><div class="mod-name">Communication</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">85%</div><div class="bar-w"><div class="bar" style="width:85%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Firebase FCM + SMS Twilio</span><br><span class="ok">✓ WhatsApp webhook</span><br><span class="ok">✓ Chat parent↔prof</span><br><span class="ok">✓ SMS absent auto 8h30</span><br><span class="ok">✓ Campagnes ciblées</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">📊</div><div class="mod-info"><div class="mod-code">M07</div><div class="mod-name">Reporting & Dashboards</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">75%</div><div class="bar-w"><div class="bar" style="width:75%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Dashboard Admin/Prof/Parent</span><br><span class="ok">✓ Export Excel/PDF</span><br><span class="ok">✓ Audit logs (spatie)</span><br><span class="nxt">→ Dashboard absences temps réel</span><br><span class="nxt">→ Rapport mensuel unifié</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">✅</div><div class="mod-info"><div class="mod-code">P1</div><div class="mod-name">Pointage & Absences</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">70%</div><div class="bar-w"><div class="bar" style="width:70%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Pointage badge RFID/NFC/QR</span><br><span class="ok">✓ Absences journalières + justificatifs</span><br><span class="ok">✓ SMS parent auto si absent</span><br><span class="ok">✓ Pointage enseignants + impact paie</span><br><span class="nxt">→ Rapport mensuel absences PDF</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">👷</div><div class="mod-info"><div class="mod-code">M12</div><div class="mod-name">Personnel Non-Enseignant</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">90%</div><div class="bar-w"><div class="bar" style="width:90%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ CRUD + 8 types de postes</span><br><span class="ok">✓ Pointage arrivée/départ</span><br><span class="ok">✓ Congés workflow approuver/refuser</span><br><span class="ok">✓ Solde congés 30j droit algérien</span><br><span class="ok">✓ Tableau de bord du jour</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">📈</div><div class="mod-info"><div class="mod-code">M13</div><div class="mod-name">Budget Annuel</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">85%</div><div class="bar-w"><div class="bar" style="width:85%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ 15 catégories dépenses algériennes</span><br><span class="ok">✓ Budget prévisionnel vs réalisé</span><br><span class="ok">✓ Bilan mensuel + annuel 12 mois</span><br><span class="ok">✓ Upload justificatifs</span><br><span class="nxt">→ Taxes DZ (IBS/TAP) à finaliser</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">🚌</div><div class="mod-info"><div class="mod-code">M09</div><div class="mod-name">Transport Scolaire</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">85%</div><div class="bar-w"><div class="bar" style="width:85%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Circuits + arrêts ordonnés</span><br><span class="ok">✓ Inscriptions avec capacité max</span><br><span class="ok">✓ Pointage bus matin/soir</span><br><span class="ok">✓ SMS parent si absent bus</span><br><span class="nxt">→ Facturation transport intégrée M03</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-done"><div class="mod-icon">🍽️</div><div class="mod-info"><div class="mod-code">M10</div><div class="mod-name">Cantine / Restauration</div></div><span class="badge s-done">MAIN ✅</span></div><div class="mod-body"><div class="mod-pct" style="color:#4ade80;">85%</div><div class="bar-w"><div class="bar" style="width:85%;background:#4ade80;"></div></div><div class="items"><span class="ok">✓ Menus hebdomadaires + vue parent</span><br><span class="ok">✓ Inscriptions + régimes alimentaires</span><br><span class="ok">✓ Pointage repas journalier</span><br><span class="ok">✓ Stock cuisine + alertes seuil bas</span><br><span class="nxt">→ Facturation cantine intégrée M03</span></div></div></div>
+
+  <!-- Modules restants -->
+  <div class="mod"><div class="mod-h h-next"><div class="mod-icon">📦</div><div class="mod-info"><div class="mod-code">M11</div><div class="mod-name">Stock & Inventaire</div></div><span class="badge s-next">NEXT P1</span></div><div class="mod-body"><div class="mod-pct" style="color:#60a5fa;">0%</div><div class="bar-w"><div class="bar" style="width:0%;background:#60a5fa;"></div></div><div class="items"><span class="miss">✗ Inventaire mobilier (chaises/tables/tableaux)</span><br><span class="miss">✗ Stock fournitures + alertes</span><br><span class="miss">✗ QR code étiquetage biens</span><br><span class="miss">✗ Bons de commande fournisseurs</span><br><span class="miss">✗ Rapport inventaire annuel PDF</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-next"><div class="mod-icon">🔧</div><div class="mod-info"><div class="mod-code">M14</div><div class="mod-name">Entretien Bâtiment</div></div><span class="badge s-next">NEXT P2</span></div><div class="mod-body"><div class="mod-pct" style="color:#60a5fa;">0%</div><div class="bar-w"><div class="bar" style="width:0%;background:#60a5fa;"></div></div><div class="items"><span class="miss">✗ Registre des locaux</span><br><span class="miss">✗ Tickets d'intervention</span><br><span class="miss">✗ Prestataires (plombier, électricien)</span><br><span class="miss">✗ Entretien préventif planifié</span><br><span class="miss">✗ Coûts liés à M13</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-next"><div class="mod-icon">🔗</div><div class="mod-info"><div class="mod-code">INT</div><div class="mod-name">Intégrations Facturation</div></div><span class="badge s-next">NEXT P3</span></div><div class="mod-body"><div class="mod-pct" style="color:#60a5fa;">15%</div><div class="bar-w"><div class="bar" style="width:15%;background:#60a5fa;"></div></div><div class="items"><span class="miss">✗ Transport → facture mensuelle élève</span><br><span class="miss">✗ Cantine → facture mensuelle élève</span><br><span class="miss">✗ Salaires personnel → dépenses M13</span><br><span class="nxt">→ Lier M09+M10 aux factures M03</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-future"><div class="mod-icon">💳</div><div class="mod-info"><div class="mod-code">PAY</div><div class="mod-name">Paiement CIB/Dahabia</div></div><span class="badge s-future">PHASE 3</span></div><div class="mod-body"><div class="mod-pct" style="color:#c084fc;">30%</div><div class="bar-w"><div class="bar" style="width:30%;background:#c084fc;"></div></div><div class="items"><span class="ok">✓ Service Satim créé dans le code</span><br><span class="ok">✓ Routes /paiements/online/ déclarées</span><br><span class="miss">✗ Contrat Satim + sandbox actif</span><br><span class="miss">✗ Tests end-to-end paiement</span><br><span class="miss">✗ Webhook callback Satim</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-future"><div class="mod-icon">🛒</div><div class="mod-info"><div class="mod-code">MKT</div><div class="mod-name">Marketplace & Matching IA</div></div><span class="badge s-future">PHASE 3</span></div><div class="mod-body"><div class="mod-pct" style="color:#c084fc;">40%</div><div class="bar-w"><div class="bar" style="width:40%;background:#c084fc;"></div></div><div class="items"><span class="ok">✓ OffrePublique + Avis + Matching</span><br><span class="ok">✓ Réservations partielles</span><br><span class="miss">✗ Interface publique hors auth</span><br><span class="miss">✗ Paiement réservation</span><br><span class="miss">✗ Nécessite 50+ centres actifs</span></div></div></div>
+
+  <div class="mod"><div class="mod-h h-future"><div class="mod-icon">📱</div><div class="mod-info"><div class="mod-code">MOB</div><div class="mod-name">Application Mobile</div></div><span class="badge s-future">PHASE 3</span></div><div class="mod-body"><div class="mod-pct" style="color:#c084fc;">35%</div><div class="bar-w"><div class="bar" style="width:35%;background:#c084fc;"></div></div><div class="items"><span class="ok">✓ Expo 52 + React Native 0.76</span><br><span class="ok">✓ Auth JWT + i18n AR/FR/DZ</span><br><span class="ok">✓ Screens parent (planning, notes)</span><br><span class="miss">✗ Screens enseignant à compléter</span><br><span class="miss">✗ Screens admin manquants</span></div></div></div>
+
+</div>
+
+<!-- INFRASTRUCTURE -->
+<div class="stitle">Infrastructure — État actuel</div>
+<div class="infra-row">
+  <div class="infra-box"><span class="ib-icon">🐳</span><span class="ib-name">Docker Compose</span><span class="ib-status" style="color:#4ade80;">✅ 9 services</span></div>
+  <div class="infra-box"><span class="ib-icon">⚙️</span><span class="ib-name">GitHub Actions CI</span><span class="ib-status" style="color:#4ade80;">✅ Vert · Run #24</span></div>
+  <div class="infra-box"><span class="ib-icon">🌿</span><span class="ib-name">Git branches</span><span class="ib-status" style="color:#4ade80;">✅ main + develop</span></div>
+  <div class="infra-box"><span class="ib-icon">🔒</span><span class="ib-name">Branch protection</span><span class="ib-status" style="color:#f87171;">❌ À configurer</span></div>
+  <div class="infra-box"><span class="ib-icon">🐘</span><span class="ib-name">PostgreSQL 16</span><span class="ib-status" style="color:#4ade80;">✅ OK</span></div>
+  <div class="infra-box"><span class="ib-icon">🔴</span><span class="ib-name">Redis 7</span><span class="ib-status" style="color:#4ade80;">✅ OK</span></div>
+  <div class="infra-box"><span class="ib-icon">🔍</span><span class="ib-name">Meilisearch</span><span class="ib-status" style="color:#4ade80;">✅ OK</span></div>
+  <div class="infra-box"><span class="ib-icon">📦</span><span class="ib-name">Composer PHP 8.2</span><span class="ib-status" style="color:#4ade80;">✅ Hotfix zipstream</span></div>
+</div>
+
+<!-- PROCHAINES PRIORITÉS -->
+<div class="stitle">Prochaines priorités — Dans l'ordre d'impact</div>
+<div class="prio-list">
+
+  <div class="prio p-urgent">
+    <div class="prio-num">1</div>
+    <div class="prio-content">
+      <div class="prio-title">🔒 Branch protection sur main — MAINTENANT</div>
+      <div class="prio-why">
+        GitHub → Settings → Branches → Add rule → "main" → Require PR + CI green avant merge.<br>
+        Sans ça, un push direct sur main peut casser le projet en 1 commande.
+        C'est 5 minutes de travail, coût zéro, risque infini si non fait.
+      </div>
+      <div class="prio-effort">⏱ 5 minutes · Manuellement sur GitHub · Aucun code</div>
+    </div>
+  </div>
+
+  <div class="prio p-high">
+    <div class="prio-num">2</div>
+    <div class="prio-content">
+      <div class="prio-title">🔗 Intégrations facturation — Transport + Cantine → Facture élève</div>
+      <div class="prio-why">
+        M09 (transport) et M10 (cantine) existent dans le code mais leurs tarifs ne sont pas
+        encore ajoutés à la facture mensuelle élève de M03. Sans ça, les directeurs doivent
+        facturer manuellement — ça tue la proposition de valeur.
+        Priorité : ajouter des lignes de facture automatiques quand un élève est inscrit
+        au transport ou à la cantine.
+      </div>
+      <div class="prio-effort">⏱ 3–4 jours · Modifier FacturationService + tests</div>
+    </div>
+  </div>
+
+  <div class="prio p-high">
+    <div class="prio-num">3</div>
+    <div class="prio-content">
+      <div class="prio-title">📦 M11 — Stock & Inventaire mobilier</div>
+      <div class="prio-why">
+        Le seul module opérationnel encore absent. Les directeurs algériens ont une obligation
+        d'inventaire annuel. Chaises, tables, tableaux, équipements — tout se perd sans traçabilité.
+        Le stock cuisine de M10 existe déjà → M11 en est une extension naturelle
+        pour le mobilier et les fournitures pédagogiques.
+      </div>
+      <div class="prio-effort">⏱ 1–2 semaines · Migration + CRUD + QR code + alertes</div>
+    </div>
+  </div>
+
+  <div class="prio p-high">
+    <div class="prio-num">4</div>
+    <div class="prio-content">
+      <div class="prio-title">🔧 M14 — Entretien Bâtiment</div>
+      <div class="prio-why">
+        Tickets de panne, prestataires, entretien préventif. Module simple (CRUD + alertes)
+        mais fortement demandé terrain. Chaque réparation doit être tracée et liée aux
+        dépenses M13. C'est la dernière brique de l'ERP scolaire complet.
+      </div>
+      <div class="prio-effort">⏱ 1 semaine · Migration + CRUD + lien M13</div>
+    </div>
+  </div>
+
+  <div class="prio p-high">
+    <div class="prio-num">5</div>
+    <div class="prio-content">
+      <div class="prio-title">📱 Application Mobile — Compléter les screens manquants</div>
+      <div class="prio-why">
+        L'app mobile (React Native Expo) existe mais couvre seulement le rôle parent.
+        Les screens enseignant (planning, présences, notes) et admin (tableau de bord)
+        manquent. C'est bloquant pour une démo terrain convaincante — un directeur
+        voudra voir l'app mobile fonctionner sur son téléphone.
+      </div>
+      <div class="prio-effort">⏱ 3–4 semaines · React Native screens + intégration API</div>
+    </div>
+  </div>
+
+  <div class="prio p-medium">
+    <div class="prio-num">6</div>
+    <div class="prio-content">
+      <div class="prio-title">💳 Paiement CIB/Dahabia — Activer Satim</div>
+      <div class="prio-why">
+        Le code est écrit (30% fait). Ce qui bloque : le contrat commercial avec Satim
+        et l'accès au sandbox. Démarche administrative, pas technique.
+        À lancer en parallèle des autres priorités — les délais administratifs sont longs.
+      </div>
+      <div class="prio-effort">⏱ Côté code : 1 semaine · Côté admin Satim : 4–8 semaines (démarche externe)</div>
+    </div>
+  </div>
+
+  <div class="prio p-medium">
+    <div class="prio-num">7</div>
+    <div class="prio-content">
+      <div class="prio-title">🎯 1 Centre Pilote en production — LA vraie priorité absolue</div>
+      <div class="prio-why">
+        Le code est prêt pour une démo complète. Inscriptions, planning, notes, absences,
+        bulletins, personnel, transport, cantine, budget — tout fonctionne.
+        Aucune feature supplémentaire ne remplace un directeur qui utilise l'app lundi matin.
+        C'est le seul signal qui compte pour valider que le produit a de la valeur.
+      </div>
+      <div class="prio-effort">⏱ Cette semaine · Aller physiquement dans 10 centres · 0 ligne de code</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="conclusion">
+  <strong>État au 29 juin 2026 — Ce que le repo dit.</strong><br><br>
+  EduGest DZ est passé de 0 test (CI cassé) à <strong>260+ tests verts sur main</strong> en une journée.
+  13 modules sont dans main. L'architecture est propre. Le workflow PR/develop/main fonctionne.
+  Le hotfix composer-php82 a été appliqué et mergé en moins de 10 minutes.<br><br>
+  <strong>Ce qui reste à faire techniquement :</strong> M11 Stock + M14 Entretien + intégrations facturation + mobile complet.
+  Soit environ <strong>6 à 8 semaines de développement</strong> pour l'ERP scolaire le plus complet d'Algérie.<br><br>
+  <strong>Ce qui reste à faire commercialement :</strong> 1 directeur de centre qui utilise le produit en vrai.
+  C'est la seule chose que le code ne peut pas faire à ta place.
+</div>
+
+</body>
+</html>

@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->api(prepend: [
+            \App\Http\Middleware\QueryMonitor::class,
+        ]);
+
         $middleware->alias([
             'resolve.tenant'    => \App\Http\Middleware\ResolveTenant::class,
             'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
