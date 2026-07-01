@@ -369,6 +369,36 @@ use App\Http\Controllers\Api\V1\{
             Route::get('stock/alertes',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'alertesStock']);
         });
 
+        // ── Stock & Inventaire Mobilier (M11) ──
+        Route::prefix('stock')->group(function () {
+            Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'dashboard']);
+            Route::get('alertes',                         [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'alertes']);
+
+            // Articles
+            Route::get('articles',                        [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'index']);
+            Route::post('articles',                       [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'store']);
+            Route::get('articles/qr/{qr_code}',           [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'parQrCode']);
+            Route::get('articles/{id}',                   [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'show']);
+            Route::put('articles/{id}',                   [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'update']);
+            Route::delete('articles/{id}',                [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'destroy']);
+            Route::post('articles/{id}/mouvement',        [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'mouvement']);
+            Route::get('articles/{id}/historique',        [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'historique']);
+
+            // Prêts
+            Route::get('prets',                           [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'indexPrets']);
+            Route::post('prets',                          [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'creerPret']);
+            Route::put('prets/{id}/retour',               [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'retourPret']);
+
+            // Bons de commande
+            Route::get('bons-commande',                   [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'indexBons']);
+            Route::post('bons-commande',                  [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'creerBon']);
+            Route::put('bons-commande/{id}/statut',       [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'statutBon']);
+            Route::get('bons-commande/{id}/pdf',          [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'pdfBon']);
+
+            // Rapport inventaire annuel
+            Route::get('rapport-inventaire',              [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'rapportInventaire']);
+        });
+
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
