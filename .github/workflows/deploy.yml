@@ -1,0 +1,43 @@
+name: CD — Deploy Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'edugestdz/backend/**'
+      - 'edugestdz/frontend/**'
+      - 'edugestdz/docker-compose.prod.yml'
+      - 'edugestdz/nginx/**'
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    # ⚠️ Ne déploie QUE si le CI backend passe
+    needs: []
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key:      ${{ secrets.SERVER_SSH_KEY }}
+          port:     ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            cd ~/edugest-dz
+
+            echo "📥 Pull des dernières modifications..."
+            git pull origin main
+
+            cd edugestdz
+
+            echo "🚀 Déploiement..."
+            chmod +x deploy.sh
+            ./deploy.sh
+
+            echo "✅ Déploiement terminé — $(date)"
