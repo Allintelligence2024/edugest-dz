@@ -7,6 +7,8 @@ const NAV_ITEMS = [
   { label: 'Tableau de bord', path: '/', icon: '📊' },
   { label: 'Planning', path: '/planning', icon: '📅' },
   { label: 'Présences', path: '/presences', icon: '📋' },
+  { label: 'Absences', path: '/absences', icon: '✅' },
+  { label: 'Billets', path: '/billets', icon: '🎫' },
   { label: 'Facturation', path: '/factures', icon: '💰' },
   { label: 'Élèves', path: '/eleves', icon: '👨‍🎓' },
   {
@@ -29,6 +31,19 @@ const NAV_ITEMS = [
     children: [
       { label: 'Notes', path: '/notes', icon: '📝' },
       { label: 'Bulletins', path: '/bulletins', icon: '📜' },
+    ],
+  },
+  {
+    label: 'Gestion Centre',
+    path: '/gestion',
+    icon: '🏫',
+    children: [
+      { label: 'Transport', path: '/transport', icon: '🚌' },
+      { label: 'Cantine', path: '/cantine', icon: '🍽️' },
+      { label: 'Stock & Inventaire', path: '/stock', icon: '📦' },
+      { label: 'Personnel admin.', path: '/personnel-admin', icon: '👷' },
+      { label: 'Budget & Finances', path: '/budget', icon: '📊' },
+      { label: 'Entretien Bâtiment', path: '/entretien', icon: '🔧' },
     ],
   },
   {
