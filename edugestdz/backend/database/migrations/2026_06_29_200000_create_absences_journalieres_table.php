@@ -34,6 +34,7 @@ return new class extends Migration {
             $table->uuid('valide_par')->nullable();
             $table->timestamp('valide_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('absence_id')->references('id')->on('absences_journalieres')->onDelete('cascade');
         });

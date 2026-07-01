@@ -70,7 +70,7 @@ class PointageBadgeController extends BaseApiController
                 $absence->update(['sms_parent_envoye' => true, 'sms_envoye_at' => now()]);
             }
 
-            $statut  = $enRetard ? 'retard' : 'présent';
+            $statut = $enRetard ? 'retard' : 'présent';
             $message = "✅ {$eleve->prenom} {$eleve->nom} — {$statut} à {$heure}";
         } else {
             $absence->statut = 'present';
@@ -122,7 +122,6 @@ class PointageBadgeController extends BaseApiController
 
             $statut  = $enRetard ? 'retard' : 'présent';
             $message = "✅ Prof {$enseignant->nom} {$enseignant->prenom} — {$statut} à {$heure}";
-
         } else {
             if (!$pointage->heure_arrivee) {
                 return $this->error('Aucune arrivée enregistrée pour ce jour', 'PAS_ARRIVEE', 422);

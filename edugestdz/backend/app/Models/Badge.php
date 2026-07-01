@@ -8,10 +8,6 @@ class Badge extends BaseModel
 {
     use BelongsToTenant;
 
-    public static function bootSoftDeletes()
-    {
-    }
-
     protected $fillable = [
         'tenant_id',
         'badge_uid',
