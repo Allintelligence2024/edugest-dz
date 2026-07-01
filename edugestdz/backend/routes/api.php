@@ -399,6 +399,34 @@ use App\Http\Controllers\Api\V1\{
             Route::get('rapport-inventaire',              [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'rapportInventaire']);
         });
 
+        // ── Entretien Bâtiment (M14) ──
+        Route::prefix('entretien')->group(function () {
+            Route::get('dashboard',                        [\App\Http\Controllers\Api\V1\EntretienController::class, 'dashboard']);
+
+            // Locaux
+            Route::get('locaux',                           [\App\Http\Controllers\Api\V1\EntretienController::class, 'indexLocaux']);
+            Route::post('locaux',                          [\App\Http\Controllers\Api\V1\EntretienController::class, 'storeLocal']);
+            Route::put('locaux/{id}',                      [\App\Http\Controllers\Api\V1\EntretienController::class, 'updateLocal']);
+            Route::delete('locaux/{id}',                   [\App\Http\Controllers\Api\V1\EntretienController::class, 'destroyLocal']);
+
+            // Prestataires
+            Route::get('prestataires',                     [\App\Http\Controllers\Api\V1\EntretienController::class, 'indexPrestataires']);
+            Route::post('prestataires',                    [\App\Http\Controllers\Api\V1\EntretienController::class, 'storePrestataire']);
+            Route::put('prestataires/{id}',                [\App\Http\Controllers\Api\V1\EntretienController::class, 'updatePrestataire']);
+
+            // Interventions
+            Route::get('interventions',                    [\App\Http\Controllers\Api\V1\EntretienController::class, 'indexInterventions']);
+            Route::post('interventions',                   [\App\Http\Controllers\Api\V1\EntretienController::class, 'signalerIntervention']);
+            Route::get('interventions/{id}',               [\App\Http\Controllers\Api\V1\EntretienController::class, 'showIntervention']);
+            Route::put('interventions/{id}/statut',        [\App\Http\Controllers\Api\V1\EntretienController::class, 'changerStatut']);
+            Route::put('interventions/{id}/resoudre',      [\App\Http\Controllers\Api\V1\EntretienController::class, 'resoudreIntervention']);
+
+            // Préventif
+            Route::get('preventif',                        [\App\Http\Controllers\Api\V1\EntretienController::class, 'indexPreventif']);
+            Route::post('preventif',                       [\App\Http\Controllers\Api\V1\EntretienController::class, 'planifierPreventif']);
+            Route::put('preventif/{id}/realiser',          [\App\Http\Controllers\Api\V1\EntretienController::class, 'realiserPreventif']);
+        });
+
         // ── Matching IA ──
         Route::prefix('matching')->group(function () {
             Route::get('suggestions', [\App\Http\Controllers\Api\V1\MatchingController::class, 'suggestions']);
