@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('paies_personnel', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('agent_id');
 
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->decimal('cnas', 10, 2)->default(0);
             $table->decimal('irg', 10, 2)->default(0);
             $table->decimal('salaire_net', 10, 2)->default(0);
-            $table->enum('statut', ['brouillon', 'valide', 'paye'])->default('brouillon');
+            $table->string('statut')->default('brouillon');
             $table->date('date_paiement')->nullable();
             $table->string('fichier_url', 500)->nullable();
 

@@ -10,13 +10,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->string('nom_etablissement', 200);
             $table->string('slug', 100)->unique();
-            $table->enum('type_etablissement', [
-                'centre_cours', 'ecole_privee',
-                'lycee_prive',  'formation'
-            ])->default('centre_cours');
+            $table->string('type_etablissement')->default('centre_cours');
             $table->unsignedInteger('wilaya_id')->nullable();
             $table->unsignedInteger('commune_id')->nullable();
             $table->text('adresse')->nullable();
@@ -27,14 +24,10 @@ return new class extends Migration
             $table->string('nif', 20)->nullable();
             $table->string('nis', 20)->nullable();
             $table->string('registre_commerce', 50)->nullable();
-            $table->enum('plan_abonnement', [
-                'gratuit', 'pro', 'premium'
-            ])->default('gratuit');
+            $table->string('plan_abonnement')->default('gratuit');
             $table->date('date_expiration')->nullable();
-            $table->enum('statut', [
-                'actif', 'suspendu', 'expiré'
-            ])->default('actif');
-            $table->jsonb('settings')->nullable();
+            $table->string('statut')->default('actif');
+            $table->json('settings')->nullable();
             $table->timestamps();
         });
     }

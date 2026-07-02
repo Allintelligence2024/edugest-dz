@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Feature\Api;
 
-use App\Models\{Eleve, Enseignant, Matiere, Groupe, Tenant, User, Role};
+use App\Models\{Eleve, Enseignant, Inscription, Matiere, Groupe, Tenant, User, Role};
 use App\Services\MatchingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -43,8 +43,10 @@ class MatchingTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'date_inscription' => now(),
             'statut'           => 'validée',
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
@@ -94,8 +96,10 @@ class MatchingTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'date_inscription' => now(),
             'statut'           => 'validée',
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),

@@ -14,9 +14,9 @@ return new class extends Migration
                 $table->uuid('tenant_id');
                 $table->string('titre', 200);
                 $table->text('message');
-                $table->jsonb('canaux');
-                $table->jsonb('filtres')->nullable();
-                $table->jsonb('destinataires')->nullable();
+                $table->json('canaux');
+                $table->json('filtres')->nullable();
+                $table->json('destinataires')->nullable();
                 $table->integer('nb_destinataires')->default(0);
                 $table->integer('nb_envoyes')->default(0);
                 $table->integer('nb_echecs')->default(0);

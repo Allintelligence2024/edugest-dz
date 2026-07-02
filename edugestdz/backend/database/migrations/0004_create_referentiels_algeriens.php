@@ -30,10 +30,10 @@ return new class extends Migration
 
         // ── Calendrier Scolaire Algérien ──
         Schema::create('calendrier_scolaire', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->string('annee_scolaire', 10);
             $table->string('evenement', 200);
-            $table->enum('type', ['vacances', 'ferie', 'examen', 'rentree']);
+            $table->string('type');
             $table->date('date_debut');
             $table->date('date_fin')->nullable();
             $table->unsignedSmallInteger('wilaya_id')->nullable();
@@ -48,8 +48,8 @@ return new class extends Migration
             $table->string('action', 100);
             $table->string('table_concernee', 50)->nullable();
             $table->uuid('enregistrement_id')->nullable();
-            $table->jsonb('anciennes_valeurs')->nullable();
-            $table->jsonb('nouvelles_valeurs')->nullable();
+            $table->json('anciennes_valeurs')->nullable();
+            $table->json('nouvelles_valeurs')->nullable();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamp('created_at')->useCurrent();

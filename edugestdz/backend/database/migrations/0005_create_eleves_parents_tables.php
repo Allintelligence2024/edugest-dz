@@ -11,7 +11,7 @@ return new class extends Migration
     {
         // ── Élèves ──
         Schema::create('eleves', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('user_id')->nullable()->unique();
             $table->string('numero_inscription', 20)->unique();
@@ -21,22 +21,15 @@ return new class extends Migration
             $table->string('prenom_ar', 100)->nullable();
             $table->date('date_naissance');
             $table->string('lieu_naissance', 100)->nullable();
-            $table->enum('sexe', ['M', 'F']);
+            $table->string('sexe');
             $table->string('nationalite', 50)->default('Algérienne');
             $table->unsignedSmallInteger('wilaya_id')->nullable();
             $table->unsignedInteger('commune_id')->nullable();
             $table->text('adresse')->nullable();
             $table->string('photo_url', 500)->nullable();
             $table->string('ecole_origine', 200)->nullable();
-            $table->enum('niveau_scolaire', [
-                '1AP','2AP','3AP','4AP','5AP',
-                '1AM','2AM','3AM','4AM',
-                '1AS','2AS','3AS',
-                'universitaire','autre'
-            ]);
-            $table->enum('statut', [
-                'actif','inactif','suspendu','diplômé'
-            ])->default('actif');
+            $table->string('niveau_scolaire');
+            $table->string('statut')->default('actif');
             $table->text('notes_internes')->nullable();
             $table->string('qr_code', 500)->nullable();
             $table->decimal('budget_mensuel', 10, 2)->nullable();
@@ -55,12 +48,12 @@ return new class extends Migration
 
         // ── Parents ──
         Schema::create('parents', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('user_id')->nullable()->unique();
             $table->string('nom', 100);
             $table->string('prenom', 100);
-            $table->enum('lien', ['père','mère','tuteur','frère','sœur','autre']);
+            $table->string('lien');
             $table->string('telephone_1', 20);
             $table->string('telephone_2', 20)->nullable();
             $table->string('email', 150)->nullable();

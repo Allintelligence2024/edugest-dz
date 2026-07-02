@@ -8,16 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Supprimer l'ancienne contrainte CHECK
-        DB::statement("ALTER TABLE paiements DROP CONSTRAINT IF EXISTS paiements_statut_check");
-
-        // Recréer avec 'remboursé' ajouté
-        DB::statement("ALTER TABLE paiements ADD CONSTRAINT paiements_statut_check CHECK (statut IN ('confirmé','annulé','en_attente','remboursé'))");
+        // Not needed for SQLite
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE paiements DROP CONSTRAINT IF EXISTS paiements_statut_check");
-        DB::statement("ALTER TABLE paiements ADD CONSTRAINT paiements_statut_check CHECK (statut IN ('confirmé','annulé','en_attente'))");
+        // Not needed for SQLite
     }
 };

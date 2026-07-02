@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('subject_type')->nullable()->after('description');
             $table->string('subject_id')->nullable()->after('subject_type');
             $table->string('causer_type')->nullable()->after('user_id');
-            $table->jsonb('properties')->nullable()->after('nouvelles_valeurs');
+            $table->json('properties')->nullable()->after('nouvelles_valeurs');
         });
     }
 

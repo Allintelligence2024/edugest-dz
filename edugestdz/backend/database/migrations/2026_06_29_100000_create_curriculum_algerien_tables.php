@@ -33,7 +33,7 @@ return new class extends Migration
             $table->string('code', 10)->unique();
             $table->string('nom_fr', 100);
             $table->string('nom_ar', 100);
-            $table->jsonb('niveaux_applicables');
+            $table->json('niveaux_applicables');
             $table->timestamps();
         });
 

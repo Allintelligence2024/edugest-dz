@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('circuits_transport', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('nom', 100);
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('vehicule_marque', 50)->nullable();
             $table->unsignedSmallInteger('capacite')->default(20);
             $table->decimal('tarif_mensuel', 10, 2)->default(0);
-            $table->enum('type_abonnement', ['mensuel', 'trimestriel', 'annuel'])->default('mensuel');
+            $table->string('type_abonnement')->default('mensuel');
             $table->boolean('actif')->default(true);
             $table->text('note')->nullable();
 
@@ -37,7 +37,7 @@ return new class extends Migration
         });
 
         Schema::create('arrets_bus', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('circuit_id');
 
@@ -58,13 +58,13 @@ return new class extends Migration
         });
 
         Schema::create('transport_eleves', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('eleve_id');
             $table->uuid('circuit_id');
             $table->uuid('arret_id');
 
-            $table->enum('abonnement', ['aller_retour', 'aller', 'retour'])->default('aller_retour');
+            $table->string('abonnement')->default('aller_retour');
             $table->date('date_debut');
             $table->date('date_fin')->nullable();
             $table->boolean('actif')->default(true);
@@ -81,15 +81,15 @@ return new class extends Migration
         });
 
         Schema::create('pointage_bus', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('circuit_id');
             $table->uuid('eleve_id');
             $table->uuid('arret_id');
 
             $table->date('date');
-            $table->enum('trajet', ['matin', 'soir'])->default('matin');
-            $table->enum('statut', ['monte', 'absent', 'excuse'])->default('monte');
+            $table->string('trajet')->default('matin');
+            $table->string('statut')->default('monte');
             $table->time('heure_montee')->nullable();
             $table->boolean('sms_parent_envoye')->default(false);
             $table->timestamp('sms_envoye_at')->nullable();

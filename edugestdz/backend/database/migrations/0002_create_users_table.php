@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->nullable()->index();
             $table->string('nom', 100);
             $table->string('prenom', 100);
@@ -18,13 +18,13 @@ return new class extends Migration
             $table->string('telephone', 20)->nullable();
             $table->string('password');
             $table->string('avatar_url', 500)->nullable();
-            $table->enum('langue', ['fr', 'ar', 'dz'])->default('fr');
-            $table->enum('theme', ['light', 'dark'])->default('light');
+            $table->string('langue')->default('fr');
+            $table->string('theme')->default('light');
             $table->unsignedBigInteger('role_id')->nullable();
             $table->dateTime('derniere_connexion')->nullable();
             $table->string('remember_token', 100)->nullable();
             $table->dateTime('email_verified_at')->nullable();
-            $table->enum('statut', ['actif', 'inactif', 'bloqué'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->timestamps();
             $table->softDeletes();
 

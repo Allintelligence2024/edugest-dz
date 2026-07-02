@@ -9,18 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('locaux_batiment', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('nom', 100);
-            $table->enum('type', [
-                'salle_cours', 'bureau', 'couloir', 'cour',
-                'sanitaires', 'cantine', 'gymnase', 'entree',
-                'parking', 'laboratoire', 'bibliotheque', 'autre',
-            ])->default('salle_cours');
+            $table->string('type')->default('salle_cours');
             $table->string('etage', 20)->nullable();
             $table->float('superficie_m2')->nullable();
-            $table->enum('etat_general', ['bon', 'moyen', 'mauvais', 'critique'])
+            $table->string('etat_general')
                   ->default('bon');
             $table->boolean('actif')->default(true);
             $table->text('note')->nullable();
@@ -32,15 +28,11 @@ return new class extends Migration
         });
 
         Schema::create('prestataires_entretien', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('nom', 150);
-            $table->enum('specialite', [
-                'plomberie', 'electricite', 'peinture', 'climatisation',
-                'menuiserie', 'maconnerie', 'nettoyage', 'informatique',
-                'jardinage', 'securite', 'general', 'autre',
-            ])->default('general');
+            $table->string('specialite')->default('general');
             $table->string('telephone', 20)->nullable();
             $table->string('email', 150)->nullable();
             $table->string('adresse', 200)->nullable();
@@ -53,7 +45,7 @@ return new class extends Migration
         });
 
         Schema::create('interventions_entretien', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('local_id')->nullable();
             $table->uuid('prestataire_id')->nullable();
@@ -61,25 +53,12 @@ return new class extends Migration
             $table->string('titre', 200);
             $table->text('description')->nullable();
 
-            $table->enum('type', [
-                'panne',
-                'degradation',
-                'entretien_preventif',
-                'renovation',
-                'nettoyage',
-                'inspection',
-            ])->default('panne');
+            $table->string('type')->default('panne');
 
-            $table->enum('priorite', ['urgente', 'haute', 'normale', 'basse'])
+            $table->string('priorite')
                   ->default('normale');
 
-            $table->enum('statut', [
-                'signale',
-                'en_cours',
-                'en_attente',
-                'resolu',
-                'annule',
-            ])->default('signale');
+            $table->string('statut')->default('signale');
 
             $table->date('date_signalement');
             $table->date('date_debut_intervention')->nullable();
@@ -106,17 +85,14 @@ return new class extends Migration
         });
 
         Schema::create('entretiens_preventifs', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('local_id')->nullable();
             $table->uuid('prestataire_id')->nullable();
 
             $table->string('nom', 150);
             $table->text('description')->nullable();
-            $table->enum('frequence', [
-                'hebdomadaire', 'mensuel', 'trimestriel',
-                'semestriel', 'annuel', 'biennal',
-            ])->default('annuel');
+            $table->string('frequence')->default('annuel');
 
             $table->date('prochaine_echeance');
             $table->date('derniere_realisation')->nullable();

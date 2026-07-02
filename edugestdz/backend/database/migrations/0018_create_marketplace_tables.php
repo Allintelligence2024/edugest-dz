@@ -13,18 +13,18 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('enseignant_id')->nullable();
-            $table->enum('type_offre', ['enseignant', 'centre']);
+            $table->string('type_offre');
             $table->uuid('matiere_id');
             $table->string('niveau');
             $table->decimal('tarif_seance', 10, 2);
             $table->decimal('tarif_mensuel', 10, 2)->nullable();
-            $table->enum('type_cours', ['presentiel', 'en_ligne', 'les_deux']);
+            $table->string('type_cours');
             $table->integer('wilaya_id')->nullable()->unsigned();
             $table->text('adresse')->nullable();
             $table->integer('capacite_max')->default(1);
             $table->integer('places_restantes')->default(1);
             $table->text('description')->nullable();
-            $table->enum('statut', ['active', 'inactive', 'archivee'])->default('active');
+            $table->string('statut')->default('active');
             $table->timestamps();
             $table->softDeletes();
 
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->uuid('tenant_id');
             $table->uuid('offre_id');
             $table->uuid('eleve_id');
-            $table->enum('statut', ['en_attente', 'confirmee', 'payee', 'annulee', 'terminee'])->default('en_attente');
+            $table->string('statut')->default('en_attente');
             $table->decimal('montant', 10, 2);
             $table->decimal('commission', 10, 2)->default(0);
             $table->string('mode_paiement')->nullable();

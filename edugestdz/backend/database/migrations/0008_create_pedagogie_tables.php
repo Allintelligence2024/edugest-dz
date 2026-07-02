@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('evaluations', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('groupe_id');
             $table->string('titre', 200);
-            $table->enum('type_eval', ['devoir_classe','devoir_maison','test_rapide','examen_mensuel','examen_module']);
+            $table->string('type_eval');
             $table->date('date_evaluation');
             $table->decimal('note_sur', 5, 2)->default(20);
             $table->decimal('coefficient', 4, 2)->default(1);
-            $table->enum('trimestre', ['T1','T2','T3']);
+            $table->string('trimestre');
             $table->text('description')->nullable();
             $table->uuid('created_by')->nullable();
             $table->timestamps();
@@ -26,7 +26,7 @@ return new class extends Migration
         });
 
         Schema::create('notes', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('evaluation_id');
             $table->uuid('eleve_id');
@@ -42,11 +42,11 @@ return new class extends Migration
         });
 
         Schema::create('presences', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('seance_id');
             $table->uuid('eleve_id');
-            $table->enum('statut', ['présent','absent','retard','excusé']);
+            $table->string('statut');
             $table->text('motif')->nullable();
             $table->time('heure_arrivee')->nullable();
             $table->uuid('saisi_par')->nullable();
@@ -57,11 +57,11 @@ return new class extends Migration
         });
 
         Schema::create('bulletins', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('eleve_id');
             $table->uuid('groupe_id');
-            $table->enum('trimestre', ['T1','T2','T3']);
+            $table->string('trimestre');
             $table->string('annee_scolaire', 10);
             $table->decimal('moyenne_generale', 5, 2)->default(0);
             $table->integer('rang')->nullable();
