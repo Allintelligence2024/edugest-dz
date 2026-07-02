@@ -87,7 +87,7 @@ class ValidationEdgeCasesTest extends TestCase
     public function test_eleve_introuvable_retourne_404(): void
     {
         $this->withToken($this->token)
-            ->getJson('/api/v1/eleves/uuid-inexistant-00000000')
+            ->getJson('/api/v1/eleves/00000000-0000-0000-0000-000000000000')
             ->assertStatus(404);
     }
 
