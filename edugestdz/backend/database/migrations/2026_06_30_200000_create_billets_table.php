@@ -9,16 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('billets', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('eleve_id');
 
-            $table->enum('type', [
-                'retard',
-                'sortie_autorisee',
-                'convocation',
-                'entree_exceptionnelle',
-            ]);
+            $table->string('type');
 
             $table->date('date_billet');
             $table->time('heure')->nullable();

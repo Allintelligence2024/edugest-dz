@@ -9,11 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('menus_cantine', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->date('date_repas');
-            $table->enum('type_repas', ['dejeuner', 'diner', 'petit_dejeuner'])->default('dejeuner');
+            $table->string('type_repas')->default('dejeuner');
             $table->string('plat_principal', 200);
             $table->string('accompagnement', 200)->nullable();
             $table->string('dessert', 150)->nullable();
@@ -32,12 +32,12 @@ return new class extends Migration
         });
 
         Schema::create('inscriptions_cantine', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('eleve_id');
 
-            $table->enum('type_abonnement', ['mensuel', 'journalier'])->default('mensuel');
-            $table->enum('regime', ['normal', 'sans_porc', 'vegetarien', 'sans_gluten', 'autre'])->default('normal');
+            $table->string('type_abonnement')->default('mensuel');
+            $table->string('regime')->default('normal');
             $table->string('allergies', 300)->nullable();
             $table->boolean('actif')->default(true);
             $table->date('date_debut');
@@ -53,13 +53,13 @@ return new class extends Migration
         });
 
         Schema::create('repas_journaliers', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('eleve_id');
             $table->uuid('menu_id')->nullable();
 
             $table->date('date_repas');
-            $table->enum('type_repas', ['dejeuner', 'diner', 'petit_dejeuner'])->default('dejeuner');
+            $table->string('type_repas')->default('dejeuner');
             $table->boolean('present')->default(false);
             $table->boolean('facture')->default(false);
             $table->decimal('prix_applique', 8, 2)->default(0);
@@ -74,14 +74,11 @@ return new class extends Migration
         });
 
         Schema::create('stock_cuisine', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('article', 150);
-            $table->enum('categorie', [
-                'legumes', 'viandes', 'poissons', 'produits_laitiers',
-                'cereales', 'condiments', 'boissons', 'autres',
-            ])->default('autres');
+            $table->string('categorie')->default('autres');
             $table->string('unite', 20)->default('kg');
             $table->decimal('quantite_stock', 10, 3)->default(0);
             $table->decimal('seuil_alerte', 10, 3)->default(0);
@@ -97,11 +94,11 @@ return new class extends Migration
         });
 
         Schema::create('mouvements_stock_cuisine', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('article_id');
 
-            $table->enum('type', ['entree', 'sortie', 'ajustement'])->default('entree');
+            $table->string('type')->default('entree');
             $table->decimal('quantite', 10, 3);
             $table->string('motif', 200)->nullable();
             $table->uuid('saisie_par')->nullable();

@@ -13,8 +13,8 @@ return new class extends Migration
                 $table->uuid('id')->primary();
                 $table->uuid('tenant_id');
                 $table->string('sujet', 200)->nullable();
-                $table->jsonb('participants');
-                $table->jsonb('lu_par')->default('[]');
+                $table->json('participants');
+                $table->json('lu_par')->default('[]');
                 $table->timestamp('last_message_at')->nullable();
                 $table->timestamps();
                 $table->softDeletes();

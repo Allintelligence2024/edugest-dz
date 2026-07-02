@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('enseignants', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('user_id')->nullable()->unique();
             $table->string('matricule', 20)->unique();
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('prenom_ar', 100)->nullable();
             $table->date('date_naissance')->nullable();
             $table->string('lieu_naissance', 100)->nullable();
-            $table->enum('sexe', ['M', 'F'])->nullable();
+            $table->string('sexe')->nullable();
             $table->string('telephone', 20)->nullable();
             $table->string('email', 150)->nullable();
             $table->text('adresse')->nullable();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('diplome', 200)->nullable();
             $table->string('specialite', 200)->nullable();
             $table->integer('experience_annees')->default(0);
-            $table->enum('type_contrat', ['CDI','CDD','vacataire','freelance','stagiaire'])->nullable();
+            $table->string('type_contrat')->nullable();
             $table->date('date_embauche')->nullable();
             $table->decimal('salaire_base', 10, 2)->nullable();
             $table->decimal('taux_horaire', 8, 2)->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('num_cnas', 20)->nullable();
             $table->string('rib_bancaire', 25)->nullable();
             $table->string('banque', 100)->nullable();
-            $table->enum('statut', ['actif','congé','suspendu','démissionné'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->text('note_interne')->nullable();
             $table->timestamps();
             $table->softDeletes();
@@ -44,37 +44,37 @@ return new class extends Migration
         });
 
         Schema::create('matieres', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->string('nom_fr', 100);
             $table->string('nom_ar', 100)->nullable();
             $table->string('couleur', 7)->default('#1E5EBC');
             $table->text('description')->nullable();
-            $table->enum('statut', ['actif','inactif'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->timestamps();
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
         });
 
         Schema::create('salles', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->string('nom', 100);
             $table->integer('capacite')->default(0);
             $table->text('equipements')->nullable();
             $table->string('localisation', 200)->nullable();
-            $table->enum('statut', ['disponible','occupée','maintenance'])->default('disponible');
+            $table->string('statut')->default('disponible');
             $table->timestamps();
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
         });
 
         Schema::create('groupes', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('matiere_id')->nullable();
             $table->string('nom', 100);
             $table->string('niveau_scolaire', 20)->nullable();
             $table->integer('capacite_max')->default(20);
-            $table->enum('statut', ['actif','inactif','complet'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->text('description')->nullable();
             $table->timestamps();
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');

@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.0",
+        "darkaonline/l5-swagger": "^8.6",
         "http-interop/http-factory-guzzle": "^1.0",
         "laravel/framework": "^11.31",
         "laravel/scout": "^10.0",
@@ -60,7 +61,6 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
         "dev": [

@@ -30,6 +30,28 @@ class BilletController extends BaseApiController
         return $this->paginatedResponse($paginator, 'Billets récupérés');
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/billets",
+     *     summary="Émettre un billet (entrée tardive / sortie anticipée / convocation)",
+     *     tags={"Billets"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"eleve_id","type"},
+     *             @OA\Property(property="eleve_id",   type="string", format="uuid"),
+     *             @OA\Property(property="type",       type="string", enum={"retard","sortie_autorisee","convocation","entree_exceptionnelle"}),
+     *             @OA\Property(property="motif",      type="string", nullable=true),
+     *             @OA\Property(property="heure",      type="string", example="08:47"),
+     *             @OA\Property(property="parent_prevenu", type="boolean", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Billet émis", @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=422, description="Type invalide", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('contrats', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('enseignant_id');
-            $table->enum('type_contrat', ['CDI','CDD','vacataire']);
+            $table->string('type_contrat');
             $table->date('date_debut');
             $table->date('date_fin')->nullable();
             $table->decimal('salaire', 10, 2);
@@ -20,14 +20,14 @@ return new class extends Migration
             $table->decimal('taux_cnas', 5, 2)->default(9.00);
             $table->decimal('taux_casnos', 5, 2)->default(0);
             $table->string('fichier_url', 500)->nullable();
-            $table->enum('statut', ['actif','expiré','résilié'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->timestamps();
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             $table->foreign('enseignant_id')->references('id')->on('enseignants')->onDelete('cascade');
         });
 
         Schema::create('paies', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('enseignant_id');
             $table->unsignedTinyInteger('mois');
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->decimal('cnas', 10, 2)->default(0);
             $table->decimal('casnos', 10, 2)->default(0);
             $table->decimal('salaire_net', 10, 2);
-            $table->enum('statut', ['calculé','validé','payé','annulé'])->default('calculé');
+            $table->string('statut')->default('calculé');
             $table->date('date_paiement')->nullable();
             $table->string('bulletin_url', 500)->nullable();
             $table->timestamps();
@@ -51,7 +51,7 @@ return new class extends Migration
         });
 
         Schema::create('notifications', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('user_id')->index();
             $table->string('type', 50)->default('info');

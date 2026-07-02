@@ -10,6 +10,29 @@ class FinanceController extends Controller
 {
     public function __construct(private FacturationService $service) {}
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/finance/tableau-bord",
+     *     summary="Dashboard financier",
+     *     tags={"Finances"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="KPIs financiers",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="ca_mois",      type="number",  format="float"),
+     *                 @OA\Property(property="ca_annee",     type="number",  format="float"),
+     *                 @OA\Property(property="impayes",      type="number",  format="float"),
+     *                 @OA\Property(property="nb_impayes",   type="integer"),
+     *                 @OA\Property(property="ca_par_mois",  type="array",   @OA\Items(type="object")),
+     *                 @OA\Property(property="modes_payment",type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function tableauBord(): JsonResponse
     {
         return response()->json([

@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('device_tokens', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('user_id')->index();
             $table->string('token', 500)->index();

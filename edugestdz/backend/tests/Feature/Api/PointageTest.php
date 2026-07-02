@@ -57,7 +57,7 @@ class PointageTest extends TestCase
 
         $this->assertDatabaseHas('pointage_enseignants', [
             'enseignant_id' => $enseignant->id,
-            'heure_arrivee' => '08:00:00',
+            'heure_arrivee' => '08:00',
             'statut'        => 'present',
         ]);
     }

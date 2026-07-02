@@ -12,6 +12,30 @@ use Illuminate\Http\Request;
 
 class BudgetController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/budget/dashboard",
+     *     summary="Dashboard budget (recettes, dépenses, résultat net)",
+     *     tags={"Budget"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="mois",  in="query", @OA\Schema(type="integer", example=7)),
+     *     @OA\Parameter(name="annee", in="query", @OA\Schema(type="integer", example=2026)),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Données budget du mois",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="recettes",    type="number", format="float"),
+     *                 @OA\Property(property="depenses",    type="number", format="float"),
+     *                 @OA\Property(property="resultat_net",type="number", format="float"),
+     *                 @OA\Property(property="impayes",     type="number", format="float"),
+     *                 @OA\Property(property="evolution",   type="array",  @OA\Items(type="object"))
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function dashboard(Request $request): JsonResponse
     {
         $mois  = (int) ($request->mois  ?? now()->month);
@@ -207,6 +231,18 @@ class BudgetController extends BaseApiController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/budget/previsionnel",
+     *     summary="Budget prévisionnel vs réalisé par catégorie",
+     *     tags={"Budget"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="annee", in="query", required=false, @OA\Schema(type="integer", example=2026)),
+     *     @OA\Parameter(name="mois",  in="query", required=false, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Prévisionnel vs réalisé", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function previsionnel(Request $request): JsonResponse
     {
         $annee = (int) ($request->annee ?? now()->year);

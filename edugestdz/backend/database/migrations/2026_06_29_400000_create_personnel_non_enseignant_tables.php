@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('personnel_non_enseignant', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             // Identité
@@ -22,28 +22,18 @@ return new class extends Migration
             $table->date('date_naissance')->nullable();
 
             // Poste
-            $table->enum('poste', [
-                'femme_menage',
-                'surveillant',
-                'chauffeur',
-                'proviseur',
-                'directeur_adjoint',
-                'secretaire',
-                'technicien',
-                'agent_securite',
-                'autre',
-            ]);
+            $table->string('poste');
             $table->string('poste_libelle', 100)->nullable();
 
             // Contrat
-            $table->enum('type_contrat', ['CDI', 'CDD', 'vacataire', 'stagiaire'])->default('CDI');
+            $table->string('type_contrat')->default('CDI');
             $table->date('date_embauche');
             $table->date('date_fin_contrat')->nullable();
             $table->decimal('salaire_base', 10, 2)->default(0);
-            $table->enum('frequence_paie', ['mensuel', 'hebdo', 'journalier'])->default('mensuel');
+            $table->string('frequence_paie')->default('mensuel');
 
             // Statut
-            $table->enum('statut', ['actif', 'inactif', 'suspendu'])->default('actif');
+            $table->string('statut')->default('actif');
             $table->string('matricule', 30)->nullable()->unique();
 
             // Documents
@@ -60,18 +50,16 @@ return new class extends Migration
 
         // ── Pointage personnel non-enseignant ──
         Schema::create('pointage_personnel', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('agent_id');
 
             $table->date('date');
             $table->time('heure_arrivee')->nullable();
             $table->time('heure_depart')->nullable();
-            $table->enum('methode', ['badge', 'manuel'])->default('manuel');
+            $table->string('methode')->default('manuel');
             $table->string('badge_uid', 100)->nullable();
-            $table->enum('statut', [
-                'present', 'absent', 'retard', 'conge', 'maladie', 'demi_journee'
-            ])->default('present');
+            $table->string('statut')->default('present');
             $table->boolean('impact_paie')->default(false);
             $table->decimal('retenue_dzd', 10, 2)->default(0);
             $table->text('note')->nullable();
@@ -87,18 +75,18 @@ return new class extends Migration
 
         // ── Congés et absences planifiées ──
         Schema::create('conges_personnel', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('agent_id');
 
             $table->date('date_debut');
             $table->date('date_fin');
             $table->integer('nb_jours')->default(1);
-            $table->enum('type', ['conge_annuel', 'maladie', 'maternite', 'sans_solde', 'autre'])
+            $table->string('type')
                   ->default('conge_annuel');
             $table->text('motif')->nullable();
             $table->string('document_url', 500)->nullable();
-            $table->enum('statut', ['en_attente', 'approuve', 'refuse'])->default('en_attente');
+            $table->string('statut')->default('en_attente');
             $table->uuid('approuve_par')->nullable();
             $table->timestamp('approuve_at')->nullable();
 

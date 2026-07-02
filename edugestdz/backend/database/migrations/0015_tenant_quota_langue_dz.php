@@ -14,7 +14,7 @@ return new class extends Migration
 
         Schema::table('tenants', function (Blueprint $table) {
             if (!Schema::hasColumn('tenants', 'quotas')) {
-                $table->jsonb('quotas')->nullable()->after('settings');
+                $table->json('quotas')->nullable()->after('settings');
             }
             if (!Schema::hasColumn('tenants', 'plan_abonnement')) {
                 $table->string('plan_abonnement', 50)->default('gratuit')->change();
@@ -29,7 +29,7 @@ return new class extends Migration
                 $table->uuid('super_admin_id');
                 $table->uuid('tenant_id')->nullable();
                 $table->string('action', 100);
-                $table->jsonb('details')->nullable();
+                $table->json('details')->nullable();
                 $table->timestamps();
 
                 $table->foreign('super_admin_id')->references('id')->on('users')->onDelete('cascade');

@@ -1,7 +1,7 @@
 <?php
 namespace Tests\Unit\Services;
 
-use App\Models\{Eleve, Enseignant, Matiere, Groupe, Tenant, User, Role};
+use App\Models\{Eleve, Enseignant, Inscription, Matiere, Groupe, Tenant, User, Role};
 use App\Services\MatchingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -42,8 +42,10 @@ class MatchingServiceTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
@@ -85,8 +87,10 @@ class MatchingServiceTest extends TestCase
             'niveau_scolaire' => '1AP',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
@@ -126,8 +130,10 @@ class MatchingServiceTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
@@ -167,8 +173,10 @@ class MatchingServiceTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',
@@ -208,8 +216,10 @@ class MatchingServiceTest extends TestCase
             'niveau_scolaire' => '1AS',
         ]);
 
-        $eleve->groupes()->attach($groupe->id, [
+        Inscription::create([
             'tenant_id'        => $this->tenant->id,
+            'eleve_id'         => $eleve->id,
+            'groupe_id'        => $groupe->id,
             'annee_scolaire'   => now()->year . '/' . (now()->year + 1),
             'date_inscription' => now(),
             'statut'           => 'validée',

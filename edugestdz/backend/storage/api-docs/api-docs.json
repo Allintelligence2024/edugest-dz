@@ -1,0 +1,2065 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "EduGest DZ API",
+        "description": "API complète — plateforme SaaS de gestion scolaire pour l'Algérie.\nAuthentification via JWT Bearer (header Authorization: Bearer <token>).\nMulti-tenant : chaque requête doit inclure le header X-Tenant-ID.",
+        "contact": {
+            "email": "support@edugest.dz"
+        },
+        "license": {
+            "name": "Proprietary"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Serveur courant"
+        },
+        {
+            "url": "/api/v1"
+        }
+    ],
+    "paths": {
+        "/api/v1/absences": {
+            "get": {
+                "tags": [
+                    "Absences"
+                ],
+                "summary": "Liste des absences journalières",
+                "operationId": "9aeb951f5cc6fdf46a62b9b75a2b9b2c",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "absent",
+                                "present",
+                                "retard",
+                                "demi_journee"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Absences paginées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/absences/{eleveId}": {
+            "post": {
+                "tags": [
+                    "Absences"
+                ],
+                "summary": "Marquer un élève présent/retard/absence",
+                "operationId": "fd6f205033e01f5c45d1b18dcf1c4eee",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "eleveId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "statut"
+                                ],
+                                "properties": {
+                                    "statut": {
+                                        "type": "string",
+                                        "enum": [
+                                            "present",
+                                            "retard",
+                                            "demi_journee"
+                                        ]
+                                    },
+                                    "heure_arrivee": {
+                                        "type": "string",
+                                        "format": "H:i",
+                                        "nullable": true
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Statut mis à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Connexion utilisateur",
+                "operationId": "a7997e7c1e3bfed64d4e56de82415931",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@ecole-oran.dz"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 3600
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Déconnexion (invalide le token JWT)",
+                "operationId": "f6b8957b4c0b25636613a9f0512a8ba9",
+                "responses": {
+                    "200": {
+                        "description": "Déconnecté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Rafraîchir le token JWT",
+                "operationId": "c42c3cd7fd7fe0dbd5bcc42962059e90",
+                "responses": {
+                    "200": {
+                        "description": "Token rafraîchi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Profil de l'utilisateur connecté",
+                "operationId": "37d33f0281f67d31d05b4c45eea0143b",
+                "responses": {
+                    "200": {
+                        "description": "Profil utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/billets": {
+            "post": {
+                "tags": [
+                    "Billets"
+                ],
+                "summary": "Émettre un billet (entrée tardive / sortie anticipée / convocation)",
+                "operationId": "b7e39aa6936c65e948754b3d9564cc70",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "eleve_id",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "eleve_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "retard",
+                                            "sortie_autorisee",
+                                            "convocation",
+                                            "entree_exceptionnelle"
+                                        ]
+                                    },
+                                    "motif": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "heure": {
+                                        "type": "string",
+                                        "example": "08:47"
+                                    },
+                                    "parent_prevenu": {
+                                        "type": "boolean",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Billet émis",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Type invalide",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/dashboard": {
+            "get": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Dashboard budget (recettes, dépenses, résultat net)",
+                "operationId": "f96d6cf7f773f61296119c6a86fe5c8f",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "mois",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 7
+                        }
+                    },
+                    {
+                        "name": "annee",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Données budget du mois",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "recettes": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "depenses": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "resultat_net": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "impayes": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "evolution": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/budget/previsionnel": {
+            "get": {
+                "tags": [
+                    "Budget"
+                ],
+                "summary": "Budget prévisionnel vs réalisé par catégorie",
+                "operationId": "3a12235d4608f6c508d66391c54ae890",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "annee",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    },
+                    {
+                        "name": "mois",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Prévisionnel vs réalisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/eleves": {
+            "get": {
+                "tags": [
+                    "Eleves"
+                ],
+                "summary": "Liste paginée des élèves",
+                "operationId": "3af868b3bb89258153c28748f2a1927c",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "inactif",
+                                "suspendu"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "niveau_scolaire",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des élèves",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Eleve"
+                                                    }
+                                                },
+                                                "meta": {
+                                                    "$ref": "#/components/schemas/PaginationMeta"
+                                                },
+                                                "stats": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Eleves"
+                ],
+                "summary": "Créer un élève",
+                "operationId": "7aa5189f2897dfec97cfdff09526e306",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EleveInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Élève créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Données invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/eleves/{id}": {
+            "get": {
+                "tags": [
+                    "Eleves"
+                ],
+                "summary": "Détail d'un élève",
+                "operationId": "2259e49f74aafd71da41b53ede3e2875",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détail élève",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Eleves"
+                ],
+                "summary": "Mettre à jour un élève",
+                "operationId": "071fa64224794ff23bc831bb32641e5a",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EleveInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Élève mis à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Eleves"
+                ],
+                "summary": "Supprimer un élève (soft delete)",
+                "operationId": "dea9a69cdf3567d07caceac09fafd30f",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Supprimé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/entretien/interventions": {
+            "get": {
+                "tags": [
+                    "Entretien"
+                ],
+                "summary": "Liste des interventions d'entretien",
+                "operationId": "80f3bc5fa071bca0fec8b6a4cd5df85f",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "signale",
+                                "en_cours",
+                                "en_attente",
+                                "resolu",
+                                "annule"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "priorite",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "urgente",
+                                "haute",
+                                "normale",
+                                "basse"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Interventions paginées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Entretien"
+                ],
+                "summary": "Signaler une intervention d'entretien",
+                "operationId": "6055d249cccef0dcb97f5142bfc468fe",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "titre",
+                                    "type",
+                                    "priorite"
+                                ],
+                                "properties": {
+                                    "titre": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "panne",
+                                            "degradation",
+                                            "entretien_preventif",
+                                            "renovation",
+                                            "nettoyage",
+                                            "inspection"
+                                        ]
+                                    },
+                                    "priorite": {
+                                        "type": "string",
+                                        "enum": [
+                                            "urgente",
+                                            "haute",
+                                            "normale",
+                                            "basse"
+                                        ]
+                                    },
+                                    "local_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    },
+                                    "prestataire_id": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "nullable": true
+                                    },
+                                    "cout_estime": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Intervention créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/finance/tableau-bord": {
+            "get": {
+                "tags": [
+                    "Finances"
+                ],
+                "summary": "Dashboard financier",
+                "operationId": "904604d2c7a88afa280da42b1e4a793c",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "KPIs financiers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "ca_mois": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "ca_annee": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "impayes": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                },
+                                                "nb_impayes": {
+                                                    "type": "integer"
+                                                },
+                                                "ca_par_mois": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "modes_payment": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/paiements/online/initier": {
+            "post": {
+                "tags": [
+                    "PaiementCIB"
+                ],
+                "summary": "Initier un paiement en ligne (CIB / Dahabia / BaridiMob)",
+                "operationId": "9baa045ef74afa90d3a6e1ed7befb526",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "facture_id",
+                                    "type_paiement"
+                                ],
+                                "properties": {
+                                    "facture_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "type_paiement": {
+                                        "type": "string",
+                                        "enum": [
+                                            "cib",
+                                            "dahabia",
+                                            "baridimob"
+                                        ]
+                                    },
+                                    "montant": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "URL de redirection ou référence générée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "redirect_url": {
+                                                    "type": "string",
+                                                    "format": "uri"
+                                                },
+                                                "order_id": {
+                                                    "type": "string"
+                                                },
+                                                "paiement": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Facture introuvable ou déjà payée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/paiements/online/callback": {
+            "post": {
+                "tags": [
+                    "PaiementCIB"
+                ],
+                "summary": "Callback Satim (webhook confirmation paiement)",
+                "operationId": "6033b664024095fb41fd7a45399b2d73",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "orderId": {
+                                        "type": "string"
+                                    },
+                                    "orderNumber": {
+                                        "type": "string"
+                                    },
+                                    "orderStatus": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Paiement confirmé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paiement échoué",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/paiements/online/{id}/rembourser": {
+            "post": {
+                "tags": [
+                    "PaiementCIB"
+                ],
+                "summary": "Rembourser un paiement en ligne",
+                "operationId": "47ff141106df3d25a3c2a36fb81ec548",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motif"
+                                ],
+                                "properties": {
+                                    "motif": {
+                                        "type": "string",
+                                        "example": "Désinscription élève"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Remboursement initié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Paiement non remboursable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/personnel": {
+            "get": {
+                "tags": [
+                    "Personnel"
+                ],
+                "summary": "Liste du personnel non-enseignant",
+                "operationId": "cde2f8ee41ac23c71b230c912c12fb7b",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "inactif",
+                                "suspendu"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "poste",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Personnel paginé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stock/articles": {
+            "get": {
+                "tags": [
+                    "Stock"
+                ],
+                "summary": "Liste des articles en stock",
+                "operationId": "49fa9ae28fa67aab9935db1821cb0853",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "categorie",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "en_alerte",
+                        "in": "query",
+                        "schema": {
+                            "description": "true = articles sous le seuil",
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Articles paginés",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/stock/articles/{id}/mouvement": {
+            "post": {
+                "tags": [
+                    "Stock"
+                ],
+                "summary": "Enregistrer un mouvement de stock (entrée / sortie / ajustement)",
+                "operationId": "01decd6a8ac30ec10d33b52056bb2d4b",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "quantite"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "entree",
+                                            "sortie",
+                                            "ajustement",
+                                            "transfert",
+                                            "perte"
+                                        ]
+                                    },
+                                    "quantite": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "motif": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "reference_doc": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Mouvement enregistré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transport/circuits": {
+            "get": {
+                "tags": [
+                    "Transport"
+                ],
+                "summary": "Liste des circuits de transport",
+                "operationId": "3dad7018c0cc3a6e4d4c7173a5c2c99c",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    },
+                    {
+                        "name": "actif",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Circuits avec stats",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "circuits": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/CircuitTransport"
+                                                    }
+                                                },
+                                                "stats": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/transport/pointage": {
+            "post": {
+                "tags": [
+                    "Transport"
+                ],
+                "summary": "Pointer un élève sur le bus",
+                "operationId": "fcbe77f3f6c6f57c5d2a08afccb01267",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/TenantId"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "circuit_id",
+                                    "pointages"
+                                ],
+                                "properties": {
+                                    "circuit_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "trajet": {
+                                        "type": "string",
+                                        "enum": [
+                                            "matin",
+                                            "soir"
+                                        ]
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "pointages": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "eleve_id": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "monte",
+                                                        "absent",
+                                                        "excuse"
+                                                    ]
+                                                },
+                                                "arret_id": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pointage enregistré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SuccessResponse": {
+                "properties": {
+                    "success": {
+                        "description": "── Réponse générique ──────────────────────────────────────────────────────",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Opération réussie"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Ressource non trouvée"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PaginationMeta": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 97
+                    }
+                },
+                "type": "object"
+            },
+            "Eleve": {
+                "required": [
+                    "id",
+                    "nom",
+                    "prenom",
+                    "niveau_scolaire",
+                    "statut"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Benali"
+                    },
+                    "prenom": {
+                        "type": "string",
+                        "example": "Amira"
+                    },
+                    "date_naissance": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2010-03-15"
+                    },
+                    "sexe": {
+                        "type": "string",
+                        "enum": [
+                            "M",
+                            "F"
+                        ]
+                    },
+                    "niveau_scolaire": {
+                        "type": "string",
+                        "example": "3AS"
+                    },
+                    "statut": {
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "inactif",
+                            "suspendu"
+                        ]
+                    },
+                    "photo_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "tenant_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "EleveInput": {
+                "required": [
+                    "nom",
+                    "prenom",
+                    "niveau_scolaire",
+                    "date_naissance",
+                    "sexe"
+                ],
+                "properties": {
+                    "nom": {
+                        "type": "string",
+                        "example": "Benali"
+                    },
+                    "prenom": {
+                        "type": "string",
+                        "example": "Amira"
+                    },
+                    "date_naissance": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2010-03-15"
+                    },
+                    "sexe": {
+                        "type": "string",
+                        "enum": [
+                            "M",
+                            "F"
+                        ]
+                    },
+                    "niveau_scolaire": {
+                        "type": "string",
+                        "example": "3AS"
+                    },
+                    "wilaya_id": {
+                        "type": "integer",
+                        "example": 31
+                    },
+                    "commune_id": {
+                        "type": "integer",
+                        "example": 310
+                    },
+                    "adresse": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Facture": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "numero": {
+                        "type": "string",
+                        "example": "FAC-2026-0042"
+                    },
+                    "eleve_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "total_ht": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4500
+                    },
+                    "tva": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0
+                    },
+                    "total_ttc": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4500
+                    },
+                    "statut": {
+                        "type": "string",
+                        "enum": [
+                            "émise",
+                            "payée",
+                            "en_retard",
+                            "partiellement_payée",
+                            "annulée"
+                        ]
+                    },
+                    "date_emission": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "date_echeance": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "mois": {
+                        "type": "integer",
+                        "example": 7
+                    },
+                    "annee": {
+                        "type": "integer",
+                        "example": 2026
+                    }
+                },
+                "type": "object"
+            },
+            "Paiement": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "facture_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "montant": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4500
+                    },
+                    "mode_paiement": {
+                        "type": "string",
+                        "enum": [
+                            "espèces",
+                            "chèque",
+                            "virement",
+                            "cib",
+                            "dahabia"
+                        ]
+                    },
+                    "statut": {
+                        "type": "string",
+                        "enum": [
+                            "en_attente",
+                            "confirmé",
+                            "échoué",
+                            "remboursé"
+                        ]
+                    },
+                    "date_paiement": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "reference_satim": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CircuitTransport": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Circuit Nord"
+                    },
+                    "capacite": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "nb_eleves_actifs": {
+                        "type": "integer",
+                        "example": 18
+                    },
+                    "taux_remplissage": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 72
+                    },
+                    "actif": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Personnel": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Cherif"
+                    },
+                    "prenom": {
+                        "type": "string",
+                        "example": "Karim"
+                    },
+                    "poste": {
+                        "type": "string",
+                        "example": "Agent de sécurité"
+                    },
+                    "statut": {
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "inactif",
+                            "congé"
+                        ]
+                    },
+                    "salaire_base": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 28000
+                    }
+                },
+                "type": "object"
+            },
+            "ArticleStock": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Cahier 96 pages"
+                    },
+                    "reference": {
+                        "type": "string",
+                        "example": "CAH-96"
+                    },
+                    "categorie": {
+                        "type": "string",
+                        "example": "fournitures"
+                    },
+                    "quantite_stock": {
+                        "type": "integer",
+                        "example": 150
+                    },
+                    "seuil_alerte": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "prix_unitaire": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 35
+                    },
+                    "actif": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "parameters": {
+            "TenantId": {
+                "name": "X-Tenant-ID",
+                "in": "header",
+                "description": "Identifiant unique du tenant (école/centre)",
+                "required": true,
+                "schema": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Authentification JWT + 2FA"
+        },
+        {
+            "name": "Eleves",
+            "description": "Gestion des élèves"
+        },
+        {
+            "name": "Absences",
+            "description": "Absences journalières + SMS"
+        },
+        {
+            "name": "Billets",
+            "description": "Billets entrée / retard / sortie / convocation"
+        },
+        {
+            "name": "Finances",
+            "description": "Factures & paiements"
+        },
+        {
+            "name": "PaiementCIB",
+            "description": "Paiement CIB / Dahabia via Satim"
+        },
+        {
+            "name": "Transport",
+            "description": "Circuits, arrêts & pointage bus"
+        },
+        {
+            "name": "Stock",
+            "description": "Inventaire, mouvements & bons de commande"
+        },
+        {
+            "name": "Budget",
+            "description": "Budget, dépenses & prévisionnel"
+        },
+        {
+            "name": "Personnel",
+            "description": "Personnel non-enseignant & paie"
+        },
+        {
+            "name": "Entretien",
+            "description": "Locaux, interventions & préventif"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}

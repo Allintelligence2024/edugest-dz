@@ -84,19 +84,12 @@ return new class extends Migration
 
     private function addIndexSafe(string $table, array $columns, string $name): void
     {
-        $exists = DB::select("
-            SELECT 1 FROM pg_indexes
-            WHERE tablename = ? AND indexname = ?
-        ", [$table, $name]);
-
-        if (empty($exists)) {
-            try {
-                Schema::table($table, function (Blueprint $t) use ($columns, $name) {
-                    $t->index($columns, $name);
-                });
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Index {$name} skipped: " . $e->getMessage());
-            }
+        try {
+            Schema::table($table, function (Blueprint $t) use ($columns, $name) {
+                $t->index($columns, $name);
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Index {$name} skipped: " . $e->getMessage());
         }
     }
 };

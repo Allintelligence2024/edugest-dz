@@ -14,7 +14,7 @@ return new class extends Migration
                       ->comment('ID commande Satim');
             }
             if (!Schema::hasColumn('paiements', 'raw_payload')) {
-                $table->jsonb('raw_payload')->nullable()->after('order_id')
+                $table->json('raw_payload')->nullable()->after('order_id')
                       ->comment('Payload brut Satim');
             }
             if (!Schema::hasColumn('paiements', 'mode')) {

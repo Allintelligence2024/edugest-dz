@@ -139,6 +139,19 @@ class EntretienController extends BaseApiController
     // INTERVENTIONS (TICKETS)
     // ═══════════════════════════════════════════
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/entretien/interventions",
+     *     summary="Liste des interventions d'entretien",
+     *     tags={"Entretien"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="statut",   in="query", @OA\Schema(type="string", enum={"signale","en_cours","en_attente","resolu","annule"})),
+     *     @OA\Parameter(name="priorite", in="query", @OA\Schema(type="string", enum={"urgente","haute","normale","basse"})),
+     *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer", default=20)),
+     *     @OA\Response(response=200, description="Interventions paginées", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function indexInterventions(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -194,6 +207,29 @@ class EntretienController extends BaseApiController
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/entretien/interventions",
+     *     summary="Signaler une intervention d'entretien",
+     *     tags={"Entretien"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"titre","type","priorite"},
+     *             @OA\Property(property="titre",         type="string"),
+     *             @OA\Property(property="description",   type="string", nullable=true),
+     *             @OA\Property(property="type",          type="string", enum={"panne","degradation","entretien_preventif","renovation","nettoyage","inspection"}),
+     *             @OA\Property(property="priorite",      type="string", enum={"urgente","haute","normale","basse"}),
+     *             @OA\Property(property="local_id",      type="string", format="uuid", nullable=true),
+     *             @OA\Property(property="prestataire_id",type="string", format="uuid", nullable=true),
+     *             @OA\Property(property="cout_estime",   type="number", format="float", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Intervention créée", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function signalerIntervention(Request $request): JsonResponse
     {
         $validated = $request->validate([

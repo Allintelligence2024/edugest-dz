@@ -9,23 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('articles_stock', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('nom', 150);
             $table->string('reference', 50)->nullable();
             $table->string('qr_code', 100)->nullable()->unique();
 
-            $table->enum('categorie', [
-                'mobilier',
-                'equipement_pedagogique',
-                'fourniture_bureau',
-                'fourniture_pedagogique',
-                'equipement_sportif',
-                'materiel_entretien',
-                'equipement_informatique',
-                'autre',
-            ]);
+            $table->string('categorie');
 
             $table->string('unite', 20)->default('pièce');
             $table->uuid('salle_id')->nullable();
@@ -34,7 +25,7 @@ return new class extends Migration
             $table->integer('quantite_stock')->default(0);
             $table->integer('quantite_minimum')->default(0);
 
-            $table->enum('etat', ['bon', 'use', 'hors_service', 'en_reparation'])
+            $table->string('etat')
                   ->default('bon');
 
             $table->decimal('valeur_unitaire', 10, 2)->nullable();
@@ -53,11 +44,11 @@ return new class extends Migration
         });
 
         Schema::create('mouvements_stock', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('article_id');
 
-            $table->enum('type', ['entree', 'sortie', 'ajustement', 'transfert', 'perte'])
+            $table->string('type')
                   ->default('entree');
             $table->integer('quantite');
             $table->integer('quantite_avant')->default(0);
@@ -76,12 +67,12 @@ return new class extends Migration
         });
 
         Schema::create('prets_materiel', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('article_id');
 
             $table->uuid('emprunteur_id')->nullable();
-            $table->enum('type_emprunteur', ['enseignant', 'personnel', 'externe'])
+            $table->string('type_emprunteur')
                   ->default('enseignant');
             $table->string('nom_emprunteur', 150)->nullable();
 
@@ -89,7 +80,7 @@ return new class extends Migration
             $table->date('date_pret');
             $table->date('date_retour_prevue');
             $table->date('date_retour_effective')->nullable();
-            $table->enum('statut', ['en_cours', 'rendu', 'en_retard', 'perdu'])
+            $table->string('statut')
                   ->default('en_cours');
             $table->text('note')->nullable();
 
@@ -102,7 +93,7 @@ return new class extends Migration
         });
 
         Schema::create('bons_commande', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
 
             $table->string('numero', 30)->unique();
@@ -111,7 +102,7 @@ return new class extends Migration
             $table->date('date_commande');
             $table->date('date_livraison_prevue')->nullable();
             $table->decimal('montant_total', 12, 2)->default(0);
-            $table->enum('statut', ['brouillon', 'envoye', 'recu', 'partiel', 'annule'])
+            $table->string('statut')
                   ->default('brouillon');
             $table->text('note')->nullable();
             $table->string('fichier_url', 500)->nullable();
@@ -123,7 +114,7 @@ return new class extends Migration
         });
 
         Schema::create('lignes_bon_commande', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(\DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->index();
             $table->uuid('bon_commande_id');
             $table->uuid('article_id')->nullable();
