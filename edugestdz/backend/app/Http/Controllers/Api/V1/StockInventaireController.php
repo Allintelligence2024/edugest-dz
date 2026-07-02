@@ -17,6 +17,19 @@ use Illuminate\Support\Facades\Storage;
 
 class StockInventaireController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/stock/articles",
+     *     summary="Liste des articles en stock",
+     *     tags={"Stock"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="categorie",     in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="en_alerte",     in="query", @OA\Schema(type="boolean", description="true = articles sous le seuil")),
+     *     @OA\Parameter(name="per_page",      in="query", @OA\Schema(type="integer", default=20)),
+     *     @OA\Response(response=200, description="Articles paginés", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -171,6 +184,27 @@ class StockInventaireController extends BaseApiController
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/stock/articles/{id}/mouvement",
+     *     summary="Enregistrer un mouvement de stock (entrée / sortie / ajustement)",
+     *     tags={"Stock"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type","quantite"},
+     *             @OA\Property(property="type",       type="string",  enum={"entree","sortie","ajustement","transfert","perte"}),
+     *             @OA\Property(property="quantite",   type="integer", example=10),
+     *             @OA\Property(property="motif",      type="string",  nullable=true),
+     *             @OA\Property(property="reference_doc", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Mouvement enregistré", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function mouvement(Request $request, string $id): JsonResponse
     {
         $validated = $request->validate([

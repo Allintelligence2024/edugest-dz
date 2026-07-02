@@ -14,7 +14,34 @@ class PaiementEnLigneController extends Controller
     public function __construct(private SatimGateway $satim) {}
 
     /**
-     * POST /paiements/online/initier
+     * @OA\Post(
+     *     path="/api/v1/paiements/online/initier",
+     *     summary="Initier un paiement en ligne (CIB / Dahabia / BaridiMob)",
+     *     tags={"PaiementCIB"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"facture_id","type_paiement"},
+     *             @OA\Property(property="facture_id",    type="string", format="uuid"),
+     *             @OA\Property(property="type_paiement", type="string", enum={"cib","dahabia","baridimob"}),
+     *             @OA\Property(property="montant",       type="number", format="float", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="URL de redirection ou référence générée",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="redirect_url", type="string", format="uri"),
+     *                 @OA\Property(property="order_id",     type="string"),
+     *                 @OA\Property(property="paiement",     type="object")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=422, description="Facture introuvable ou déjà payée", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      */
     public function initier(Request $request): JsonResponse
     {
@@ -141,7 +168,21 @@ class PaiementEnLigneController extends Controller
     }
 
     /**
-     * POST /paiements/online/callback
+     * @OA\Post(
+     *     path="/api/v1/paiements/online/callback",
+     *     summary="Callback Satim (webhook confirmation paiement)",
+     *     tags={"PaiementCIB"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="orderId",       type="string"),
+     *             @OA\Property(property="orderNumber",   type="string"),
+     *             @OA\Property(property="orderStatus",   type="integer", example=2)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Paiement confirmé",  @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=400, description="Paiement échoué",    @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      */
     public function callback(Request $request): JsonResponse
     {
@@ -266,7 +307,23 @@ class PaiementEnLigneController extends Controller
     }
 
     /**
-     * POST /api/v1/paiements/online/{id}/rembourser
+     * @OA\Post(
+     *     path="/api/v1/paiements/online/{id}/rembourser",
+     *     summary="Rembourser un paiement en ligne",
+     *     tags={"PaiementCIB"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motif"},
+     *             @OA\Property(property="motif", type="string", example="Désinscription élève")
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Remboursement initié", @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=422, description="Paiement non remboursable", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
      */
     public function rembourser(Request $request, string $id): JsonResponse
     {

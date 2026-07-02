@@ -22,6 +22,31 @@ class EleveController extends BaseApiController
         private EleveService $eleveService
     ) {}
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/eleves",
+     *     summary="Liste paginée des élèves",
+     *     tags={"Eleves"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="per_page",       in="query", required=false, @OA\Schema(type="integer", default=20)),
+     *     @OA\Parameter(name="statut",         in="query", required=false, @OA\Schema(type="string",  enum={"actif","inactif","suspendu"})),
+     *     @OA\Parameter(name="niveau_scolaire",in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="search",         in="query", required=false, @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des élèves",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="data",  type="array", @OA\Items(ref="#/components/schemas/Eleve")),
+     *                 @OA\Property(property="meta",  ref="#/components/schemas/PaginationMeta"),
+     *                 @OA\Property(property="stats", type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $eleves = $this->indexQuery($request)
@@ -52,6 +77,18 @@ class EleveController extends BaseApiController
         return $this->paginatedResponse($eleves, 'Élèves récupérés', ['stats' => $stats]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/eleves",
+     *     summary="Créer un élève",
+     *     tags={"Eleves"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/EleveInput")),
+     *     @OA\Response(response=201, description="Élève créé",      @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=422, description="Données invalides",@OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function store(StoreEleveRequest $request): JsonResponse
     {
         $eleve = DB::transaction(function () use ($request) {
@@ -85,6 +122,18 @@ class EleveController extends BaseApiController
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/eleves/{id}",
+     *     summary="Détail d'un élève",
+     *     tags={"Eleves"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\Response(response=200, description="Détail élève",   @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=404, description="Non trouvé",     @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function show(string $id): JsonResponse
     {
         $eleve = Eleve::with([
@@ -112,6 +161,19 @@ class EleveController extends BaseApiController
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/v1/eleves/{id}",
+     *     summary="Mettre à jour un élève",
+     *     tags={"Eleves"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(required=true, @OA\JsonContent(ref="#/components/schemas/EleveInput")),
+     *     @OA\Response(response=200, description="Élève mis à jour", @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=404, description="Non trouvé",       @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function update(UpdateEleveRequest $request, string $id): JsonResponse
     {
         $eleve = Eleve::findOrFail($id);
@@ -125,6 +187,18 @@ class EleveController extends BaseApiController
         );
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/eleves/{id}",
+     *     summary="Supprimer un élève (soft delete)",
+     *     tags={"Eleves"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\Response(response=200, description="Supprimé",    @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=404, description="Non trouvé",  @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function destroy(string $id): JsonResponse
     {
         $eleve = Eleve::findOrFail($id);

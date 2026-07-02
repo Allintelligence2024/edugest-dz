@@ -13,6 +13,19 @@ use Illuminate\Http\Request;
 
 class AbsenceController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/absences",
+     *     summary="Liste des absences journalières",
+     *     tags={"Absences"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="date",     in="query", required=false, @OA\Schema(type="string", format="date")),
+     *     @OA\Parameter(name="statut",   in="query", required=false, @OA\Schema(type="string", enum={"absent","present","retard","demi_journee"})),
+     *     @OA\Parameter(name="per_page", in="query", required=false, @OA\Schema(type="integer", default=20)),
+     *     @OA\Response(response=200, description="Absences paginées", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -49,6 +62,27 @@ class AbsenceController extends BaseApiController
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/absences/{eleveId}",
+     *     summary="Marquer un élève présent/retard/absence",
+     *     tags={"Absences"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="eleveId", in="path", required=true, @OA\Schema(type="string", format="uuid")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"statut"},
+     *             @OA\Property(property="statut", type="string", enum={"present","retard","demi_journee"}),
+     *             @OA\Property(property="heure_arrivee", type="string", format="H:i", nullable=true),
+     *             @OA\Property(property="note", type="string", nullable=true)
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Statut mis à jour", @OA\JsonContent(ref="#/components/schemas/SuccessResponse")),
+     *     @OA\Response(response=422, description="Données invalides", @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
+     * )
+     */
     public function marquerPresent(Request $request, string $eleveId): JsonResponse
     {
         $validated = $request->validate([

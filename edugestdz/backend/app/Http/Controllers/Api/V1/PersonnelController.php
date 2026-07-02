@@ -10,6 +10,19 @@ use Illuminate\Http\Request;
 
 class PersonnelController extends BaseApiController
 {
+    /**
+     * @OA\Get(
+     *     path="/api/v1/personnel",
+     *     summary="Liste du personnel non-enseignant",
+     *     tags={"Personnel"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="statut",   in="query", @OA\Schema(type="string", enum={"actif","inactif","suspendu"})),
+     *     @OA\Parameter(name="poste",    in="query", @OA\Schema(type="string")),
+     *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer", default=20)),
+     *     @OA\Response(response=200, description="Personnel paginé", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([

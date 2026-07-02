@@ -17,6 +17,26 @@ class TransportController extends BaseApiController
 {
     public function __construct(private readonly SmsService $sms) {}
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/transport/circuits",
+     *     summary="Liste des circuits de transport",
+     *     tags={"Transport"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\Parameter(name="actif", in="query", required=false, @OA\Schema(type="boolean")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Circuits avec stats",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="circuits", type="array", @OA\Items(ref="#/components/schemas/CircuitTransport")),
+     *                 @OA\Property(property="stats",    type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function indexCircuits(Request $request): JsonResponse
     {
         $circuits = CircuitTransport::with([
@@ -248,6 +268,30 @@ class TransportController extends BaseApiController
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/transport/pointage",
+     *     summary="Pointer un élève sur le bus",
+     *     tags={"Transport"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"circuit_id","pointages"},
+     *             @OA\Property(property="circuit_id", type="string", format="uuid"),
+     *             @OA\Property(property="trajet",     type="string", enum={"matin","soir"}),
+     *             @OA\Property(property="date",       type="string", format="date"),
+     *             @OA\Property(property="pointages",  type="array", @OA\Items(
+     *                 @OA\Property(property="eleve_id", type="string", format="uuid"),
+     *                 @OA\Property(property="statut",   type="string", enum={"monte","absent","excuse"}),
+     *                 @OA\Property(property="arret_id", type="string", format="uuid")
+     *             ))
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="Pointage enregistré", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
+     * )
+     */
     public function pointer(Request $request): JsonResponse
     {
         $validated = $request->validate([
