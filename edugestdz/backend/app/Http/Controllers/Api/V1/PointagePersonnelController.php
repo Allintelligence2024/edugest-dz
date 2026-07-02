@@ -109,12 +109,14 @@ class PointagePersonnelController extends BaseApiController
         $fin    = $validated['fin']   ?? today()->toDateString();
 
         $paginator = PointagePersonnel::where('agent_id', $agent->id)
-            ->whereBetween('date', [$debut, $fin])
+            ->whereDate('date', '>=', $debut)
+            ->whereDate('date', '<=', $fin)
             ->orderByDesc('date')
             ->paginate($validated['per_page'] ?? 30);
 
         $tous     = PointagePersonnel::where('agent_id', $agent->id)
-            ->whereBetween('date', [$debut, $fin])
+            ->whereDate('date', '>=', $debut)
+            ->whereDate('date', '<=', $fin)
             ->get();
 
         $dureeTotal = $tous->sum(fn($p) => $p->duree_travaillee ?? 0);

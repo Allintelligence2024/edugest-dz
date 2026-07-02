@@ -154,12 +154,14 @@ class PointageEnseignantController extends BaseApiController
         $fin   = $validated['fin']   ?? now()->toDateString();
 
         $paginator = PointageEnseignant::where('enseignant_id', $enseignant->id)
-            ->whereBetween('date', [$debut, $fin])
+            ->whereDate('date', '>=', $debut)
+            ->whereDate('date', '<=', $fin)
             ->orderByDesc('date')
             ->paginate($validated['per_page'] ?? 30);
 
         $items = PointageEnseignant::where('enseignant_id', $enseignant->id)
-            ->whereBetween('date', [$debut, $fin])
+            ->whereDate('date', '>=', $debut)
+            ->whereDate('date', '<=', $fin)
             ->get();
 
         $stats = [

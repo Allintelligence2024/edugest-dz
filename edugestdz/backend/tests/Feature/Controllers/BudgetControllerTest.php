@@ -104,7 +104,7 @@ class BudgetControllerTest extends TestCase
     public function test_bilan_mensuel(): void
     {
         $this->withToken($this->token)
-            ->getJson('/api/v1/budget/bilan?mois=7&annee=2026')
+            ->getJson('/api/v1/budget/bilan-mensuel?mois=7&annee=2026')
             ->assertStatus(200);
     }
 }

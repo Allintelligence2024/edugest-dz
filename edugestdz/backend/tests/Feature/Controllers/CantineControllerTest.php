@@ -33,12 +33,13 @@ class CantineControllerTest extends TestCase
     {
         $this->withToken($this->token)
             ->postJson('/api/v1/cantine/menus', [
-                'date_repas' => now()->addDay()->format('Y-m-d'),
-                'type_repas' => 'déjeuner',
-                'entree' => 'Salade mechouia',
-                'plat' => 'Couscous agneau',
-                'dessert' => 'Fruit de saison',
-                'prix' => 250,
+                'date_repas'         => now()->addDay()->format('Y-m-d'),
+                'type_repas'         => 'dejeuner',
+                'plat_principal'     => 'Couscous agneau',
+                'accompagnement'     => 'Salade mechouia',
+                'dessert'            => 'Fruit de saison',
+                'prix_unitaire'      => 250,
+                'nb_couverts_prevus' => 50,
             ])
             ->assertStatus(201);
     }
@@ -63,9 +64,11 @@ class CantineControllerTest extends TestCase
 
         $this->withToken($this->token)
             ->postJson('/api/v1/cantine/inscriptions', [
-                'eleve_id' => $eleve->id,
-                'type_repas' => 'déjeuner',
-                'actif' => true,
+                'eleve_id'        => $eleve->id,
+                'type_abonnement' => 'mensuel',
+                'regime'          => 'normal',
+                'date_debut'      => today()->format('Y-m-d'),
+                'tarif_mensuel'   => 4500,
             ])
             ->assertStatus(201);
     }
@@ -76,12 +79,12 @@ class CantineControllerTest extends TestCase
 
         $this->withToken($this->token)
             ->postJson('/api/v1/cantine/pointage', [
-                'date_repas' => today()->format('Y-m-d'),
-                'eleve_id' => $eleve->id,
-                'present' => true,
-                'type_repas' => 'déjeuner',
+                'type_repas' => 'dejeuner',
+                'pointages'  => [
+                    ['eleve_id' => $eleve->id, 'present' => true],
+                ],
             ])
-            ->assertStatus(201);
+            ->assertStatus(200);
     }
 
     public function test_dashboard_cantine(): void

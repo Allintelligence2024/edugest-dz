@@ -37,7 +37,7 @@ class StockInventaireControllerTest extends TestCase
             ->postJson('/api/v1/stock/articles', [
                 'nom' => 'Craie blanche',
                 'reference' => 'CRA-001',
-                'categorie' => 'fournitures',
+                'categorie' => 'fourniture_bureau',
                 'quantite_stock' => 100,
                 'seuil_alerte' => 20,
                 'prix_unitaire' => 150,
@@ -49,7 +49,7 @@ class StockInventaireControllerTest extends TestCase
     public function test_creer_article_sans_nom_echoue(): void
     {
         $this->withToken($this->token)
-            ->postJson('/api/v1/stock/articles', ['categorie' => 'fournitures'])
+            ->postJson('/api/v1/stock/articles', ['categorie' => 'fourniture_bureau'])
             ->assertStatus(422);
     }
 
@@ -60,7 +60,7 @@ class StockInventaireControllerTest extends TestCase
         $this->withToken($this->token)
             ->getJson("/api/v1/stock/articles/{$article->id}")
             ->assertStatus(200)
-            ->assertJsonPath('data.id', $article->id);
+            ->assertJsonPath('data.article.id', $article->id);
     }
 
     public function test_enregistrer_entree_stock(): void
@@ -68,13 +68,12 @@ class StockInventaireControllerTest extends TestCase
         $article = ArticleStock::factory()->create(['tenant_id' => $this->tenant->id, 'quantite_stock' => 50]);
 
         $this->withToken($this->token)
-            ->postJson('/api/v1/stock/mouvements', [
-                'article_id' => $article->id,
-                'type' => 'entrée',
+            ->postJson("/api/v1/stock/articles/{$article->id}/mouvement", [
+                'type' => 'entree',
                 'quantite' => 20,
                 'motif' => 'Livraison fournisseur',
             ])
-            ->assertStatus(201);
+            ->assertStatus(200);
 
         $this->assertDatabaseHas('articles_stock', [
             'id' => $article->id,
@@ -87,13 +86,12 @@ class StockInventaireControllerTest extends TestCase
         $article = ArticleStock::factory()->create(['tenant_id' => $this->tenant->id, 'quantite_stock' => 50]);
 
         $this->withToken($this->token)
-            ->postJson('/api/v1/stock/mouvements', [
-                'article_id' => $article->id,
+            ->postJson("/api/v1/stock/articles/{$article->id}/mouvement", [
                 'type' => 'sortie',
                 'quantite' => 10,
                 'motif' => 'Utilisation classe',
             ])
-            ->assertStatus(201);
+            ->assertStatus(200);
 
         $this->assertDatabaseHas('articles_stock', [
             'id' => $article->id,
@@ -106,8 +104,7 @@ class StockInventaireControllerTest extends TestCase
         $article = ArticleStock::factory()->create(['tenant_id' => $this->tenant->id, 'quantite_stock' => 5]);
 
         $this->withToken($this->token)
-            ->postJson('/api/v1/stock/mouvements', [
-                'article_id' => $article->id,
+            ->postJson("/api/v1/stock/articles/{$article->id}/mouvement", [
                 'type' => 'sortie',
                 'quantite' => 100,
             ])

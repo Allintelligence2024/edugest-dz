@@ -57,6 +57,7 @@ class CheckConfigCommandTest extends TestCase
             'app.timezone' => 'Africa/Algiers',
             'cache.default' => 'redis',
             'mail.from.address' => 'test@edugestdz.dz',
+            'database.default' => 'pgsql',
         ]);
 
         $exitCode = Artisan::call('edugest:check-config', ['--secrets-only' => true]);

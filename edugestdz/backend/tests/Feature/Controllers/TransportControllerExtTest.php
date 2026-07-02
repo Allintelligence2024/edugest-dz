@@ -49,13 +49,15 @@ class TransportControllerExtTest extends TestCase
     {
         $eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
         $circuit = CircuitTransport::factory()->create(['tenant_id' => $this->tenant->id]);
+        $arret = \App\Models\ArretBus::factory()->create(['tenant_id' => $this->tenant->id, 'circuit_id' => $circuit->id]);
 
         $this->withToken($this->token)
-            ->postJson('/api/v1/transport/inscriptions', [
-                'eleve_id' => $eleve->id,
+            ->postJson('/api/v1/transport/inscrire', [
+                'eleve_id'   => $eleve->id,
                 'circuit_id' => $circuit->id,
-                'arret_id' => null,
-                'actif' => true,
+                'arret_id'   => $arret->id,
+                'abonnement' => 'aller_retour',
+                'date_debut' => today()->format('Y-m-d'),
             ])
             ->assertStatus(201);
     }
@@ -64,16 +66,17 @@ class TransportControllerExtTest extends TestCase
     {
         $eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
         $circuit = CircuitTransport::factory()->create(['tenant_id' => $this->tenant->id]);
+        $arret = \App\Models\ArretBus::factory()->create(['tenant_id' => $this->tenant->id, 'circuit_id' => $circuit->id]);
 
         $this->withToken($this->token)
             ->postJson('/api/v1/transport/pointage', [
                 'circuit_id' => $circuit->id,
-                'eleve_id' => $eleve->id,
-                'trajet' => 'aller',
-                'present' => true,
-                'heure' => '07:45',
+                'trajet'     => 'matin',
+                'pointages'  => [
+                    ['eleve_id' => $eleve->id, 'statut' => 'monte', 'arret_id' => $arret->id],
+                ],
             ])
-            ->assertStatus(201);
+            ->assertStatus(200);
     }
 
     public function test_trajet_invalide_echoue(): void
@@ -84,9 +87,10 @@ class TransportControllerExtTest extends TestCase
         $this->withToken($this->token)
             ->postJson('/api/v1/transport/pointage', [
                 'circuit_id' => $circuit->id,
-                'eleve_id' => $eleve->id,
-                'trajet' => 'tournee',
-                'present' => true,
+                'trajet'     => 'tournee',
+                'pointages'  => [
+                    ['eleve_id' => $eleve->id, 'statut' => 'monte', 'arret_id' => \Illuminate\Support\Str::uuid()],
+                ],
             ])
             ->assertStatus(422);
     }

@@ -21,9 +21,10 @@ abstract class BaseApiController extends Controller
 
         if ($request->filled('search') && !empty($this->searchable)) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $operator = config('database.default') === 'pgsql' ? 'ILIKE' : 'LIKE';
+            $query->where(function ($q) use ($search, $operator) {
                 foreach ($this->searchable as $field) {
-                    $q->orWhere($field, 'ILIKE', "%{$search}%");
+                    $q->orWhere($field, $operator, "%{$search}%");
                 }
             });
         }
