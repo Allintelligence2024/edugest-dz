@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   backend:
-    name: "CI — EduGest DZ / backend"
     runs-on: ubuntu-latest
 
     services:
