@@ -41,6 +41,33 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->monthlyOn(1, '06:00')
                  ->timezone('Africa/Algiers');
 
+        $schedule->command('edugest:sms-absents')
+                 ->weekdays()
+                 ->at('08:30')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
+        $schedule->command('edugest:relances-impayes')
+                 ->dailyAt('09:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
+        $schedule->command('edugest:alertes-stock')
+                 ->dailyAt('07:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
+        $schedule->command('edugest:alertes-preventif')
+                 ->weekly()
+                 ->mondays()
+                 ->at('08:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         $schedule->command('queue:prune-failed --hours=720')
                  ->weekly()
                  ->sundays()

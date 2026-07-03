@@ -63,4 +63,63 @@ class PlanningController extends Controller
     {
         return response()->json(['success' => true, 'message' => 'Export PDF à implémenter']);
     }
+
+    public function aujourdhui(): JsonResponse
+    {
+        $today = today()->format('Y-m-d');
+        $seances = $this->service->getPlanningHebdomadaire($today, $today);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'total'   => count($seances),
+                'seances' => $seances,
+            ],
+        ]);
+    }
+
+    public function exportICal(Request $request): \Illuminate\Http\Response
+    {
+        $enseignantId = $request->enseignant_id ?? auth('api')->id();
+
+        $seances = \App\Models\Seance::with(['cours.matiere', 'cours.groupe', 'salle'])
+            ->whereHas('cours', fn($q) => $q->where('enseignant_id', $enseignantId))
+            ->where('statut', '!=', 'annulée')
+            ->where('date_seance', '>=', today()->subMonth()->format('Y-m-d'))
+            ->where('date_seance', '<=', today()->addMonths(3)->format('Y-m-d'))
+            ->get();
+
+        $ical  = "BEGIN:VCALENDAR\r\n";
+        $ical .= "VERSION:2.0\r\n";
+        $ical .= "PRODID:-//EduGest DZ//Planning Enseignant//FR\r\n";
+        $ical .= "CALSCALE:GREGORIAN\r\n";
+        $ical .= "METHOD:PUBLISH\r\n";
+        $ical .= "X-WR-CALNAME:Planning EduGest DZ\r\n";
+        $ical .= "X-WR-TIMEZONE:Africa/Algiers\r\n";
+
+        foreach ($seances as $seance) {
+            $debut  = \Carbon\Carbon::parse($seance->date_seance . ' ' . $seance->heure_debut);
+            $fin    = \Carbon\Carbon::parse($seance->date_seance . ' ' . $seance->heure_fin);
+            $titre  = $seance->cours?->matiere?->nom_fr ?? 'Cours';
+            $groupe = $seance->cours?->groupe?->nom ?? '';
+            $salle  = $seance->salle?->nom ?? '';
+
+            $ical .= "BEGIN:VEVENT\r\n";
+            $ical .= "UID:" . $seance->id . "@edugest.dz\r\n";
+            $ical .= "DTSTART:" . $debut->format('Ymd\THis') . "\r\n";
+            $ical .= "DTEND:"   . $fin->format('Ymd\THis')   . "\r\n";
+            $ical .= "SUMMARY:" . $titre . ($groupe ? " — {$groupe}" : '') . "\r\n";
+            $ical .= "LOCATION:{$salle}\r\n";
+            $ical .= "STATUS:" . ($seance->statut === 'terminée' ? 'CONFIRMED' : 'TENTATIVE') . "\r\n";
+            $ical .= "DTSTAMP:" . now()->format('Ymd\THis\Z') . "\r\n";
+            $ical .= "END:VEVENT\r\n";
+        }
+
+        $ical .= "END:VCALENDAR\r\n";
+
+        return response($ical, 200, [
+            'Content-Type'        => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="planning-edugest.ics"',
+        ]);
+    }
 }

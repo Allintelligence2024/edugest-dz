@@ -1,90 +1,134 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { tenantApi } from '@api/tenant.api';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import { Shield, Users, Building2, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
+
+const api = (path) => fetch(`/api/v1${path}`, {
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+}).then(r => r.json());
 
 export default function SuperAdminPage() {
-  const [tenants, setTenants] = useState([]);
-  const [stats, setStats] = useState({});
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ nom_etablissement: '', slug: '', type_etablissement: 'centre', email: '', telephone: '', plan_abonnement: 'gratuit', admin_nom: '', admin_prenom: '', admin_email: '', admin_password: '' });
+  const [tenants, setTenants]   = useState([]);
+  const [stats, setStats]       = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [activeTab, setActiveTab] = useState('tenants');
 
-  const fetchData = useCallback(async () => {
-    try { const r = await tenantApi.list({ per_page: 50 }); setTenants(r.data || []); } catch { /* ignore */ }
-    try { const s = await tenantApi.stats(); setStats(s.data || {}); } catch { /* ignore */ }
+  useEffect(() => {
+    Promise.all([
+      api('/super-admin/tenants'),
+      api('/super-admin/stats'),
+    ]).then(([t, s]) => {
+      setTenants(t?.data ?? []);
+      setStats(s?.data ?? {});
+    }).finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    try { await tenantApi.create(form); toast.success('Établissement créé'); setShowForm(false); fetchData(); } catch { toast.error('Erreur création'); }
+  const suspendre = async (id) => {
+    if (!confirm('Suspendre ce tenant ?')) return;
+    await fetch(`/api/v1/super-admin/tenants/${id}/suspendre`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    setTenants(t => t.map(x => x.id === id ? { ...x, actif: false } : x));
   };
 
-  const handleSuspendre = async (id, statut) => {
-    try { await tenantApi.update(id, { statut }); toast.success('Statut mis à jour'); fetchData(); } catch { toast.error('Erreur'); }
+  const verifierMarketplace = async (tenantId) => {
+    await fetch(`/api/v1/super-admin/marketplace/${tenantId}/verifier`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    alert('Tenant vérifié sur la marketplace');
   };
+
+  const StatBox = ({ label, value, color }) => (
+    <div style={{ background:'#111318', border:'1px solid #1e293b', borderRadius:'10px', padding:'16px', textAlign:'center' }}>
+      <div style={{ fontSize:'28px', fontWeight:900, color }}>{loading ? '...' : value}</div>
+      <div style={{ fontSize:'10px', color:'#64748b', marginTop:'2px' }}>{label}</div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-800">SuperAdmin — Gestion des établissements</h1>
+    <div style={{ padding:'24px', background:'#08090f', minHeight:'100vh' }}>
+      <div style={{ marginBottom:'24px' }}>
+        <h1 style={{ fontSize:'22px', fontWeight:900, color:'#fff', display:'flex', alignItems:'center', gap:'10px' }}>
+          <Shield size={22} color="#f59e0b" /> Super-Admin — Gestion plateforme
+        </h1>
+        <p style={{ fontSize:'12px', color:'#64748b' }}>Vue globale de tous les centres EduGest DZ</p>
+      </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Total', value: stats.total_tenants, color: 'text-primary-700' },
-          { label: 'Actifs', value: stats.tenants_actifs, color: 'text-green-600' },
-          { label: 'Expirés', value: stats.tenants_expires, color: 'text-red-600' },
-          { label: 'Revenus estimés', value: `${stats.revenus_estimes || 0} DA`, color: 'text-amber-600' },
-        ].map(kpi => (
-          <div key={kpi.label} className="bg-white rounded-2xl p-5 border shadow-sm">
-            <p className="text-sm text-neutral-500 mb-1">{kpi.label}</p>
-            <p className={`text-2xl font-bold ${kpi.color}`}>{kpi.value}</p>
-          </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'10px', marginBottom:'24px' }}>
+        <StatBox label="Total tenants"    value={stats?.total_tenants ?? 0}    color="#60a5fa" />
+        <StatBox label="Tenants actifs"   value={stats?.tenants_actifs ?? 0}   color="#4ade80" />
+        <StatBox label="Total élèves"     value={stats?.total_eleves ?? 0}     color="#a78bfa" />
+        <StatBox label="CA global (DA)"   value={Intl.NumberFormat('fr').format(stats?.ca_global ?? 0)} color="#fb923c" />
+        <StatBox label="Marketplace"      value={stats?.profils_marketplace ?? 0} color="#f59e0b" />
+      </div>
+
+      <div style={{ display:'flex', gap:'4px', marginBottom:'16px' }}>
+        {['tenants', 'marketplace'].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            style={{
+              background: activeTab === tab ? '#1e3a5f' : '#111318',
+              color: activeTab === tab ? '#60a5fa' : '#64748b',
+              border: `1px solid ${activeTab === tab ? '#3b82f6' : '#1e293b'}`,
+              borderRadius:'8px', padding:'8px 16px', fontSize:'11px',
+              fontWeight:700, cursor:'pointer', textTransform:'uppercase', letterSpacing:'1px',
+            }}>
+            {tab === 'tenants' ? 'Tenants' : 'Marketplace'}
+          </button>
         ))}
       </div>
 
-      <div className="flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium">{showForm ? 'Annuler' : 'Nouvel établissement'}</button>
-      </div>
-
-      {showForm && (
-        <form onSubmit={handleCreate} className="bg-white rounded-2xl border p-6 grid grid-cols-2 gap-4">
-          <input placeholder="Nom de l'établissement" value={form.nom_etablissement} onChange={e => setForm(f => ({ ...f, nom_etablissement: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <input placeholder="Slug (ex: mon-centre)" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <select value={form.type_etablissement} onChange={e => setForm(f => ({ ...f, type_etablissement: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm bg-white"><option value="centre">Centre</option><option value="ecole">École</option><option value="institut">Institut</option></select>
-          <input placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <input placeholder="Téléphone" value={form.telephone} onChange={e => setForm(f => ({ ...f, telephone: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <select value={form.plan_abonnement} onChange={e => setForm(f => ({ ...f, plan_abonnement: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm bg-white"><option value="gratuit">Gratuit</option><option value="premium">Premium</option></select>
-          <input placeholder="Nom admin" value={form.admin_nom} onChange={e => setForm(f => ({ ...f, admin_nom: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <input placeholder="Prénom admin" value={form.admin_prenom} onChange={e => setForm(f => ({ ...f, admin_prenom: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <input placeholder="Email admin" value={form.admin_email} onChange={e => setForm(f => ({ ...f, admin_email: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <input placeholder="Mot de passe admin" value={form.admin_password} onChange={e => setForm(f => ({ ...f, admin_password: e.target.value }))} className="px-4 py-2.5 border rounded-xl text-sm" required />
-          <div className="col-span-2"><button type="submit" className="px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-medium">Créer l'établissement</button></div>
-        </form>
+      {activeTab === 'tenants' && (
+        <div style={{ display:'grid', gap:'8px' }}>
+          {loading ? (
+            <div style={{ color:'#475569', textAlign:'center', padding:'40px' }}>Chargement...</div>
+          ) : tenants.length === 0 ? (
+            <div style={{ color:'#475569', textAlign:'center', padding:'40px' }}>
+              Aucun tenant trouvé. L'endpoint /api/v1/super-admin/tenants doit être configuré.
+            </div>
+          ) : tenants.map(t => (
+            <div key={t.id} style={{
+              background:'#111318', border:'1px solid #1e293b', borderRadius:'10px',
+              padding:'14px 16px', display:'flex', alignItems:'center', gap:'14px',
+            }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:700, fontSize:'13px', color:'#f1f5f9' }}>{t.nom ?? t.name}</div>
+                <div style={{ fontSize:'10px', color:'#64748b' }}>
+                  {t.email} · {t.nb_eleves ?? 0} élèves · Créé le {t.created_at?.split('T')[0]}
+                </div>
+              </div>
+              <span style={{
+                background: t.actif ? '#14532d' : '#450a0a',
+                color: t.actif ? '#4ade80' : '#f87171',
+                fontSize:'9px', fontWeight:700, padding:'2px 8px', borderRadius:'20px',
+              }}>
+                {t.actif ? 'ACTIF' : 'SUSPENDU'}
+              </span>
+              <div style={{ display:'flex', gap:'6px' }}>
+                <button onClick={() => verifierMarketplace(t.id)}
+                  style={{ background:'#1e3a5f', color:'#60a5fa', border:'none',
+                    borderRadius:'6px', padding:'5px 10px', fontSize:'10px', cursor:'pointer', fontWeight:700 }}>
+                  Vérifier
+                </button>
+                {t.actif && (
+                  <button onClick={() => suspendre(t.id)}
+                    style={{ background:'#450a0a', color:'#f87171', border:'none',
+                      borderRadius:'6px', padding:'5px 10px', fontSize:'10px', cursor:'pointer', fontWeight:700 }}>
+                    Suspendre
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
-      <div className="bg-white rounded-2xl border shadow-sm overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead><tr className="border-b bg-neutral-50"><th className="text-left px-4 py-3">Établissement</th><th className="text-left px-4 py-3">Plan</th><th className="text-center px-4 py-3">Statut</th><th className="text-center px-4 py-3">Expiration</th><th className="text-right px-4 py-3">Utilisateurs</th><th className="text-right px-4 py-3">Élèves</th><th className="text-center px-4 py-3">Actions</th></tr></thead>
-          <tbody>
-            {tenants.map(t => (
-              <tr key={t.id} className="border-b hover:bg-neutral-50">
-                <td className="px-4 py-3 font-medium">{t.nom_etablissement}</td>
-                <td className="px-4 py-3"><span className={`px-2 py-0.5 rounded text-xs font-medium ${t.plan_abonnement === 'premium' ? 'bg-amber-100 text-amber-700' : 'bg-neutral-100 text-neutral-600'}`}>{t.plan_abonnement}</span></td>
-                <td className="px-4 py-3 text-center"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${t.statut === 'actif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{t.statut}</span></td>
-                <td className="px-4 py-3 text-center text-neutral-500">{t.date_expiration ? new Date(t.date_expiration).toLocaleDateString('fr-DZ') : '-'}</td>
-                <td className="px-4 py-3 text-right">{t.users_count}</td>
-                <td className="px-4 py-3 text-right">{t.eleves_count}</td>
-                <td className="px-4 py-3 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    {t.statut === 'actif' ? <button onClick={() => handleSuspendre(t.id, 'suspendu')} className="px-2 py-1 text-xs bg-red-50 text-red-600 rounded-lg">Suspendre</button>
-                    : <button onClick={() => handleSuspendre(t.id, 'actif')} className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded-lg">Réactiver</button>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {activeTab === 'marketplace' && (
+        <div style={{ color:'#64748b', textAlign:'center', padding:'40px', fontSize:'12px' }}>
+          Gestion marketplace — voir les profils, avis, vérifications.
+          <br />
+          Utiliser les endpoints <code style={{ color:'#60a5fa' }}>/api/v1/marketplace/stats</code>
+        </div>
+      )}
     </div>
   );
 }

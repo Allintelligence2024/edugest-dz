@@ -32,7 +32,9 @@ use App\Http\Controllers\Api\V1\{
     MessageController,
     RapportController,
     ParametreController,
-    TwoFactorController
+    TwoFactorController,
+    MarketplaceController,
+    PointageEnseignantController
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -40,11 +42,18 @@ use App\Http\Controllers\Api\V1\{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Route::prefix('v1')->group(function () {
 
-        // ── Marketplace Public ──
+        // ── Marketplace Public (existants) ──
         Route::prefix('marketplace')->group(function () {
             Route::get('offres',                     [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'recherche']);
             Route::get('offres/{id}',                [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'show']);
             Route::get('avis/enseignant/{id}',       [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'byEnseignant']);
+        });
+
+        // ── Marketplace Public (nouveau système profils centres) ──
+        Route::prefix('marketplace')->group(function () {
+            Route::get('recherche',                  [MarketplaceController::class, 'recherche']);
+            Route::get('featured',                   [MarketplaceController::class, 'featured']);
+            Route::get('centres/{tenantId}',         [MarketplaceController::class, 'profilPublic']);
         });
 
     // ────────────────────────────────────────────
@@ -58,6 +67,16 @@ use App\Http\Controllers\Api\V1\{
             Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
         });
 
+        // ────────────────────────────────────────────
+        // 🔐 SUPER-ADMIN (sans tenant scope)
+        // ────────────────────────────────────────────
+        Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+            Route::get('tenants',                          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'indexTenants']);
+            Route::get('stats',                            [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'statsGlobales']);
+            Route::post('tenants/{id}/suspendre',          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'suspendreTenant']);
+            Route::post('marketplace/{tenantId}/verifier', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'verifierMarketplace']);
+        });
+
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
@@ -69,7 +88,9 @@ use App\Http\Controllers\Api\V1\{
             Route::post('logout',          [AuthController::class, 'logout']);
             Route::post('refresh',         [AuthController::class, 'refresh']);
             Route::get('me',               [AuthController::class, 'me']);
+            Route::put('me',               [AuthController::class, 'updateProfile']);
             Route::put('change-password',  [AuthController::class, 'changePassword']);
+            Route::put('password',         [AuthController::class, 'changePassword']);
             Route::put('profile',          [AuthController::class, 'updateProfile']);
 
             // ── 2FA ──
@@ -154,6 +175,8 @@ use App\Http\Controllers\Api\V1\{
             Route::get('conflits',               [PlanningController::class, 'conflits']);
             Route::post('generer',               [PlanningController::class, 'generer']);
             Route::get('export',                 [PlanningController::class, 'export']);
+            Route::get('aujourd-hui',            [PlanningController::class, 'aujourdhui']);
+            Route::get('ical',                   [PlanningController::class, 'exportICal']);
         });
 
         // ── Présences ──
@@ -280,10 +303,12 @@ use App\Http\Controllers\Api\V1\{
         // ── Pointage par badge RFID/NFC ──
         Route::prefix('pointage')->group(function () {
             Route::post('badge', [\App\Http\Controllers\Api\V1\PointageBadgeController::class, 'scan']);
-            Route::get('enseignants/aujourd-hui', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'aujourdhui']);
-            Route::post('enseignants/{id}/arrivee', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'arrivee']);
-            Route::post('enseignants/{id}/depart', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'depart']);
-            Route::get('enseignants/{id}/historique', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'historique']);
+            Route::get('enseignants',            [PointageEnseignantController::class, 'index']);
+            Route::post('enseignants',           [PointageEnseignantController::class, 'store']);
+            Route::get('enseignants/aujourd-hui', [PointageEnseignantController::class, 'aujourdhui']);
+            Route::post('enseignants/{id}/arrivee', [PointageEnseignantController::class, 'arrivee']);
+            Route::post('enseignants/{id}/depart', [PointageEnseignantController::class, 'depart']);
+            Route::get('enseignants/{id}/historique', [PointageEnseignantController::class, 'historique']);
         });
 
         // ── Rapports ──
@@ -455,6 +480,22 @@ use App\Http\Controllers\Api\V1\{
             Route::post('avis',                  [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'store']);
         });
 
+        // ── Marketplace Nouveau Système (profils centres + offres cours) ──
+        Route::prefix('marketplace')->group(function () {
+            Route::get('mon-profil',                         [MarketplaceController::class, 'monProfil']);
+            Route::put('mon-profil',                         [MarketplaceController::class, 'updateProfil']);
+            Route::get('offres-cours',                       [MarketplaceController::class, 'indexOffres']);
+            Route::post('offres-cours',                      [MarketplaceController::class, 'storeOffre']);
+            Route::get('reservations-recues',                [MarketplaceController::class, 'indexReservationsCentre']);
+            Route::post('reservations-recues/{id}/confirmer',[MarketplaceController::class, 'confirmerReservation']);
+            Route::post('reservations-recues/{id}/annuler',  [MarketplaceController::class, 'annulerReservationCentre']);
+            Route::post('reserver',                          [MarketplaceController::class, 'reserver']);
+            Route::get('parent/reservations',                [MarketplaceController::class, 'mesReservations']);
+            Route::post('avis-centre',                       [MarketplaceController::class, 'soumettreAvis']);
+            Route::post('favoris/{tenantId}',                [MarketplaceController::class, 'toggleFavori']);
+            Route::get('stats',                              [MarketplaceController::class, 'stats']);
+        });
+
         // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──
         Route::prefix('paiements')->group(function () {
             Route::post('online/initier',        [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'initier']);
@@ -470,11 +511,9 @@ use App\Http\Controllers\Api\V1\{
     // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
     // ────────────────────────────────────────────
     Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
-        Route::get('tenants',                    [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'index']);
         Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
         Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
         Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);
-        Route::get('stats',                      [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'stats']);
         Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
     });
 

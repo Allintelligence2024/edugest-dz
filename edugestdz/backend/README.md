@@ -11,6 +11,7 @@ Plateforme SaaS multi-tenant de gestion de cours particuliers et écoles privée
 | Cache / Queue | Redis 7 |
 | Auth | JWT (tymon/jwt-auth) |
 | Frontend | React 18 + Vite (voir `../frontend/`) |
+| Mobile | React Native 0.76 + Expo 52 (voir `../mobile/`) |
 | Conteneurisation | Docker Compose |
 
 ## Installation
@@ -58,6 +59,30 @@ docker compose exec app php artisan migrate --seed
 | `php artisan edugest:calculer-paies` | Calcule les paies mensuelles des enseignants |
 | `php artisan edugest:generer-seances` | Génère les séances hebdomadaires |
 | `php artisan edugest:relances-paiement` | Envoie les relances de paiement |
+| `php artisan edugest:sms-absents` | SMS automatique parents pour absences (8h30 semaine) |
+| `php artisan edugest:relances-impayes` | Relances SMS échelonnées J+1/J+3/J+7/J+15 |
+| `php artisan edugest:alertes-stock` | Alertes articles sous seuil minimum |
+| `php artisan edugest:alertes-preventif` | Alertes entretiens préventifs à échéance |
+
+## Modules disponibles (14 modules)
+
+| Module | Description |
+|--------|------------|
+| M01 Inscriptions | Dossier élève, parents, import CSV |
+| M02 Planning | Emploi du temps, séances, conflits |
+| M03 Finance | Factures, paiements cash + CIB/Dahabia |
+| M04 Pédagogie | Notes, moyennes, bulletins PDF |
+| M05 Enseignants | Dossier, contrats, paie IRG/CNAS |
+| M06 Communication | SMS, WhatsApp, push notifications |
+| M07 Reporting | Dashboards, exports Excel/PDF |
+| M08 Auth/RBAC | JWT + 2FA + multi-tenant |
+| M09 Transport | Circuits, arrêts, pointage bus |
+| M10 Cantine | Menus, inscriptions, pointage repas |
+| M11 Stock | Inventaire, mouvements, bons commande |
+| M12 Personnel | Non-enseignant, congés, paie |
+| M13 Budget | Dépenses, prévisionnel, bilan |
+| M14 Entretien | Locaux, interventions, préventif |
+| MKT Marketplace | Recherche centres, réservations, avis |
 
 ## Tests
 
@@ -65,6 +90,7 @@ docker compose exec app php artisan migrate --seed
 php artisan test
 # Ou plus verbeux :
 php artisan test --colors --parallel
+# → ≥ 440 tests verts
 ```
 
 ## Conventions API
@@ -74,6 +100,14 @@ php artisan test --colors --parallel
 - Succès : `{ "success": true, "data": ..., "meta": {...}, "message": "" }`
 - Erreur : `{ "success": false, "error": { "code": "...", "message": "...", "details": {...} }, "status": 4xx }`
 - Pagination : `?page=1&per_page=15`
+
+## Documentation API
+
+Après génération Swagger :
+```
+php artisan l5-swagger:generate
+→ http://localhost/api/documentation
+```
 
 ## Normes Algérie
 

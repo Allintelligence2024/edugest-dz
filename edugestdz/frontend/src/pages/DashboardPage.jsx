@@ -1,134 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
-import api from '@api/axiosInstance';
-import StatCard from '@components/dashboard/StatCard';
+import { useState, useEffect } from 'react';
+import { Users, TrendingUp, AlertCircle, Calendar, DollarSign, Clock, BookOpen, CheckCircle } from 'lucide-react';
 
-// ── Données de démo pour le tableau de bord ────────────────
-const DEMO_DATA = {
-  stats: {
-    eleves_actifs: 147,
-    nouveaux_eleves_mois: 12,
-    enseignants_actifs: 18,
-    groupes_actifs: 24,
-    seances_semaine: 56,
-    seances_ajd: 8,
-    revenu_mensuel: 485000,
-    impayes: 62000,
-    factures_impayees: 7,
-  },
-  seances_aujourdhui: [
-    { id: 1, matiere: 'Mathématiques', groupe: '1AS G1', enseignant: 'M. Benali', heure_debut: '08:30', heure_fin: '10:00' },
-    { id: 2, matiere: 'Physique', groupe: '2AS G2', enseignant: 'Mme Hadj', heure_debut: '10:15', heure_fin: '11:45' },
-    { id: 3, matiere: 'Sciences naturelles', groupe: '3AS G1', enseignant: 'M. Amrani', heure_debut: '13:00', heure_fin: '14:30' },
-    { id: 4, matiere: 'Français', groupe: '4AM G3', enseignant: 'Mme Slimane', heure_debut: '14:45', heure_fin: '16:15' },
-    { id: 5, matiere: 'Anglais', groupe: '1AS G2', enseignant: 'M. Khedim', heure_debut: '16:30', heure_fin: '18:00' },
-  ],
-  paiements_recents: [
-    { id: 1, eleve: 'Amine Boudiaf', montant: 4500, mode_paiement: 'Espèces', date: '2026-06-15' },
-    { id: 2, eleve: 'Sara Mekki', montant: 3000, mode_paiement: 'Virement CCP', date: '2026-06-14' },
-    { id: 3, eleve: 'Karim Rezgui', montant: 6000, mode_paiement: 'Espèces', date: '2026-06-14' },
-    { id: 4, eleve: 'Lina Bouzid', montant: 4500, mode_paiement: 'BaridiMob', date: '2026-06-13' },
-  ],
-};
+const api = (path) => fetch(`/api/v1${path}`, {
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+}).then(r => r.json());
 
 export default function DashboardPage() {
-  const [data, setData] = useState(null);
-  const { isDemoMode } = useAuth();
+  const [stats, setStats]     = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      if (isDemoMode) {
-        // Simuler un petit délai de chargement pour le réalisme
-        setTimeout(() => setData(DEMO_DATA), 400);
-        return;
-      }
-      try {
-        const res = await api.get('/dashboard');
-        setData(res);
-      } catch {
-        // Fallback : données de démo si API inaccessible
-        setData(DEMO_DATA);
-      }
-    };
-    load();
-  }, [isDemoMode]);
+    Promise.all([
+      api('/eleves?per_page=1'),
+      api('/finance/tableau-bord'),
+      api('/absences?date=' + new Date().toISOString().split('T')[0]),
+      api('/planning/aujourd-hui'),
+    ]).then(([elevesRes, financeRes, absencesRes, planningRes]) => {
+      setStats({
+        total_eleves:  elevesRes?.meta?.total ?? 0,
+        eleves_actifs: elevesRes?.meta?.total ?? 0,
+        ca_mois:       financeRes?.data?.ca_mois ?? 0,
+        impayes:       financeRes?.data?.impayes ?? 0,
+        nb_impayes:    financeRes?.data?.nb_impayes ?? 0,
+        absences_jour: absencesRes?.meta?.total ?? 0,
+        seances_jour:  planningRes?.data?.total ?? 0,
+      });
+    }).catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full" />
+  const fmt = (n) => new Intl.NumberFormat('fr-DZ').format(n ?? 0);
+
+  const StatCard = ({ icon: Icon, label, value, color, sub }) => (
+    <div style={{
+      background:'#111318', border:'1px solid #1e293b', borderRadius:'12px',
+      padding:'20px', display:'flex', alignItems:'center', gap:'16px',
+    }}>
+      <div style={{
+        width:'48px', height:'48px', borderRadius:'12px',
+        background: color + '22', display:'flex', alignItems:'center',
+        justifyContent:'center', flexShrink:0,
+      }}>
+        <Icon size={22} color={color} />
       </div>
-    );
-  }
-
-  const { stats, seances_aujourdhui, paiements_recents } = data;
+      <div>
+        <div style={{ fontSize:'11px', color:'#64748b', marginBottom:'2px' }}>{label}</div>
+        <div style={{ fontSize:'24px', fontWeight:900, color:'#f1f5f9' }}>
+          {loading ? '...' : value}
+        </div>
+        {sub && <div style={{ fontSize:'10px', color:'#475569', marginTop:'2px' }}>{sub}</div>}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-800">Tableau de bord</h1>
-        <p className="text-neutral-500 mt-1">Vue d'ensemble de votre centre</p>
-        {isDemoMode && (
-          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-medium text-amber-700">
-            ⚡ Mode démo — données fictives
-          </div>
-        )}
+    <div style={{ padding:'24px', background:'#08090f', minHeight:'100vh' }}>
+      <div style={{ marginBottom:'24px' }}>
+        <h1 style={{ fontSize:'22px', fontWeight:900, color:'#fff' }}>
+          Tableau de bord
+        </h1>
+        <p style={{ fontSize:'12px', color:'#64748b' }}>
+          {new Date().toLocaleDateString('fr-DZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+        </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/eleves">
-          <StatCard icon="👨‍🎓" label="Élèves actifs" value={stats?.eleves_actifs ?? 0} sub={stats?.nouveaux_eleves_mois ? `+${stats.nouveaux_eleves_mois} ce mois` : undefined} color="blue" />
-        </Link>
-        <Link to="/enseignants">
-          <StatCard icon="👨‍🏫" label="Enseignants" value={stats?.enseignants_actifs ?? 0} color="purple" />
-        </Link>
-        <Link to="/groupes">
-          <StatCard icon="📚" label="Groupes" value={stats?.groupes_actifs ?? 0} color="green" />
-        </Link>
-        <Link to="/planning">
-          <StatCard icon="📅" label="Séances cette semaine" value={stats?.seances_semaine ?? 0} sub={stats?.seances_ajd ? `${stats.seances_ajd} aujourd'hui` : undefined} color="orange" />
-        </Link>
+
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'24px' }}>
+        <StatCard icon={Users}      label="Élèves actifs"   value={fmt(stats?.eleves_actifs)}  color="#4ade80" />
+        <StatCard icon={DollarSign} label="CA ce mois"      value={fmt(stats?.ca_mois) + ' DA'} color="#60a5fa" />
+        <StatCard icon={AlertCircle}label="Impayés"         value={fmt(stats?.impayes) + ' DA'}
+          sub={`${stats?.nb_impayes ?? 0} facture(s)`} color="#f87171" />
+        <StatCard icon={Clock}      label="Absences aujourd'hui" value={fmt(stats?.absences_jour)} color="#fb923c" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Link to="/factures">
-          <StatCard icon="💰" label="Revenu mensuel" value={`${Number(stats?.revenu_mensuel ?? 0).toLocaleString()} DA`} color="green" />
-        </Link>
-        <Link to="/factures">
-          <StatCard icon="⚠️" label="Impayés" value={`${Number(stats?.impayes ?? 0).toLocaleString()} DA`} sub={`${stats?.factures_impayees ?? 0} factures`} color="red" />
-        </Link>
+
+      <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:'12px' }}>
+        <div style={{ background:'#111318', border:'1px solid #1e293b', borderRadius:'12px', padding:'20px' }}>
+          <div style={{ fontSize:'12px', fontWeight:700, color:'#60a5fa', marginBottom:'16px' }}>
+            Évolution CA — 6 derniers mois
+          </div>
+          {loading ? (
+            <div style={{ color:'#475569', fontSize:'12px' }}>Chargement...</div>
+          ) : (
+            <div style={{ fontSize:'11px', color:'#64748b' }}>
+              Données disponibles après branchement complet API finance.
+            </div>
+          )}
+        </div>
+
+        <div style={{ background:'#111318', border:'1px solid #1e293b', borderRadius:'12px', padding:'20px' }}>
+          <div style={{ fontSize:'12px', fontWeight:700, color:'#60a5fa', marginBottom:'16px' }}>
+            Actions rapides
+          </div>
+          {[
+            { label:'Nouvel élève',     path:'/eleves',     emoji:'👤' },
+            { label:'Déclarer absence', path:'/absences',   emoji:'✅' },
+            { label:'Émettre facture',  path:'/factures',   emoji:'💰' },
+            { label:'Voir planning',    path:'/planning',   emoji:'📅' },
+          ].map(a => (
+            <a key={a.path} href={a.path} style={{
+              display:'flex', alignItems:'center', gap:'10px',
+              padding:'8px 10px', borderRadius:'8px', marginBottom:'4px',
+              background:'#1e293b', color:'#e2e8f0', textDecoration:'none',
+              fontSize:'12px', fontWeight:600,
+            }}>
+              <span>{a.emoji}</span>{a.label}
+            </a>
+          ))}
+        </div>
       </div>
-      {seances_aujourdhui?.length > 0 && (
-        <section>
-          <h2 className="text-lg font-bold text-neutral-800 mb-3">📅 Séances aujourd'hui</h2>
-          <div className="bg-white rounded-2xl border border-neutral-200 divide-y divide-neutral-100">
-            {seances_aujourdhui.map(s => (
-              <div key={s.id} className="flex items-center justify-between p-4">
-                <div>
-                  <p className="font-semibold text-neutral-800">{s.matiere}</p>
-                  <p className="text-sm text-neutral-500">{s.groupe} — {s.enseignant}</p>
-                </div>
-                <span className="font-mono text-sm text-neutral-600">{s.heure_debut?.substring(0,5)} - {s.heure_fin?.substring(0,5)}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-      {paiements_recents?.length > 0 && (
-        <section>
-          <h2 className="text-lg font-bold text-neutral-800 mb-3">💳 Paiements récents</h2>
-          <div className="bg-white rounded-2xl border border-neutral-200 divide-y divide-neutral-100">
-            {paiements_recents.map(p => (
-              <div key={p.id} className="flex items-center justify-between p-4">
-                <div>
-                  <p className="font-semibold text-neutral-800">{p.eleve}</p>
-                  <p className="text-xs text-neutral-400">{p.mode_paiement}</p>
-                </div>
-                <span className="font-bold text-green-700">{Number(p.montant).toLocaleString()} DA</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

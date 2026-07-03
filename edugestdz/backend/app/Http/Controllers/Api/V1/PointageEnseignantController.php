@@ -14,6 +14,81 @@ class PointageEnseignantController extends BaseApiController
 {
     public function __construct(private readonly SmsService $sms) {}
 
+    public function index(Request $request): JsonResponse
+    {
+        $date = $request->date ?? today()->format('Y-m-d');
+
+        $pointages = PointageEnseignant::whereDate('date', $date)
+            ->get()
+            ->map(fn($p) => [
+                'enseignant_id' => $p->enseignant_id,
+                'arrivee'       => $p->heure_arrivee,
+                'depart'        => $p->heure_depart,
+                'statut'        => $p->statut,
+            ]);
+
+        return response()->json(['success' => true, 'data' => $pointages]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'enseignant_id' => 'required|uuid|exists:enseignants,id',
+            'type'          => 'required|in:arrivée,départ,absent',
+            'date'          => 'required|date',
+            'heure'         => 'required|date_format:H:i',
+        ]);
+
+        if ($validated['type'] === 'arrivée') {
+            $existant = PointageEnseignant::where('enseignant_id', $validated['enseignant_id'])
+                ->whereDate('date', $validated['date'])
+                ->first();
+
+            if ($existant) {
+                if ($existant->heure_depart) {
+                    return response()->json(['success' => false, 'error' => ['message' => 'Journée déjà complète']], 409);
+                }
+                $existant->update(['heure_depart' => $validated['heure']]);
+                return response()->json(['success' => true, 'data' => ['enseignant_id' => $validated['enseignant_id'], 'arrivee' => $existant->heure_arrivee, 'depart' => $validated['heure']]]);
+            }
+
+            $pointage = PointageEnseignant::create([
+                'tenant_id'      => config('tenant.current_id'),
+                'enseignant_id'  => $validated['enseignant_id'],
+                'date'           => $validated['date'],
+                'heure_arrivee'  => $validated['heure'],
+                'methode'        => 'manuel',
+                'statut'         => 'present',
+            ]);
+
+            return response()->json(['success' => true, 'data' => ['enseignant_id' => $validated['enseignant_id'], 'arrivee' => $validated['heure']]]);
+        }
+
+        if ($validated['type'] === 'départ') {
+            $pointage = PointageEnseignant::where('enseignant_id', $validated['enseignant_id'])
+                ->whereDate('date', $validated['date'])
+                ->first();
+
+            if (!$pointage) {
+                return response()->json(['success' => false, 'error' => ['message' => 'Aucune arrivée enregistrée']], 422);
+            }
+
+            $pointage->update(['heure_depart' => $validated['heure']]);
+            return response()->json(['success' => true, 'data' => ['enseignant_id' => $validated['enseignant_id'], 'depart' => $validated['heure']]]);
+        }
+
+        if ($validated['type'] === 'absent') {
+            $pointage = PointageEnseignant::updateOrCreate(
+                ['enseignant_id' => $validated['enseignant_id'], 'date' => $validated['date']],
+                ['tenant_id' => config('tenant.current_id'), 'statut' => 'absent', 'methode' => 'manuel']
+            );
+
+            return response()->json(['success' => true, 'data' => ['enseignant_id' => $validated['enseignant_id'], 'statut' => 'absent']]);
+        }
+
+        return response()->json(['success' => false, 'error' => ['message' => 'Type invalide']], 422);
+    }
+
     public function aujourdhui(): JsonResponse
     {
         $today       = today();

@@ -24,6 +24,8 @@ const NAV_ITEMS = [
   { label: 'Salles', path: '/salles', icon: '🏫' },
   { label: 'Matières', path: '/matieres', icon: '📖' },
   { label: 'Marketplace', path: '/marketplace', icon: '🛒' },
+  { label: 'Centres', path: '/centres', icon: '🏛️' },
+  { label: 'Pointage', path: '/pointage', icon: '🏷️' },
   {
     label: 'Pédagogie',
     path: '/pedagogie',
@@ -60,9 +62,11 @@ const NAV_ITEMS = [
     path: '/parametres',
     icon: '⚙️',
     children: [
+      { label: 'Mon Profil', path: '/profil', icon: '👤' },
       { label: 'Journal audit', path: '/audit-logs', icon: '📋' },
     ],
   },
+  { label: 'Super-Admin', path: '/super-admin', icon: '🛡️' },
 ];
 
 export default function Sidebar() {
