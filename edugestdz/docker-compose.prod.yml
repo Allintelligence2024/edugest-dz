@@ -171,6 +171,33 @@ services:
     networks:
       - edugestdz_net
 
+  # ── Backup PostgreSQL automatique ──
+  backup:
+    image: prodrigestivill/postgres-backup-local:16
+    container_name: edugest_backup
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${DB_DATABASE:-edugestdz}
+      - POSTGRES_USER=${DB_USERNAME:-edugest_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
+    volumes:
+      - ./backups:/backups
+    networks:
+      - edugestdz_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
   # ── Scheduler ──
   scheduler:
     build:

@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->throttleApi();
+
         $middleware->api(prepend: [
+            \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\QueryMonitor::class,
         ]);
 

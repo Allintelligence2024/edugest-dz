@@ -60,7 +60,7 @@ use App\Http\Controllers\Api\V1\{
     // 🔐 AUTH — Public (sans authentification)
     // ────────────────────────────────────────────
     Route::prefix('auth')->group(function () {
-            Route::post('login',           [AuthController::class, 'login']);
+            Route::post('login',           [AuthController::class, 'login'])->middleware('throttle:auth');
             Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
             Route::post('reset-password',  [AuthController::class, 'resetPassword']);
             Route::post('2fa/challenge',   [TwoFactorController::class, 'challenge']);
@@ -174,9 +174,9 @@ use App\Http\Controllers\Api\V1\{
             Route::get('/',                      [PlanningController::class, 'index']);
             Route::get('conflits',               [PlanningController::class, 'conflits']);
             Route::post('generer',               [PlanningController::class, 'generer']);
-            Route::get('export',                 [PlanningController::class, 'export']);
+            Route::get('export',                 [PlanningController::class, 'export'])->middleware('throttle:exports');
             Route::get('aujourd-hui',            [PlanningController::class, 'aujourdhui']);
-            Route::get('ical',                   [PlanningController::class, 'exportICal']);
+            Route::get('ical',                   [PlanningController::class, 'exportICal'])->middleware('throttle:exports');
         });
 
         // ── Présences ──
@@ -215,7 +215,7 @@ use App\Http\Controllers\Api\V1\{
             Route::get('/',                      [BulletinController::class, 'index']);
             Route::post('generer',               [BulletinController::class, 'generer']);
             Route::get('{id}',                   [BulletinController::class, 'show']);
-            Route::get('{id}/pdf',               [BulletinController::class, 'pdf']);
+            Route::get('{id}/pdf',               [BulletinController::class, 'pdf'])->middleware('throttle:exports');
             Route::post('{id}/envoyer',          [BulletinController::class, 'envoyer']);
         });
 
@@ -518,8 +518,11 @@ use App\Http\Controllers\Api\V1\{
     });
 
     // ── WhatsApp Webhook (public) ──
-    Route::prefix('whatsapp')->group(function () {
+    Route::prefix('whatsapp')->middleware('throttle:webhook')->group(function () {
         Route::get('webhook',                [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'verify']);
         Route::post('webhook',               [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'handle']);
     });
 });
+
+// ── Health Check (public — no auth, outside v1) ──
+Route::get('/health', [\App\Http\Controllers\Api\HealthController::class, 'check']);
