@@ -33,7 +33,8 @@ use App\Http\Controllers\Api\V1\{
     RapportController,
     ParametreController,
     TwoFactorController,
-    MarketplaceController
+    MarketplaceController,
+    PointageEnseignantController
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -66,6 +67,16 @@ use App\Http\Controllers\Api\V1\{
             Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
         });
 
+        // ────────────────────────────────────────────
+        // 🔐 SUPER-ADMIN (sans tenant scope)
+        // ────────────────────────────────────────────
+        Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+            Route::get('tenants',                          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'indexTenants']);
+            Route::get('stats',                            [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'statsGlobales']);
+            Route::post('tenants/{id}/suspendre',          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'suspendreTenant']);
+            Route::post('marketplace/{tenantId}/verifier', [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'verifierMarketplace']);
+        });
+
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
@@ -77,7 +88,9 @@ use App\Http\Controllers\Api\V1\{
             Route::post('logout',          [AuthController::class, 'logout']);
             Route::post('refresh',         [AuthController::class, 'refresh']);
             Route::get('me',               [AuthController::class, 'me']);
+            Route::put('me',               [AuthController::class, 'updateProfile']);
             Route::put('change-password',  [AuthController::class, 'changePassword']);
+            Route::put('password',         [AuthController::class, 'changePassword']);
             Route::put('profile',          [AuthController::class, 'updateProfile']);
 
             // ── 2FA ──
@@ -162,6 +175,8 @@ use App\Http\Controllers\Api\V1\{
             Route::get('conflits',               [PlanningController::class, 'conflits']);
             Route::post('generer',               [PlanningController::class, 'generer']);
             Route::get('export',                 [PlanningController::class, 'export']);
+            Route::get('aujourd-hui',            [PlanningController::class, 'aujourdhui']);
+            Route::get('ical',                   [PlanningController::class, 'exportICal']);
         });
 
         // ── Présences ──
@@ -288,10 +303,12 @@ use App\Http\Controllers\Api\V1\{
         // ── Pointage par badge RFID/NFC ──
         Route::prefix('pointage')->group(function () {
             Route::post('badge', [\App\Http\Controllers\Api\V1\PointageBadgeController::class, 'scan']);
-            Route::get('enseignants/aujourd-hui', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'aujourdhui']);
-            Route::post('enseignants/{id}/arrivee', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'arrivee']);
-            Route::post('enseignants/{id}/depart', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'depart']);
-            Route::get('enseignants/{id}/historique', [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'historique']);
+            Route::get('enseignants',            [PointageEnseignantController::class, 'index']);
+            Route::post('enseignants',           [PointageEnseignantController::class, 'store']);
+            Route::get('enseignants/aujourd-hui', [PointageEnseignantController::class, 'aujourdhui']);
+            Route::post('enseignants/{id}/arrivee', [PointageEnseignantController::class, 'arrivee']);
+            Route::post('enseignants/{id}/depart', [PointageEnseignantController::class, 'depart']);
+            Route::get('enseignants/{id}/historique', [PointageEnseignantController::class, 'historique']);
         });
 
         // ── Rapports ──
@@ -494,11 +511,9 @@ use App\Http\Controllers\Api\V1\{
     // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
     // ────────────────────────────────────────────
     Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
-        Route::get('tenants',                    [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'index']);
         Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
         Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
         Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);
-        Route::get('stats',                      [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'stats']);
         Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
     });
 
