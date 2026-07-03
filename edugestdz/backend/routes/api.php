@@ -32,7 +32,8 @@ use App\Http\Controllers\Api\V1\{
     MessageController,
     RapportController,
     ParametreController,
-    TwoFactorController
+    TwoFactorController,
+    MarketplaceController
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -40,11 +41,18 @@ use App\Http\Controllers\Api\V1\{
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Route::prefix('v1')->group(function () {
 
-        // ── Marketplace Public ──
+        // ── Marketplace Public (existants) ──
         Route::prefix('marketplace')->group(function () {
             Route::get('offres',                     [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'recherche']);
             Route::get('offres/{id}',                [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'show']);
             Route::get('avis/enseignant/{id}',       [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'byEnseignant']);
+        });
+
+        // ── Marketplace Public (nouveau système profils centres) ──
+        Route::prefix('marketplace')->group(function () {
+            Route::get('recherche',                  [MarketplaceController::class, 'recherche']);
+            Route::get('featured',                   [MarketplaceController::class, 'featured']);
+            Route::get('centres/{tenantId}',         [MarketplaceController::class, 'profilPublic']);
         });
 
     // ────────────────────────────────────────────
@@ -453,6 +461,22 @@ use App\Http\Controllers\Api\V1\{
             Route::post('reservations/{id}/annuler',[\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'annuler']);
             Route::post('reservations/{id}/terminer',[\App\Http\Controllers\Api\V1\Marketplace\ReservationController::class, 'terminer']);
             Route::post('avis',                  [\App\Http\Controllers\Api\V1\Marketplace\AvisController::class, 'store']);
+        });
+
+        // ── Marketplace Nouveau Système (profils centres + offres cours) ──
+        Route::prefix('marketplace')->group(function () {
+            Route::get('mon-profil',                         [MarketplaceController::class, 'monProfil']);
+            Route::put('mon-profil',                         [MarketplaceController::class, 'updateProfil']);
+            Route::get('offres-cours',                       [MarketplaceController::class, 'indexOffres']);
+            Route::post('offres-cours',                      [MarketplaceController::class, 'storeOffre']);
+            Route::get('reservations-recues',                [MarketplaceController::class, 'indexReservationsCentre']);
+            Route::post('reservations-recues/{id}/confirmer',[MarketplaceController::class, 'confirmerReservation']);
+            Route::post('reservations-recues/{id}/annuler',  [MarketplaceController::class, 'annulerReservationCentre']);
+            Route::post('reserver',                          [MarketplaceController::class, 'reserver']);
+            Route::get('parent/reservations',                [MarketplaceController::class, 'mesReservations']);
+            Route::post('avis-centre',                       [MarketplaceController::class, 'soumettreAvis']);
+            Route::post('favoris/{tenantId}',                [MarketplaceController::class, 'toggleFavori']);
+            Route::get('stats',                              [MarketplaceController::class, 'stats']);
         });
 
         // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──

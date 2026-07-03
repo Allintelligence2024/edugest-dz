@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { label: 'Salles', path: '/salles', icon: '🏫' },
   { label: 'Matières', path: '/matieres', icon: '📖' },
   { label: 'Marketplace', path: '/marketplace', icon: '🛒' },
+  { label: 'Centres', path: '/centres', icon: '🏛️' },
   {
     label: 'Pédagogie',
     path: '/pedagogie',
