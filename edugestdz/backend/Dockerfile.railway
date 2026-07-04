@@ -1,11 +1,17 @@
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor libpq-dev libpng libpng-dev libjpeg-turbo libjpeg-turbo-dev libzip-dev oniguruma-dev libxml2-dev autoconf gcc g++ make
+RUN apk add --no-cache \
+    nginx supervisor \
+    libpq-dev libpng-dev libjpeg-turbo-dev libzip-dev oniguruma-dev libxml2-dev \
+    libpng libjpeg-turbo libzip \
+    autoconf gcc g++ make
 
-RUN docker-php-ext-install gd pdo pdo_pgsql pgsql && \
-    pecl install redis && \
-    docker-php-ext-enable redis && \
-    apk del autoconf gcc g++ make
+RUN docker-php-ext-configure gd --with-jpeg --with-png \
+    && docker-php-ext-install -j$(nproc) \
+        gd zip pdo pdo_pgsql pgsql mbstring xml bcmath fileinfo \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del autoconf gcc g++ make
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -13,7 +19,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts \
+    && php artisan package:discover --ansi
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
