@@ -2,11 +2,11 @@ FROM php:8.2-fpm-alpine
 
 RUN apk add --no-cache \
     nginx supervisor \
-    libpq-dev libpng-dev libjpeg-turbo-dev libzip-dev oniguruma-dev libxml2-dev \
+    libpq-dev libpng-dev libjpeg-turbo-dev libzip-dev freetype-dev oniguruma-dev libxml2-dev \
     libpng libjpeg-turbo libzip \
     autoconf gcc g++ make
 
-RUN docker-php-ext-configure gd --with-jpeg --with-png \
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
     && docker-php-ext-install -j$(nproc) \
         gd zip pdo pdo_pgsql pgsql mbstring xml bcmath fileinfo \
     && pecl install redis \
