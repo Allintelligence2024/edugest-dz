@@ -2,6 +2,7 @@
 // backend/app/Models/Eleve.php
 namespace App\Models;
 
+use App\Models\AbsenceJournaliere;
 use Illuminate\Database\Eloquent\Relations\{
     BelongsToMany, HasMany, BelongsTo
 };
@@ -91,6 +92,11 @@ class Eleve extends BaseModel
         return $this->belongsToMany(Groupe::class, 'inscriptions')
                     ->withPivot('date_inscription', 'statut')
                     ->wherePivot('statut', 'validée');
+    }
+
+    public function absencesJournalieres(): HasMany
+    {
+        return $this->hasMany(AbsenceJournaliere::class);
     }
 
     public function presences(): HasMany

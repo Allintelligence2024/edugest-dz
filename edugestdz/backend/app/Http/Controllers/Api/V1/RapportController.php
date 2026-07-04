@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Presence, Paiement, Note, Eleve};
+use App\Services\RapportService;
 use Illuminate\Http\{Request, JsonResponse};
 
 class RapportController extends Controller
@@ -90,5 +91,93 @@ class RapportController extends Controller
         ];
 
         return response()->json(['success' => true, 'data' => $attestation]);
+    }
+
+    public function absencesPDF(Request $request, RapportService $rapport)
+    {
+        $request->validate([
+            'mois'  => 'required|integer|between:1,12',
+            'annee' => 'required|integer|min:2020',
+        ]);
+
+        try {
+            $pdf = $rapport->rapportAbsencesMensuel((int)$request->mois, (int)$request->annee);
+
+            return $pdf->download("absences_{$request->mois}_{$request->annee}.pdf");
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du rapport : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function simulationBEM(Request $request, RapportService $rapport): JsonResponse
+    {
+        $request->validate([
+            'eleve_id' => 'required|uuid|exists:eleves,id',
+        ]);
+
+        $resultat = $rapport->simulationBEM($request->eleve_id);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $resultat,
+        ]);
+    }
+
+    public function simulationBAC(Request $request, RapportService $rapport): JsonResponse
+    {
+        $request->validate([
+            'eleve_id' => 'required|uuid|exists:eleves,id',
+            'filiere'  => 'required|string|in:sciences,maths,lettres_langues,lettres_philo,gestion_economie,technique_math,musique',
+        ]);
+
+        $resultat = $rapport->simulationBAC($request->eleve_id, $request->filiere);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $resultat,
+        ]);
+    }
+
+    public function absencesStats(Request $request): JsonResponse
+    {
+        $request->validate([
+            'eleve_id' => 'nullable|uuid|exists:eleves,id',
+            'mois'     => 'nullable|integer|between:1,12',
+            'annee'    => 'nullable|integer|min:2020',
+        ]);
+
+        $query = \App\Models\AbsenceJournaliere::query();
+
+        if ($request->eleve_id) {
+            $query->where('eleve_id', $request->eleve_id);
+        }
+
+        if ($request->mois && $request->annee) {
+            $query->whereYear('date_absence', $request->annee)
+                  ->whereMonth('date_absence', $request->mois);
+        } elseif ($request->annee) {
+            $query->whereYear('date_absence', $request->annee);
+        }
+
+        $total       = $query->count();
+        $justifiees  = (clone $query)->where('statut', 'justifiée')->count();
+        $nonJustif   = (clone $query)->where('statut', 'non_justifiée')->count();
+        $enAttente   = (clone $query)->where('statut', 'en_attente')->count();
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'total'         => $total,
+                'justifiees'    => $justifiees,
+                'non_justifiees'=> $nonJustif,
+                'en_attente'    => $enAttente,
+                'taux_absence'  => $total > 0
+                    ? round(($nonJustif / $total) * 100, 1) . '%'
+                    : '0%',
+            ],
+        ]);
     }
 }
