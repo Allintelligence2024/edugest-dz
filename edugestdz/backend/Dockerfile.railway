@@ -1,8 +1,8 @@
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor libpq-dev libzip-dev oniguruma-dev libxml2-dev autoconf gcc g++ make
+RUN apk add --no-cache nginx supervisor libpq-dev libpng libpng-dev libjpeg-turbo libjpeg-turbo-dev libzip-dev oniguruma-dev libxml2-dev autoconf gcc g++ make
 
-RUN docker-php-ext-install pdo pdo_pgsql pgsql && \
+RUN docker-php-ext-install gd pdo pdo_pgsql pgsql && \
     pecl install redis && \
     docker-php-ext-enable redis && \
     apk del autoconf gcc g++ make
