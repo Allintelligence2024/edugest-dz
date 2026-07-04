@@ -47,6 +47,34 @@ upload_max_filesize=10M \n\
 post_max_size=10M \n\
 memory_limit=256M' >> /usr/local/etc/php/conf.d/railway.ini
 
+RUN echo '[supervisord] \
+nodaemon=true \
+user=root \
+logfile=/dev/stdout \
+logfile_maxbytes=0 \
+ \
+[program:php-fpm] \
+command=php-fpm -D \
+autostart=true \
+autorestart=true \
+stdout_logfile=/dev/stdout \
+stdout_logfile_maxbytes=0 \
+stderr_logfile=/dev/stderr \
+stderr_logfile_maxbytes=0 \
+ \
+[program:nginx] \
+command=nginx -g "daemon off;" \
+autostart=true \
+autorestart=true \
+stdout_logfile=/dev/stdout \
+stdout_logfile_maxbytes=0 \
+stderr_logfile=/dev/stderr \
+stderr_logfile_maxbytes=0 \
+' > /etc/supervisord.conf
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
 
-CMD ["sh", "-c", "php artisan key:generate --force; php artisan jwt:secret --force; php artisan migrate --force; php-fpm -D; nginx -g 'daemon off;'"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

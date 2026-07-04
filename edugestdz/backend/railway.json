@@ -5,7 +5,6 @@
     "dockerfilePath": "Dockerfile.railway"
   },
   "deploy": {
-    "startCommand": "php artisan key:generate --force && php artisan jwt:secret --force && php artisan migrate --force && php artisan optimize && php-fpm -D && nginx -g 'daemon off;'",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
