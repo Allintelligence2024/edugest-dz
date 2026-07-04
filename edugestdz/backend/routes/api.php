@@ -547,7 +547,7 @@ use App\Http\Controllers\Api\V1\{
 
     // Webhook PUBLIC — Dahua appelle cette URL (pas d'auth JWT)
     Route::post('surveillance/webhook', [SurveillanceController::class, 'recevoir'])
-        ->middleware('throttle:webhook');
+        ->middleware('throttle:60,1'); // 60 req/min
 });
 
 // ── Health Check (public — no auth, outside v1) ──
