@@ -34,7 +34,8 @@ use App\Http\Controllers\Api\V1\{
     ParametreController,
     TwoFactorController,
     MarketplaceController,
-    PointageEnseignantController
+    PointageEnseignantController,
+    SurveillanceController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -500,6 +501,15 @@ use App\Http\Controllers\Api\V1\{
             Route::get('stats',                              [MarketplaceController::class, 'stats']);
         });
 
+        // ── Surveillance Dahua ──
+        Route::prefix('surveillance')->group(function () {
+            Route::get('/alertes',                  [SurveillanceController::class, 'indexAlertes']);
+            Route::post('/alertes/{id}/traiter',    [SurveillanceController::class, 'traiterAlerte']);
+            Route::get('/cameras',                  [SurveillanceController::class, 'indexCameras']);
+            Route::post('/cameras',                 [SurveillanceController::class, 'enregistrerCamera']);
+            Route::delete('/cameras/{id}',          [SurveillanceController::class, 'desactiverCamera']);
+        });
+
         // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──
         Route::prefix('paiements')->group(function () {
             Route::post('online/initier',        [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'initier']);
@@ -529,6 +539,14 @@ use App\Http\Controllers\Api\V1\{
 
     // ── WhatsApp Twilio (incoming SMS/WhatsApp) ──
     Route::post('twilio/whatsapp',           [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'incoming'])
+        ->middleware('throttle:webhook');
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SURVEILLANCE DAHUA — Télésurveillance
+    // ══════════════════════════════════════════════════════════════════════
+
+    // Webhook PUBLIC — Dahua appelle cette URL (pas d'auth JWT)
+    Route::post('surveillance/webhook', [SurveillanceController::class, 'recevoir'])
         ->middleware('throttle:webhook');
 });
 

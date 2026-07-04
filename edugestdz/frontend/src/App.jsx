@@ -38,6 +38,7 @@ import BilletsPage from '@pages/BilletsPage';
 import MarketplacePageCentres from '@pages/MarketplacePageCentres';
 import PointagePage from '@pages/PointagePage';
 import ProfilePage from '@pages/ProfilePage';
+import SurveillancePage from '@pages/SurveillancePage';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -122,6 +123,7 @@ export default function App() {
             <Route path="centres" element={<MarketplacePageCentres />} />
             <Route path="pointage" element={<PointagePage />} />
             <Route path="profil" element={<ProfilePage />} />
+            <Route path="surveillance" element={<SurveillancePage />} />
             </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
