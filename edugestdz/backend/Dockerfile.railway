@@ -22,59 +22,35 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-RUN echo 'server { \
-    listen 80; \
-    root /var/www/html/public; \
-    index index.php; \
-    location = /api/health { \
-        access_log off; \
-        default_type application/json; \
-        return 200 "{\"status\":\"ok\"}"; \
-    } \
-    location / { try_files $uri $uri/ /index.php?$query_string; } \
-    location ~ \.php$ { \
-        fastcgi_pass 127.0.0.1:9000; \
-        fastcgi_index index.php; \
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
-        include fastcgi_params; \
-    } \
-}' > /etc/nginx/http.d/default.conf
+RUN printf '[supervisord]\nnodaemon=true\nuser=root\nlogfile=/dev/stdout\nlogfile_maxbytes=0\n\n[program:php-fpm]\ncommand=php-fpm --nodaemonize\nautostart=true\nautorestart=true\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n\n[program:nginx]\ncommand=nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstdout_logfile=/dev/stdout\nstdout_logfile_maxbytes=0\nstderr_logfile=/dev/stderr\nstderr_logfile_maxbytes=0\n' > /etc/supervisord.conf
 
-RUN echo 'opcache.enable=1 \n\
-opcache.memory_consumption=256 \n\
-opcache.max_accelerated_files=20000 \n\
-upload_max_filesize=10M \n\
-post_max_size=10M \n\
-memory_limit=256M' >> /usr/local/etc/php/conf.d/railway.ini
+RUN printf 'server {\n\
+    listen 80;\n\
+    root /var/www/html/public;\n\
+    index index.php;\n\
+    location = /api/health {\n\
+        access_log off;\n\
+        default_type application/json;\n\
+        return 200 "{\"status\":\"ok\"}";\n\
+    }\n\
+    location / { try_files $uri $uri/ /index.php?$query_string; }\n\
+    location ~ \\.php$ {\n\
+        fastcgi_pass 127.0.0.1:9000;\n\
+        fastcgi_index index.php;\n\
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+    }\n\
+}\n' > /etc/nginx/http.d/default.conf
 
-RUN echo '[supervisord] \
-nodaemon=true \
-user=root \
-logfile=/dev/stdout \
-logfile_maxbytes=0 \
- \
-[program:php-fpm] \
-command=php-fpm -D \
-autostart=true \
-autorestart=true \
-stdout_logfile=/dev/stdout \
-stdout_logfile_maxbytes=0 \
-stderr_logfile=/dev/stderr \
-stderr_logfile_maxbytes=0 \
- \
-[program:nginx] \
-command=nginx -g "daemon off;" \
-autostart=true \
-autorestart=true \
-stdout_logfile=/dev/stdout \
-stdout_logfile_maxbytes=0 \
-stderr_logfile=/dev/stderr \
-stderr_logfile_maxbytes=0 \
-' > /etc/supervisord.conf
+RUN printf 'opcache.enable=1\n\
+opcache.memory_consumption=256\n\
+opcache.max_accelerated_files=20000\n\
+upload_max_filesize=10M\n\
+post_max_size=10M\n\
+memory_limit=256M\n' > /usr/local/etc/php/conf.d/railway.ini
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["sh", "-c", "php artisan key:generate --force 2>/dev/null; php artisan jwt:secret --force 2>/dev/null; php artisan migrate --force 2>/dev/null; exec /usr/bin/supervisord -c /etc/supervisord.conf"]
