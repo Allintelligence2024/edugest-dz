@@ -521,11 +521,15 @@ use App\Http\Controllers\Api\V1\{
         Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
     });
 
-    // ── WhatsApp Webhook (public) ──
+    // ── WhatsApp Webhook (Meta / public) ──
     Route::prefix('whatsapp')->middleware('throttle:webhook')->group(function () {
         Route::get('webhook',                [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'verify']);
         Route::post('webhook',               [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'handle']);
     });
+
+    // ── WhatsApp Twilio (incoming SMS/WhatsApp) ──
+    Route::post('twilio/whatsapp',           [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'incoming'])
+        ->middleware('throttle:webhook');
 });
 
 // ── Health Check (public — no auth, outside v1) ──

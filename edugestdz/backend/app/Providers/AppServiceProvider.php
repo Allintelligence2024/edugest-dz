@@ -17,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \App\Models\Eleve::observe(\App\Observers\EleveObserver::class);
+        \App\Models\AbsenceJournaliere::observe(\App\Observers\AbsenceJournaliereObserver::class);
+        \App\Models\Note::observe(\App\Observers\NoteObserver::class);
+        \App\Models\Bulletin::observe(\App\Observers\BulletinObserver::class);
+        \App\Models\ReservationMarketplace::observe(\App\Observers\ReservationMarketplaceObserver::class);
 
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(15, 10)

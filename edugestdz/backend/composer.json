@@ -17,6 +17,7 @@
         "maennchen/zipstream-php": "^2.4",
         "meilisearch/meilisearch-php": "^1.0",
         "pusher/pusher-php-server": "^7.0",
+        "simplesoftwareio/simple-qrcode": "^4.0",
         "spatie/laravel-activitylog": "^4.0",
         "spatie/laravel-permission": "^6.0",
         "spatie/laravel-query-builder": "^5.0",
