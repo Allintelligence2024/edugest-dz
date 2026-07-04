@@ -1,152 +1,132 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '@hooks/useAuth';
-import { authApi } from '@api/auth.api';
+import { useState } from 'react';
+import { authApi } from '../services/api';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [twoFactorStep, setTwoFactorStep] = useState(false);
-  const [twoFactorData, setTwoFactorData] = useState(null);
-  const [code, setCode] = useState('');
-  const [useRecovery, setUseRecovery] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error('Veuillez remplir tous les champs');
-      return;
-    }
-    setIsLoading(true);
+    setLoading(true);
+    setError('');
+
     try {
       const res = await authApi.login(email, password);
-      if (res.two_factor_required) {
-        setTwoFactorData(res);
-        setTwoFactorStep(true);
-        return;
+
+      if (res?.success && res?.data?.token) {
+        localStorage.setItem('token',    res.data.token);
+        localStorage.setItem('tenantId', res.data.user?.tenant_id ?? '');
+        localStorage.setItem('user',     JSON.stringify(res.data.user));
+        localStorage.setItem('role',     res.data.user?.role ?? '');
+
+        const role = res.data.user?.role;
+        if (role === 'super_admin') window.location.href = '/super-admin';
+        else                        window.location.href = '/dashboard';
+      } else {
+        setError(res?.message ?? 'Email ou mot de passe incorrect.');
       }
-      await login(email, password);
-      toast.success('Connexion réussie !');
-      navigate('/');
-    } catch (err) {
-      toast.error(err?.error?.message || 'Email ou mot de passe incorrect');
+    } catch (e) {
+      setError('Erreur réseau. Vérifiez votre connexion.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
-  const handleTwoFactorSubmit = async () => {
-    if (!code) {
-      toast.error('Veuillez entrer le code');
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const res = await authApi.complete2fa(twoFactorData.temp_token, code);
-      localStorage.setItem('access_token', res.access_token);
-      await login(email, password);
-      toast.success('Connexion réussie !');
-      navigate('/');
-    } catch (err) {
-      toast.error(err?.error?.message || 'Code 2FA invalide');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (twoFactorStep) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-800 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-modal w-full max-w-md p-8 animate-slide-up">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-neutral-800">Vérification en deux étapes</h1>
-            <p className="text-neutral-500 mt-2 text-sm">
-              {useRecovery
-                ? 'Saisissez un code de récupération'
-                : 'Saisissez le code à 6 chiffres de votre application d\'authentification'}
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder={useRecovery ? 'Code de récupération' : '000000'}
-              maxLength={6}
-              className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 text-center text-2xl tracking-[0.5em] font-mono outline-none focus:border-primary-500 transition-colors"
-              autoFocus
-            />
-
-            <button
-              onClick={handleTwoFactorSubmit}
-              disabled={isLoading || !code}
-              className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-60"
-            >
-              {isLoading ? 'Vérification...' : 'Vérifier'}
-            </button>
-
-            <button
-              onClick={() => { setUseRecovery(!useRecovery); setCode(''); }}
-              className="w-full text-sm text-primary-600 hover:underline text-center block"
-            >
-              {useRecovery ? 'Utiliser l\'application d\'authentification' : 'Utiliser un code de récupération'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-800 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-modal w-full max-w-md p-8 animate-slide-up">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-neutral-800">EduGest DZ</h1>
-          <p className="text-neutral-500 mt-2">Gestion des cours particuliers</p>
+    <div style={{
+      minHeight: '100vh', background: '#08090f',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px',
+    }}>
+      <div style={{
+        background: '#111318', border: '1px solid #1e293b',
+        borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px',
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎓</div>
+          <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>
+            EduGest DZ
+          </h1>
+          <p style={{ fontSize: '12px', color: '#64748b' }}>
+            Plateforme de gestion scolaire
+          </p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">Email</label>
+
+        {error && (
+          <div style={{
+            background: '#450a0a', border: '1px solid #b91c1c',
+            borderRadius: '8px', padding: '12px', marginBottom: '16px',
+            color: '#f87171', fontSize: '12px',
+          }}>
+            ❌ {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '14px' }}>
+            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '6px' }}>
+              Adresse email
+            </label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="votre@email.com"
-              className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500 transition-colors"
-              autoFocus
+              placeholder="directeur@ecole.dz"
+              required
+              style={{
+                width: '100%', background: '#1e293b', border: '1px solid #334155',
+                borderRadius: '8px', color: '#e2e8f0', padding: '12px 14px', fontSize: '13px',
+              }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">Mot de passe</label>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '6px' }}>
+              Mot de passe
+            </label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500 transition-colors"
+              required
+              style={{
+                width: '100%', background: '#1e293b', border: '1px solid #334155',
+                borderRadius: '8px', color: '#e2e8f0', padding: '12px 14px', fontSize: '13px',
+              }}
             />
           </div>
+
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            disabled={loading}
+            style={{
+              width: '100%',
+              background: loading ? '#1e293b' : 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+              color: '#fff', border: 'none', borderRadius: '8px',
+              padding: '13px', fontSize: '14px', fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'opacity .2s',
+            }}
           >
-            {isLoading ? <><span className="animate-spin">⏳</span> Connexion...</> : 'Se connecter'}
+            {loading ? '⏳ Connexion...' : '🔐 Se connecter'}
           </button>
         </form>
-        <p className="text-center text-xs text-neutral-400 mt-6">
-          &copy; {new Date().getFullYear()} EduGest DZ — Tous droits réservés
+
+        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '11px', color: '#475569' }}>
+          Problème de connexion ? Contactez l'administrateur de votre établissement.
         </p>
+
+        <div style={{ marginTop: '24px', borderTop: '1px solid #1e293b', paddingTop: '16px', textAlign: 'center' }}>
+          <p style={{ fontSize: '10px', color: '#334155' }}>
+            Vous êtes un centre ? Rejoignez la Marketplace →{' '}
+            <a href="/marketplace" style={{ color: '#60a5fa', textDecoration: 'none' }}>
+              Trouver un cours
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
