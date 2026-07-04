@@ -1,6 +1,6 @@
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache nginx supervisor
+RUN apk add --no-cache nginx supervisor libpq-dev libzip-dev oniguruma-dev libxml2-dev
 
 RUN docker-php-ext-install pdo pdo_pgsql pgsql
 
@@ -23,6 +23,11 @@ server {
     listen 80;
     root /var/www/html/public;
     index index.php;
+    location = /api/health {
+        access_log off;
+        default_type application/json;
+        return 200 '{"status":"ok"}';
+    }
     location / { try_files $uri $uri/ /index.php?$query_string; }
     location ~ \.php$ {
         fastcgi_pass 127.0.0.1:9000;
