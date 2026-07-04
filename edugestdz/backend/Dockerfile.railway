@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine AS build
+FROM php:8.2-fpm-alpine
 
 RUN apk add --no-cache \
     git curl zip unzip libpng-dev libpq-dev libzip-dev \
@@ -26,6 +26,11 @@ RUN echo 'server { \
     listen 80; \
     root /var/www/html/public; \
     index index.php; \
+    location = /api/health { \
+        access_log off; \
+        default_type application/json; \
+        return 200 "{\"status\":\"ok\"}"; \
+    } \
     location / { try_files $uri $uri/ /index.php?$query_string; } \
     location ~ \.php$ { \
         fastcgi_pass 127.0.0.1:9000; \
@@ -33,7 +38,6 @@ RUN echo 'server { \
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
         include fastcgi_params; \
     } \
-    location /api/health { access_log off; } \
 }' > /etc/nginx/http.d/default.conf
 
 RUN echo 'opcache.enable=1 \n\
