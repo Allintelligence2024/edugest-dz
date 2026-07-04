@@ -19,16 +19,22 @@ import ParentMessages   from '../screens/parent/MessagesScreen';
 import ParentBulletins  from '../screens/parent/BulletinsScreen';
 import ParentProfile    from '../screens/parent/ProfileScreen';
 
-// Enseignant (nouveaux)
+// Parent (nouveaux M3)
+import MarketplaceScreen from '../screens/parent/MarketplaceScreen';
+
+// Enseignant
 import EnseignantDashboard  from '../screens/enseignant/DashboardScreen';
 import EnseignantPlanning   from '../screens/enseignant/PlanningScreen';
 import EnseignantPresences  from '../screens/enseignant/PresencesScreen';
 import EnseignantNotes      from '../screens/enseignant/NotesScreen';
 
-// Admin (nouveaux)
+// Admin (existants)
 import AdminDashboard   from '../screens/admin/DashboardScreen';
 import AdminEleves      from '../screens/admin/ElevesScreen';
 import AdminAbsences    from '../screens/admin/AbsencesScreen';
+
+// Admin (nouveaux M3)
+import AdminPointageScreen from '../screens/admin/AdminPointageScreen';
 
 const AuthStack      = createNativeStackNavigator();
 const ParentTab      = createBottomTabNavigator();
@@ -46,6 +52,8 @@ function tabIcon(name, focused) {
     Messages:   focused ? '💬' : '🗨️',
     Bulletins:  focused ? '📊' : '📋',
     Profile:    focused ? '👤' : '👥',
+    Marketplace: focused ? '🛒' : '🛍️',
+    Pointage:   focused ? '🏷️' : '📌',
     MesGroupes: focused ? '📚' : '📖',
     Eleves:     focused ? '👦' : '👤',
     Absences:   focused ? '✅' : '☑️',
@@ -67,19 +75,20 @@ function ParentTabs() {
   const { isRTL } = useI18n();
   return (
     <ParentTab.Navigator screenOptions={({ route }) => tabScreenOptions(route)}>
-      <ParentTab.Screen name="Dashboard" component={ParentDashboard}  options={{ title: 'Accueil' }} />
-      <ParentTab.Screen name="Planning"  component={ParentPlanning}   options={{ title: 'Planning' }} />
-      <ParentTab.Screen name="Notes"     component={ParentNotes}      options={{ title: 'Notes' }} />
-      <ParentTab.Screen name="Presences" component={ParentPresences}  options={{ title: 'Présences' }} />
-      <ParentTab.Screen name="Paiements" component={ParentPaiements}  options={{ title: 'Paiements' }} />
-      <ParentTab.Screen name="Messages"  component={ParentMessages}   options={{ title: 'Messages' }} />
-      <ParentTab.Screen name="Bulletins" component={ParentBulletins}  options={{ title: 'Bulletins' }} />
-      <ParentTab.Screen name="Profile"   component={ParentProfile}    options={{ title: 'Profil' }} />
+      <ParentTab.Screen name="Dashboard"    component={ParentDashboard}  options={{ title: 'Accueil' }} />
+      <ParentTab.Screen name="Planning"     component={ParentPlanning}   options={{ title: 'Planning' }} />
+      <ParentTab.Screen name="Notes"        component={ParentNotes}      options={{ title: 'Notes' }} />
+      <ParentTab.Screen name="Presences"    component={ParentPresences}  options={{ title: 'Présences' }} />
+      <ParentTab.Screen name="Paiements"    component={ParentPaiements}  options={{ title: 'Paiements' }} />
+      <ParentTab.Screen name="Marketplace"  component={MarketplaceScreen} options={{ title: 'Centres' }} />
+      <ParentTab.Screen name="Messages"     component={ParentMessages}   options={{ title: 'Messages' }} />
+      <ParentTab.Screen name="Bulletins"    component={ParentBulletins}  options={{ title: 'Bulletins' }} />
+      <ParentTab.Screen name="Profile"      component={ParentProfile}    options={{ title: 'Profil' }} />
     </ParentTab.Navigator>
   );
 }
 
-// ── Enseignant Tabs + Stack (pour Presences qui a des params) ──
+// ── Enseignant Tabs + Stack ──
 function EnseignantTabs() {
   return (
     <EnseignantTab.Navigator screenOptions={({ route }) => tabScreenOptions(route)}>
@@ -103,9 +112,10 @@ function EnseignantNavigator() {
 function AdminTabs() {
   return (
     <AdminTab.Navigator screenOptions={({ route }) => tabScreenOptions(route)}>
-      <AdminTab.Screen name="Dashboard" component={AdminDashboard}  options={{ title: 'Tableau de bord' }} />
-      <AdminTab.Screen name="Eleves"    component={AdminEleves}     options={{ title: 'Élèves' }} />
-      <AdminTab.Screen name="Absences"  component={AdminAbsences}   options={{ title: 'Absences' }} />
+      <AdminTab.Screen name="Dashboard" component={AdminDashboard}     options={{ title: 'Tableau de bord' }} />
+      <AdminTab.Screen name="Pointage"  component={AdminPointageScreen} options={{ title: 'Pointage' }} />
+      <AdminTab.Screen name="Eleves"    component={AdminEleves}        options={{ title: 'Élèves' }} />
+      <AdminTab.Screen name="Absences"  component={AdminAbsences}      options={{ title: 'Absences' }} />
     </AdminTab.Navigator>
   );
 }
