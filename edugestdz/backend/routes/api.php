@@ -317,6 +317,10 @@ use App\Http\Controllers\Api\V1\{
             Route::get('financier',              [RapportController::class, 'financier']);
             Route::get('pedagogique',            [RapportController::class, 'pedagogique']);
             Route::get('attestation/{eleveId}',  [RapportController::class, 'attestation']);
+            Route::get('absences-pdf',           [RapportController::class, 'absencesPDF']);
+            Route::get('absences-stats',         [RapportController::class, 'absencesStats']);
+            Route::get('simulation-bem',         [RapportController::class, 'simulationBEM']);
+            Route::get('simulation-bac',         [RapportController::class, 'simulationBAC']);
         });
 
         // ── Paramètres ──
