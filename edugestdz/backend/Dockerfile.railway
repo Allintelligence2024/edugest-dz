@@ -1,12 +1,8 @@
 FROM php:8.2-fpm-alpine
 
-RUN apk add --no-cache \
-    git curl zip unzip libpng-dev libpq-dev libzip-dev \
-    oniguruma-dev libxml2-dev nginx supervisor \
-    autoconf g++ make linux-headers
+RUN apk add --no-cache nginx supervisor
 
-RUN docker-php-ext-install \
-    pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd xml opcache zip
+RUN docker-php-ext-install pdo pdo_pgsql pgsql
 
 RUN pecl install redis && docker-php-ext-enable redis
 
@@ -27,17 +23,7 @@ server {
     listen 80;
     root /var/www/html/public;
     index index.php;
-
-    location = /api/health {
-        access_log off;
-        default_type application/json;
-        return 200 '{"status":"ok"}';
-    }
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
+    location / { try_files $uri $uri/ /index.php?$query_string; }
     location ~ \.php$ {
         fastcgi_pass 127.0.0.1:9000;
         fastcgi_index index.php;
@@ -47,44 +33,6 @@ server {
 }
 NGINX
 
-RUN cat > /usr/local/etc/php/conf.d/railway.ini <<'PHPINI'
-opcache.enable=1
-opcache.memory_consumption=256
-opcache.max_accelerated_files=20000
-upload_max_filesize=10M
-post_max_size=10M
-memory_limit=256M
-PHPINI
-
-RUN cat > /etc/supervisord.conf <<'SUPERVISOR'
-[supervisord]
-nodaemon=true
-user=root
-logfile=/dev/stdout
-logfile_maxbytes=0
-
-[program:php-fpm]
-command=php-fpm --nodaemonize
-autostart=true
-autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-
-[program:nginx]
-command=nginx -g "daemon off;"
-autostart=true
-autorestart=true
-stdout_logfile=/dev/stdout
-stdout_logfile_maxbytes=0
-stderr_logfile=/dev/stderr
-stderr_logfile_maxbytes=0
-SUPERVISOR
-
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 EXPOSE 80
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD sh -c "php-fpm -D && nginx -g 'daemon off;'"
