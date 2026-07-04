@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 13.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {},
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

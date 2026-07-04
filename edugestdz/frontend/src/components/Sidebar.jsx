@@ -26,6 +26,7 @@ const NAV_ITEMS = [
   { label: 'Marketplace', path: '/marketplace', icon: '🛒' },
   { label: 'Centres', path: '/centres', icon: '🏛️' },
   { label: 'Pointage', path: '/pointage', icon: '🏷️' },
+  { label: 'Surveillance', path: '/surveillance', icon: '🔒' },
   {
     label: 'Pédagogie',
     path: '/pedagogie',
