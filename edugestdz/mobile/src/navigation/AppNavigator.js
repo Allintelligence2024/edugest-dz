@@ -21,12 +21,14 @@ import ParentProfile    from '../screens/parent/ProfileScreen';
 
 // Parent (nouveaux M3)
 import MarketplaceScreen from '../screens/parent/MarketplaceScreen';
+import ParentNotifications from '../screens/parent/NotificationsScreen';
 
 // Enseignant
 import EnseignantDashboard  from '../screens/enseignant/DashboardScreen';
 import EnseignantPlanning   from '../screens/enseignant/PlanningScreen';
 import EnseignantPresences  from '../screens/enseignant/PresencesScreen';
 import EnseignantNotes      from '../screens/enseignant/NotesScreen';
+import EnseignantSignalements from '../screens/enseignant/SignalementsScreen';
 
 // Admin (existants)
 import AdminDashboard   from '../screens/admin/DashboardScreen';
@@ -63,8 +65,9 @@ function tabIcon(name, focused) {
 }
 
 const tabScreenOptions = (route) => ({
-  tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{tabIcon(route.name, focused)}</Text>,
-  tabBarActiveTintColor: colors.primary,
+    tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{tabIcon(route.name, focused)}</Text>,
+    tabBarActiveTintColor: colors.primary,
+    tabBarStyle: { backgroundColor: '#08090f', borderTopColor: '#1e293b' },
   tabBarInactiveTintColor: '#94a3b8',
   headerStyle: { backgroundColor: colors.primary },
   headerTintColor: '#fff',
@@ -81,6 +84,9 @@ function ParentTabs() {
       <ParentTab.Screen name="Presences"    component={ParentPresences}  options={{ title: 'Présences' }} />
       <ParentTab.Screen name="Paiements"    component={ParentPaiements}  options={{ title: 'Paiements' }} />
       <ParentTab.Screen name="Marketplace"  component={MarketplaceScreen} options={{ title: 'Centres' }} />
+      <ParentTab.Screen name="Notifications" component={ParentNotifications} options={{ title: 'Notifications',
+        tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{focused ? '🔔' : '🔕'}</Text>,
+      }} />
       <ParentTab.Screen name="Messages"     component={ParentMessages}   options={{ title: 'Messages' }} />
       <ParentTab.Screen name="Bulletins"    component={ParentBulletins}  options={{ title: 'Bulletins' }} />
       <ParentTab.Screen name="Profile"      component={ParentProfile}    options={{ title: 'Profil' }} />
@@ -95,6 +101,10 @@ function EnseignantTabs() {
       <EnseignantTab.Screen name="Dashboard" component={EnseignantDashboard} options={{ title: 'Accueil' }} />
       <EnseignantTab.Screen name="Planning"  component={EnseignantPlanning}  options={{ title: 'Planning' }} />
       <EnseignantTab.Screen name="Notes"     component={EnseignantNotes}     options={{ title: 'Notes' }} />
+      <EnseignantTab.Screen name="Signalements" component={EnseignantSignalements}
+        options={{ title: 'Signaler',
+          tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{focused ? '📋' : '📄'}</Text>,
+        }} />
     </EnseignantTab.Navigator>
   );
 }

@@ -3,22 +3,24 @@
 namespace App\Observers;
 
 use App\Models\Bulletin;
-use App\Services\FirebaseService;
+use App\Services\ParentNotificationService;
 
 class BulletinObserver
 {
-    public function __construct(private FirebaseService $firebase) {}
+    public function __construct(
+        private ParentNotificationService $notificationService
+    ) {}
 
     public function created(Bulletin $bulletin): void
     {
-        $eleve = $bulletin->eleve;
-        if (!$eleve) return;
+        if (!$bulletin->eleve_id) return;
 
-        $this->firebase->notifyParentsEleve(
-            $eleve->id,
-            '📄 Bulletin disponible',
-            "Le bulletin de {$eleve->prenom} ({$bulletin->trimestre}) est prêt. Moyenne : {$bulletin->moyenne_generale}/20.",
-            ['type' => 'bulletin', 'eleve_id' => $eleve->id, 'bulletin_id' => $bulletin->id]
+        $this->notificationService->bulletinGenere(
+            $bulletin->eleve_id,
+            $bulletin->trimestre,
+            (float) ($bulletin->moyenne_generale ?? 0),
+            (int) ($bulletin->rang ?? 1),
+            (int) ($bulletin->effectif_classe ?? 1)
         );
     }
 }

@@ -34,6 +34,7 @@ const NAV_ITEMS = [
     children: [
       { label: 'Notes', path: '/notes', icon: '📝' },
       { label: 'Bulletins', path: '/bulletins', icon: '📜' },
+      { label: 'Diagnostic Niveau', path: '/diagnostic', icon: '🔬' },
     ],
   },
   {
