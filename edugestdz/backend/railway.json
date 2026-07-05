@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile.railway"
   },
   "deploy": {
-    "startCommand": "php artisan migrate --force && php artisan db:seed --class=CurriculumAlgerienSeeder --force && php artisan l5-swagger:generate && php artisan optimize && php-fpm -D && nginx -g 'daemon off;'",
+    "startCommand": "php artisan migrate --force; php artisan l5-swagger:generate; php artisan optimize; php-fpm -D; nginx -g 'daemon off;'",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 60,
     "restartPolicyType": "ON_FAILURE",
