@@ -32,14 +32,20 @@ RUN echo 'server { \
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
         include fastcgi_params; \
     } \
-    location /api/health { access_log off; } \
+    location /api/health { \
+        access_log off; \
+        fastcgi_pass 127.0.0.1:9000; \
+        fastcgi_index index.php; \
+        fastcgi_param SCRIPT_FILENAME /var/www/html/public/index.php; \
+        include fastcgi_params; \
+    } \
 }' > /etc/nginx/http.d/default.conf
 
-RUN echo 'opcache.enable=1 \n\
-opcache.memory_consumption=256 \n\
-opcache.max_accelerated_files=20000 \n\
-upload_max_filesize=10M \n\
-post_max_size=10M \n\
+RUN echo 'opcache.enable=1 \
+opcache.memory_consumption=256 \
+opcache.max_accelerated_files=20000 \
+upload_max_filesize=10M \
+post_max_size=10M \
 memory_limit=256M' >> /usr/local/etc/php/conf.d/railway.ini
 
 EXPOSE 80
