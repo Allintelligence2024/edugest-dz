@@ -27,24 +27,7 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
 RUN rm -f /etc/nginx/http.d/default.conf
-
-RUN printf 'server {\n\
-    listen 80;\n\
-    root /var/www/html/public;\n\
-    index index.php;\n\
-    location = /api/health {\n\
-        access_log off;\n\
-        default_type application/json;\n\
-        return 200 \'{"status":"ok"}\';\n\
-    }\n\
-    location / { try_files $uri $uri/ /index.php?$query_string; }\n\
-    location ~ \\.php$ {\n\
-        fastcgi_pass 127.0.0.1:9000;\n\
-        fastcgi_index index.php;\n\
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
-        include fastcgi_params;\n\
-    }\n\
-}\n' > /etc/nginx/http.d/default.conf
+COPY railway-nginx.conf /etc/nginx/http.d/default.conf
 
 EXPOSE 80
 
