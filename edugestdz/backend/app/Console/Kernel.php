@@ -39,6 +39,13 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground();
 
+        $schedule->command('edugest:diagnostic-hebdomadaire')
+            ->weekly()
+            ->mondays()
+            ->at('06:00')
+            ->withoutOverlapping()
+            ->runInBackground();
+
         $schedule->command('model:prune')
             ->monthlyOn(1, '03:00');
     }

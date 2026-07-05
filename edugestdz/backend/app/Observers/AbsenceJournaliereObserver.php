@@ -3,25 +3,27 @@
 namespace App\Observers;
 
 use App\Models\AbsenceJournaliere;
-use App\Services\FirebaseService;
-use Illuminate\Support\Facades\Log;
+use App\Services\ParentNotificationService;
 
 class AbsenceJournaliereObserver
 {
-    public function __construct(private FirebaseService $firebase) {}
+    public function __construct(
+        private ParentNotificationService $notificationService
+    ) {}
 
     public function created(AbsenceJournaliere $absence): void
     {
         $eleve = $absence->eleve;
         if (!$eleve) return;
 
-        $this->firebase->notifyParentsEleve(
+        $this->notificationService->absenceSignalee(
             $eleve->id,
-            '⚠️ Absence signalée',
-            "{$eleve->prenom} {$eleve->nom} est absent(e) le {$absence->date_absence}.",
-            ['type' => 'absence', 'eleve_id' => $eleve->id, 'absence_id' => $absence->id]
+            $absence->date_absence instanceof \Carbon\Carbon
+                ? $absence->date_absence->format('d/m/Y')
+                : $absence->date_absence,
+            $absence->motif
         );
 
-        Log::info("Push absence envoyé pour élève {$eleve->id}");
+        $absence->update(['sms_envoye' => true]);
     }
 }

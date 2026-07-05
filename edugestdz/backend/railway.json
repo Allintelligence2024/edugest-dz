@@ -5,10 +5,10 @@
     "dockerfilePath": "Dockerfile.railway"
   },
   "deploy": {
-    "startCommand": "php artisan migrate --force; php artisan l5-swagger:generate; php artisan optimize; php-fpm -D; nginx -g 'daemon off;'",
     "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 60,
+    "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
+    "restartPolicyMaxRetries": 5,
+    "sleepApplication": false
   }
 }

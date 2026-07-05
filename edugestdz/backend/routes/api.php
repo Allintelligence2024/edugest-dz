@@ -36,6 +36,8 @@ use App\Http\Controllers\Api\V1\{
     MarketplaceController,
     PointageEnseignantController,
     SurveillanceController,
+    SignalementController,
+    DiagnosticController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -508,6 +510,28 @@ use App\Http\Controllers\Api\V1\{
             Route::get('/cameras',                  [SurveillanceController::class, 'indexCameras']);
             Route::post('/cameras',                 [SurveillanceController::class, 'enregistrerCamera']);
             Route::delete('/cameras/{id}',          [SurveillanceController::class, 'desactiverCamera']);
+        });
+
+        // ── Signalements comportement ─────────────────────────────────────
+        Route::post('signalements',                         [SignalementController::class, 'store']);
+        Route::get('signalements',                          [SignalementController::class, 'index']);
+        Route::get('signalements/mes-signalements',         [SignalementController::class, 'mesSIgnalements']);
+        Route::get('signalements/eleve/{eleveId}',          [SignalementController::class, 'byEleve']);
+        Route::post('signalements/{id}/traiter',            [SignalementController::class, 'traiter']);
+        Route::get('signalements/parent/mon-enfant',        [SignalementController::class, 'monEnfantSignalements']);
+        Route::get('notifications/parent',                  [SignalementController::class, 'notificationsParent']);
+        Route::post('notifications/parent/{id}/lire',       [SignalementController::class, 'marquerLue']);
+        Route::post('notifications/parent/tout-lire',       [SignalementController::class, 'toutMarquerLu']);
+
+        // ── Diagnostic Niveau Élèves (Early Warning System) ──────────────
+        Route::prefix('diagnostic')->group(function () {
+            Route::get('/dashboard',                    [DiagnosticController::class, 'dashboard']);
+            Route::get('/eleves',                       [DiagnosticController::class, 'indexDiagnostics']);
+            Route::get('/eleves/{id}',                  [DiagnosticController::class, 'showDiagnostic']);
+            Route::post('/eleves/{id}/analyser',        [DiagnosticController::class, 'analyserEleve']);
+            Route::post('/analyser-tous',               [DiagnosticController::class, 'analyserTous']);
+            Route::post('/rattrapages',                 [DiagnosticController::class, 'creerRattrapage']);
+            Route::post('/convocations',                [DiagnosticController::class, 'envoyerConvocation']);
         });
 
         // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──
