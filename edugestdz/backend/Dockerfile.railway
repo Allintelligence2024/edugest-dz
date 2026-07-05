@@ -1,36 +1,89 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm-alpine AS build
 
+# Dépendances système
 RUN apk add --no-cache \
-    nginx \
-    libpq-dev libpng-dev libjpeg-turbo-dev libzip-dev freetype-dev oniguruma-dev libxml2-dev \
-    libpng libjpeg-turbo libzip \
-    autoconf gcc g++ make
+    git curl zip unzip libpng-dev libpq-dev \
+    oniguruma-dev libxml2-dev nginx supervisor \
+    freetype-dev libjpeg-turbo-dev
 
-RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
-    && docker-php-ext-install -j$(nproc) \
-        gd zip pdo pdo_pgsql pgsql mbstring xml bcmath fileinfo \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && apk del autoconf gcc g++ make
+# Extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install \
+    pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd xml opcache intl
 
+# Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
+
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Copier les fichiers composer en premier (cache layer)
+COPY composer.json composer.lock ./
+
+# Installer les dépendances sans les scripts (plus rapide)
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Copier tout le reste
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts \
-    && php artisan package:discover --ansi
+# Finaliser l'autoload
+RUN composer dump-autoload --optimize --no-dev
 
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# Permissions
+RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache \
+ && chown -R www-data:www-data /var/www/html \
+ && chmod -R 755 storage bootstrap/cache
 
-RUN rm -f /etc/nginx/http.d/default.conf
-COPY railway-nginx.conf /etc/nginx/http.d/default.conf
+# Nginx config
+RUN printf 'server {\n\
+    listen 80;\n\
+    root /var/www/html/public;\n\
+    index index.php index.html;\n\
+    client_max_body_size 10M;\n\
+    location / {\n\
+        try_files $uri $uri/ /index.php?$query_string;\n\
+    }\n\
+    location ~ \\.php$ {\n\
+        fastcgi_pass 127.0.0.1:9000;\n\
+        fastcgi_index index.php;\n\
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+        include fastcgi_params;\n\
+        fastcgi_read_timeout 300;\n\
+    }\n\
+    location /api/health { access_log off; }\n\
+    location ~ /\\.ht { deny all; }\n\
+}\n' > /etc/nginx/http.d/default.conf
 
-RUN chmod +x docker-entrypoint.sh
+# PHP config optimisée pour Railway
+RUN printf 'opcache.enable=1\n\
+opcache.memory_consumption=256\n\
+opcache.max_accelerated_files=20000\n\
+opcache.validate_timestamps=0\n\
+upload_max_filesize=10M\n\
+post_max_size=10M\n\
+memory_limit=256M\n\
+max_execution_time=60\n' > /usr/local/etc/php/conf.d/railway.ini
 
 EXPOSE 80
 
-ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
+# Script de démarrage complet
+CMD ["sh", "-c", "\
+    echo '=== EduGest DZ Starting ===' && \
+    php artisan key:generate --force 2>/dev/null || true && \
+    php artisan jwt:secret --force 2>/dev/null || true && \
+    php artisan config:clear && \
+    php artisan migrate --force 2>&1 | tail -5 && \
+    php artisan db:seed --class=CurriculumAlgerienSeeder --force 2>/dev/null || true && \
+    php artisan l5-swagger:generate 2>/dev/null || true && \
+    php artisan optimize && \
+    php-fpm -D && \
+    echo '=== nginx starting ===' && \
+    nginx -g 'daemon off;' \
+"]
