@@ -10,7 +10,7 @@ RUN apk add --no-cache \
 # Extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j$(nproc) \
-    pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd xml opcache intl
+    pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd xml opcache intl zip
 
 # Redis
 RUN pecl install redis && docker-php-ext-enable redis
