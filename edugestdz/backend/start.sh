@@ -43,7 +43,7 @@ while [ $TRIES -lt $MAX_TRIES ]; do
         echo "❌ PostgreSQL indisponible après ${MAX_TRIES} secondes."
         echo "   Vérifiez les variables : DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD"
         echo "   Variables détectées :"
-        echo "   DB_HOST=$(getenv DB_HOST 2>/dev/null || echo 'non défini')"
+        echo "   DB_HOST=$(printenv DB_HOST 2>/dev/null || echo 'non défini')"
         echo "   PGHOST=$(printenv PGHOST 2>/dev/null || echo 'non défini')"
         exit 1
     fi
