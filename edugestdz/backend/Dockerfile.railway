@@ -1,50 +1,37 @@
-# ══════════════════════════════════════════════════════════════
-# EduGest DZ — Dockerfile pour Railway
-# PHP 8.2 + Nginx + PostgreSQL + Redis
-# ══════════════════════════════════════════════════════════════
-
 FROM php:8.2-fpm-alpine
 
-# ── Dépendances système ────────────────────────────────────────
+# Dépendances système
 RUN apk add --no-cache \
-    bash curl zip unzip git nginx supervisor \
+    bash curl zip unzip git nginx \
     libpng-dev libpq-dev oniguruma-dev libxml2-dev \
     freetype-dev libjpeg-turbo-dev icu-dev
 
-# ── Extensions PHP ─────────────────────────────────────────────
+# Extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j$(nproc) \
-    pdo pdo_pgsql pgsql \
-    mbstring exif pcntl bcmath \
-    gd xml opcache intl
+    pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd xml opcache intl
 
 # Redis
-RUN pecl install redis \
- && docker-php-ext-enable redis
+RUN pecl install redis && docker-php-ext-enable redis
 
-# ── Composer ───────────────────────────────────────────────────
+# Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
-# ── Répertoire de travail ──────────────────────────────────────
 WORKDIR /var/www/html
 
-# ── Installer les dépendances (cache Docker layer) ─────────────
+# Dépendances composer (layer cache)
 COPY composer.json composer.lock ./
 RUN composer install \
-    --no-dev \
-    --no-scripts \
-    --no-autoloader \
-    --no-interaction \
-    --prefer-dist \
-    --optimize-autoloader=false
+    --no-dev --no-scripts --no-autoloader \
+    --no-interaction --prefer-dist
 
-# ── Copier le code source ──────────────────────────────────────
+# Code source
 COPY . .
 
-# ── Finaliser Composer ─────────────────────────────────────────
+# Autoload optimisé
 RUN composer dump-autoload --optimize --no-dev
 
-# ── Créer les répertoires nécessaires ─────────────────────────
+# Répertoires Laravel
 RUN mkdir -p \
     storage/logs \
     storage/framework/cache/data \
@@ -55,109 +42,19 @@ RUN mkdir -p \
  && chown -R www-data:www-data /var/www/html \
  && chmod -R 755 storage bootstrap/cache
 
-# ── Config Nginx ───────────────────────────────────────────────
-COPY <<'NGINX_CONF' /etc/nginx/http.d/default.conf
-server {
-    listen 80;
-    server_name _;
-    root /var/www/html/public;
-    index index.php index.html;
+# Nginx config (fichier externe, plus de heredoc)
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
-    client_max_body_size 10M;
-    client_body_timeout 60s;
-    send_timeout 60s;
+# PHP config
+COPY docker/php.ini /usr/local/etc/php/conf.d/railway.ini
 
-    # Sécurité
-    server_tokens off;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-Frame-Options "DENY" always;
+# PHP-FPM config
+COPY docker/fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
-    # Health check (pas de log pour éviter le bruit)
-    location = /api/health {
-        access_log off;
-        try_files $uri $uri/ /index.php?$query_string;
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_param SCRIPT_FILENAME $document_root/index.php;
-        include fastcgi_params;
-    }
-
-    # Application principale
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    # PHP-FPM
-    location ~ \.php$ {
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param HTTP_PROXY "";
-        include fastcgi_params;
-        fastcgi_read_timeout 300;
-        fastcgi_connect_timeout 60;
-        fastcgi_send_timeout 300;
-    }
-
-    # Fichiers statiques avec cache long
-    location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-
-    # Bloquer les fichiers cachés
-    location ~ /\.ht { deny all; }
-    location ~ /\.env { deny all; }
-}
-NGINX_CONF
-
-# ── Config PHP optimisée ───────────────────────────────────────
-COPY <<'PHP_INI' /usr/local/etc/php/conf.d/railway.ini
-; Performance
-opcache.enable=1
-opcache.memory_consumption=256
-opcache.max_accelerated_files=20000
-opcache.validate_timestamps=0
-opcache.revalidate_freq=0
-opcache.fast_shutdown=1
-
-; Limites
-upload_max_filesize=10M
-post_max_size=10M
-memory_limit=256M
-max_execution_time=60
-max_input_time=60
-
-; Logs
-log_errors=On
-error_log=/proc/self/fd/2
-display_errors=Off
-PHP_INI
-
-# ── Config PHP-FPM ─────────────────────────────────────────────
-COPY <<'FPM_CONF' /usr/local/etc/php-fpm.d/www.conf
-[www]
-user = www-data
-group = www-data
-listen = 127.0.0.1:9000
-pm = dynamic
-pm.max_children = 10
-pm.start_servers = 3
-pm.min_spare_servers = 2
-pm.max_spare_servers = 5
-pm.max_requests = 500
-catch_workers_output = yes
-php_admin_value[error_log] = /proc/self/fd/2
-FPM_CONF
-
-# ── Script de démarrage ────────────────────────────────────────
+# Script démarrage
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
 EXPOSE 80
-
-# Healthcheck Docker (Railway l'utilise aussi)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost/api/health || exit 1
 
 CMD ["/start.sh"]

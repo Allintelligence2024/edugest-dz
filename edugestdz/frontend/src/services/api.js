@@ -1,4 +1,14 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const BASE_URL = (() => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (!url || url.includes('TON_SERVICE') || url === '/api/v1') {
+    console.warn(
+      '[EduGest] VITE_API_BASE_URL non configuré.\n' +
+      'Configurer dans Vercel : Settings → Environment Variables\n' +
+      'VITE_API_BASE_URL = https://[votre-backend].up.railway.app/api/v1'
+    );
+  }
+  return url || '/api/v1';
+})();
 
 const apiClient = {
   getHeaders() {
@@ -31,7 +41,13 @@ const apiClient = {
 
       return response.json();
     } catch (error) {
-      console.error(`API Error [${method} ${path}]:`, error);
+      console.error(`API Error [${method} ${path}]:`, error.message);
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error(
+          'Impossible de joindre le serveur. ' +
+          'Vérifiez votre connexion internet ou contactez le support.'
+        );
+      }
       throw error;
     }
   },

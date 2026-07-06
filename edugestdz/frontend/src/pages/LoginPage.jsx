@@ -28,7 +28,16 @@ export default function LoginPage() {
         setError(res?.message ?? 'Email ou mot de passe incorrect.');
       }
     } catch (e) {
-      setError('Erreur réseau. Vérifiez votre connexion.');
+      if (e.message && e.message.includes('serveur')) {
+        setError(e.message);
+      } else if (!navigator.onLine) {
+        setError('Pas de connexion internet. Vérifiez votre réseau.');
+      } else {
+        setError(
+          'Le serveur est temporairement indisponible. ' +
+          'Réessayez dans quelques instants.'
+        );
+      }
     } finally {
       setLoading(false);
     }
