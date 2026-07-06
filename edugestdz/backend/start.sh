@@ -125,8 +125,12 @@ echo ""
 echo "🌐 [7/7] Démarrage Nginx..."
 echo "═══════════════════════════════════════"
 echo "   EduGest DZ opérationnel"
-echo "   Port : 80"
+echo "   Port : ${PORT:-80}"
 echo "   Health : /api/health"
 echo "   Swagger : /api/documentation"
 echo "═══════════════════════════════════════"
+
+# Render nginx config template with PORT (only replace $PORT, keep nginx vars intact)
+envsubst '$PORT' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
+
 exec nginx -g 'daemon off;'
