@@ -4,7 +4,8 @@ FROM php:8.2-fpm-alpine
 RUN apk add --no-cache \
     bash curl zip unzip git nginx \
     libpng-dev libpq-dev oniguruma-dev libxml2-dev \
-    freetype-dev libjpeg-turbo-dev icu-dev
+    freetype-dev libjpeg-turbo-dev icu-dev \
+    autoconf build-base
 
 # Extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
