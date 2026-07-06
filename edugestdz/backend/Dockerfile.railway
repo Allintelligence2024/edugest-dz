@@ -2,7 +2,7 @@ FROM php:8.2-fpm-alpine
 
 # Dépendances système
 RUN apk add --no-cache \
-    bash curl zip unzip git nginx \
+    bash curl zip unzip git nginx gettext \
     libpng-dev libpq-dev oniguruma-dev libxml2-dev libzip-dev \
     freetype-dev libjpeg-turbo-dev icu-dev \
     autoconf build-base
@@ -44,7 +44,7 @@ RUN mkdir -p \
  && chmod -R 755 storage bootstrap/cache
 
 # Nginx config (fichier externe, plus de heredoc)
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf.template
 
 # PHP config
 COPY docker/php.ini /usr/local/etc/php/conf.d/railway.ini
