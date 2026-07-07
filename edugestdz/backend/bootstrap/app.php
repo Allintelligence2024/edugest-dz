@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'resolve.tenant'    => \App\Http\Middleware\ResolveTenant::class,
             'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
             'super_admin'       => \App\Http\Middleware\SuperAdmin::class,
+            'module'            => \App\Http\Middleware\ModuleCheck::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {

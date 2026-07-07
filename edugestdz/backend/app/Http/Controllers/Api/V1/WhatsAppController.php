@@ -3,71 +3,78 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Notification;
-use App\Services\FirebaseService;
+use App\Models\WhatsappMessage;
+use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppController extends Controller
 {
-    public function __construct(private FirebaseService $firebase) {}
+    public function __construct(private WhatsAppService $whatsapp) {}
 
-    public function incoming(Request $request): JsonResponse
+    public function send(Request $request): JsonResponse
     {
-        $from = $request->input('From');
-        $body = trim($request->input('Body', ''));
-        $messageSid = $request->input('MessageSid');
-
-        Log::channel('stack')->info('Twilio WhatsApp reçu', [
-            'from' => $from,
-            'body' => $body,
-            'sid'  => $messageSid,
+        $request->validate([
+            'to'      => 'required|string',
+            'message' => 'required_without:template|string',
+            'template' => 'required_without:message|string',
+            'parameters' => 'nullable|array',
         ]);
 
-        if (empty($from) || empty($body)) {
-            return response()->json(['success' => false, 'message' => 'Données incomplètes'], 422);
+        if ($request->has('template')) {
+            $result = $this->whatsapp->sendTemplate(
+                $request->input('to'),
+                $request->input('template'),
+                $request->input('parameters', [])
+            );
+        } else {
+            $result = $this->whatsapp->sendText(
+                $request->input('to'),
+                $request->input('message')
+            );
         }
 
-        $phone = $this->normalizePhone($from);
-        $user = User::with('role')
-            ->whereHas('role', fn($q) => $q->where('nom', 'parent'))
-            ->where(function ($q) use ($phone) {
-                $q->where('telephone', $phone)
-                  ->orWhere('telephone_2', $phone);
-            })
-            ->first();
+        if ($result['success']) {
+            WhatsappMessage::create([
+                'message_id'  => $result['messageId'],
+                'to_number'   => $result['to'],
+                'direction'   => 'out',
+                'type'        => $request->has('template') ? 'template' : 'text',
+                'content'     => $request->input('message'),
+                'template_name' => $request->input('template'),
+                'status'      => 'sent',
+            ]);
 
-        if (!$user) {
-            Log::channel('stack')->warning('Twilio: numéro non reconnu', ['from' => $from, 'phone' => $phone]);
-            return response()->json(['success' => false, 'message' => 'Numéro non reconnu'], 404);
+            return response()->json(['success' => true, 'data' => $result], 201);
         }
 
-        Notification::create([
-            'tenant_id' => $user->tenant_id,
-            'user_id'   => $user->id,
-            'type'      => 'message_whatsapp',
-            'titre'     => 'Message WhatsApp reçu',
-            'message'   => $body,
-        ]);
-
-        $this->firebase->notifyUser($user->id, '📩 Message WhatsApp', $body, [
-            'type' => 'message_whatsapp',
-            'from' => $from,
-        ]);
-
-        return response()->json(['success' => true]);
+        return response()->json(['success' => false, 'error' => $result['error']], 422);
     }
 
-    private function normalizePhone(string $phone): string
+    public function index(Request $request): JsonResponse
     {
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-        if (strlen($phone) === 12 && str_starts_with($phone, '213')) {
-            return $phone;
-        }
-        if (strlen($phone) === 10 && str_starts_with($phone, '0')) {
-            return '213' . substr($phone, 1);
-        }
-        return $phone;
+        $messages = WhatsappMessage::orderBy('created_at', 'desc')
+            ->paginate($request->input('per_page', 50));
+
+        return response()->json(['success' => true, 'data' => $messages]);
+    }
+
+    public function show(string $id): JsonResponse
+    {
+        $message = WhatsappMessage::findOrFail($id);
+
+        return response()->json(['success' => true, 'data' => $message]);
+    }
+
+    public function stats(): JsonResponse
+    {
+        $stats = [
+            'total'   => WhatsappMessage::count(),
+            'sent'    => WhatsappMessage::where('direction', 'out')->where('status', 'sent')->count(),
+            'failed'  => WhatsappMessage::where('status', 'failed')->count(),
+            'incoming' => WhatsappMessage::where('direction', 'in')->count(),
+        ];
+
+        return response()->json(['success' => true, 'data' => $stats]);
     }
 }

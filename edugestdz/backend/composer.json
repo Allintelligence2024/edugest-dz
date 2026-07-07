@@ -9,6 +9,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.0",
         "darkaonline/l5-swagger": "^8.6",
+        "google/apiclient": "^2.15",
         "http-interop/http-factory-guzzle": "^1.0",
         "laravel/framework": "^11.31",
         "laravel/scout": "^10.0",

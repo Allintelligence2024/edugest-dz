@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
 import { useI18n } from '@context/I18nContext';
 import { useTheme } from '@context/ThemeContext';
+import { useModules } from '@context/ModulesContext';
 
 const MODULE_COLORS = {
   '/':              '#2563EB',
@@ -41,7 +42,7 @@ function useNavSections(t) {
         { label: t('nav_planning'),  path: '/planning', icon: '📅' },
         { label: t('nav_attendance'),path: '/presences',icon: '✅' },
         { label: t('nav_absences'),  path: '/absences', icon: '⚠️', badgeKey: 'absences' },
-        { label: t('nav_tickets'),   path: '/billets',  icon: '🎫' },
+        { label: t('nav_tickets'),   path: '/billets',  icon: '🎫', module: 'billets' },
       ],
     },
     {
@@ -49,27 +50,28 @@ function useNavSections(t) {
       items: [
         { label: t('nav_notes'),     path: '/notes',      icon: '📝' },
         { label: t('nav_bulletins'), path: '/bulletins',  icon: '📄' },
-        { label: t('nav_diagnostic'),path: '/diagnostic', icon: '🔬', badgeKey: 'critiques' },
-        { label: 'Examens Officiels', path: '/examens', icon: '🎓' },
+        { label: t('nav_diagnostic'),path: '/diagnostic', icon: '🔬', badgeKey: 'critiques', module: 'diagnostic' },
+        { label: 'Examens Officiels', path: '/examens', icon: '🎓', module: 'examens' },
+        { label: 'LMS — Cours en ligne', path: '/lms', icon: '🖥️', module: 'lms' },
       ],
     },
     {
       label: t('section_finance'),
       items: [
         { label: t('nav_finance'),   path: '/factures',  icon: '💰', badgeKey: 'impayes' },
-        { label: t('nav_budget'),    path: '/budget',    icon: '📈' },
-        { label: t('nav_pointage'),  path: '/pointage',  icon: '🏷️' },
+        { label: t('nav_budget'),    path: '/budget',    icon: '📈', module: 'budget' },
+        { label: t('nav_pointage'),  path: '/pointage',  icon: '🏷️', module: 'pointage' },
       ],
     },
     {
       label: t('section_management'),
       items: [
-        { label: t('nav_transport'),     path: '/transport',      icon: '🚌' },
-        { label: t('nav_canteen'),       path: '/cantine',        icon: '🍽️' },
-        { label: t('nav_stock'),         path: '/stock',          icon: '📦' },
-        { label: t('nav_staff'),         path: '/personnel-admin',icon: '👷' },
-        { label: t('nav_maintenance'),   path: '/entretien',      icon: '🔧' },
-        { label: t('nav_surveillance'),  path: '/surveillance',   icon: '🔒', badgeKey: 'alertes' },
+        { label: t('nav_transport'),     path: '/transport',      icon: '🚌', module: 'transport' },
+        { label: t('nav_canteen'),       path: '/cantine',        icon: '🍽️', module: 'cantine' },
+        { label: t('nav_stock'),         path: '/stock',          icon: '📦', module: 'stock' },
+        { label: t('nav_staff'),         path: '/personnel-admin',icon: '👷', module: 'personnel' },
+        { label: t('nav_maintenance'),   path: '/entretien',      icon: '🔧', module: 'entretien' },
+        { label: t('nav_surveillance'),  path: '/surveillance',   icon: '🔒', badgeKey: 'alertes', module: 'surveillance' },
       ],
     },
     {
@@ -91,6 +93,7 @@ function useNavSections(t) {
       items: [
         { label: t('nav_profile'),    path: '/profil',     icon: '⚙️' },
         { label: t('nav_audit'),      path: '/audit-logs', icon: '📋' },
+        { label: 'Gestion des modules', path: '/modules', icon: '🧩' },
         { label: t('nav_superadmin'), path: '/super-admin',icon: '🛡️', role: 'super_admin' },
       ],
     },
@@ -101,6 +104,7 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   const { t } = useI18n();
   const { isDark } = useTheme();
+  const { isActive } = useModules();
   const location = useLocation();
   const [collapsed, setCollapsed]   = useState(false);
   const [badges, setBadges]         = useState({});
@@ -214,7 +218,8 @@ export default function Sidebar() {
       <nav style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
         {NAV_SECTIONS.map(section => {
           const items = section.items.filter(item =>
-            !item.role || user?.role === item.role
+            (!item.role || user?.role === item.role) &&
+            (!item.module || isActive(item.module))
           );
           if (items.length === 0) return null;
 
