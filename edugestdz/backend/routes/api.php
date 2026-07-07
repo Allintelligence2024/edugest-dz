@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\V1\{
     SurveillanceController,
     SignalementController,
     DiagnosticController,
+    ExamenController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -532,6 +533,37 @@ use App\Http\Controllers\Api\V1\{
             Route::post('/analyser-tous',               [DiagnosticController::class, 'analyserTous']);
             Route::post('/rattrapages',                 [DiagnosticController::class, 'creerRattrapage']);
             Route::post('/convocations',                [DiagnosticController::class, 'envoyerConvocation']);
+        });
+
+        // ── Examens Officiels BEM/BAC ──
+        Route::prefix('examens')->group(function () {
+            Route::get('/',                       [ExamenController::class, 'indexSessions']);
+            Route::post('/',                      [ExamenController::class, 'storeSession']);
+            Route::get('/{id}',                   [ExamenController::class, 'showSession']);
+            Route::put('/{id}',                   [ExamenController::class, 'updateSession']);
+
+            Route::post('/{sessionId}/epreuves',          [ExamenController::class, 'storeEpreuve']);
+            Route::delete('/epreuves/{id}',               [ExamenController::class, 'deleteEpreuve']);
+
+            Route::post('/{sessionId}/salles',            [ExamenController::class, 'storeSalle']);
+
+            Route::get('/{sessionId}/candidats',          [ExamenController::class, 'indexCandidats']);
+            Route::post('/{sessionId}/candidats',         [ExamenController::class, 'storeCandidat']);
+            Route::post('/{sessionId}/candidats/import-eleves', [ExamenController::class, 'importerElevesSysteme']);
+            Route::post('/{sessionId}/candidats/import-csv',    [ExamenController::class, 'importerCSV']);
+            Route::post('/candidats/{id}/presence',       [ExamenController::class, 'marquerPresence']);
+
+            Route::post('/{sessionId}/surveillants',      [ExamenController::class, 'storeSurveillant']);
+            Route::post('/{sessionId}/surveillants/import',[ExamenController::class, 'importerEnseignantsSurveillants']);
+
+            Route::post('/{sessionId}/affecter-candidats',  [ExamenController::class, 'affecterCandidats']);
+            Route::post('/{sessionId}/affecter-surveillants',[ExamenController::class, 'affecterSurveilants']);
+
+            Route::get('/candidats/{id}/convocation',        [ExamenController::class, 'pdfConvocationCandidat']);
+            Route::get('/{sessionId}/toutes-convocations',   [ExamenController::class, 'pdfToutesConvocations']);
+            Route::get('/surveillants/{id}/convocation',     [ExamenController::class, 'pdfConvocationSurveillant']);
+            Route::get('/salles/{salleId}/feuille-presence', [ExamenController::class, 'pdfFeuillePresence']);
+            Route::get('/salles/{salleId}/plan',             [ExamenController::class, 'pdfPlanSalle']);
         });
 
         // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──

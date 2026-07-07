@@ -41,6 +41,7 @@ import PointagePage from '@pages/PointagePage';
 import ProfilePage from '@pages/ProfilePage';
 import SurveillancePage from '@pages/SurveillancePage';
 import DiagnosticPage from '@pages/DiagnosticPage';
+import ExamensPage from '@pages/ExamensPage';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -139,6 +140,7 @@ export default function App() {
             <Route path="profil" element={<ProfilePage />} />
             <Route path="surveillance" element={<SurveillancePage />} />
             <Route path="diagnostic" element={<DiagnosticPage />} />
+            <Route path="examens" element={<ExamensPage />} />
             </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />

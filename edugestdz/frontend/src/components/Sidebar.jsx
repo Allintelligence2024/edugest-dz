@@ -50,6 +50,7 @@ function useNavSections(t) {
         { label: t('nav_notes'),     path: '/notes',      icon: '📝' },
         { label: t('nav_bulletins'), path: '/bulletins',  icon: '📄' },
         { label: t('nav_diagnostic'),path: '/diagnostic', icon: '🔬', badgeKey: 'critiques' },
+        { label: 'Examens Officiels', path: '/examens', icon: '🎓' },
       ],
     },
     {
