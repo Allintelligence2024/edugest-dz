@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
 
         $middleware->api(prepend: [
+            \App\Http\Middleware\LicenceCheck::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\QueryMonitor::class,
         ]);
