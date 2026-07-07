@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { authApi } from '../services/api';
+import { useI18n } from '@context/I18nContext';
+import { useTheme } from '@context/ThemeContext';
+import LanguageThemeSelector from '@components/LanguageThemeSelector';
 
 export default function LoginPage() {
+  const { t } = useI18n();
+  const { isDark } = useTheme();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading]   = useState(false);
@@ -25,7 +30,7 @@ export default function LoginPage() {
         if (role === 'super_admin') window.location.href = '/super-admin';
         else                        window.location.href = '/dashboard';
       } else {
-        setError(res?.message ?? 'Email ou mot de passe incorrect.');
+        setError(res?.message ?? t('login_error'));
       }
     } catch (e) {
       if (e.message && e.message.includes('serveur')) {
@@ -45,21 +50,25 @@ export default function LoginPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#08090f',
+      minHeight: '100vh', background: 'var(--eg-bg)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px',
+      padding: '20px', position: 'relative',
     }}>
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <LanguageThemeSelector compact />
+      </div>
+
       <div style={{
-        background: '#111318', border: '1px solid #1e293b',
+        background: 'var(--eg-surface)', border: '1px solid var(--eg-border)',
         borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px',
       }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎓</div>
-          <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>
-            EduGest DZ
+          <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--eg-text)', marginBottom: '4px' }}>
+            {t('app_name')}
           </h1>
-          <p style={{ fontSize: '12px', color: '#64748b' }}>
-            Plateforme de gestion scolaire
+          <p style={{ fontSize: '12px', color: 'var(--eg-muted)' }}>
+            {t('login_subtitle')}
           </p>
         </div>
 
@@ -75,8 +84,8 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin}>
           <div style={{ marginBottom: '14px' }}>
-            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '6px' }}>
-              Adresse email
+            <label style={{ fontSize: '11px', color: 'var(--eg-muted)', display: 'block', marginBottom: '6px' }}>
+              {t('login_email')}
             </label>
             <input
               type="email"
@@ -85,15 +94,15 @@ export default function LoginPage() {
               placeholder="directeur@ecole.dz"
               required
               style={{
-                width: '100%', background: '#1e293b', border: '1px solid #334155',
-                borderRadius: '8px', color: '#e2e8f0', padding: '12px 14px', fontSize: '13px',
+                width: '100%', background: 'var(--eg-input-bg)', border: '1px solid var(--eg-border)',
+                borderRadius: '8px', color: 'var(--eg-text)', padding: '12px 14px', fontSize: '13px',
               }}
             />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '6px' }}>
-              Mot de passe
+            <label style={{ fontSize: '11px', color: 'var(--eg-muted)', display: 'block', marginBottom: '6px' }}>
+              {t('login_password')}
             </label>
             <input
               type="password"
@@ -102,8 +111,8 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
               style={{
-                width: '100%', background: '#1e293b', border: '1px solid #334155',
-                borderRadius: '8px', color: '#e2e8f0', padding: '12px 14px', fontSize: '13px',
+                width: '100%', background: 'var(--eg-input-bg)', border: '1px solid var(--eg-border)',
+                borderRadius: '8px', color: 'var(--eg-text)', padding: '12px 14px', fontSize: '13px',
               }}
             />
           </div>
@@ -113,23 +122,23 @@ export default function LoginPage() {
             disabled={loading}
             style={{
               width: '100%',
-              background: loading ? '#1e293b' : 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+              background: loading ? 'var(--eg-surface2)' : 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
               color: '#fff', border: 'none', borderRadius: '8px',
               padding: '13px', fontSize: '14px', fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'opacity .2s',
             }}
           >
-            {loading ? '⏳ Connexion...' : '🔐 Se connecter'}
+            {loading ? `⏳ ${t('login_loading')}` : `🔐 ${t('login_submit')}`}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '11px', color: '#475569' }}>
+        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '11px', color: 'var(--eg-muted)' }}>
           Problème de connexion ? Contactez l'administrateur de votre établissement.
         </p>
 
-        <div style={{ marginTop: '24px', borderTop: '1px solid #1e293b', paddingTop: '16px', textAlign: 'center' }}>
-          <p style={{ fontSize: '10px', color: '#334155' }}>
+        <div style={{ marginTop: '24px', borderTop: '1px solid var(--eg-border)', paddingTop: '16px', textAlign: 'center' }}>
+          <p style={{ fontSize: '10px', color: 'var(--eg-border)' }}>
             Vous êtes un centre ? Rejoignez la Marketplace →{' '}
             <a href="/marketplace" style={{ color: '#60a5fa', textDecoration: 'none' }}>
               Trouver un cours

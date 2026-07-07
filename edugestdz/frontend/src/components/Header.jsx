@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import LanguageThemeSelector from '@components/LanguageThemeSelector';
 
 const PAGE_TITLES = {
   '/':                 { title: 'Tableau de bord',     crumb: [] },
@@ -127,6 +128,8 @@ export default function Header({ user }) {
           }}
         />
       </div>
+
+      <LanguageThemeSelector />
 
       <div style={{ position: 'relative' }}>
         <button

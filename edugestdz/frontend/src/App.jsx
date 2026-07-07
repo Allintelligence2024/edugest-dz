@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from '@context/AuthContext';
 import { I18nProvider } from '@context/I18nContext';
+import { ThemeProvider } from '@context/ThemeContext';
 import Sidebar from '@components/Sidebar';
 import Header from '@components/Header';
 import LoginPage from '@pages/LoginPage';
@@ -89,8 +90,9 @@ function PublicRoute({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <I18nProvider>
-        <AuthProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <AuthProvider>
           <Toaster position="top-right" toastOptions={{
             duration: 3500,
             style: {
@@ -142,8 +144,9 @@ export default function App() {
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </AuthProvider>
-      </I18nProvider>
+          </AuthProvider>
+        </I18nProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

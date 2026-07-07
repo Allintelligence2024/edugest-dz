@@ -4,17 +4,23 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design System EduGest DZ ── */
+/* ── Variables thème (dark par défaut — surchargées par ThemeContext) ── */
 :root {
-  /* Couleurs principales */
   --eg-bg:        #070B14;
   --eg-surface:   #0D1117;
   --eg-surface2:  #161C26;
   --eg-border:    #1E2D40;
   --eg-text:      #E2E8F0;
+  --eg-text2:     #94A3B8;
   --eg-muted:     #64748B;
+  --eg-input-bg:  #161C26;
+  --eg-card-bg:   #0D1117;
+  --eg-nav-bg:    #0D1117;
+  --eg-topbar-bg: #0D1117;
+  --eg-hover:     #161C2688;
+  --eg-shadow:    0 4px 24px rgba(0,0,0,0.5);
 
-  /* Accents */
+  /* Accents — fixes dans les deux thèmes */
   --eg-blue:      #2563EB;
   --eg-blue-light:#93C5FD;
   --eg-green:     #10B981;
@@ -28,6 +34,30 @@
 
   /* Transitions */
   --transition:   all 0.15s ease;
+}
+
+/* Thème clair — surchargé dynamiquement par ThemeContext */
+[data-theme="light"] {
+  --eg-bg:        #F8FAFC;
+  --eg-surface:   #FFFFFF;
+  --eg-surface2:  #F1F5F9;
+  --eg-border:    #E2E8F0;
+  --eg-text:      #0F172A;
+  --eg-text2:     #475569;
+  --eg-muted:     #94A3B8;
+  --eg-input-bg:  #F8FAFC;
+  --eg-card-bg:   #FFFFFF;
+  --eg-nav-bg:    #FFFFFF;
+  --eg-topbar-bg: #FFFFFF;
+  --eg-hover:     #F1F5F988;
+  --eg-shadow:    0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* Application globale des variables */
+body {
+  background-color: var(--eg-bg);
+  color: var(--eg-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Police globale */
@@ -59,3 +89,7 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* RTL support */
+[dir="rtl"] .sidebar-item-text { text-align: right; }
+[dir="rtl"] .breadcrumb        { flex-direction: row-reverse; }

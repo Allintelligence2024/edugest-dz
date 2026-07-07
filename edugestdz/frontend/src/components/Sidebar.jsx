@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
+import { useI18n } from '@context/I18nContext';
+import { useTheme } from '@context/ThemeContext';
 
 const MODULE_COLORS = {
   '/':              '#2563EB',
@@ -29,75 +31,81 @@ const MODULE_COLORS = {
   '/super-admin':   '#EF4444',
 };
 
-const NAV_SECTIONS = [
-  {
-    label: 'Principal',
-    items: [
-      { label: 'Tableau de bord', path: '/',        icon: '📊', end: true },
-      { label: 'Élèves',          path: '/eleves',  icon: '👦', badge: null },
-      { label: 'Planning',        path: '/planning', icon: '📅' },
-      { label: 'Présences',       path: '/presences',icon: '✅' },
-      { label: 'Absences',        path: '/absences', icon: '⚠️', badgeKey: 'absences' },
-      { label: 'Billets',         path: '/billets',  icon: '🎫' },
-    ],
-  },
-  {
-    label: 'Pédagogie',
-    items: [
-      { label: 'Notes',           path: '/notes',      icon: '📝' },
-      { label: 'Bulletins',       path: '/bulletins',  icon: '📄' },
-      { label: 'Diagnostic niveau',path: '/diagnostic',icon: '🔬', badgeKey: 'critiques' },
-    ],
-  },
-  {
-    label: 'Finance',
-    items: [
-      { label: 'Factures',        path: '/factures',  icon: '💰', badgeKey: 'impayes' },
-      { label: 'Budget & Dépenses',path: '/budget',   icon: '📈' },
-      { label: 'Pointage',        path: '/pointage',  icon: '🏷️' },
-    ],
-  },
-  {
-    label: 'Gestion Centre',
-    items: [
-      { label: 'Transport',       path: '/transport',      icon: '🚌' },
-      { label: 'Cantine',         path: '/cantine',        icon: '🍽️' },
-      { label: 'Stock & Inventaire',path: '/stock',        icon: '📦' },
-      { label: 'Personnel admin.',  path: '/personnel-admin',icon: '👷' },
-      { label: 'Entretien',        path: '/entretien',     icon: '🔧' },
-      { label: 'Surveillance',     path: '/surveillance',  icon: '🔒', badgeKey: 'alertes' },
-    ],
-  },
-  {
-    label: 'Communication',
-    items: [
-      { label: 'Messages',        path: '/messages',   icon: '💬', badgeKey: 'messages' },
-      { label: 'Campagnes',       path: '/campagnes',  icon: '📢' },
-    ],
-  },
-  {
-    label: 'Marketplace',
-    items: [
-      { label: 'Centres (public)', path: '/centres',         icon: '🛒' },
-      { label: 'Mes réservations', path: '/mes-reservations',icon: '📅' },
-    ],
-  },
-  {
-    label: 'Paramètres',
-    items: [
-      { label: 'Mon Profil',      path: '/profil',     icon: '⚙️' },
-      { label: 'Journal audit',   path: '/audit-logs', icon: '📋' },
-      { label: 'Super-Admin',     path: '/super-admin',icon: '🛡️', role: 'super_admin' },
-    ],
-  },
-];
+function useNavSections(t) {
+  return [
+    {
+      label: t('section_main'),
+      items: [
+        { label: t('nav_dashboard'), path: '/',        icon: '📊', end: true },
+        { label: t('nav_students'),  path: '/eleves',  icon: '👦', badge: null },
+        { label: t('nav_planning'),  path: '/planning', icon: '📅' },
+        { label: t('nav_attendance'),path: '/presences',icon: '✅' },
+        { label: t('nav_absences'),  path: '/absences', icon: '⚠️', badgeKey: 'absences' },
+        { label: t('nav_tickets'),   path: '/billets',  icon: '🎫' },
+      ],
+    },
+    {
+      label: t('section_pedagogy'),
+      items: [
+        { label: t('nav_notes'),     path: '/notes',      icon: '📝' },
+        { label: t('nav_bulletins'), path: '/bulletins',  icon: '📄' },
+        { label: t('nav_diagnostic'),path: '/diagnostic', icon: '🔬', badgeKey: 'critiques' },
+      ],
+    },
+    {
+      label: t('section_finance'),
+      items: [
+        { label: t('nav_finance'),   path: '/factures',  icon: '💰', badgeKey: 'impayes' },
+        { label: t('nav_budget'),    path: '/budget',    icon: '📈' },
+        { label: t('nav_pointage'),  path: '/pointage',  icon: '🏷️' },
+      ],
+    },
+    {
+      label: t('section_management'),
+      items: [
+        { label: t('nav_transport'),     path: '/transport',      icon: '🚌' },
+        { label: t('nav_canteen'),       path: '/cantine',        icon: '🍽️' },
+        { label: t('nav_stock'),         path: '/stock',          icon: '📦' },
+        { label: t('nav_staff'),         path: '/personnel-admin',icon: '👷' },
+        { label: t('nav_maintenance'),   path: '/entretien',      icon: '🔧' },
+        { label: t('nav_surveillance'),  path: '/surveillance',   icon: '🔒', badgeKey: 'alertes' },
+      ],
+    },
+    {
+      label: t('section_communication'),
+      items: [
+        { label: t('nav_messages'),  path: '/messages',   icon: '💬', badgeKey: 'messages' },
+        { label: t('nav_campaigns'), path: '/campagnes',  icon: '📢' },
+      ],
+    },
+    {
+      label: t('section_main'),
+      items: [
+        { label: t('nav_marketplace'), path: '/centres',         icon: '🛒' },
+        { label: 'Mes réservations',  path: '/mes-reservations',icon: '📅' },
+      ],
+    },
+    {
+      label: t('section_settings'),
+      items: [
+        { label: t('nav_profile'),    path: '/profil',     icon: '⚙️' },
+        { label: t('nav_audit'),      path: '/audit-logs', icon: '📋' },
+        { label: t('nav_superadmin'), path: '/super-admin',icon: '🛡️', role: 'super_admin' },
+      ],
+    },
+  ];
+}
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const { t } = useI18n();
+  const { isDark } = useTheme();
   const location = useLocation();
   const [collapsed, setCollapsed]   = useState(false);
   const [badges, setBadges]         = useState({});
   const [collapsedSections, setCollapsedSections] = useState({});
+
+  const NAV_SECTIONS = useNavSections(t);
 
   const activeColor = MODULE_COLORS[location.pathname] || '#2563EB';
 
@@ -132,15 +140,15 @@ export default function Sidebar() {
     ? `${(user.nom || '')[0] || ''}${(user.prenom || '')[0] || ''}`.toUpperCase()
     : 'U';
 
-  const tenantName   = localStorage.getItem('tenantName')  || 'Mon établissement';
+  const tenantName   = localStorage.getItem('tenantName')  || t('app_name');
   const tenantWilaya = localStorage.getItem('tenantWilaya') || 'Algérie';
 
   return (
     <aside
       style={{
         width: collapsed ? '64px' : '240px',
-        background: '#0D1117',
-        borderRight: '1px solid #1E2D40',
+        background: 'var(--eg-nav-bg)',
+        borderRight: '1px solid var(--eg-border)',
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
@@ -154,7 +162,7 @@ export default function Sidebar() {
     >
       <div style={{
         padding: collapsed ? '18px 14px' : '18px 16px',
-        borderBottom: '1px solid #1E2D40',
+        borderBottom: '1px solid var(--eg-border)',
         display: 'flex', alignItems: 'center', gap: '10px',
         minHeight: '64px',
       }}>
@@ -169,10 +177,10 @@ export default function Sidebar() {
         {!collapsed && (
           <div style={{ overflow: 'hidden' }}>
             <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>
-              EduGest DZ
+              {t('app_name')}
             </div>
-            <div style={{ fontSize: '9px', color: '#64748B', whiteSpace: 'nowrap' }}>
-              Gestion Scolaire
+            <div style={{ fontSize: '9px', color: 'var(--eg-muted)', whiteSpace: 'nowrap' }}>
+              {t('app_subtitle')}
             </div>
           </div>
         )}
@@ -196,7 +204,7 @@ export default function Sidebar() {
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             🏫 {tenantName}
           </div>
-          <div style={{ fontSize: '9px', color: '#64748B' }}>
+          <div style={{ fontSize: '9px', color: 'var(--eg-muted)' }}>
             📍 {tenantWilaya}
           </div>
         </div>
@@ -254,7 +262,7 @@ export default function Sidebar() {
                       borderRadius: '9px',
                       fontSize: '12px',
                       fontWeight: navActive || isActive ? 700 : 500,
-                      color: navActive || isActive ? color : '#64748B',
+                      color: navActive || isActive ? color : 'var(--eg-muted)',
                       background: navActive || isActive
                         ? `${color}18`
                         : 'transparent',
@@ -291,7 +299,7 @@ export default function Sidebar() {
                         position: 'absolute', top: '4px', right: '4px',
                         width: '8px', height: '8px',
                         background: '#EF4444', borderRadius: '50%',
-                        border: '2px solid #0D1117',
+                        border: '2px solid var(--eg-nav-bg)',
                       }} />
                     )}
                   </NavLink>
@@ -302,12 +310,12 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div style={{ borderTop: '1px solid #1E2D40', padding: '12px' }}>
+      <div style={{ borderTop: '1px solid var(--eg-border)', padding: '12px' }}>
         {!collapsed ? (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '10px',
             padding: '9px 10px', borderRadius: '10px',
-            background: '#161C26', cursor: 'pointer',
+            background: 'var(--eg-surface2)', cursor: 'pointer',
           }}>
             <div style={{
               width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
@@ -318,16 +326,16 @@ export default function Sidebar() {
               {userInitials}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#E2E8F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--eg-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {user?.nom} {user?.prenom}
               </div>
-              <div style={{ fontSize: '9px', color: '#64748B', textTransform: 'capitalize' }}>
+              <div style={{ fontSize: '9px', color: 'var(--eg-muted)', textTransform: 'capitalize' }}>
                 {user?.role}
               </div>
             </div>
             <button
               onClick={logout}
-              title="Déconnexion"
+              title={t('nav_logout')}
               style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '14px' }}
             >
               ↩
