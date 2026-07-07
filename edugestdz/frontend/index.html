@@ -6,6 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduGest DZ — Gestion Cours Particuliers</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Anti-flash theme script — doit être le PREMIER script dans <head> -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved || (prefersDark ? 'dark' : 'light');
+          var root = document.documentElement;
+          root.setAttribute('data-theme', theme);
+          if (theme === 'dark') {
+            root.classList.add('dark');
+            root.style.setProperty('--eg-bg', '#070B14');
+            root.style.setProperty('--eg-surface', '#0D1117');
+            root.style.setProperty('--eg-text', '#E2E8F0');
+            root.style.background = '#070B14';
+          } else {
+            root.style.setProperty('--eg-bg', '#F8FAFC');
+            root.style.setProperty('--eg-surface', '#FFFFFF');
+            root.style.setProperty('--eg-text', '#0F172A');
+            root.style.background = '#F8FAFC';
+          }
+          var lang = localStorage.getItem('lang') || 'fr';
+          root.lang = lang;
+          root.dir  = (lang === 'ar' || lang === 'dz') ? 'rtl' : 'ltr';
+        } catch(e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
