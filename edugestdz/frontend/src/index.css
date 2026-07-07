@@ -1,16 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #F8F9FA;
-  color: #212529;
+/* ── Design System EduGest DZ ── */
+:root {
+  /* Couleurs principales */
+  --eg-bg:        #070B14;
+  --eg-surface:   #0D1117;
+  --eg-surface2:  #161C26;
+  --eg-border:    #1E2D40;
+  --eg-text:      #E2E8F0;
+  --eg-muted:     #64748B;
+
+  /* Accents */
+  --eg-blue:      #2563EB;
+  --eg-blue-light:#93C5FD;
+  --eg-green:     #10B981;
+  --eg-orange:    #F59E0B;
+  --eg-red:       #EF4444;
+  --eg-purple:    #7C3AED;
+  --eg-teal:      #06B6D4;
+
+  /* Sidebar */
+  --sidebar-w:    240px;
+
+  /* Transitions */
+  --transition:   all 0.15s ease;
 }
 
-#root {
-  min-height: 100vh;
+/* Police globale */
+* { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+/* Scrollbar dark */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--eg-surface); }
+::-webkit-scrollbar-thumb { background: var(--eg-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--eg-muted); }
+
+/* Animations réutilisables */
+@keyframes fadeIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.5} }
+@keyframes slideIn { from { transform:translateX(-100%); } to { transform:translateX(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.animate-fadeIn  { animation: fadeIn  0.2s ease forwards; }
+.animate-pulse-slow { animation: pulse 2s infinite; }
+
+/* Card hover effect */
+.card-hover { transition: var(--transition); }
+.card-hover:hover { transform: translateY(-2px); border-color: #2563eb55 !important; }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--eg-blue), var(--eg-purple), var(--eg-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

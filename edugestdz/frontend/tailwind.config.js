@@ -1,70 +1,49 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
-      colors: {
-        primary: {
-          50: '#EEF4FF',
-          100: '#D9E6FF',
-          200: '#BCCFFF',
-          300: '#8EADFF',
-          400: '#5A7FFF',
-          500: '#1E5EBC',
-          600: '#1A4FA3',
-          700: '#16408A',
-          800: '#123171',
-          900: '#0E2258',
-        },
-        neutral: {
-          50: '#F8F9FA',
-          100: '#F1F3F5',
-          200: '#E9ECEF',
-          300: '#DEE2E6',
-          400: '#ADB5BD',
-          500: '#868E96',
-          600: '#495057',
-          700: '#343A40',
-          800: '#212529',
-          900: '#0D1117',
-        },
-        danger: {
-          50: '#FFF5F5',
-          100: '#FFE3E3',
-          200: '#FFC9C9',
-          300: '#FFA8A8',
-          400: '#FF6B6B',
-          500: '#E74C3C',
-          600: '#C0392B',
-          700: '#A93226',
-          800: '#8E2218',
-          900: '#7B1F1A',
-        },
-      },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
-      boxShadow: {
-        card: '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)',
-        modal: '0 20px 60px rgba(0,0,0,0.15)',
-      },
-      borderWidth: {
-        3: '3px',
-      },
-      keyframes: {
-        'slide-up': {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+      colors: {
+        eg: {
+          bg:       '#070B14',
+          surface:  '#0D1117',
+          surface2: '#161C26',
+          border:   '#1E2D40',
+          text:     '#E2E8F0',
+          muted:    '#64748B',
+        },
+        primary: {
+          50:  '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
         },
       },
+      borderRadius: {
+        'xl':  '12px',
+        '2xl': '16px',
+        '3xl': '24px',
+      },
+      boxShadow: {
+        'glow-blue':   '0 0 20px rgba(37,99,235,0.3)',
+        'glow-green':  '0 0 20px rgba(16,185,129,0.3)',
+        'card':        '0 1px 3px rgba(0,0,0,0.4)',
+        'card-hover':  '0 8px 24px rgba(0,0,0,0.5)',
+      },
       animation: {
-        'slide-up': 'slide-up 0.25s ease-out',
+        'fade-in': 'fadeIn 0.2s ease forwards',
+        'pulse-slow': 'pulse 2s infinite',
       },
     },
   },
   plugins: [],
-};
+}

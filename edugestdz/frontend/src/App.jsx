@@ -46,8 +46,12 @@ function ProtectedLayout() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full" />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎓</div>
+          <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '3px solid #1E2D40', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ marginTop: '16px', fontSize: '13px', color: '#64748B' }}>Chargement EduGest DZ...</div>
+        </div>
       </div>
     );
   }
@@ -57,11 +61,17 @@ function ProtectedLayout() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14' }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Header user={user} />
-        <main className="flex-1 p-6 overflow-y-auto bg-neutral-50">
+        <main style={{
+          flex: 1,
+          padding: '24px',
+          overflowY: 'auto',
+          background: '#070B14',
+          color: '#E2E8F0',
+        }}>
           <Outlet />
         </main>
       </div>
@@ -84,11 +94,12 @@ export default function App() {
           <Toaster position="top-right" toastOptions={{
             duration: 3500,
             style: {
-              borderRadius: '12px',
-              background: '#fff',
-              color: '#212529',
-              fontSize: '14px',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+              borderRadius: '10px',
+              background: '#0D1117',
+              color: '#E2E8F0',
+              fontSize: '13px',
+              border: '1px solid #1E2D40',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             },
           }} />
           <Routes>

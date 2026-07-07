@@ -1,154 +1,348 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
-import { useI18n } from '@context/I18nContext';
 
-const NAV_ITEMS = [
-  { label: 'Tableau de bord', path: '/', icon: '📊' },
-  { label: 'Planning', path: '/planning', icon: '📅' },
-  { label: 'Présences', path: '/presences', icon: '📋' },
-  { label: 'Absences', path: '/absences', icon: '✅' },
-  { label: 'Billets', path: '/billets', icon: '🎫' },
-  { label: 'Facturation', path: '/factures', icon: '💰' },
-  { label: 'Élèves', path: '/eleves', icon: '👨‍🎓' },
+const MODULE_COLORS = {
+  '/':              '#2563EB',
+  '/eleves':        '#10B981',
+  '/planning':      '#06B6D4',
+  '/presences':     '#10B981',
+  '/absences':      '#F59E0B',
+  '/billets':       '#F59E0B',
+  '/notes':         '#7C3AED',
+  '/bulletins':     '#7C3AED',
+  '/diagnostic':    '#7C3AED',
+  '/factures':      '#10B981',
+  '/budget':        '#10B981',
+  '/transport':     '#2563EB',
+  '/cantine':       '#F59E0B',
+  '/stock':         '#06B6D4',
+  '/personnel':     '#64748B',
+  '/personnel-admin':'#64748B',
+  '/entretien':     '#F59E0B',
+  '/surveillance':  '#EF4444',
+  '/marketplace':   '#7C3AED',
+  '/centres':       '#7C3AED',
+  '/pointage':      '#06B6D4',
+  '/messages':      '#2563EB',
+  '/campagnes':     '#2563EB',
+  '/super-admin':   '#EF4444',
+};
+
+const NAV_SECTIONS = [
   {
-    label: 'Personnel',
-    path: '/personnel',
-    icon: '👥',
-    children: [
-      { label: 'Enseignants', path: '/enseignants', icon: '👨‍🏫' },
-      { label: 'Paie', path: '/paie', icon: '💰' },
+    label: 'Principal',
+    items: [
+      { label: 'Tableau de bord', path: '/',        icon: '📊', end: true },
+      { label: 'Élèves',          path: '/eleves',  icon: '👦', badge: null },
+      { label: 'Planning',        path: '/planning', icon: '📅' },
+      { label: 'Présences',       path: '/presences',icon: '✅' },
+      { label: 'Absences',        path: '/absences', icon: '⚠️', badgeKey: 'absences' },
+      { label: 'Billets',         path: '/billets',  icon: '🎫' },
     ],
   },
-  { label: 'Groupes', path: '/groupes', icon: '📚' },
-  { label: 'Salles', path: '/salles', icon: '🏫' },
-  { label: 'Matières', path: '/matieres', icon: '📖' },
-  { label: 'Marketplace', path: '/marketplace', icon: '🛒' },
-  { label: 'Centres', path: '/centres', icon: '🏛️' },
-  { label: 'Pointage', path: '/pointage', icon: '🏷️' },
-  { label: 'Surveillance', path: '/surveillance', icon: '🔒' },
   {
     label: 'Pédagogie',
-    path: '/pedagogie',
-    icon: '📚',
-    children: [
-      { label: 'Notes', path: '/notes', icon: '📝' },
-      { label: 'Bulletins', path: '/bulletins', icon: '📜' },
-      { label: 'Diagnostic Niveau', path: '/diagnostic', icon: '🔬' },
+    items: [
+      { label: 'Notes',           path: '/notes',      icon: '📝' },
+      { label: 'Bulletins',       path: '/bulletins',  icon: '📄' },
+      { label: 'Diagnostic niveau',path: '/diagnostic',icon: '🔬', badgeKey: 'critiques' },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      { label: 'Factures',        path: '/factures',  icon: '💰', badgeKey: 'impayes' },
+      { label: 'Budget & Dépenses',path: '/budget',   icon: '📈' },
+      { label: 'Pointage',        path: '/pointage',  icon: '🏷️' },
     ],
   },
   {
     label: 'Gestion Centre',
-    path: '/gestion',
-    icon: '🏫',
-    children: [
-      { label: 'Transport', path: '/transport', icon: '🚌' },
-      { label: 'Cantine', path: '/cantine', icon: '🍽️' },
-      { label: 'Stock & Inventaire', path: '/stock', icon: '📦' },
-      { label: 'Personnel admin.', path: '/personnel-admin', icon: '👷' },
-      { label: 'Budget & Finances', path: '/budget', icon: '📊' },
-      { label: 'Entretien Bâtiment', path: '/entretien', icon: '🔧' },
+    items: [
+      { label: 'Transport',       path: '/transport',      icon: '🚌' },
+      { label: 'Cantine',         path: '/cantine',        icon: '🍽️' },
+      { label: 'Stock & Inventaire',path: '/stock',        icon: '📦' },
+      { label: 'Personnel admin.',  path: '/personnel-admin',icon: '👷' },
+      { label: 'Entretien',        path: '/entretien',     icon: '🔧' },
+      { label: 'Surveillance',     path: '/surveillance',  icon: '🔒', badgeKey: 'alertes' },
     ],
   },
   {
     label: 'Communication',
-    path: '/communication',
-    icon: '💬',
-    children: [
-      { label: 'Messages', path: '/messages', icon: '✉️' },
-      { label: 'Campagnes', path: '/campagnes', icon: '📢' },
+    items: [
+      { label: 'Messages',        path: '/messages',   icon: '💬', badgeKey: 'messages' },
+      { label: 'Campagnes',       path: '/campagnes',  icon: '📢' },
+    ],
+  },
+  {
+    label: 'Marketplace',
+    items: [
+      { label: 'Centres (public)', path: '/centres',         icon: '🛒' },
+      { label: 'Mes réservations', path: '/mes-reservations',icon: '📅' },
     ],
   },
   {
     label: 'Paramètres',
-    path: '/parametres',
-    icon: '⚙️',
-    children: [
-      { label: 'Mon Profil', path: '/profil', icon: '👤' },
-      { label: 'Journal audit', path: '/audit-logs', icon: '📋' },
+    items: [
+      { label: 'Mon Profil',      path: '/profil',     icon: '⚙️' },
+      { label: 'Journal audit',   path: '/audit-logs', icon: '📋' },
+      { label: 'Super-Admin',     path: '/super-admin',icon: '🛡️', role: 'super_admin' },
     ],
   },
-  { label: 'Super-Admin', path: '/super-admin', icon: '🛡️' },
 ];
 
 export default function Sidebar() {
-  const { user, tenant, logout } = useAuth();
-  const { lang, changeLang } = useI18n();
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const [collapsed, setCollapsed]   = useState(false);
+  const [badges, setBadges]         = useState({});
+  const [collapsedSections, setCollapsedSections] = useState({});
+
+  const activeColor = MODULE_COLORS[location.pathname] || '#2563EB';
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const headers = { Authorization: `Bearer ${token}` };
+    const BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || '';
+
+    Promise.allSettled([
+      fetch(`${BASE}/api/v1/absences?per_page=1&statut=non_justifiée`, { headers }).then(r => r.json()),
+      fetch(`${BASE}/api/v1/diagnostic/dashboard`, { headers }).then(r => r.json()),
+      fetch(`${BASE}/api/v1/surveillance/alertes?traite=false&per_page=1`, { headers }).then(r => r.json()),
+      fetch(`${BASE}/api/v1/finance/factures?statut=en_retard&per_page=1`, { headers }).then(r => r.json()),
+    ]).then(([absRes, diagRes, survRes, facRes]) => {
+      setBadges({
+        absences: absRes.status === 'fulfilled' ? (absRes.value?.meta?.total || 0) : 0,
+        critiques: diagRes.status === 'fulfilled' ? (diagRes.value?.data?.par_niveau?.critique || 0) : 0,
+        alertes:   survRes.status === 'fulfilled' ? (survRes.value?.data?.stats?.non_traitees || 0) : 0,
+        impayes:   facRes.status === 'fulfilled' ? (facRes.value?.meta?.total || 0) : 0,
+        messages:  0,
+      });
+    });
+  }, []);
+
+  const toggleSection = (label) => {
+    setCollapsedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const userInitials = user
+    ? `${(user.nom || '')[0] || ''}${(user.prenom || '')[0] || ''}`.toUpperCase()
+    : 'U';
+
+  const tenantName   = localStorage.getItem('tenantName')  || 'Mon établissement';
+  const tenantWilaya = localStorage.getItem('tenantWilaya') || 'Algérie';
 
   return (
-    <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col h-screen sticky top-0">
-      <div className="p-5 border-b border-neutral-100">
-        <h1 className="text-xl font-bold text-primary-700">EduGest DZ</h1>
-        {tenant && <p className="text-xs text-neutral-400 mt-0.5">{tenant.nom}</p>}
-      </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map(item =>
-          item.children ? (
-            <div key={item.path}>
-              <div className="flex items-center gap-3 px-4 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-              <div className="ml-4 space-y-0.5">
-                {item.children.map(child => (
-                  <NavLink
-                    key={child.path}
-                    to={child.path}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-primary-50 text-primary-700'
-                          : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'
-                      }`
-                    }
-                  >
-                    <span className="text-lg">{child.icon}</span>
-                    <span>{child.label}</span>
-                  </NavLink>
-                ))}
-              </div>
+    <aside
+      style={{
+        width: collapsed ? '64px' : '240px',
+        background: '#0D1117',
+        borderRight: '1px solid #1E2D40',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
+        transition: 'width 0.2s ease',
+        flexShrink: 0,
+        overflow: 'hidden',
+        zIndex: 40,
+      }}
+    >
+      <div style={{
+        padding: collapsed ? '18px 14px' : '18px 16px',
+        borderBottom: '1px solid #1E2D40',
+        display: 'flex', alignItems: 'center', gap: '10px',
+        minHeight: '64px',
+      }}>
+        <div style={{
+          width: '34px', height: '34px', borderRadius: '10px', flexShrink: 0,
+          background: `linear-gradient(135deg, #2563EB, #7C3AED)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '18px', cursor: 'pointer',
+        }} onClick={() => setCollapsed(!collapsed)}>
+          🎓
+        </div>
+        {!collapsed && (
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap' }}>
+              EduGest DZ
             </div>
-          ) : (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'
-                }`
-              }
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span>{item.label}</span>
-            </NavLink>
-          ),
-        )}
-      </nav>
-      <div className="p-4 border-t border-neutral-100">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-primary-100 text-primary-700 rounded-full flex items-center justify-center text-xs font-bold">
-            {user?.nom?.[0]}{user?.prenom?.[0]}
+            <div style={{ fontSize: '9px', color: '#64748B', whiteSpace: 'nowrap' }}>
+              Gestion Scolaire
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-neutral-700 truncate">{user?.nom} {user?.prenom}</p>
-            <p className="text-xs text-neutral-400 truncate">{user?.email}</p>
+        )}
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed(true)}
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '14px' }}
+          >
+            ◀
+          </button>
+        )}
+      </div>
+
+      {!collapsed && (
+        <div style={{
+          margin: '10px 12px',
+          background: 'linear-gradient(135deg, #1e3a5f22, #7c3aed22)',
+          border: '1px solid #2563eb33',
+          borderRadius: '10px', padding: '9px 12px',
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            🏫 {tenantName}
+          </div>
+          <div style={{ fontSize: '9px', color: '#64748B' }}>
+            📍 {tenantWilaya}
           </div>
         </div>
-        <button
-          onClick={() => changeLang(lang === 'fr' ? 'ar' : 'fr')}
-          className="w-full py-2 rounded-xl text-sm font-medium text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors mb-1"
-        >
-          {lang === 'fr' ? '🇩🇿 العربية' : '🇫🇷 Français'}
-        </button>
-        <button
-          onClick={logout}
-          className="w-full py-2 rounded-xl text-sm font-medium text-neutral-600 hover:bg-red-50 hover:text-red-600 transition-colors"
-        >
-          Déconnexion
-        </button>
+      )}
+
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
+        {NAV_SECTIONS.map(section => {
+          const items = section.items.filter(item =>
+            !item.role || user?.role === item.role
+          );
+          if (items.length === 0) return null;
+
+          const sectionCollapsed = collapsedSections[section.label];
+
+          return (
+            <div key={section.label} style={{ marginBottom: '2px' }}>
+              {!collapsed && (
+                <button
+                  onClick={() => toggleSection(section.label)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '6px 16px 3px',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ fontSize: '9px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '1.2px' }}>
+                    {section.label}
+                  </span>
+                  <span style={{ fontSize: '10px', color: '#475569' }}>
+                    {sectionCollapsed ? '▶' : '▾'}
+                  </span>
+                </button>
+              )}
+
+              {!sectionCollapsed && items.map(item => {
+                const isActive = item.end
+                  ? location.pathname === item.path
+                  : location.pathname.startsWith(item.path) && item.path !== '/';
+                const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0;
+                const color = MODULE_COLORS[item.path] || '#2563EB';
+
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.end}
+                    style={({ isActive: navActive }) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: collapsed ? '0' : '9px',
+                      padding: collapsed ? '9px' : '8px 14px',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      margin: '1px 8px',
+                      borderRadius: '9px',
+                      fontSize: '12px',
+                      fontWeight: navActive || isActive ? 700 : 500,
+                      color: navActive || isActive ? color : '#64748B',
+                      background: navActive || isActive
+                        ? `${color}18`
+                        : 'transparent',
+                      textDecoration: 'none',
+                      transition: 'all 0.12s',
+                      position: 'relative',
+                      borderLeft: navActive || isActive
+                        ? `2px solid ${color}`
+                        : '2px solid transparent',
+                    })}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <span style={{ fontSize: '15px', flexShrink: 0 }}>{item.icon}</span>
+                    {!collapsed && (
+                      <>
+                        <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.label}
+                        </span>
+                        {badgeCount > 0 && (
+                          <span style={{
+                            background: badgeCount > 0 ? '#EF4444' : '#1e293b',
+                            color: '#fff',
+                            fontSize: '9px', fontWeight: 800,
+                            padding: '1px 6px', borderRadius: '20px',
+                            minWidth: '18px', textAlign: 'center',
+                          }}>
+                            {badgeCount > 99 ? '99+' : badgeCount}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {collapsed && badgeCount > 0 && (
+                      <span style={{
+                        position: 'absolute', top: '4px', right: '4px',
+                        width: '8px', height: '8px',
+                        background: '#EF4444', borderRadius: '50%',
+                        border: '2px solid #0D1117',
+                      }} />
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          );
+        })}
+      </nav>
+
+      <div style={{ borderTop: '1px solid #1E2D40', padding: '12px' }}>
+        {!collapsed ? (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '9px 10px', borderRadius: '10px',
+            background: '#161C26', cursor: 'pointer',
+          }}>
+            <div style={{
+              width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
+              background: 'linear-gradient(135deg, #2563EB, #7C3AED)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '11px', fontWeight: 800, color: '#fff',
+            }}>
+              {userInitials}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#E2E8F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.nom} {user?.prenom}
+              </div>
+              <div style={{ fontSize: '9px', color: '#64748B', textTransform: 'capitalize' }}>
+                {user?.role}
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              title="Déconnexion"
+              style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '14px' }}
+            >
+              ↩
+            </button>
+          </div>
+        ) : (
+          <div style={{
+            width: '38px', height: '38px', borderRadius: '9px', margin: '0 auto',
+            background: 'linear-gradient(135deg, #2563EB, #7C3AED)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '13px', fontWeight: 800, color: '#fff', cursor: 'pointer',
+          }} onClick={() => setCollapsed(false)}>
+            {userInitials}
+          </div>
+        )}
       </div>
     </aside>
   );
