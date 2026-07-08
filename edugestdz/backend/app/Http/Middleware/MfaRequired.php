@@ -23,7 +23,8 @@ class MfaRequired
         $user = auth('api')->user();
         if (!$user) return $next($request);
 
-        if (!in_array($user->role?->nom, self::ROLES_REQUIERANT_MFA)) {
+        $roleNom = is_string($user->role) ? $user->role : ($user->role?->nom ?? '');
+        if (!in_array($roleNom, self::ROLES_REQUIERANT_MFA)) {
             return $next($request);
         }
 
@@ -39,7 +40,7 @@ class MfaRequired
             \Illuminate\Support\Facades\Log::warning('MFA_REQUIRED: admin sans 2FA tente d\'acceder a l\'API', [
                 'user_id' => $user->id,
                 'email'   => $user->email,
-                'role'    => $user->role,
+                'role'    => $user->role?->nom,
                 'ip'      => $request->ip(),
                 'path'    => $request->path(),
             ]);

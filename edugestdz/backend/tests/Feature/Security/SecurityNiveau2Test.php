@@ -63,7 +63,6 @@ class SecurityNiveau2Test extends TestCase
             'role_id'              => $this->role->id,
             'tenant_id'            => $this->tenant->id,
             'two_factor_secret'    => null,
-            'two_factor_confirmed_at' => null,
         ]);
 
         $token = auth('api')->login($admin);
@@ -80,7 +79,6 @@ class SecurityNiveau2Test extends TestCase
             'role_id'              => $this->role->id,
             'tenant_id'            => $this->tenant->id,
             'two_factor_secret'    => 'JBSWY3DPEHPK3PXP',
-            'two_factor_confirmed_at' => now(),
         ]);
 
         $token = auth('api')->login($admin);
