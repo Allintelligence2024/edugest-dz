@@ -20,7 +20,7 @@ trait BelongsToTenant
                 return;
             }
 
-            $query->where((new static)->getTable() . '.tenant_id', $tenantId);
+            $query->where($query->getModel()->getTable() . '.tenant_id', $tenantId);
         });
 
         // Injection automatique du tenant_id à la création

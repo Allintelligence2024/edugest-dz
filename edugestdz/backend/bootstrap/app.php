@@ -26,9 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'resolve.tenant'    => \App\Http\Middleware\ResolveTenant::class,
+            'tenant'            => \App\Http\Middleware\ResolveTenant::class,
             'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
             'super_admin'       => \App\Http\Middleware\SuperAdmin::class,
             'module'            => \App\Http\Middleware\ModuleCheck::class,
+            'mfa'               => \App\Http\Middleware\MfaRequired::class,
+            'ip.allowlist'      => \App\Http\Middleware\SuperAdminIpAllowlist::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
@@ -77,6 +80,10 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->weekly()
                  ->sundays()
                  ->at('03:00');
+
+        $schedule->command('edugest:audit-export')
+                 ->dailyAt('02:00')
+                 ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

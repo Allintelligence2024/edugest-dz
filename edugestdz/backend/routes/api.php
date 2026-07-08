@@ -7,6 +7,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\LmsController;
+use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
     EleveController,
@@ -76,7 +77,7 @@ use App\Http\Controllers\Api\V1\{
         // ────────────────────────────────────────────
         // 🔐 SUPER-ADMIN (sans tenant scope)
         // ────────────────────────────────────────────
-        Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+        Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
             Route::get('tenants',                          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'indexTenants']);
             Route::get('stats',                            [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'statsGlobales']);
             Route::post('tenants/{id}/suspendre',          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'suspendreTenant']);
@@ -108,6 +109,9 @@ use App\Http\Controllers\Api\V1\{
                 Route::get('recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
             });
         });
+
+        // ── Security Dashboard ──
+        Route::get('security/dashboard', [SecurityDashboardController::class, 'index']);
 
         // ── Élèves ──
         Route::apiResource('eleves', EleveController::class);
@@ -639,11 +643,19 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
     // ────────────────────────────────────────────
-    Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+    Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
         Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
         Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
         Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);
         Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
+    });
+
+    // ── Breach Response & Security Incidents ──
+    Route::prefix('security/breach')->middleware(['auth:api', 'ip.allowlist'])->group(function () {
+        Route::post('/verrouillage-urgence', [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'verrouillageUrgence']);
+        Route::post('/incidents',            [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'declarerIncident']);
+        Route::get('/incidents',             [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'indexIncidents']);
+        Route::delete('/verrouillage',       [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'leverVerrouillage']);
     });
 
     // ── WhatsApp Webhook (Meta / public) ──
