@@ -688,3 +688,22 @@ Route::get('/health', [\App\Http\Controllers\Api\HealthController::class, 'check
 // ── Fichier (signé, authentifié) ──
 Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
     ->middleware('auth:api');
+
+// ══════════════════════════════════════════════════════════════════════
+// HONEYPOT ROUTES — Leurres pour détecter les scanners / attaquants
+// ══════════════════════════════════════════════════════════════════════
+Route::any('/v1/phpinfo', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.phpinfo');
+
+Route::any('/v1/server-status', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.server-status');
+
+Route::any('/v1/actuator', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.actuator');
+
+Route::any('/v1/metrics', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.metrics');

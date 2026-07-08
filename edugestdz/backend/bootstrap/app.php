@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LicenceCheck::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\QueryMonitor::class,
+            \App\Http\Middleware\SqlInjectionDetectorMiddleware::class,
         ]);
 
         $middleware->api(append: [
@@ -90,6 +91,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $schedule->command('edugest:audit-export')
                  ->dailyAt('02:00')
+                 ->withoutOverlapping();
+
+        $schedule->command('edugest:deadman-switch')
+                 ->dailyAt('06:00')
                  ->withoutOverlapping();
     })
     ->withExceptions(function (Exceptions $exceptions) {
