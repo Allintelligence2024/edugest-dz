@@ -21,7 +21,6 @@ class SecurityNiveau2Test extends TestCase
     {
         parent::setUp();
         $this->tenant = Tenant::factory()->create();
-        config(['tenant.current_id' => $this->tenant->id]);
         $this->role = Role::factory()->create(['nom' => 'admin']);
         $this->monitor = app(SecurityMonitorService::class);
     }

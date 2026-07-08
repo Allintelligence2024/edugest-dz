@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('security_events', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->string('type');
             $table->string('severite')->default('warning');
             $table->string('ip')->nullable();
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->uuid('user_id')->nullable();
             $table->uuid('tenant_id')->nullable();
             $table->string('path')->nullable();
-            $table->jsonb('details')->default('{}');
+            $table->json('details')->default('{}');
             $table->boolean('alerte_envoyee')->default(false);
             $table->timestamp('survenu_le')->useCurrent();
             $table->timestamps();

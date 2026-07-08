@@ -87,7 +87,7 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
-    Route::middleware(['auth:api', 'resolve.tenant', 'check.subscription'])
+    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription'])
          ->group(function () {
 
         // ── Auth ──
@@ -678,3 +678,7 @@ use App\Http\Controllers\Api\V1\{
 
 // ── Health Check (public — no auth, outside v1) ──
 Route::get('/health', [\App\Http\Controllers\Api\HealthController::class, 'check']);
+
+// ── Fichier (signé, authentifié) ──
+Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
+    ->middleware('auth:api');

@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cameras_config', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->string('nom');
             $table->string('serial_no')->unique();
@@ -29,14 +29,14 @@ return new class extends Migration
         });
 
         Schema::create('alertes_surveillance', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('camera_id')->nullable();
             $table->string('serial_no');
             $table->string('type_alerte');
             $table->string('niveau')->default('warning');
             $table->string('canal')->nullable();
-            $table->jsonb('payload')->default('{}');
+            $table->json('payload')->default('{}');
             $table->timestamp('survenu_le');
             $table->boolean('traite')->default(false);
             $table->uuid('traite_par')->nullable();

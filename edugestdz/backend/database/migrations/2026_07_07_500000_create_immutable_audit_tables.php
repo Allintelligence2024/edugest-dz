@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('audit_log_exports', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->nullable();
             $table->string('periode');
             $table->string('type_export');
@@ -26,12 +26,12 @@ return new class extends Migration
         });
 
         Schema::create('breach_declarations', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->nullable();
             $table->string('type_incident');
             $table->string('severite');
             $table->text('description');
-            $table->jsonb('donnees_affectees')->default('[]');
+            $table->json('donnees_affectees')->default('[]');
             $table->integer('nb_personnes_affectees')->default(0);
             $table->timestamp('detecte_le');
             $table->timestamp('contenu_le')->nullable();

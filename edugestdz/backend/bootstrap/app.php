@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'module'            => \App\Http\Middleware\ModuleCheck::class,
             'mfa'               => \App\Http\Middleware\MfaRequired::class,
             'ip.allowlist'      => \App\Http\Middleware\SuperAdminIpAllowlist::class,
+            'tenant.verify'     => \App\Http\Middleware\TenantIsolationVerifier::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {

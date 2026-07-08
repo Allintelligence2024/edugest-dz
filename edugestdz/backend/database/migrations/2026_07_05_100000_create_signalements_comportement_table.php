@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('signalements_comportement', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('eleve_id');
             $table->uuid('signale_par');
@@ -35,14 +35,14 @@ return new class extends Migration
         });
 
         Schema::create('notifications_parent', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('parent_id');
             $table->uuid('eleve_id')->nullable();
             $table->string('type');
             $table->string('titre');
             $table->text('corps');
-            $table->jsonb('meta')->default('{}');
+            $table->json('meta')->default('{}');
             $table->boolean('lu')->default(false);
             $table->timestamp('lu_le')->nullable();
             $table->boolean('push_envoye')->default(false);

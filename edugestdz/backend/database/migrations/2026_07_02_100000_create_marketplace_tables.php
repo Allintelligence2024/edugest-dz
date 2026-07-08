@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('profils_marketplace', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id')->unique();
             $table->string('nom_etablissement');
             $table->text('description')->nullable();
@@ -20,10 +20,10 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('site_web')->nullable();
             $table->string('logo_url')->nullable();
-            $table->jsonb('photos_urls')->default('[]');
-            $table->jsonb('matieres_enseignees')->default('[]');
-            $table->jsonb('niveaux_couverts')->default('[]');
-            $table->jsonb('horaires')->default('{}');
+            $table->json('photos_urls')->default('[]');
+            $table->json('matieres_enseignees')->default('[]');
+            $table->json('niveaux_couverts')->default('[]');
+            $table->json('horaires')->default('{}');
             $table->decimal('tarif_heure_min', 8, 2)->nullable();
             $table->decimal('tarif_heure_max', 8, 2)->nullable();
             $table->boolean('accepte_essai_gratuit')->default(false);
@@ -40,13 +40,13 @@ return new class extends Migration
         });
 
         Schema::create('offres_cours', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('enseignant_id')->nullable();
             $table->string('titre');
             $table->text('description')->nullable();
             $table->string('matiere');
-            $table->jsonb('niveaux')->default('[]');
+            $table->json('niveaux')->default('[]');
             $table->enum('type', ['groupe', 'individuel', 'en_ligne'])->default('individuel');
             $table->decimal('tarif_heure', 8, 2);
             $table->integer('duree_seance')->default(60);
@@ -61,7 +61,7 @@ return new class extends Migration
         });
 
         Schema::create('reservations_marketplace', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('offre_id');
             $table->uuid('parent_id');
             $table->uuid('eleve_id');
@@ -89,7 +89,7 @@ return new class extends Migration
         });
 
         Schema::create('avis_marketplace', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('parent_id');
             $table->uuid('reservation_id')->nullable();
@@ -106,7 +106,7 @@ return new class extends Migration
         });
 
         Schema::create('favoris_marketplace', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('parent_id');
             $table->uuid('tenant_id');
             $table->timestamps();

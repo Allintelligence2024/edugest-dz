@@ -16,6 +16,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         $tables = [
             'eleves', 'users', 'groupes', 'cours', 'seances',
             'presences', 'evaluations', 'notes', 'bulletins',
@@ -54,9 +58,9 @@ return new class extends Migration
                 DB::statement("
                     CREATE POLICY tenant_isolation_policy ON {$table}
                     USING (
-                        tenant_id = current_setting('app.current_tenant_id', true)::uuid
-                        OR current_setting('app.current_tenant_id', true) IS NULL
+                        current_setting('app.current_tenant_id', true) IS NULL
                         OR current_setting('app.current_tenant_id', true) = ''
+                        OR tenant_id = current_setting('app.current_tenant_id', true)::uuid
                     )
                 ");
 
@@ -75,6 +79,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         $tables = [
             'eleves', 'users', 'groupes', 'cours', 'seances',
             'presences', 'evaluations', 'notes', 'bulletins',

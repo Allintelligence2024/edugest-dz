@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->string('message_id')->nullable()->unique();
             $table->string('from_number', 20)->nullable();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('content')->nullable();
             $table->string('template_name')->nullable();
             $table->enum('status', ['pending', 'sent', 'delivered', 'read', 'failed'])->default('pending');
-            $table->jsonb('meta')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamps();
 
             $table->index(['tenant_id', 'status'], 'idx_wp_status');

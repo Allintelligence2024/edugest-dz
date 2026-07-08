@@ -9,13 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lms_cours', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('enseignant_id');
             $table->string('titre');
             $table->text('description')->nullable();
             $table->string('matiere')->nullable();
-            $table->jsonb('niveaux_cibles')->default('[]');
+            $table->json('niveaux_cibles')->default('[]');
             $table->string('langue')->default('ar');
             $table->string('duree_estimee')->nullable();
             $table->string('image_url')->nullable();
@@ -35,7 +35,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_chapitres', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('cours_id');
             $table->string('titre');
             $table->text('description')->nullable();
@@ -48,7 +48,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_lecons', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('chapitre_id');
             $table->string('titre');
             $table->text('contenu')->nullable();
@@ -66,7 +66,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_quiz', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('lecon_id');
             $table->string('titre');
             $table->integer('nb_questions')->default(0);
@@ -81,11 +81,11 @@ return new class extends Migration
         });
 
         Schema::create('lms_questions', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('quiz_id');
             $table->string('type')->default('qcm');
             $table->text('enonce');
-            $table->jsonb('options')->default('[]');
+            $table->json('options')->default('[]');
             $table->text('explication')->nullable();
             $table->integer('points')->default(1);
             $table->integer('ordre')->default(1);
@@ -95,7 +95,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_inscriptions', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('cours_id');
             $table->uuid('eleve_id');
             $table->uuid('tenant_id');
@@ -115,7 +115,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_progression', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('inscription_id');
             $table->uuid('lecon_id');
             $table->uuid('eleve_id');
@@ -130,7 +130,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_tentatives_quiz', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('quiz_id');
             $table->uuid('eleve_id');
             $table->uuid('inscription_id');
@@ -139,7 +139,7 @@ return new class extends Migration
             $table->integer('pourcentage')->default(0);
             $table->boolean('reussi')->default(false);
             $table->integer('duree_secondes')->default(0);
-            $table->jsonb('reponses')->default('{}');
+            $table->json('reponses')->default('{}');
             $table->integer('numero_tentative')->default(1);
             $table->timestamp('debut_le');
             $table->timestamp('fin_le')->nullable();
@@ -151,7 +151,7 @@ return new class extends Migration
         });
 
         Schema::create('lms_devoirs', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('lecon_id');
             $table->uuid('eleve_id');
             $table->uuid('inscription_id');

@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('google_classroom_connexions', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('user_id');
             $table->string('email');
@@ -24,7 +24,7 @@ return new class extends Migration
         });
 
         Schema::create('google_course_liaisons', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('evaluation_id');
             $table->string('gc_course_id');
@@ -40,13 +40,13 @@ return new class extends Migration
         });
 
         Schema::create('google_sync_logs', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('liaison_id');
             $table->string('action');
             $table->string('status');
             $table->text('message')->nullable();
-            $table->jsonb('meta')->nullable();
+            $table->json('meta')->nullable();
             $table->timestamps();
 
             $table->foreign('liaison_id')->references('id')->on('google_course_liaisons')->onDelete('cascade');

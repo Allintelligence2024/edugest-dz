@@ -22,7 +22,6 @@ class SecurityNiveau1Test extends TestCase
     {
         parent::setUp();
         $this->tenant = Tenant::factory()->create();
-        config(['tenant.current_id' => $this->tenant->id]);
         $this->role = Role::factory()->create(['nom' => 'admin']);
     }
 
@@ -63,7 +62,6 @@ class SecurityNiveau1Test extends TestCase
         $eleveB  = Eleve::factory()->create(['tenant_id' => $tenantB->id]);
 
         $token = auth('api')->login($userA);
-        config(['tenant.current_id' => $this->tenant->id]);
 
         $this->withHeaders([
             'Authorization' => "Bearer {$token}",
@@ -91,7 +89,6 @@ class SecurityNiveau1Test extends TestCase
     {
         $tenantB = Tenant::factory()->create();
 
-        User::factory()->create(['role_id' => $this->role->id, 'tenant_id' => $this->tenant->id]);
         Eleve::factory()->count(3)->create(['tenant_id' => $this->tenant->id]);
         Eleve::factory()->count(5)->create(['tenant_id' => $tenantB->id]);
 
@@ -105,7 +102,6 @@ class SecurityNiveau1Test extends TestCase
         $tenantB = Str::uuid()->toString();
         $userA   = User::factory()->create(['role_id' => $this->role->id, 'tenant_id' => $this->tenant->id]);
 
-        config(['tenant.current_id' => $this->tenant->id]);
         $token = auth('api')->login($userA);
 
         $cheminB    = "tenants/{$tenantB}/bulletins/test.pdf";
@@ -121,7 +117,6 @@ class SecurityNiveau1Test extends TestCase
     {
         $userA   = User::factory()->create(['role_id' => $this->role->id, 'tenant_id' => $this->tenant->id]);
 
-        config(['tenant.current_id' => $this->tenant->id]);
         $token   = auth('api')->login($userA);
 
         $chemin  = "tenants/{$this->tenant->id}/bulletins/test.pdf";
