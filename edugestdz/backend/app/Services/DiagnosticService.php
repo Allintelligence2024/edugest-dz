@@ -22,6 +22,15 @@ class DiagnosticService
     private const SEUIL_CHUTE_ALERTE    = 3.0;
     private const SERIE_CRITIQUE        = 3;
 
+    /**
+     * Analyser le niveau d'un élève et générer un diagnostic complet.
+     *
+     * Score de risque 0-100 basé sur : notes, tendance, série critique, comportement.
+     * Niveaux : excellent, normal, vigilance, danger, critique.
+     *
+     * @param string $eleveId UUID de l'élève
+     * @return DiagnosticEleve Diagnostic généré ou mis à jour
+     */
     public function analyserEleve(string $eleveId): DiagnosticEleve
     {
         $eleve = Eleve::findOrFail($eleveId);
@@ -116,6 +125,12 @@ class DiagnosticService
         return $diagnostic;
     }
 
+    /**
+     * Analyser tous les élèves actifs (ou d'un tenant spécifique).
+     *
+     * @param string|null $tenantId UUID du tenant (null = tous)
+     * @return array Récapitulatif {total, critiques, dangers, excellents}
+     */
     public function analyserTousLesEleves(?string $tenantId = null): array
     {
         $query = Eleve::where('statut', 'actif');
@@ -229,6 +244,12 @@ class DiagnosticService
         ];
     }
 
+    /**
+     * Obtenir les statistiques du dashboard diagnostic.
+     *
+     * @param string|null $tenantId UUID du tenant (null = tous)
+     * @return array {total_analyses, par_niveau, actions_requises, top_risque, top_excellence}
+     */
     public function getDashboard(?string $tenantId = null): array
     {
         $query = DiagnosticEleve::query();

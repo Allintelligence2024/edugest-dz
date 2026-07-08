@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\DB;
 
 class BulletinService
 {
+    /**
+     * Générer les bulletins PDF pour tous les élèves d'un groupe.
+     *
+     * @param string $groupeId    UUID du groupe
+     * @param string $trimestre   Numéro du trimestre (1, 2 ou 3)
+     * @param string $anneeScolaire Année scolaire (ex: 2025-2026)
+     * @return array Liste des bulletins générés avec moyennes et rangs
+     */
     public function genererBulletins(string $groupeId, string $trimestre, string $anneeScolaire): array
     {
         $groupe = Groupe::findOrFail($groupeId);
@@ -97,6 +105,14 @@ class BulletinService
         return $bulletinsGeneres;
     }
 
+    /**
+     * Calculer la moyenne pondérée d'un élève pour un trimestre.
+     *
+     * @param string $eleveId  UUID de l'élève
+     * @param string $groupeId UUID du groupe
+     * @param string $trimestre Numéro du trimestre (1, 2 ou 3)
+     * @return float Moyenne pondérée (0.0 si aucune note)
+     */
     public function calculerMoyenne(string $eleveId, string $groupeId, string $trimestre): float
     {
         $notes = Note::whereHas('evaluation', fn($q) =>
@@ -116,6 +132,12 @@ class BulletinService
         return $totalCoeff > 0 ? round($totalPondere / $totalCoeff, 2) : 0.0;
     }
 
+    /**
+     * Générer le fichier PDF d'un bulletin.
+     *
+     * @param Bulletin $bulletin Le bulletin à générer
+     * @return string Chemin du fichier PDF stocké
+     */
     public function genererPDF(Bulletin $bulletin): string
     {
         $eleve   = $bulletin->eleve->load(['parents', 'wilaya']);
