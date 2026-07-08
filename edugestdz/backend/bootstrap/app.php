@@ -19,9 +19,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
 
         $middleware->api(prepend: [
+            \App\Http\Middleware\KillSwitchMiddleware::class,
             \App\Http\Middleware\LicenceCheck::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\QueryMonitor::class,
+            \App\Http\Middleware\SqlInjectionDetectorMiddleware::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\IntelligentRateLimiter::class,
         ]);
 
         $middleware->alias([
@@ -33,6 +39,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'mfa'               => \App\Http\Middleware\MfaRequired::class,
             'ip.allowlist'      => \App\Http\Middleware\SuperAdminIpAllowlist::class,
             'tenant.verify'     => \App\Http\Middleware\TenantIsolationVerifier::class,
+            'zero.trust'        => \App\Http\Middleware\ZeroTrustMiddleware::class,
+            'zero.trust.strict' => \App\Http\Middleware\ZeroTrustMiddleware::class . ':strict',
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
@@ -85,6 +93,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('edugest:audit-export')
                  ->dailyAt('02:00')
                  ->withoutOverlapping();
+
+        $schedule->command('edugest:deadman-switch')
+                 ->dailyAt('06:00')
+                 ->withoutOverlapping();
+
+        $schedule->command('edugest:supply-chain-verify')
+                 ->weekly()
+                 ->mondays()
+                 ->at('04:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

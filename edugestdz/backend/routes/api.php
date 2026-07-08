@@ -87,7 +87,7 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
-    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription'])
+    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'])
          ->group(function () {
 
         // ── Auth ──
@@ -112,6 +112,13 @@ use App\Http\Controllers\Api\V1\{
 
         // ── Security Dashboard ──
         Route::get('security/dashboard', [SecurityDashboardController::class, 'index']);
+
+        // ── Kill Switch (Niveau 6) ──
+        Route::prefix('kill-switch')->group(function () {
+            Route::post('initier',    [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'initier']);
+            Route::post('{voteId}/approuver', [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'approuver']);
+            Route::post('{voteId}/refuser',   [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'refuser']);
+        });
 
         // ── Élèves ──
         Route::apiResource('eleves', EleveController::class);
@@ -289,6 +296,12 @@ use App\Http\Controllers\Api\V1\{
             Route::post('/',                     [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'register']);
             Route::delete('/',                   [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'unregister']);
             Route::get('/',                      [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'list']);
+        });
+
+        // ── Trusted Devices (Niveau 4) ──
+        Route::prefix('trusted-devices')->group(function () {
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\TrustedDeviceController::class, 'index']);
+            Route::delete('{id}',                [\App\Http\Controllers\Api\V1\TrustedDeviceController::class, 'destroy']);
         });
 
         // ── Campagnes ──
@@ -682,3 +695,22 @@ Route::get('/health', [\App\Http\Controllers\Api\HealthController::class, 'check
 // ── Fichier (signé, authentifié) ──
 Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
     ->middleware('auth:api');
+
+// ══════════════════════════════════════════════════════════════════════
+// HONEYPOT ROUTES — Leurres pour détecter les scanners / attaquants
+// ══════════════════════════════════════════════════════════════════════
+Route::any('/v1/phpinfo', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.phpinfo');
+
+Route::any('/v1/server-status', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.server-status');
+
+Route::any('/v1/actuator', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.actuator');
+
+Route::any('/v1/metrics', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.metrics');
