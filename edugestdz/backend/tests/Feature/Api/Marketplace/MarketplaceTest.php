@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Api\Marketplace;
 
-use App\Models\{OffrePublique, Reservation, Avis, Enseignant, Eleve, User, Tenant, Role, Matiere};
+use App\Models\{OffrePublique, Reservation, Avis, Enseignant, Eleve, User, Tenant, TenantModule, Role, Matiere};
 use App\Services\Marketplace\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -22,6 +22,11 @@ class MarketplaceTest extends TestCase
         parent::setUp();
 
         $this->tenant = Tenant::factory()->create(['statut' => 'actif', 'plan_abonnement' => 'pro']);
+        TenantModule::create([
+            'tenant_id'  => $this->tenant->id,
+            'module_key' => 'marketplace',
+            'actif'      => true,
+        ]);
 
         $roleEnseignant = Role::factory()->create(['nom' => 'enseignant']);
         $roleAdmin      = Role::factory()->create(['nom' => 'admin']);

@@ -22,16 +22,27 @@ class SecurityTest extends TestCase
 
     public function test_health_check_retourne_200(): void
     {
-        $this->getJson('/api/health')
-            ->assertStatus(200)
-            ->assertJsonStructure(['status', 'version', 'services' => ['postgresql', 'redis', 'storage']]);
+        $response = $this->getJson('/api/health');
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'status', 'timestamp', 'version', 'environment', 'response_time',
+                'checks' => [
+                    'database' => ['status', 'driver'],
+                    'redis' => ['status'],
+                    'meilisearch' => ['status'],
+                    'storage' => ['status'],
+                    'audit_chain' => ['status'],
+                    'kill_switch' => ['status'],
+                ],
+            ]);
     }
 
     public function test_health_check_postgresql_ok(): void
     {
         $response = $this->getJson('/api/health');
         $response->assertStatus(200);
-        $this->assertEquals('ok', $response->json('services.postgresql.status'));
+        $this->assertEquals('ok', $response->json('checks.database.status'));
+        $this->assertEquals('postgresql', $response->json('checks.database.driver'));
     }
 
     public function test_api_retourne_security_headers(): void

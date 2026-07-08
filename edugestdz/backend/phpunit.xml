@@ -3,6 +3,7 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         stopOnFailure="false"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -12,21 +13,56 @@
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+
     <source>
         <include>
             <directory>app</directory>
         </include>
     </source>
-    <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_STORE" value="array"/>
 
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
+    <php>
+        <!-- ── Application ─────────────────────────────────────────── -->
+        <env name="APP_ENV"                   value="testing"/>
+        <env name="APP_DEBUG"                 value="true"/>
+        <env name="APP_KEY"                   value="base64:TEST_KEY_WILL_BE_GENERATED_BY_ARTISAN="/>
+        <env name="APP_MAINTENANCE_DRIVER"    value="file"/>
+        <env name="BCRYPT_ROUNDS"             value="4"/>
+
+        <!-- ── Base de données — PostgreSQL OBLIGATOIRE ────────────── -->
+        <!-- JAMAIS SQLite en test — les features PostgreSQL (RLS, jsonb,  -->
+        <!-- uuid, SAVEPOINT) doivent être testées sur le vrai moteur.     -->
+        <env name="DB_CONNECTION"  value="pgsql"/>
+        <env name="DB_HOST"        value="127.0.0.1"/>
+        <env name="DB_PORT"        value="5432"/>
+        <env name="DB_DATABASE"    value="edugestdz"/>
+        <env name="DB_USERNAME"    value="postgres"/>
+        <env name="DB_PASSWORD"    value=""/>
+
+        <!-- ── Redis ──────────────────────────────────────────────── -->
+        <env name="REDIS_HOST"     value="127.0.0.1"/>
+        <env name="REDIS_PORT"     value="6379"/>
+        <env name="REDIS_PASSWORD" value=""/>
+
+        <!-- ── Cache / Queue / Session ────────────────────────────── -->
+        <env name="CACHE_STORE"       value="array"/>
+        <env name="QUEUE_CONNECTION"  value="sync"/>
+        <env name="SESSION_DRIVER"    value="array"/>
+
+        <!-- ── Mail ────────────────────────────────────────────────── -->
+        <env name="MAIL_MAILER"  value="array"/>
+
+        <!-- ── Services désactivés en test ────────────────────────── -->
+        <env name="TELESCOPE_ENABLED"  value="false"/>
+        <env name="PULSE_ENABLED"      value="false"/>
+        <env name="SENTRY_DSN"         value=""/>
+
+        <!-- ── Sécurité tests ──────────────────────────────────────── -->
+        <!-- JWT secret minimal pour les tests (sera régénéré en CI) -->
+        <env name="JWT_SECRET"  value="test-secret-minimum-32-characters-long-for-jwt"/>
+        <env name="JWT_TTL"     value="60"/>
+
+        <!-- ── Meilisearch (désactivé en test pour rapidité) ──────── -->
+        <env name="SCOUT_DRIVER"        value="null"/>
+        <env name="MEILISEARCH_HOST"    value="http://localhost:7700"/>
     </php>
 </phpunit>

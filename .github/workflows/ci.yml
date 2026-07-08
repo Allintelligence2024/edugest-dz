@@ -20,8 +20,8 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: edugestdz_test
-          POSTGRES_USER: edugest_user
+          POSTGRES_DB:       edugestdz_test
+          POSTGRES_USER:     edugest_user
           POSTGRES_PASSWORD: EduGest@2026!
         ports:
           - 5432:5432
@@ -41,6 +41,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      # Meilisearch — pour les tests de recherche full-text
+      meilisearch:
+        image: getmeili/meilisearch:v1.8
+        ports:
+          - 7700:7700
+        env:
+          MEILI_NO_ANALYTICS: true
+        options: >-
+          --health-cmd "curl -f http://localhost:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: edugestdz/backend
@@ -48,11 +61,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Setup PHP 8.2
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, pdo_pgsql, intl, gd, xml, json, fileinfo, redis, zip
+          extensions: mbstring, pdo_pgsql, intl, gd, xml, json, fileinfo, redis, zip, sodium
           coverage: xdebug
           tools: composer:v2
 
@@ -73,44 +86,54 @@ jobs:
       - name: Setup environment
         run: |
           cp .env.example .env
-          sed -i "s|^DB_HOST=.*|DB_HOST=127.0.0.1|" .env
+          # PostgreSQL
+          sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=pgsql|"      .env
+          sed -i "s|^DB_HOST=.*|DB_HOST=127.0.0.1|"             .env
+          sed -i "s|^DB_PORT=.*|DB_PORT=5432|"                   .env
           sed -i "s|^DB_DATABASE=.*|DB_DATABASE=edugestdz_test|" .env
-          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=EduGest@2026!|" .env
-          sed -i "s|^REDIS_HOST=.*|REDIS_HOST=127.0.0.1|" .env
+          sed -i "s|^DB_USERNAME=.*|DB_USERNAME=edugest_user|"   .env
+          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=EduGest@2026!|"  .env
+          # Redis
+          sed -i "s|^REDIS_HOST=.*|REDIS_HOST=127.0.0.1|"       .env
+          # Désactiver Sentry en CI
+          echo "SENTRY_DSN=" >> .env
+          # Désactiver Telegram en CI
+          echo "TELEGRAM_BOT_TOKEN=" >> .env
+          # Clés
           php artisan key:generate
           php artisan jwt:secret --force
 
       - name: Run migrations
-        run: php artisan migrate --seed --force
         env:
           DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: edugestdz_test
-          DB_USERNAME: edugest_user
-          DB_PASSWORD: EduGest@2026!
-          REDIS_HOST: 127.0.0.1
+          DB_HOST:       127.0.0.1
+          DB_PORT:       5432
+          DB_DATABASE:   edugestdz_test
+          DB_USERNAME:   edugest_user
+          DB_PASSWORD:   EduGest@2026!
+          REDIS_HOST:    127.0.0.1
+        run: php artisan migrate --force
 
-      - name: Run tests
-        run: php artisan test --parallel
+      - name: Run tests (PostgreSQL)
         env:
           DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: edugestdz_test
-          DB_USERNAME: edugest_user
-          DB_PASSWORD: EduGest@2026!
-          REDIS_HOST: 127.0.0.1
+          DB_HOST:       127.0.0.1
+          DB_PORT:       5432
+          DB_DATABASE:   edugestdz_test
+          DB_USERNAME:   edugest_user
+          DB_PASSWORD:   EduGest@2026!
+          REDIS_HOST:    127.0.0.1
+        run: php artisan test --parallel
 
       - name: Run tests with coverage
         continue-on-error: true
-        run: php artisan test --coverage --min=50
         env:
           DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: edugestdz_test
-          DB_USERNAME: edugest_user
-          DB_PASSWORD: EduGest@2026!
-          REDIS_HOST: 127.0.0.1
-          XDEBUG_MODE: coverage
+          DB_HOST:       127.0.0.1
+          DB_PORT:       5432
+          DB_DATABASE:   edugestdz_test
+          DB_USERNAME:   edugest_user
+          DB_PASSWORD:   EduGest@2026!
+          REDIS_HOST:    127.0.0.1
+          XDEBUG_MODE:   coverage
+        run: php artisan test --coverage --min=50

@@ -7,6 +7,7 @@ use App\Models\ProfilMarketplace;
 use App\Models\OffreCours;
 use App\Models\Eleve;
 use App\Models\Tenant;
+use App\Models\TenantModule;
 use App\Models\Role;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,23 +41,26 @@ class MarketplaceControllerTest extends TestCase
         ]);
 
         config(['tenant.current_id' => $this->tenant->id]);
+
+        TenantModule::create([
+            'tenant_id'  => $this->tenant->id,
+            'module_key' => 'marketplace',
+            'actif'      => true,
+        ]);
     }
 
     public function test_recherche_publique_sans_auth(): void
     {
-        ProfilMarketplace::create([
-            'tenant_id'          => Str::uuid(),
-            'nom_etablissement'  => 'Centre Avenir Oran',
-            'adresse'            => '12 Rue des Frères Benali',
-            'wilaya'             => 'Oran',
-            'matieres_enseignees'=> ['Mathématiques', 'Physique'],
-            'niveaux_couverts'   => ['1AS', '2AS', '3AS'],
-            'visible'            => true,
+        $tenant = Tenant::factory()->create(['statut' => 'actif', 'wilaya_id' => 31]);
+        TenantModule::create([
+            'tenant_id'  => $tenant->id,
+            'module_key' => 'marketplace',
+            'actif'      => true,
         ]);
 
-        $this->getJson('/api/v1/marketplace/recherche?wilaya=Oran')
+        $this->getJson('/api/v1/marketplace/recherche?wilaya=31')
             ->assertStatus(200)
-            ->assertJsonStructure(['success', 'data' => ['centres', 'total']]);
+            ->assertJsonStructure(['success', 'data', 'meta' => ['current_page', 'per_page', 'total', 'last_page']]);
     }
 
     public function test_recherche_par_matiere(): void
@@ -75,30 +79,21 @@ class MarketplaceControllerTest extends TestCase
 
     public function test_profil_public_centre_visible(): void
     {
-        $tenantId = (string) Str::uuid();
-        ProfilMarketplace::create([
-            'tenant_id'         => $tenantId,
-            'nom_etablissement' => 'Centre Test',
-            'adresse'           => '1 Rue Test',
-            'wilaya'            => 'Alger',
-            'visible'           => true,
+        $tenant = Tenant::factory()->create(['statut' => 'actif', 'nom_etablissement' => 'Centre Test']);
+        TenantModule::create([
+            'tenant_id'  => $tenant->id,
+            'module_key' => 'marketplace',
+            'actif'      => true,
         ]);
 
-        $this->getJson("/api/v1/marketplace/centres/{$tenantId}")
+        $this->getJson("/api/v1/marketplace/centres/{$tenant->id}")
             ->assertStatus(200)
-            ->assertJsonPath('data.nom_etablissement', 'Centre Test');
+            ->assertJsonPath('data.centre.nom_etablissement', 'Centre Test');
     }
 
     public function test_profil_centre_invisible_retourne_404(): void
     {
         $tenantId = (string) Str::uuid();
-        ProfilMarketplace::create([
-            'tenant_id'         => $tenantId,
-            'nom_etablissement' => 'Centre Caché',
-            'adresse'           => 'Adresse',
-            'wilaya'            => 'Alger',
-            'visible'           => false,
-        ]);
 
         $this->getJson("/api/v1/marketplace/centres/{$tenantId}")
             ->assertStatus(404);
@@ -269,7 +264,7 @@ class MarketplaceControllerTest extends TestCase
             ->getJson('/api/v1/marketplace/stats')
             ->assertStatus(200)
             ->assertJsonStructure(['success', 'data' => [
-                'profils_actifs', 'profils_verifies', 'total_reservations',
+                'total_centres', 'total_wilayas', 'message',
             ]]);
     }
 }

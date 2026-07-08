@@ -104,5 +104,32 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->at('04:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // ── Sentry : reporter les exceptions en production ────────────
+        if (!empty(config('sentry.dsn')) && app()->environment('production', 'staging')) {
+            $exceptions->report(function (\Throwable $e) {
+                if (app()->bound('sentry')) {
+                    app('sentry')->captureException($e);
+                }
+            });
+        }
+
+        // ── Alerter via Telegram les erreurs 500 critiques ────────────
+        $exceptions->report(function (\Throwable $e) {
+            if ($e instanceof \Error || (
+                !($e instanceof \Illuminate\Http\Exceptions\HttpException) &&
+                !($e instanceof \Illuminate\Validation\ValidationException) &&
+                !($e instanceof \Illuminate\Auth\AuthenticationException)
+            )) {
+                try {
+                    app(\App\Services\SecurityMonitorService::class)->alerter(
+                        'server_error_500',
+                        'critical',
+                        "💥 Erreur 500 en production : " . get_class($e) . " — " . substr($e->getMessage(), 0, 200),
+                        ['file' => $e->getFile(), 'line' => $e->getLine()]
+                    );
+                } catch (\Throwable) {
+                    // Ne jamais faire planter le handler d'exceptions
+                }
+            }
+        });
     })->create();
