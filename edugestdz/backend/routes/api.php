@@ -113,6 +113,13 @@ use App\Http\Controllers\Api\V1\{
         // ── Security Dashboard ──
         Route::get('security/dashboard', [SecurityDashboardController::class, 'index']);
 
+        // ── Kill Switch (Niveau 6) ──
+        Route::prefix('kill-switch')->group(function () {
+            Route::post('initier',    [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'initier']);
+            Route::post('{voteId}/approuver', [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'approuver']);
+            Route::post('{voteId}/refuser',   [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'refuser']);
+        });
+
         // ── Élèves ──
         Route::apiResource('eleves', EleveController::class);
         Route::prefix('eleves')->group(function () {

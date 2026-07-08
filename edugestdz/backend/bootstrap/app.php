@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
 
         $middleware->api(prepend: [
+            \App\Http\Middleware\KillSwitchMiddleware::class,
             \App\Http\Middleware\LicenceCheck::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\QueryMonitor::class,
@@ -96,6 +97,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('edugest:deadman-switch')
                  ->dailyAt('06:00')
                  ->withoutOverlapping();
+
+        $schedule->command('edugest:supply-chain-verify')
+                 ->weekly()
+                 ->mondays()
+                 ->at('04:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

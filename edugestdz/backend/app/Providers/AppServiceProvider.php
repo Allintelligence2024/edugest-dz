@@ -32,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\ReservationMarketplace::observe(\App\Observers\ReservationMarketplaceObserver::class);
         \App\Models\AlerteSurveillance::observe(\App\Observers\AlerteSurveillanceObserver::class);
 
+        \App\Models\AuditChain::observe(\App\Observers\AuditChainObserver::class);
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(15, 10)
                 ->by($request->ip())
