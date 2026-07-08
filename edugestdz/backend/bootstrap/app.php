@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\QueryMonitor::class,
         ]);
 
+        $middleware->api(append: [
+            \App\Http\Middleware\IntelligentRateLimiter::class,
+        ]);
+
         $middleware->alias([
             'resolve.tenant'    => \App\Http\Middleware\ResolveTenant::class,
             'tenant'            => \App\Http\Middleware\ResolveTenant::class,
@@ -33,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'mfa'               => \App\Http\Middleware\MfaRequired::class,
             'ip.allowlist'      => \App\Http\Middleware\SuperAdminIpAllowlist::class,
             'tenant.verify'     => \App\Http\Middleware\TenantIsolationVerifier::class,
+            'zero.trust'        => \App\Http\Middleware\ZeroTrustMiddleware::class,
+            'zero.trust.strict' => \App\Http\Middleware\ZeroTrustMiddleware::class . ':strict',
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {

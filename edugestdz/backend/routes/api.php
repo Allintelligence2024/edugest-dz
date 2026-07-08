@@ -87,7 +87,7 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
-    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription'])
+    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'])
          ->group(function () {
 
         // ── Auth ──
@@ -289,6 +289,12 @@ use App\Http\Controllers\Api\V1\{
             Route::post('/',                     [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'register']);
             Route::delete('/',                   [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'unregister']);
             Route::get('/',                      [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'list']);
+        });
+
+        // ── Trusted Devices (Niveau 4) ──
+        Route::prefix('trusted-devices')->group(function () {
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\TrustedDeviceController::class, 'index']);
+            Route::delete('{id}',                [\App\Http\Controllers\Api\V1\TrustedDeviceController::class, 'destroy']);
         });
 
         // ── Campagnes ──
