@@ -1,6 +1,7 @@
 <?php
 namespace Database\Factories;
 
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,12 +13,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'nom'      => $this->faker->lastName(),
-            'prenom'   => $this->faker->firstName(),
-            'email'    => $this->faker->unique()->safeEmail(),
-            'password' => static::$password ??= Hash::make('password'),
-            'statut'   => 'actif',
-            'langue'   => 'fr',
+            'tenant_id'  => Tenant::factory(),
+            'nom'        => $this->faker->lastName(),
+            'prenom'     => $this->faker->firstName(),
+            'email'      => $this->faker->unique()->safeEmail(),
+            'password'   => static::$password ??= Hash::make('password'),
+            'statut'     => 'actif',
+            'langue'     => 'fr',
+            'role_id'    => null,
         ];
     }
 

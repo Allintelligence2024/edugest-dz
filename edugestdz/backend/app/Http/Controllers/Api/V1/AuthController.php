@@ -47,9 +47,20 @@ class AuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
+        $monitor = app(\App\Services\SecurityMonitorService::class);
+
+        if ($monitor->estEnBruteForce($credentials['email'], $request->ip())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Trop de tentatives. Reessayez dans 15 minutes.',
+                'code'    => 'BRUTE_FORCE_BLOCKED',
+            ], 429);
+        }
+
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user) {
+            try { $monitor->loginEchoue($credentials['email'], $request->ip()); } catch (\Throwable) {}
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
@@ -65,6 +76,7 @@ class AuthController extends Controller
 
         if (!Hash::check($credentials['password'], $user->password)) {
             app(TwoFactorService::class)->incrementLoginAttempts($user);
+            try { $monitor->loginEchoue($credentials['email'], $request->ip()); } catch (\Throwable) {}
             return response()->json([
                 'success' => false,
                 'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
@@ -255,6 +267,17 @@ class AuthController extends Controller
             'current_password' => 'required|string',
             'new_password'     => 'required|string|min:8|confirmed',
         ]);
+
+        $policyService = app(\App\Services\PasswordPolicyService::class);
+        $violations    = $policyService->valider($request->new_password, auth()->user()->email);
+
+        if (!empty($violations)) {
+            return response()->json([
+                'success'    => false,
+                'message'    => 'Mot de passe non conforme à la politique de sécurité.',
+                'violations' => $violations,
+            ], 422);
+        }
 
         $user = auth()->user();
 

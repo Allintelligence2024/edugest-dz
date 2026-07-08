@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'super_admin_allowed_ips' => env('SUPER_ADMIN_ALLOWED_IPS', ''),
+
 ];

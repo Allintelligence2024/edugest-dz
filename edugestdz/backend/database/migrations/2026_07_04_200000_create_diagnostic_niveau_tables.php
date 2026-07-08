@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('diagnostics_eleves', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('eleve_id')->unique();
             $table->string('niveau_global');
@@ -23,8 +23,8 @@ return new class extends Migration
             $table->integer('nb_notes_sous_10')->default(0);
             $table->integer('nb_notes_consecutives_sous_5')->default(0);
 
-            $table->jsonb('matieres_en_danger')->default('[]');
-            $table->jsonb('matieres_excellentes')->default('[]');
+            $table->json('matieres_en_danger')->default('[]');
+            $table->json('matieres_excellentes')->default('[]');
 
             $table->integer('nb_absences_mois')->default(0);
             $table->integer('nb_retards_mois')->default(0);
@@ -46,14 +46,14 @@ return new class extends Migration
         });
 
         Schema::create('historique_diagnostics', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('eleve_id');
             $table->string('niveau_global');
             $table->decimal('score_risque', 5, 2);
             $table->decimal('moyenne_generale', 5, 2)->nullable();
             $table->decimal('tendance', 5, 2)->nullable();
-            $table->jsonb('details')->default('{}');
+            $table->json('details')->default('{}');
             $table->timestamp('analyse_le');
 
             $table->index(['eleve_id', 'analyse_le'], 'idx_histo_eleve_date');
@@ -61,7 +61,7 @@ return new class extends Migration
         });
 
         Schema::create('plans_rattrapage', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('eleve_id');
             $table->uuid('enseignant_id')->nullable();
@@ -80,7 +80,7 @@ return new class extends Migration
         });
 
         Schema::create('convocations_parents', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->uuid('eleve_id');
             $table->string('motif');

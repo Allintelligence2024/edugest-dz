@@ -20,7 +20,11 @@ class SuperAdminExtTest extends TestCase
     {
         parent::setUp();
         $role = Role::factory()->create(['nom' => 'super_admin']);
-        $this->superAdmin = User::factory()->create(['role_id' => $role->id]);
+        $this->superAdmin = User::factory()->create([
+            'role_id'               => $role->id,
+            'two_factor_secret'     => 'JBSWY3DPEHPK3PXP',
+            'two_factor_confirmed_at' => now(),
+        ]);
         $this->token = JWTAuth::fromUser($this->superAdmin);
     }
 

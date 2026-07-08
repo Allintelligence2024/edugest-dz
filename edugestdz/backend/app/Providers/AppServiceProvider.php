@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +18,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            $pdo = DB::connection()->getPdo();
+            $pdo->sqliteCreateFunction('gen_random_uuid', function () {
+                return (string) Str::uuid();
+            });
+        }
+
         \App\Models\Eleve::observe(\App\Observers\EleveObserver::class);
         \App\Models\AbsenceJournaliere::observe(\App\Observers\AbsenceJournaliereObserver::class);
         \App\Models\Note::observe(\App\Observers\NoteObserver::class);

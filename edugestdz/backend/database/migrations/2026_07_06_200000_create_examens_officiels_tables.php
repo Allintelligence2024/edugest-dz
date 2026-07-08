@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sessions_examen', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('tenant_id');
             $table->string('type')->default('BAC');
             $table->string('filiere')->nullable();
@@ -36,7 +36,7 @@ return new class extends Migration
         });
 
         Schema::create('epreuves_examen', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('session_id');
             $table->string('matiere');
             $table->string('code_matiere')->nullable();
@@ -56,7 +56,7 @@ return new class extends Migration
         });
 
         Schema::create('salles_examen', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('session_id');
             $table->uuid('tenant_id');
             $table->string('nom');
@@ -76,7 +76,7 @@ return new class extends Migration
         });
 
         Schema::create('candidats_examen', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('session_id');
             $table->uuid('tenant_id');
             $table->uuid('eleve_id')->nullable();
@@ -106,7 +106,7 @@ return new class extends Migration
         });
 
         Schema::create('surveillants_examen', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('id')->primary();
             $table->uuid('session_id');
             $table->uuid('tenant_id');
             $table->uuid('user_id');

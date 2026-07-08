@@ -6,6 +6,8 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\LmsController;
+use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
     EleveController,
@@ -39,6 +41,7 @@ use App\Http\Controllers\Api\V1\{
     SignalementController,
     DiagnosticController,
     ExamenController,
+    ModuleController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -74,7 +77,7 @@ use App\Http\Controllers\Api\V1\{
         // ────────────────────────────────────────────
         // 🔐 SUPER-ADMIN (sans tenant scope)
         // ────────────────────────────────────────────
-        Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+        Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
             Route::get('tenants',                          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'indexTenants']);
             Route::get('stats',                            [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'statsGlobales']);
             Route::post('tenants/{id}/suspendre',          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'suspendreTenant']);
@@ -84,7 +87,7 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     // 🔒 ROUTES PROTÉGÉES PAR JWT
     // ────────────────────────────────────────────
-    Route::middleware(['auth:api', 'resolve.tenant', 'check.subscription'])
+    Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription'])
          ->group(function () {
 
         // ── Auth ──
@@ -106,6 +109,9 @@ use App\Http\Controllers\Api\V1\{
                 Route::get('recovery-codes', [TwoFactorController::class, 'recoveryCodes']);
             });
         });
+
+        // ── Security Dashboard ──
+        Route::get('security/dashboard', [SecurityDashboardController::class, 'index']);
 
         // ── Élèves ──
         Route::apiResource('eleves', EleveController::class);
@@ -255,7 +261,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Budget Annuel & Comptabilite (M13) ──
-        Route::prefix('budget')->group(function () {
+        Route::prefix('budget')->middleware('module:budget')->group(function () {
             Route::get('dashboard',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'dashboard']);
             Route::get('categories',                  [\App\Http\Controllers\Api\V1\BudgetController::class, 'categories']);
             Route::get('bilan-mensuel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanMensuel']);
@@ -305,7 +311,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Pointage par badge RFID/NFC ──
-        Route::prefix('pointage')->group(function () {
+        Route::prefix('pointage')->middleware('module:pointage')->group(function () {
             Route::post('badge', [\App\Http\Controllers\Api\V1\PointageBadgeController::class, 'scan']);
             Route::get('enseignants',            [PointageEnseignantController::class, 'index']);
             Route::post('enseignants',           [PointageEnseignantController::class, 'store']);
@@ -337,7 +343,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Personnel Non-Enseignant (M12) ──
-        Route::prefix('personnel')->group(function () {
+        Route::prefix('personnel')->middleware('module:personnel')->group(function () {
             Route::get('tableau-bord',           [\App\Http\Controllers\Api\V1\PersonnelController::class, 'tableauBord']);
             Route::get('/',                       [\App\Http\Controllers\Api\V1\PersonnelController::class, 'index']);
             Route::post('/',                      [\App\Http\Controllers\Api\V1\PersonnelController::class, 'store']);
@@ -365,7 +371,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Transport Scolaire (M09) ──
-        Route::prefix('transport')->group(function () {
+        Route::prefix('transport')->middleware('module:transport')->group(function () {
             Route::get('dashboard',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'dashboard']);
             Route::get('circuits',                            [\App\Http\Controllers\Api\V1\TransportController::class, 'indexCircuits']);
             Route::post('circuits',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'storeCircuit']);
@@ -384,7 +390,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Cantine / Restauration (M10) ──
-        Route::prefix('cantine')->group(function () {
+        Route::prefix('cantine')->middleware('module:cantine')->group(function () {
             Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'dashboard']);
             Route::get('menus',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexMenus']);
             Route::get('menus/semaine',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'menuSemaine']);
@@ -404,7 +410,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Stock & Inventaire Mobilier (M11) ──
-        Route::prefix('stock')->group(function () {
+        Route::prefix('stock')->middleware('module:stock')->group(function () {
             Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'dashboard']);
             Route::get('alertes',                         [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'alertes']);
 
@@ -434,7 +440,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Entretien Bâtiment (M14) ──
-        Route::prefix('entretien')->group(function () {
+        Route::prefix('entretien')->middleware('module:entretien')->group(function () {
             Route::get('dashboard',                        [\App\Http\Controllers\Api\V1\EntretienController::class, 'dashboard']);
 
             // Locaux
@@ -467,7 +473,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Billets (entrée / retard / sortie / convocation) ──
-        Route::prefix('billets')->group(function () {
+        Route::prefix('billets')->middleware('module:billets')->group(function () {
             Route::get('/',                    [\App\Http\Controllers\Api\V1\BilletController::class, 'index']);
             Route::post('/',                   [\App\Http\Controllers\Api\V1\BilletController::class, 'store']);
             Route::get('{id}/pdf',             [\App\Http\Controllers\Api\V1\BilletController::class, 'pdf']);
@@ -475,7 +481,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Marketplace Authenticated ──
-        Route::prefix('marketplace')->group(function () {
+        Route::prefix('marketplace')->middleware('module:marketplace')->group(function () {
             Route::post('offres',                [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'store']);
             Route::put('offres/{id}',            [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'update']);
             Route::delete('offres/{id}',         [\App\Http\Controllers\Api\V1\Marketplace\OffreController::class, 'destroy']);
@@ -489,7 +495,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Marketplace Nouveau Système (profils centres + offres cours) ──
-        Route::prefix('marketplace')->group(function () {
+        Route::prefix('marketplace')->middleware('module:marketplace')->group(function () {
             Route::get('mon-profil',                         [MarketplaceController::class, 'monProfil']);
             Route::put('mon-profil',                         [MarketplaceController::class, 'updateProfil']);
             Route::get('offres-cours',                       [MarketplaceController::class, 'indexOffres']);
@@ -505,7 +511,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Surveillance Dahua ──
-        Route::prefix('surveillance')->group(function () {
+        Route::prefix('surveillance')->middleware('module:surveillance')->group(function () {
             Route::get('/alertes',                  [SurveillanceController::class, 'indexAlertes']);
             Route::post('/alertes/{id}/traiter',    [SurveillanceController::class, 'traiterAlerte']);
             Route::get('/cameras',                  [SurveillanceController::class, 'indexCameras']);
@@ -525,7 +531,7 @@ use App\Http\Controllers\Api\V1\{
         Route::post('notifications/parent/tout-lire',       [SignalementController::class, 'toutMarquerLu']);
 
         // ── Diagnostic Niveau Élèves (Early Warning System) ──────────────
-        Route::prefix('diagnostic')->group(function () {
+        Route::prefix('diagnostic')->middleware('module:diagnostic')->group(function () {
             Route::get('/dashboard',                    [DiagnosticController::class, 'dashboard']);
             Route::get('/eleves',                       [DiagnosticController::class, 'indexDiagnostics']);
             Route::get('/eleves/{id}',                  [DiagnosticController::class, 'showDiagnostic']);
@@ -536,7 +542,7 @@ use App\Http\Controllers\Api\V1\{
         });
 
         // ── Examens Officiels BEM/BAC ──
-        Route::prefix('examens')->group(function () {
+        Route::prefix('examens')->middleware('module:examens')->group(function () {
             Route::get('/',                       [ExamenController::class, 'indexSessions']);
             Route::post('/',                      [ExamenController::class, 'storeSession']);
             Route::get('/{id}',                   [ExamenController::class, 'showSession']);
@@ -575,16 +581,81 @@ use App\Http\Controllers\Api\V1\{
             Route::get('online/{id}/statut',     [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'verifierStatut']);
             Route::post('online/{id}/rembourser',[\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'rembourser']);
         });
+
+        // ── WhatsApp Dashboard ──
+        Route::prefix('whatsapp')->group(function () {
+            Route::post('send',                  [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'send']);
+            Route::get('messages',               [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'index']);
+            Route::get('messages/{id}',          [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'show']);
+            Route::get('stats',                  [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'stats']);
+        });
+
+        // ── Google Classroom ──
+        Route::prefix('google')->group(function () {
+            Route::post('classroom/auth',        [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'auth']);
+            Route::get('classroom/status',       [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'status']);
+            Route::delete('classroom/revoke',    [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'revoke']);
+            Route::get('classroom/courses',      [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'courses']);
+            Route::post('classroom/links',       [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'link']);
+            Route::get('classroom/links',        [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'links']);
+            Route::post('classroom/links/{id}/sync', [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'sync']);
+            Route::delete('classroom/links/{id}',    [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'destroyLink']);
+        });
+
+        // ── LMS — Cours en ligne ──
+        Route::prefix('lms')->middleware('module:lms')->group(function () {
+            Route::get('/dashboard',                    [LmsController::class, 'dashboard']);
+            Route::get('/cours',                        [LmsController::class, 'indexCours']);
+            Route::post('/cours',                       [LmsController::class, 'storeCours']);
+            Route::get('/cours/{id}',                   [LmsController::class, 'showCours']);
+            Route::put('/cours/{id}',                   [LmsController::class, 'updateCours']);
+            Route::post('/cours/{id}/publier',          [LmsController::class, 'publierCours']);
+            Route::post('/cours/{coursId}/chapitres',   [LmsController::class, 'storeChapitre']);
+            Route::put('/chapitres/{id}',               [LmsController::class, 'updateChapitre']);
+            Route::delete('/chapitres/{id}',            [LmsController::class, 'deleteChapitre']);
+            Route::post('/chapitres/{chapitreId}/lecons',[LmsController::class, 'storeLecon']);
+            Route::put('/lecons/{id}',                  [LmsController::class, 'updateLecon']);
+            Route::post('/lecons/{id}/upload',          [LmsController::class, 'uploadFichierLecon']);
+            Route::post('/lecons/{leconId}/quiz',       [LmsController::class, 'storeQuiz']);
+            Route::post('/quiz/{quizId}/questions',     [LmsController::class, 'storeQuestion']);
+            Route::post('/quiz/{quizId}/passer',        [LmsController::class, 'passerQuiz']);
+            Route::post('/inscrire',                    [LmsController::class, 'inscrire']);
+            Route::get('/eleve/{eleveId}/inscriptions', [LmsController::class, 'inscriptionEleve']);
+            Route::post('/inscription/{id}/lecon/{leconId}/complete', [LmsController::class, 'marquerLecon']);
+            Route::get('/inscription/{id}/progression', [LmsController::class, 'progressionEleve']);
+            Route::post('/lecons/{leconId}/devoir',     [LmsController::class, 'soumettreDevoir']);
+            Route::post('/devoirs/{id}/corriger',       [LmsController::class, 'corrigerDevoir']);
+            Route::get('/inscription/{id}/certificat',  [LmsController::class, 'telechargerCertificat']);
+        });
+    });
+
+    // ────────────────────────────────────────────
+    // 🧩 GESTION DES MODULES (accessible même hors module)
+    // ────────────────────────────────────────────
+    Route::prefix('modules')->middleware(['auth:api', 'resolve.tenant'])->group(function () {
+        Route::get('/',                         [ModuleController::class, 'index']);
+        Route::get('/actifs',                   [ModuleController::class, 'actifs']);
+        Route::post('/bulk',                    [ModuleController::class, 'bulkUpdate']);
+        Route::post('/{moduleKey}/activer',     [ModuleController::class, 'activer']);
+        Route::post('/{moduleKey}/desactiver',  [ModuleController::class, 'desactiver']);
     });
 
     // ────────────────────────────────────────────
     // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
     // ────────────────────────────────────────────
-    Route::prefix('super-admin')->middleware(['auth:api', 'super_admin'])->group(function () {
+    Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
         Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
         Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
         Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);
         Route::post('tenants/{id}/impersonate',  [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'impersonate']);
+    });
+
+    // ── Breach Response & Security Incidents ──
+    Route::prefix('security/breach')->middleware(['auth:api', 'ip.allowlist'])->group(function () {
+        Route::post('/verrouillage-urgence', [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'verrouillageUrgence']);
+        Route::post('/incidents',            [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'declarerIncident']);
+        Route::get('/incidents',             [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'indexIncidents']);
+        Route::delete('/verrouillage',       [\App\Http\Controllers\Api\V1\BreachResponseController::class, 'leverVerrouillage']);
     });
 
     // ── WhatsApp Webhook (Meta / public) ──
@@ -593,9 +664,8 @@ use App\Http\Controllers\Api\V1\{
         Route::post('webhook',               [\App\Http\Controllers\Api\V1\WhatsAppWebhookController::class, 'handle']);
     });
 
-    // ── WhatsApp Twilio (incoming SMS/WhatsApp) ──
-    Route::post('twilio/whatsapp',           [\App\Http\Controllers\Api\V1\WhatsAppController::class, 'incoming'])
-        ->middleware('throttle:webhook');
+    // ── Google Classroom OAuth Callback (public) ──
+    Route::get('google/classroom/callback',  [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'callback']);
 
     // ══════════════════════════════════════════════════════════════════════
     // SURVEILLANCE DAHUA — Télésurveillance
@@ -608,3 +678,7 @@ use App\Http\Controllers\Api\V1\{
 
 // ── Health Check (public — no auth, outside v1) ──
 Route::get('/health', [\App\Http\Controllers\Api\HealthController::class, 'check']);
+
+// ── Fichier (signé, authentifié) ──
+Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
+    ->middleware('auth:api');

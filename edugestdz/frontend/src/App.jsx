@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from '@context/AuthContext';
 import { I18nProvider } from '@context/I18nContext';
 import { ThemeProvider } from '@context/ThemeContext';
+import { ModulesProvider } from '@context/ModulesContext';
 import Sidebar from '@components/Sidebar';
 import Header from '@components/Header';
 import LoginPage from '@pages/LoginPage';
@@ -36,12 +37,14 @@ import BudgetPage from '@pages/BudgetPage';
 import EntretienPage from '@pages/EntretienPage';
 import AbsencesPage from '@pages/AbsencesPage';
 import BilletsPage from '@pages/BilletsPage';
+import LmsPage from '@pages/LmsPage';
 import MarketplacePageCentres from '@pages/MarketplacePageCentres';
 import PointagePage from '@pages/PointagePage';
 import ProfilePage from '@pages/ProfilePage';
 import SurveillancePage from '@pages/SurveillancePage';
 import DiagnosticPage from '@pages/DiagnosticPage';
 import ExamensPage from '@pages/ExamensPage';
+import ModulesPage from '@pages/ModulesPage';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -94,6 +97,7 @@ export default function App() {
       <ThemeProvider>
         <I18nProvider>
           <AuthProvider>
+          <ModulesProvider>
           <Toaster position="top-right" toastOptions={{
             duration: 3500,
             style: {
@@ -141,11 +145,14 @@ export default function App() {
             <Route path="surveillance" element={<SurveillancePage />} />
             <Route path="diagnostic" element={<DiagnosticPage />} />
             <Route path="examens" element={<ExamensPage />} />
-            </Route>
+            <Route path="lms" element={<LmsPage />} />
+            <Route path="modules" element={<ModulesPage />} />
+          </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </ModulesProvider>
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>
