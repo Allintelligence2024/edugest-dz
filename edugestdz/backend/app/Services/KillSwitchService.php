@@ -165,33 +165,41 @@ class KillSwitchService
 
     /**
      * Vérifier si le KillSwitch est actif.
-     * Vérifie Redis EN PREMIER (rapide), puis BDD (fallback si Redis down).
+     *
+     * Stratégie :
+     * 1. Redis disponible → répondre depuis Redis uniquement (rapide, sans BDD)
+     * 2. Redis down → fallback sur BDD kill_switch_state
+     * 3. Les deux down → fail-open (laisser passer)
      */
     public function estActif(): bool
     {
-        // ── Vérification Redis (principale, rapide) ──────────────────────
+        // ── Vérification Redis (principale) ───────────────────────────────
         try {
-            if (Cache::has('kill_switch:active')) {
-                return true;
-            }
+            // Cache::has() lève une exception si Redis est down
+            // Sinon retourne true/false immédiatement (sans BDD)
+            return Cache::has('kill_switch:active');
         } catch (\Throwable) {
-            // Redis down → continuer vers BDD
-            Log::warning('KillSwitch: Redis indisponible — vérification BDD');
+            // Redis indisponible → fallback BDD
+            Log::warning(
+                'KillSwitch: Redis indisponible — fallback BDD'
+            );
         }
 
-        // ── Vérification BDD (fallback) ───────────────────────────────────
+        // ── Fallback BDD (seulement si Redis down) ─────────────────────────
         try {
+            if (!\Illuminate\Support\Facades\Schema::hasTable('kill_switch_state')) {
+                return false;
+            }
             return (bool) \DB::table('kill_switch_state')
                 ->where('is_active', true)
                 ->whereNull('deactivated_at')
                 ->exists();
         } catch (\Throwable $e) {
-            // Si ni Redis ni BDD ne répondent → comportement sécurisé (LAISSER PASSER)
-            // Un KillSwitch qui bloque quand l'infra est down = problème opérationnel
-            Log::error('KillSwitch: impossible de vérifier (Redis + BDD down) — LAISSER PASSER', [
-                'error' => $e->getMessage(),
-            ]);
-            return false; // fail-open ici car bloquer = service down = pire que la menace
+            Log::error(
+                'KillSwitch: impossible de vérifier (Redis + BDD down) — LAISSER PASSER',
+                ['error' => $e->getMessage()]
+            );
+            return false; // fail-open intentionnel
         }
     }
 

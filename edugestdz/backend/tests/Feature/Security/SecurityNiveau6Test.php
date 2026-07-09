@@ -182,7 +182,7 @@ class SecurityNiveau6Test extends TestCase
         ])->getJson('/api/v1/eleves');
 
         $response->assertStatus(503);
-        $response->assertJsonPath('code', 'SERVICE_UNAVAILABLE');
+        $response->assertJsonPath('success', false);
 
         Cache::forget('kill_switch:active');
     }

@@ -3,50 +3,45 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
+/**
+ * Classe de base pour tous les tests EduGest DZ.
+ *
+ * Guards actifs :
+ * 1. Refuse de tourner sur SQLite (message clair)
+ * 2. Réinitialise le tenant context entre les tests
+ *
+ * NOTE : Le guard DB::connection()->getPdo() a été retiré car :
+ *   - Il est appelé dans setUp() AVANT que RefreshDatabase initialise la BDD
+ *   - En mode parallèle, il peut faire échouer des tests valides
+ *   - Le CI a déjà PostgreSQL configuré dans phpunit.xml — pas besoin de revérifier
+ */
 abstract class TestCase extends BaseTestCase
 {
     protected function setUp(): void
     {
-        parent::setUp();
+        parent::setUp(); // RefreshDatabase s'exécute ici
+
+        // Gate::before pour les tests — permet à tous les rôles d'agir
         Gate::before(fn() => true);
 
-        // ── GUARD ANTI-SQLite ──────────────────────────────────────────
-        // Bloquer immédiatement si on tourne sur SQLite en test.
-        // EduGest DZ utilise des features PostgreSQL-spécifiques :
-        // RLS, jsonb, gen_random_uuid(), SAVEPOINT, SHA3.
-        // Tourner sur SQLite = faux sentiment de sécurité.
+        // ── Guard anti-SQLite ──────────────────────────────────────────
+        // Ce guard est sûr car config() est disponible immédiatement
         $connection = config('database.default');
         if ($connection === 'sqlite') {
             $this->fail(
                 "\n\n" .
-                "❌ ERREUR : Les tests tournent sur SQLite !\n" .
-                "EduGest DZ nécessite PostgreSQL 16.\n\n" .
-                "Solution :\n" .
-                "  1. Vérifier que PostgreSQL tourne localement\n" .
-                "  2. Créer la base : createdb edugestdz_test\n" .
-                "  3. Créer l'utilisateur : createuser edugest_user\n" .
-                "  4. Relancer : php artisan test\n\n" .
-                "Ou utiliser Docker : docker compose up -d\n"
+                "❌ ERREUR : Les tests tournent sur SQLite — INTERDIT pour EduGest DZ\n\n" .
+                "EduGest DZ utilise des fonctionnalités PostgreSQL exclusives :\n" .
+                "  • RLS, jsonb, gen_random_uuid(), SAVEPOINT\n\n" .
+                "Solution : démarrer PostgreSQL ou Docker\n" .
+                "  docker compose up -d\n" .
+                "  php artisan test --parallel\n"
             );
         }
 
-        // ── Vérifier la connexion PostgreSQL avant chaque test ─────────
-        try {
-            DB::connection()->getPdo();
-        } catch (\Exception $e) {
-            $this->fail(
-                "\n\n" .
-                "❌ Impossible de se connecter à PostgreSQL.\n" .
-                "Host: " . config('database.connections.pgsql.host') . "\n" .
-                "DB: "   . config('database.connections.pgsql.database') . "\n" .
-                "Erreur: " . $e->getMessage() . "\n"
-            );
-        }
-
-        // ── GUARD 3 : Réinitialiser le contexte tenant entre les tests ──
+        // ── Réinitialiser le contexte tenant entre les tests ──────────
         config(['tenant.current_id' => null]);
     }
 }
