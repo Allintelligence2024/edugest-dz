@@ -133,6 +133,7 @@ use App\Http\Controllers\Api\V1\{
             Route::post('{id}/inscription',     [EleveController::class, 'inscrire']);
             Route::post('import',               [EleveController::class, 'import']);
             Route::get('export',                [EleveController::class, 'export']);
+            Route::get('export/excel',          [EleveController::class, 'exportExcel'])->middleware('throttle:exports');
         });
 
         // ── Parents ──
@@ -290,6 +291,19 @@ use App\Http\Controllers\Api\V1\{
             Route::put('tout-lire',              [NotificationController::class, 'toutLire']);
             Route::delete('{id}',               [NotificationController::class, 'destroy']);
             Route::post('envoyer',              [NotificationController::class, 'envoyer']);
+        });
+
+        // ── Notifications In-App (notifications_inapp) ──
+        Route::prefix('notifications/in-app')->group(function () {
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\NotificationInAppController::class, 'index']);
+            Route::patch('{id}/lu',              [\App\Http\Controllers\Api\V1\NotificationInAppController::class, 'marquerLue']);
+        });
+
+        // ── Remplacement Enseignant ──
+        Route::prefix('remplacements')->group(function () {
+            Route::get('seances-orphelines',     [\App\Http\Controllers\Api\V1\RemplacementController::class, 'seancesOrphelines']);
+            Route::get('suggestions/{seanceId}', [\App\Http\Controllers\Api\V1\RemplacementController::class, 'suggestions']);
+            Route::post('confirmer/{seanceId}',  [\App\Http\Controllers\Api\V1\RemplacementController::class, 'confirmer']);
         });
 
         // ── Device Tokens (Push Notifications) ──
@@ -792,3 +806,51 @@ Route::any('/v1/actuator', function () {
 Route::any('/v1/metrics', function () {
     return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
 })->name('honeypot.metrics');
+
+Route::any('/v1/.git/config', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.git-config');
+
+Route::any('/v1/swagger.json', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.swagger');
+
+Route::any('/v1/graphql', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.graphql');
+
+Route::any('/v1/health/check', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.health-check');
+
+Route::any('/v1/ping', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.ping');
+
+Route::any('/v1/test', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.test');
+
+Route::any('/v1/api-docs', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.api-docs');
+
+Route::any('/v1/robots.txt', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.robots');
+
+Route::any('/v1/sitemap.xml', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.sitemap');
+
+Route::any('/v1/cron', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.cron');
+
+Route::any('/v1/deploy', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.deploy');
+
+Route::any('/v1/websocket', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.websocket');

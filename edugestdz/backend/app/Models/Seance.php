@@ -11,6 +11,7 @@ class Seance extends BaseModel
         'tenant_id', 'cours_id', 'date_seance',
         'heure_debut', 'heure_fin',
         'statut', 'motif_annulation',
+        'enseignant_remplacement_id',
     ];
 
     protected $casts = [
@@ -25,5 +26,10 @@ class Seance extends BaseModel
     public function presences(): HasMany
     {
         return $this->hasMany(Presence::class);
+    }
+
+    public function enseignantRemplacement(): BelongsTo
+    {
+        return $this->belongsTo(Enseignant::class, 'enseignant_remplacement_id');
     }
 }

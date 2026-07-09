@@ -41,6 +41,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.verify'     => \App\Http\Middleware\TenantIsolationVerifier::class,
             'zero.trust'        => \App\Http\Middleware\ZeroTrustMiddleware::class,
             'zero.trust.strict' => \App\Http\Middleware\ZeroTrustMiddleware::class . ':strict',
+            'honeypot'          => \App\Http\Middleware\HoneypotRouteMiddleware::class,
+            'jwt.blacklist'     => \App\Http\Middleware\JwtBlacklistCheck::class,
+            'sql.protect'       => \App\Http\Middleware\SqlInjectionDetectorMiddleware::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {

@@ -19,6 +19,18 @@ class HoneypotService
         '/api/v1/backup',
         '/api/v1/config',
         '/api/v1/dump',
+        '/api/v1/.git/config',
+        '/api/v1/swagger.json',
+        '/api/v1/graphql',
+        '/api/v1/health/check',
+        '/api/v1/ping',
+        '/api/v1/test',
+        '/api/v1/api-docs',
+        '/api/v1/robots.txt',
+        '/api/v1/sitemap.xml',
+        '/api/v1/cron',
+        '/api/v1/deploy',
+        '/api/v1/websocket',
     ];
 
     public function getRoutesLeurres(): array

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exports\ElevesExport;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Eleve\StoreEleveRequest;
 use App\Http\Requests\Eleve\UpdateEleveRequest;
@@ -8,6 +9,7 @@ use App\Models\{Eleve, ParentEleve};
 use App\Services\{EleveService};
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{DB, Storage};
+use Maatwebsite\Excel\Facades\Excel;
 
 class EleveController extends BaseApiController
 {
@@ -385,5 +387,13 @@ class EleveController extends BaseApiController
     {
         $eleves = Eleve::with(['wilaya', 'parents'])->get();
         return $this->success($eleves);
+    }
+
+    public function exportExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        return Excel::download(
+            new ElevesExport(config('tenant.current_id')),
+            'eleves.xlsx'
+        );
     }
 }
