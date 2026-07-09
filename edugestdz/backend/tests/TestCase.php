@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -43,5 +44,8 @@ abstract class TestCase extends BaseTestCase
 
         // ── Réinitialiser le contexte tenant entre les tests ──────────
         config(['tenant.current_id' => null]);
+
+        // ── Nettoyer le cache KillSwitch (évite pollution parallèle) ──
+        Cache::forget('kill_switch:active');
     }
 }

@@ -39,6 +39,12 @@ class SecurityNiveau6Test extends TestCase
         $this->token = auth('api')->login($this->user);
     }
 
+    protected function tearDown(): void
+    {
+        Cache::forget('kill_switch:active');
+        parent::tearDown();
+    }
+
     // ── Audit Chain ──
 
     public function test_audit_chain_genesis_block_exists(): void
@@ -181,10 +187,10 @@ class SecurityNiveau6Test extends TestCase
             'Authorization' => "Bearer {$this->token}",
         ])->getJson('/api/v1/eleves');
 
+        Cache::forget('kill_switch:active');
+
         $response->assertStatus(503);
         $response->assertJsonPath('success', false);
-
-        Cache::forget('kill_switch:active');
     }
 
     public function test_kill_switch_middleware_excludes_health(): void
@@ -193,16 +199,16 @@ class SecurityNiveau6Test extends TestCase
 
         $response = $this->getJson('/api/health');
 
-        $response->assertStatus(200);
-
         Cache::forget('kill_switch:active');
+
+        $response->assertStatus(200);
     }
 
     public function test_kill_switch_persiste_en_bdd(): void
     {
         $ks = app(\App\Services\KillSwitchService::class);
 
-        Cache::flush();
+        Cache::forget('kill_switch:active');
 
         $this->assertFalse($ks->estActif());
     }
