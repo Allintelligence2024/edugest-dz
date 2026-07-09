@@ -97,7 +97,7 @@ jobs:
           REDIS_HOST:    127.0.0.1
 
       - name: Run tests
-        run: php artisan test --parallel
+        run: php -d memory_limit=512M artisan test
         env:
           DB_CONNECTION: pgsql
           DB_HOST:       127.0.0.1
@@ -107,10 +107,9 @@ jobs:
           DB_PASSWORD:   EduGest@2026!
           REDIS_HOST:    127.0.0.1
 
-      # Coverage : continue-on-error TOUJOURS (seuil difficile à maintenir en CI parallèle)
       - name: Run tests with coverage
         continue-on-error: true
-        run: php artisan test --coverage --min=30
+        run: php -d memory_limit=512M artisan test --coverage --min=30
         env:
           DB_CONNECTION: pgsql
           DB_HOST:       127.0.0.1
