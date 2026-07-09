@@ -9,7 +9,7 @@ return [
 
     'traces_sample_rate' => env('SENTRY_TRACES_SAMPLE_RATE', 0.1),
 
-    'capture_unhandled_rejections' => true,
+
 
     'send_default_pii' => false,
 
