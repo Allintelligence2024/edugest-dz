@@ -216,16 +216,33 @@ class TenantModule extends Model
 
     public static function estActif(string $tenantId, string $moduleKey): bool
     {
+        // Les modules 'obligatoire' sont toujours actifs
         if (isset(self::MODULES[$moduleKey]) && self::MODULES[$moduleKey]['obligatoire']) {
             return true;
         }
 
-        $actifs = self::getActifs($tenantId);
+        // ── MODULES DÉSACTIVÉS PAR DÉFAUT ──────────────────────────────
+        // Ces modules nécessitent une configuration explicite avant activation
+        $desactivesParDefaut = [
+            'marketplace',  // Nécessite profil public + Satim production
+            'surveillance', // Nécessite caméras Dahua physiques
+        ];
 
-        if (!self::where('tenant_id', $tenantId)->where('module_key', $moduleKey)->exists()) {
+        // Si pas de record en BDD ET module désactivé par défaut → false
+        $existeEnBdd = self::where('tenant_id', $tenantId)
+            ->where('module_key', $moduleKey)
+            ->exists();
+
+        if (!$existeEnBdd && in_array($moduleKey, $desactivesParDefaut)) {
+            return false; // Inactif par défaut
+        }
+
+        // Si pas de record en BDD pour les autres modules → actif par défaut
+        if (!$existeEnBdd) {
             return true;
         }
 
+        $actifs = self::getActifs($tenantId);
         return in_array($moduleKey, $actifs);
     }
 

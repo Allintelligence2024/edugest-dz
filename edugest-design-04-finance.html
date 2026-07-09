@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Design 4 : Finance & Paiements</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#070B14; --surface:#0D1117; --surface2:#161C26;
+    --border:#1E2D40; --text:#E2E8F0; --muted:#64748B;
+    --accent:#2563EB; --green:#10B981; --orange:#F59E0B;
+    --red:#EF4444; --purple:#7C3AED; --teal:#06B6D4;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .topnav {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:0 28px; height:60px;
+    display:flex; align-items:center; gap:16px;
+  }
+  .back-btn { font-size:12px; color:var(--muted); padding:6px 10px; border-radius:7px; background:var(--surface2); border:1px solid var(--border); text-decoration:none; }
+  .page-title { font-size:15px; font-weight:700; flex:1; }
+  .period-btn {
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:7px 14px; font-size:12px; cursor:pointer;
+  }
+  .btn-primary { background:linear-gradient(135deg,var(--accent),#1d4ed8); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; }
+
+  .content { padding:28px; }
+
+  /* KPI HERO */
+  .kpi-hero {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;
+  }
+  .kpi-hero-card {
+    border-radius:16px; padding:22px;
+    position:relative; overflow:hidden;
+  }
+  .kpi-hero-card.ca {
+    background:linear-gradient(135deg,#1e3a5f,#2563eb33);
+    border:1px solid #2563eb44;
+  }
+  .kpi-hero-card.encaisse {
+    background:linear-gradient(135deg,#064e3b,#10b98133);
+    border:1px solid #10b98144;
+  }
+  .kpi-hero-card.impayes {
+    background:linear-gradient(135deg,#450a0a,#ef444433);
+    border:1px solid #ef444444;
+  }
+  .kpi-hero-card.prev {
+    background:linear-gradient(135deg,#2e1065,#7c3aed33);
+    border:1px solid #7c3aed44;
+  }
+  .hero-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; opacity:.7; }
+  .hero-value { font-size:28px; font-weight:900; color:#fff; margin-bottom:6px; }
+  .hero-sub   { font-size:11px; opacity:.6; }
+  .hero-trend { font-size:12px; font-weight:700; margin-top:8px; }
+  .hero-icon  { position:absolute; right:16px; top:16px; font-size:28px; opacity:.3; }
+
+  /* MODE PAIEMENT BARS */
+  .payment-modes {
+    display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px;
+  }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+  .card-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .card-title { font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+
+  .mode-list { padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .mode-row { display:flex; align-items:center; gap:12px; }
+  .mode-icon { font-size:20px; width:28px; }
+  .mode-name { font-size:12px; font-weight:600; flex:1; }
+  .mode-bar-wrap { flex:2; height:8px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+  .mode-bar { height:100%; border-radius:99px; }
+  .mode-amount { font-size:12px; font-weight:800; min-width:80px; text-align:right; }
+  .mode-pct { font-size:10px; color:var(--muted); min-width:36px; text-align:right; }
+
+  /* CHART AREA */
+  .chart-card { padding:20px; }
+  .chart-area {
+    height:120px; display:flex; align-items:flex-end;
+    gap:4px; border-bottom:1px solid var(--border);
+    padding-bottom:8px; margin-bottom:8px; position:relative;
+  }
+  .chart-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .chart-col-bar {
+    width:100%; border-radius:4px 4px 0 0;
+    transition:opacity .2s; position:relative;
+  }
+  .chart-col-bar:hover { opacity:.8; }
+  .chart-col-bar.income { background:linear-gradient(180deg,#2563eb,#1d4ed8); }
+  .chart-col-bar.expense { background:linear-gradient(180deg,#ef4444,#b91c1c); opacity:.7; }
+  .chart-label { font-size:9px; color:var(--muted); }
+  .chart-legend {
+    display:flex; gap:16px; font-size:10px; color:var(--muted);
+  }
+  .legend-dot { width:8px; height:8px; border-radius:2px; display:inline-block; margin-right:4px; }
+
+  /* FACTURES TABLE */
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px; }
+  table { width:100%; border-collapse:collapse; }
+  th {
+    padding:11px 16px; font-size:10px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+    background:var(--surface2); text-align:left; border-bottom:1px solid var(--border);
+  }
+  td { padding:12px 16px; font-size:12px; border-bottom:1px solid #1e2d4044; vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#161c2655; }
+
+  .eleve-mini { display:flex; align-items:center; gap:8px; }
+  .mini-av {
+    width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; color:#fff; flex-shrink:0;
+  }
+
+  .statut-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px;
+  }
+  .s-payee    { background:#10b98122; color:#10b981; }
+  .s-emise    { background:#f59e0b22; color:#f59e0b; }
+  .s-retard   { background:#ef444422; color:#ef4444; }
+  .s-partiel  { background:#7c3aed22; color:#c4b5fd; }
+  .s-annulee  { background:#64748b22; color:#94a3b8; }
+
+  .btn-action {
+    padding:5px 10px; border-radius:6px; font-size:10px; font-weight:700;
+    cursor:pointer; border:none; transition:all .15s;
+  }
+  .btn-pay { background:#10b98122; color:var(--green); border:1px solid #10b98144; }
+  .btn-pay:hover { background:var(--green); color:#fff; }
+  .btn-cib { background:linear-gradient(135deg,#1d4ed8,#7c3aed); color:#fff; }
+  .btn-remind { background:#f59e0b22; color:var(--orange); border:1px solid #f59e0b44; }
+  .btn-view { background:var(--surface2); border:1px solid var(--border); color:var(--muted); }
+
+  /* CIB BADGE */
+  .cib-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    background:linear-gradient(135deg,#1d4ed833,#7c3aed33);
+    border:1px solid #2563eb55;
+    border-radius:6px; padding:3px 8px; font-size:10px; font-weight:700; color:#93c5fd;
+  }
+
+  /* BOTTOM GRID */
+  .bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+  /* BUDGET DONUT */
+  .budget-donut {
+    width:80px; height:80px; border-radius:50%; margin:0 auto 16px;
+    background:conic-gradient(
+      #10b981 0deg 230deg,
+      #f59e0b 230deg 280deg,
+      #ef4444 280deg 310deg,
+      #7c3aed 310deg 360deg
+    );
+    display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .budget-donut::after { content:''; position:absolute; width:52px; height:52px; border-radius:50%; background:var(--surface); }
+  .budget-center { position:relative; z-index:1; font-size:13px; font-weight:900; color:#fff; }
+
+  .budget-legend { display:flex; flex-direction:column; gap:6px; }
+  .bleg-row { display:flex; align-items:center; gap:8px; font-size:10px; }
+  .bleg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+  .bleg-name { flex:1; color:var(--muted); }
+  .bleg-val  { font-weight:700; color:var(--text); }
+
+  /* RELANCES */
+  .relance-item {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0; border-bottom:1px solid #1e2d4044; font-size:11px;
+  }
+  .relance-item:last-child { border-bottom:none; }
+  .rel-j { font-size:9px; font-weight:800; padding:2px 7px; border-radius:5px; min-width:36px; text-align:center; }
+  .rel-j1 { background:#f59e0b22; color:var(--orange); }
+  .rel-j3 { background:#ef444422; color:var(--red); }
+  .rel-j7 { background:#ef4444; color:#fff; }
+  .rel-j15{ background:#7f1d1d; color:#fca5a5; font-weight:900; }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a class="back-btn" href="#">← Dashboard</a>
+  <div class="page-title">💰 Finance & Paiements</div>
+  <div class="period-btn">📅 Juillet 2026 ▾</div>
+  <button class="btn-primary">+ Nouvelle facture</button>
+</div>
+
+<div class="content">
+
+  <!-- KPI HERO -->
+  <div class="kpi-hero">
+    <div class="kpi-hero-card ca">
+      <div class="hero-icon">💰</div>
+      <div class="hero-label" style="color:#93c5fd">CA ce mois</div>
+      <div class="hero-value">1 240 000</div>
+      <div class="hero-sub" style="color:#93c5fd">DA encaissés · Juillet 2026</div>
+      <div class="hero-trend" style="color:var(--green)">↑ +12% vs Juin</div>
+    </div>
+    <div class="kpi-hero-card encaisse">
+      <div class="hero-icon">✅</div>
+      <div class="hero-label" style="color:#6ee7b7">Factures payées</div>
+      <div class="hero-value">231</div>
+      <div class="hero-sub" style="color:#6ee7b7">Sur 238 factures émises</div>
+      <div class="hero-trend" style="color:var(--green)">97% taux de recouvrement</div>
+    </div>
+    <div class="kpi-hero-card impayes">
+      <div class="hero-icon">⚠️</div>
+      <div class="hero-label" style="color:#fca5a5">Impayés</div>
+      <div class="hero-value">84 500</div>
+      <div class="hero-sub" style="color:#fca5a5">DA · 7 factures en retard</div>
+      <div class="hero-trend" style="color:var(--orange)">Relances automatiques actives</div>
+    </div>
+    <div class="kpi-hero-card prev">
+      <div class="hero-icon">📊</div>
+      <div class="hero-label" style="color:#c4b5fd">Objectif annuel</div>
+      <div class="hero-value">78%</div>
+      <div class="hero-sub" style="color:#c4b5fd">9.7M / 12.5M DA prévus</div>
+      <div class="hero-trend" style="color:#a78bfa">5 mois restants</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="payment-modes">
+    <!-- Chart recettes/dépenses -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 Recettes vs Dépenses — 6 mois</div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:#2563eb"></span>Recettes</span>
+          <span><span class="legend-dot" style="background:#ef4444"></span>Dépenses</span>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-area">
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:55px"></div>
+            <div class="chart-col-bar expense" style="height:35px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label">Fév</div>
+          </div>
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:75px"></div>
+            <div class="chart-col-bar expense" style="height:42px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label">Mar</div>
+          </div>
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:68px"></div>
+            <div class="chart-col-bar expense" style="height:38px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label">Avr</div>
+          </div>
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:85px"></div>
+            <div class="chart-col-bar expense" style="height:50px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label">Mai</div>
+          </div>
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:78px"></div>
+            <div class="chart-col-bar expense" style="height:45px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label">Jun</div>
+          </div>
+          <div class="chart-col">
+            <div class="chart-col-bar income" style="height:100px;background:linear-gradient(180deg,#10b981,#059669)"></div>
+            <div class="chart-col-bar expense" style="height:55px;margin-top:2px;border-radius:4px"></div>
+            <div class="chart-label" style="color:var(--green)">Jul ↑</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);">
+          <span>Résultat net : <strong style="color:var(--green)">+680 000 DA</strong></span>
+          <span>Taux marge : <strong style="color:var(--green)">55%</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modes de paiement -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💳 Modes de paiement — Juillet</div>
+      </div>
+      <div class="mode-list">
+        <div class="mode-row">
+          <div class="mode-icon">💵</div>
+          <div class="mode-name">Espèces</div>
+          <div class="mode-bar-wrap"><div class="mode-bar" style="width:58%;background:#10b981"></div></div>
+          <div class="mode-amount" style="color:#10b981">720 000 DA</div>
+          <div class="mode-pct">58%</div>
+        </div>
+        <div class="mode-row">
+          <div class="mode-icon">💳</div>
+          <div class="mode-name">CIB / Dahabia</div>
+          <div class="mode-bar-wrap"><div class="mode-bar" style="width:28%;background:#2563eb"></div></div>
+          <div class="mode-amount" style="color:#93c5fd">348 000 DA</div>
+          <div class="mode-pct">28%</div>
+        </div>
+        <div class="mode-row">
+          <div class="mode-icon">🏦</div>
+          <div class="mode-name">Virement</div>
+          <div class="mode-bar-wrap"><div class="mode-bar" style="width:9%;background:#7c3aed"></div></div>
+          <div class="mode-amount" style="color:#c4b5fd">112 000 DA</div>
+          <div class="mode-pct">9%</div>
+        </div>
+        <div class="mode-row">
+          <div class="mode-icon">📝</div>
+          <div class="mode-name">Chèque</div>
+          <div class="mode-bar-wrap"><div class="mode-bar" style="width:5%;background:#f59e0b"></div></div>
+          <div class="mode-amount" style="color:#f59e0b">62 000 DA</div>
+          <div class="mode-pct">5%</div>
+        </div>
+        <div style="margin-top:8px;padding:10px;background:linear-gradient(135deg,#2563eb11,#7c3aed11);border:1px solid #2563eb33;border-radius:9px;font-size:11px;color:#93c5fd;">
+          📈 CIB/Dahabia en hausse de +8% ce mois — Satim sandbox actif
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTURES TABLE -->
+  <div class="table-wrap" style="margin-bottom:24px;">
+    <div class="card-header" style="padding:14px 20px;border-bottom:1px solid var(--border);">
+      <div class="card-title">📋 Factures récentes</div>
+      <div style="display:flex;gap:8px;">
+        <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:6px 10px;font-size:11px;font-family:'Inter',sans-serif;">
+          <option>Tous les statuts</option>
+          <option>Impayées</option>
+          <option>Payées</option>
+        </select>
+        <button style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 12px;font-size:11px;cursor:pointer;">⬇ Exporter</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>N° Facture</th>
+          <th>Élève / Parent</th>
+          <th>Montant</th>
+          <th>Échéance</th>
+          <th>Statut</th>
+          <th>Mode</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;color:var(--accent)">FAC-2026-0042</td>
+          <td>
+            <div class="eleve-mini">
+              <div class="mini-av" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">BA</div>
+              <div>
+                <div style="font-weight:600">Benali Amira</div>
+                <div style="font-size:10px;color:var(--muted)">Parent: M. Benali · 0555-123-456</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:800;color:var(--green)">4 500 DA</td>
+          <td style="color:var(--muted)">05 Jul 2026</td>
+          <td><span class="statut-badge s-payee">✅ Payée</span></td>
+          <td><span class="cib-badge">💳 CIB</span></td>
+          <td><button class="btn-action btn-view">Voir</button></td>
+        </tr>
+        <tr style="background:#f59e0b08;">
+          <td style="font-weight:700;color:var(--accent)">FAC-2026-0043</td>
+          <td>
+            <div class="eleve-mini">
+              <div class="mini-av" style="background:linear-gradient(135deg,#10b981,#06b6d4)">KM</div>
+              <div>
+                <div style="font-weight:600">Khelil Mohamed</div>
+                <div style="font-size:10px;color:var(--muted)">Parent: Mme Khelil · 0661-789-012</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:800;color:var(--text)">6 200 DA</td>
+          <td style="color:var(--orange);font-weight:700">01 Jul 2026 ⚠</td>
+          <td><span class="statut-badge s-emise">🕐 Émise</span></td>
+          <td style="color:var(--muted)">—</td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn-action btn-pay">Encaisser</button>
+            <button class="btn-action btn-cib">💳 CIB</button>
+            <button class="btn-action btn-remind">Relancer</button>
+          </td>
+        </tr>
+        <tr style="background:#ef444408;">
+          <td style="font-weight:700;color:var(--accent)">FAC-2026-0038</td>
+          <td>
+            <div class="eleve-mini">
+              <div class="mini-av" style="background:linear-gradient(135deg,#ef4444,#7c3aed)">SL</div>
+              <div>
+                <div style="font-weight:600">Saadi Lina 🚨</div>
+                <div style="font-size:10px;color:var(--muted)">Parent: M. Saadi · 0770-456-789</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:800;color:var(--red)">8 500 DA</td>
+          <td style="color:var(--red);font-weight:700">15 Jun 2026 🔴 J+21</td>
+          <td><span class="statut-badge s-retard">🔴 En retard</span></td>
+          <td style="color:var(--muted)">—</td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn-action btn-pay">Encaisser</button>
+            <button class="btn-action btn-remind">SMS</button>
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--accent)">FAC-2026-0044</td>
+          <td>
+            <div class="eleve-mini">
+              <div class="mini-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">BK</div>
+              <div>
+                <div style="font-weight:600">Boudiaf Karim</div>
+                <div style="font-size:10px;color:var(--muted)">Parent: M. Boudiaf · 0551-321-654</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-weight:800;color:var(--purple)">3 200 DA <span style="font-size:10px;color:var(--muted)">/ 6 400</span></td>
+          <td style="color:var(--muted)">10 Jul 2026</td>
+          <td><span class="statut-badge s-partiel">⚡ Partiel</span></td>
+          <td style="color:var(--muted)">Espèces</td>
+          <td style="display:flex;gap:4px;">
+            <button class="btn-action btn-pay">Compléter</button>
+            <button class="btn-action btn-view">Voir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-grid">
+    <!-- Répartition budget -->
+    <div class="card" style="padding:20px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">📊 Répartition dépenses</div>
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">
+        <div class="budget-donut">
+          <div class="budget-center">38%</div>
+        </div>
+        <div class="budget-legend">
+          <div class="bleg-row"><div class="bleg-dot" style="background:var(--green)"></div><div class="bleg-name">Salaires</div><div class="bleg-val">38%</div></div>
+          <div class="bleg-row"><div class="bleg-dot" style="background:var(--orange)"></div><div class="bleg-name">Loyer</div><div class="bleg-val">22%</div></div>
+          <div class="bleg-row"><div class="bleg-dot" style="background:var(--red)"></div><div class="bleg-name">Fournitures</div><div class="bleg-val">18%</div></div>
+          <div class="bleg-row"><div class="bleg-dot" style="background:var(--purple)"></div><div class="bleg-name">Autres</div><div class="bleg-val">22%</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Relances auto -->
+    <div class="card" style="padding:20px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;">🔔 Relances automatiques</div>
+      <div class="relance-item">
+        <div class="rel-j rel-j1">J+1</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">SMS doux</div>
+          <div style="font-size:10px;color:var(--muted)">Rappel amical</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--green)">✅ 3 envoyés</div>
+      </div>
+      <div class="relance-item">
+        <div class="rel-j rel-j3">J+3</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">SMS urgent</div>
+          <div style="font-size:10px;color:var(--muted)">2ème rappel</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--orange)">⚡ 2 envoyés</div>
+      </div>
+      <div class="relance-item">
+        <div class="rel-j rel-j7">J+7</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">SMS + appel</div>
+          <div style="font-size:10px;color:var(--muted)">Mise en demeure</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--red)">🔴 1 envoyé</div>
+      </div>
+      <div class="relance-item">
+        <div class="rel-j rel-j15">J+15</div>
+        <div>
+          <div style="font-size:11px;font-weight:600">Suspension</div>
+          <div style="font-size:10px;color:var(--muted)">Convocation proviseur</div>
+        </div>
+        <div style="margin-left:auto;font-size:10px;color:var(--muted)">—</div>
+      </div>
+      <div style="margin-top:10px;background:#10b98111;border:1px solid #10b98133;border-radius:8px;padding:9px;font-size:10px;color:var(--green);">
+        💡 Taux de recouvrement après relance auto : <strong>94%</strong>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="card" style="padding:20px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;">⚡ Actions rapides</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button style="width:100%;padding:11px;background:linear-gradient(135deg,var(--accent),#1d4ed8);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          + Nouvelle facture
+        </button>
+        <button style="width:100%;padding:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📊 Rapport mensuel PDF
+        </button>
+        <button style="width:100%;padding:11px;background:#10b98122;border:1px solid #10b98144;color:var(--green);border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          ✅ Facturation auto 1er mois
+        </button>
+        <button style="width:100%;padding:11px;background:linear-gradient(135deg,#1d4ed833,#7c3aed33);border:1px solid #2563eb55;color:#93c5fd;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          💳 Tableau bord Satim CIB
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a17131bc18300d76',t:'MTc4MzM2ODAxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\CameraConfig;
 use App\Models\AlerteSurveillance;
+use App\Models\TenantModule;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -24,6 +25,13 @@ class SurveillanceControllerTest extends TestCase
         $role = Role::factory()->create(['nom' => 'admin']);
         $this->tenant = Tenant::factory()->create();
         config(['tenant.current_id' => $this->tenant->id]);
+
+        TenantModule::create([
+            'tenant_id'  => $this->tenant->id,
+            'module_key' => 'surveillance',
+            'actif'      => true,
+        ]);
+
         $this->admin = User::factory()->create([
             'role_id'   => $role->id,
             'tenant_id' => $this->tenant->id,

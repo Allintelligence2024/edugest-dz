@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Design 5 : Vue Parent + Landing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#070B14; --surface:#0D1117; --surface2:#161C26;
+    --border:#1E2D40; --text:#E2E8F0; --muted:#64748B;
+    --accent:#2563EB; --green:#10B981; --orange:#F59E0B;
+    --red:#EF4444; --purple:#7C3AED; --teal:#06B6D4;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); }
+
+  /* ── LANDING PAGE ── */
+  .landing {
+    min-height:100vh;
+    background:radial-gradient(ellipse at 20% 50%, #2563eb15 0%, transparent 60%),
+               radial-gradient(ellipse at 80% 20%, #7c3aed15 0%, transparent 60%),
+               var(--bg);
+  }
+
+  /* NAV */
+  .nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 60px; border-bottom:1px solid #1e2d4044;
+    background:rgba(7,11,20,0.8); backdrop-filter:blur(12px);
+    position:sticky; top:0; z-index:100;
+  }
+  .nav-logo { display:flex; align-items:center; gap:12px; }
+  .nav-logo-icon {
+    width:38px; height:38px; border-radius:10px;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+  }
+  .nav-logo-text { font-size:18px; font-weight:900; color:#fff; }
+  .nav-logo-sub  { font-size:10px; color:var(--muted); }
+  .nav-links { display:flex; gap:28px; }
+  .nav-link {
+    font-size:13px; color:var(--muted); text-decoration:none; font-weight:500;
+    transition:color .15s;
+  }
+  .nav-link:hover { color:var(--text); }
+  .nav-actions { display:flex; gap:10px; align-items:center; }
+  .btn-login {
+    padding:8px 18px; border-radius:8px; font-size:13px; font-weight:700;
+    background:none; border:1px solid var(--border); color:var(--text); cursor:pointer;
+    transition:all .15s;
+  }
+  .btn-login:hover { border-color:var(--accent); color:#93c5fd; }
+  .btn-cta {
+    padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700;
+    background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; border:none; cursor:pointer;
+    box-shadow:0 4px 24px #2563eb44;
+    transition:transform .15s;
+  }
+  .btn-cta:hover { transform:translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    display:grid; grid-template-columns:1fr 1fr; align-items:center;
+    gap:60px; padding:80px 60px; max-width:1280px; margin:0 auto;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:#2563eb22; border:1px solid #2563eb55;
+    border-radius:99px; padding:6px 14px;
+    font-size:11px; color:#93c5fd; font-weight:700;
+    margin-bottom:24px;
+  }
+  .hero-badge .dot { width:6px; height:6px; border-radius:50%; background:#10b981; animation:blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .hero h1 {
+    font-size:48px; font-weight:900; color:#fff; line-height:1.1;
+    margin-bottom:20px;
+  }
+  .hero h1 span {
+    background:linear-gradient(135deg,#2563eb,#7c3aed,#06b6d4);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero-desc { font-size:15px; color:var(--muted); line-height:1.7; margin-bottom:32px; max-width:480px; }
+
+  .hero-actions { display:flex; gap:12px; align-items:center; margin-bottom:36px; }
+  .btn-hero-primary {
+    padding:14px 28px; border-radius:10px; font-size:14px; font-weight:800;
+    background:linear-gradient(135deg,#2563eb,#7c3aed); color:#fff; border:none; cursor:pointer;
+    box-shadow:0 8px 32px #2563eb44; transition:transform .15s;
+  }
+  .btn-hero-primary:hover { transform:translateY(-2px); }
+  .btn-hero-secondary {
+    padding:14px 22px; border-radius:10px; font-size:14px; font-weight:700;
+    background:var(--surface2); border:1px solid var(--border); color:var(--text); cursor:pointer;
+  }
+
+  .hero-stats { display:flex; gap:28px; }
+  .hero-stat { text-align:center; }
+  .hero-stat-val { font-size:24px; font-weight:900; color:#fff; display:block; }
+  .hero-stat-lbl { font-size:10px; color:var(--muted); }
+
+  /* TRUST BADGES */
+  .trust-badges {
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:20px;
+  }
+  .trust-badge {
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:var(--muted);
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:99px; padding:5px 12px;
+  }
+
+  /* PHONE MOCKUP */
+  .phone-wrap {
+    display:flex; justify-content:center; align-items:center; gap:20px;
+    position:relative;
+  }
+  .phone {
+    width:220px; background:var(--surface);
+    border-radius:32px; overflow:hidden;
+    border:2px solid #1e3a5f;
+    box-shadow:0 32px 80px #2563eb22, 0 0 0 1px #2563eb22;
+    position:relative; z-index:2;
+  }
+  .phone-notch {
+    height:28px; background:#0d1117;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .phone-pill {
+    width:60px; height:5px; background:#1e293b; border-radius:99px;
+  }
+  .phone-screen { padding:0; }
+
+  /* APP SCREEN — PARENT HOME */
+  .app-header {
+    background:linear-gradient(135deg,#1e3a5f,#0d1117);
+    padding:14px 16px;
+  }
+  .app-greeting { font-size:10px; color:#93c5fd; margin-bottom:2px; }
+  .app-name { font-size:14px; font-weight:900; color:#fff; }
+  .app-notif {
+    float:right; margin-top:-24px;
+    width:28px; height:28px; background:#ef444433;
+    border:1px solid #ef4444; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+  }
+
+  .app-child-card {
+    margin:12px; background:linear-gradient(135deg,#2563eb33,#7c3aed22);
+    border:1px solid #2563eb44; border-radius:14px; padding:12px;
+  }
+  .child-name { font-size:13px; font-weight:800; color:#fff; }
+  .child-level { font-size:10px; color:#93c5fd; margin-bottom:8px; }
+  .child-avg {
+    display:flex; align-items:center; gap:8px;
+    font-size:22px; font-weight:900; color:#fff;
+  }
+  .child-trend { font-size:11px; color:var(--green); }
+
+  .app-kpis {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:8px; padding:0 12px 12px;
+  }
+  .app-kpi {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:10px; text-align:center;
+  }
+  .app-kpi-val { font-size:16px; font-weight:900; }
+  .app-kpi-lbl { font-size:9px; color:var(--muted); margin-top:2px; }
+
+  .app-section-title {
+    font-size:10px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+    padding:0 12px; margin-bottom:8px;
+  }
+
+  .app-notif-item {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; border-bottom:1px solid #1e2d4044;
+    font-size:10px;
+  }
+  .app-notif-icon {
+    width:28px; height:28px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;
+  }
+  .app-notif-title { font-weight:600; color:var(--text); }
+  .app-notif-sub   { color:var(--muted); font-size:9px; }
+  .app-notif-time  { margin-left:auto; font-size:9px; color:var(--muted); }
+  .unread-dot { width:5px; height:5px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+
+  .app-tabs {
+    display:flex; border-top:1px solid var(--border);
+    background:var(--surface);
+  }
+  .app-tab {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    padding:8px 4px; font-size:8px; color:var(--muted); gap:3px;
+  }
+  .app-tab.active { color:var(--accent); }
+  .app-tab-icon { font-size:16px; }
+
+  /* Second phone (tilted) */
+  .phone2 {
+    width:190px; background:var(--surface);
+    border-radius:28px; overflow:hidden;
+    border:2px solid #1e2d40;
+    box-shadow:0 20px 60px #00000066;
+    transform:rotate(4deg) translateY(20px);
+    z-index:1;
+    opacity:0.85;
+  }
+  .phone2-header {
+    background:linear-gradient(135deg,#064e3b,#065f46);
+    padding:14px 14px 10px;
+  }
+
+  /* FEATURES SECTION */
+  .features { padding:60px; max-width:1280px; margin:0 auto; }
+  .section-label {
+    display:inline-block; font-size:11px; font-weight:700;
+    color:#93c5fd; background:#2563eb22; border:1px solid #2563eb44;
+    border-radius:99px; padding:5px 14px; margin-bottom:16px;
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .section-title { font-size:32px; font-weight:900; color:#fff; margin-bottom:12px; }
+  .section-desc  { font-size:14px; color:var(--muted); max-width:520px; line-height:1.7; margin-bottom:48px; }
+
+  .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .feature-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+    transition:all .2s; cursor:pointer;
+    position:relative; overflow:hidden;
+  }
+  .feature-card::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:2px;
+    opacity:0; transition:opacity .2s;
+  }
+  .feature-card:hover { border-color:#2563eb55; transform:translateY(-3px); }
+  .feature-card:hover::before { opacity:1; background:linear-gradient(90deg,var(--accent),var(--purple)); }
+
+  .feat-icon {
+    width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; margin-bottom:16px;
+  }
+  .feat-title { font-size:14px; font-weight:800; color:#fff; margin-bottom:8px; }
+  .feat-desc  { font-size:12px; color:var(--muted); line-height:1.6; }
+  .feat-tag {
+    display:inline-block; margin-top:12px; font-size:9px; font-weight:700;
+    padding:3px 9px; border-radius:20px;
+    background:#2563eb22; color:#93c5fd; border:1px solid #2563eb44;
+  }
+  .feat-tag.unique { background:#7c3aed22; color:#c4b5fd; border-color:#7c3aed44; }
+  .feat-tag.new    { background:#10b98122; color:#6ee7b7; border-color:#10b98144; }
+
+  /* TESTIMONIAL */
+  .testimonial-section {
+    padding:60px; max-width:1280px; margin:0 auto;
+  }
+  .testimonials { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .testimonial-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+  }
+  .test-stars { color:#f59e0b; font-size:14px; margin-bottom:12px; }
+  .test-text  { font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:16px; font-style:italic; }
+  .test-author { display:flex; align-items:center; gap:10px; }
+  .test-av {
+    width:36px; height:36px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:800; color:#fff;
+  }
+  .test-name  { font-size:13px; font-weight:700; color:var(--text); }
+  .test-role  { font-size:10px; color:var(--muted); }
+
+  /* CTA SECTION */
+  .cta-section {
+    margin:0 60px 60px; border-radius:24px;
+    background:linear-gradient(135deg,#1e3a5f,#2563eb44,#7c3aed33);
+    border:1px solid #2563eb44;
+    padding:60px; text-align:center;
+  }
+  .cta-section h2 { font-size:36px; font-weight:900; color:#fff; margin-bottom:12px; }
+  .cta-section p  { font-size:15px; color:#93c5fd; margin-bottom:32px; }
+  .cta-btns { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .pricing-pills { display:flex; gap:10px; justify-content:center; margin-top:24px; flex-wrap:wrap; }
+  .pricing-pill {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:99px; padding:8px 18px; font-size:12px; font-weight:600;
+    color:var(--muted);
+  }
+  .pricing-pill strong { color:var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════ -->
+<!-- LANDING PAGE                        -->
+<!-- ════════════════════════════════════ -->
+<div class="landing">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🎓</div>
+      <div>
+        <div class="nav-logo-text">EduGest DZ</div>
+        <div class="nav-logo-sub">Gestion Scolaire SaaS</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link" href="#">Fonctionnalités</a>
+      <a class="nav-link" href="#">Tarifs</a>
+      <a class="nav-link" href="#">Marketplace</a>
+      <a class="nav-link" href="#">Documentation</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-login">Se connecter</button>
+      <button class="btn-cta">Essai gratuit 3 mois</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="hero-badge">
+        <div class="dot"></div>
+        🇩🇿 Conçu pour l'Algérie · Actif à Oran
+      </div>
+      <h1>La plateforme scolaire <span>tout-en-un</span> pour l'Algérie</h1>
+      <p class="hero-desc">
+        EduGest DZ gère vos élèves, enseignants, finances, transport, cantine, stock
+        et surveillance en un seul tableau de bord. Paiement CIB/Dahabia intégré.
+        SMS parents automatiques. App mobile incluse.
+      </p>
+
+      <div class="hero-actions">
+        <button class="btn-hero-primary">🚀 Commencer gratuitement</button>
+        <button class="btn-hero-secondary">▶ Voir la démo</button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val" style="color:#10b981">247</span>
+          <span class="hero-stat-lbl">Élèves gérés</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" style="color:#2563eb">16</span>
+          <span class="hero-stat-lbl">Modules</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" style="color:#7c3aed">418</span>
+          <span class="hero-stat-lbl">Tests auto</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" style="color:#f59e0b">99.9%</span>
+          <span class="hero-stat-lbl">Uptime</span>
+        </div>
+      </div>
+
+      <div class="trust-badges">
+        <div class="trust-badge">✅ Aucune installation</div>
+        <div class="trust-badge">💳 CIB / Dahabia</div>
+        <div class="trust-badge">📱 App iOS & Android</div>
+        <div class="trust-badge">🔒 Données en sécurité</div>
+      </div>
+    </div>
+
+    <!-- PHONE MOCKUPS -->
+    <div class="phone-wrap">
+
+      <!-- Phone 1 — Espace parent -->
+      <div class="phone">
+        <div class="phone-notch"><div class="phone-pill"></div></div>
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-greeting">Bonjour, Madame Benali 👋</div>
+            <div class="app-name">Espace Parent</div>
+            <div class="app-notif">🔔<span style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--red);border-radius:50%;"></span></div>
+          </div>
+
+          <div class="app-child-card">
+            <div class="child-name">Amira Benali</div>
+            <div class="child-level">3ème AS Sciences — École Ibn Khaldoun</div>
+            <div class="child-avg">
+              17.4
+              <div>
+                <div class="child-trend">↑ Très Bien</div>
+                <div style="font-size:9px;color:var(--muted)">Rang 1/28</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-kpis">
+            <div class="app-kpi">
+              <div class="app-kpi-val" style="color:var(--green)">0</div>
+              <div class="app-kpi-lbl">Absences</div>
+            </div>
+            <div class="app-kpi">
+              <div class="app-kpi-val" style="color:var(--accent)">✅</div>
+              <div class="app-kpi-lbl">Factures</div>
+            </div>
+            <div class="app-kpi">
+              <div class="app-kpi-val" style="color:var(--purple)">T3</div>
+              <div class="app-kpi-lbl">Bulletin prêt</div>
+            </div>
+            <div class="app-kpi">
+              <div class="app-kpi-val" style="color:var(--orange)">18</div>
+              <div class="app-kpi-lbl">Séances / sem</div>
+            </div>
+          </div>
+
+          <div class="app-section-title">Notifications récentes</div>
+
+          <div class="app-notif-item">
+            <div class="app-notif-icon" style="background:#7c3aed22">📄</div>
+            <div>
+              <div class="app-notif-title">Bulletin T3 disponible</div>
+              <div class="app-notif-sub">Moy: 17.4 · Rang 1/28</div>
+            </div>
+            <div class="app-notif-time">10h</div>
+            <div class="unread-dot"></div>
+          </div>
+          <div class="app-notif-item">
+            <div class="app-notif-icon" style="background:#10b98122">💳</div>
+            <div>
+              <div class="app-notif-title">Paiement confirmé</div>
+              <div class="app-notif-sub">4 500 DA · Juillet 2026</div>
+            </div>
+            <div class="app-notif-time">Hier</div>
+          </div>
+          <div class="app-notif-item">
+            <div class="app-notif-icon" style="background:#10b98122">⭐</div>
+            <div>
+              <div class="app-notif-title">Félicitations !</div>
+              <div class="app-notif-sub">Amira excelle en Maths (18.5)</div>
+            </div>
+            <div class="app-notif-time">Jeu</div>
+          </div>
+
+          <div class="app-tabs">
+            <div class="app-tab active"><span class="app-tab-icon">🏠</span>Accueil</div>
+            <div class="app-tab"><span class="app-tab-icon">📝</span>Notes</div>
+            <div class="app-tab"><span class="app-tab-icon">💰</span>Payer</div>
+            <div class="app-tab"><span class="app-tab-icon">🛒</span>Centres</div>
+            <div class="app-tab"><span class="app-tab-icon">⚙️</span>Profil</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 2 — Finance -->
+      <div class="phone2">
+        <div class="phone-notch" style="background:#0a1628"><div class="phone-pill"></div></div>
+        <div class="phone2-header">
+          <div style="font-size:9px;color:#6ee7b7;margin-bottom:2px">💰 Finance Juillet</div>
+          <div style="font-size:16px;font-weight:900;color:#fff">1 240 000 DA</div>
+          <div style="font-size:9px;color:#6ee7b7">↑ +12% vs Juin</div>
+        </div>
+        <div style="padding:10px;">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Paiements CIB today</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:var(--surface2);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10px;font-weight:600">Benali A.</div>
+              <div style="font-size:11px;font-weight:800;color:var(--green)">4 500 DA ✅</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10px;font-weight:600">Zerrouki R.</div>
+              <div style="font-size:11px;font-weight:800;color:var(--green)">6 200 DA ✅</div>
+            </div>
+            <div style="background:#f59e0b11;border:1px solid #f59e0b33;border-radius:8px;padding:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10px;font-weight:600">Saadi L. ⚠️</div>
+              <div style="font-size:11px;font-weight:800;color:var(--orange)">8 500 DA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+    <div class="section-label">Fonctionnalités</div>
+    <div class="section-title">Tout ce dont votre école a besoin</div>
+    <div class="section-desc">16 modules intégrés. Aucune configuration complexe. Opérationnel en 30 minutes.</div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#2563eb22">👦</div>
+        <div class="feat-title">Gestion des élèves</div>
+        <div class="feat-desc">Dossier complet, import CSV, QR code pointage, simulation BEM/BAC par filière ONEC.</div>
+        <span class="feat-tag">Standard</span>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#10b98122">💰</div>
+        <div class="feat-title">Finance & CIB/Dahabia</div>
+        <div class="feat-desc">Facturation automatique, paiement en ligne via Satim, relances SMS J+1/3/7/15.</div>
+        <span class="feat-tag unique">🇩🇿 Unique en Algérie</span>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#7c3aed22">🔬</div>
+        <div class="feat-title">Diagnostic niveau (EWS)</div>
+        <div class="feat-desc">Score de risque automatique, détecte les élèves critiques, programme les rattrapages.</div>
+        <span class="feat-tag new">✨ Nouveau</span>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#f59e0b22">📱</div>
+        <div class="feat-title">App mobile parent</div>
+        <div class="feat-desc">Notes, absences, bulletin, factures, signalements. WhatsApp pour justifier les absences.</div>
+        <span class="feat-tag">iOS & Android</span>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#06b6d422">🚌</div>
+        <div class="feat-title">Transport + Cantine</div>
+        <div class="feat-desc">Circuits bus, pointage élèves, menus hebdomadaires, régimes alimentaires, facturation auto.</div>
+        <span class="feat-tag unique">🇩🇿 Unique en Algérie</span>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#ef444422">🔒</div>
+        <div class="feat-title">Surveillance Dahua</div>
+        <div class="feat-desc">Réception des alertes webhook DVR Dahua. SMS admin si intrusion hors horaires.</div>
+        <span class="feat-tag new">✨ Nouveau</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTIMONIALS -->
+  <div class="testimonial-section">
+    <div class="section-label">Témoignages</div>
+    <div class="section-title">Ils nous font confiance</div>
+    <div style="height:20px"></div>
+    <div class="testimonials">
+      <div class="testimonial-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"Le SMS automatique pour les absences a changé la donne. Les parents sont informés avant même que je finisse l'appel."</div>
+        <div class="test-author">
+          <div class="test-av" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">DA</div>
+          <div>
+            <div class="test-name">Dir. Amrani</div>
+            <div class="test-role">École Privée Ibn Khaldoun, Oran</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"Le paiement CIB depuis le téléphone est révolutionnaire. Plus de parents qui oublient. 97% de recouvrement ce mois."</div>
+        <div class="test-author">
+          <div class="test-av" style="background:linear-gradient(135deg,#10b981,#06b6d4)">MB</div>
+          <div>
+            <div class="test-name">Dir. Bensalem</div>
+            <div class="test-role">Centre Cours Particuliers, Oran</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="test-stars">★★★★★</div>
+        <div class="test-text">"Le module diagnostic m'a alerté sur 3 élèves qui décrochaient silencieusement. J'ai pu agir avant les examens."</div>
+        <div class="test-author">
+          <div class="test-av" style="background:linear-gradient(135deg,#7c3aed,#ef4444)">SK</div>
+          <div>
+            <div class="test-name">Proviseur Khelifi</div>
+            <div class="test-role">École Secondaire Privée, Oran</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Prêt à digitaliser votre école ?</h2>
+    <p>3 mois gratuits. Aucune carte bancaire requise. Support inclus en arabe et français.</p>
+    <div class="cta-btns">
+      <button class="btn-hero-primary" style="font-size:15px;padding:16px 32px;">🚀 Commencer gratuitement</button>
+      <button class="btn-hero-secondary" style="font-size:15px;padding:16px 24px;">📞 Demander une démo</button>
+    </div>
+    <div class="pricing-pills">
+      <div class="pricing-pill">Starter · <strong>3 000 DA/mois</strong></div>
+      <div class="pricing-pill">Standard · <strong>8 000 DA/mois</strong></div>
+      <div class="pricing-pill">Premium · <strong>15 000 DA/mois</strong></div>
+    </div>
+  </div>
+
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1713162f8e00d76',t:'MTc4MzM2Nzk5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

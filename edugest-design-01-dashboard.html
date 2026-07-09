@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Design 1 : Dashboard Admin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg:        #070B14;
+    --surface:   #0D1117;
+    --surface2:  #161C26;
+    --border:    #1E2D40;
+    --text:      #E2E8F0;
+    --muted:     #64748B;
+    --accent:    #2563EB;
+    --accent2:   #7C3AED;
+    --green:     #10B981;
+    --orange:    #F59E0B;
+    --red:       #EF4444;
+    --teal:      #06B6D4;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo-area {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .logo-text { font-weight: 800; font-size: 15px; color: #fff; line-height: 1.2; }
+  .logo-sub  { font-size: 9px; color: var(--muted); font-weight: 400; }
+
+  .school-badge {
+    margin: 12px 16px;
+    background: linear-gradient(135deg, #1e3a5f22, #7c3aed22);
+    border: 1px solid #2563eb44;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 11px;
+    color: #93c5fd;
+  }
+  .school-badge strong { display: block; font-size: 12px; color: #fff; margin-bottom: 2px; }
+
+  .nav-section { padding: 8px 0; }
+  .nav-label {
+    font-size: 9px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 8px 20px 4px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px;
+    font-size: 12px; font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.15s;
+    position: relative;
+    text-decoration: none;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active {
+    color: #93c5fd;
+    background: linear-gradient(90deg, #2563eb15, transparent);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 20px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 20px;
+  }
+  .nav-badge.green { background: var(--green); }
+  .nav-badge.orange { background: var(--orange); color: #000; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; border-radius: 10px;
+    background: var(--surface2);
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .user-name  { font-size: 12px; font-weight: 600; color: var(--text); }
+  .user-role  { font-size: 10px; color: var(--muted); }
+  .user-arrow { margin-left: auto; color: var(--muted); font-size: 12px; }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .topbar-title { font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }
+  .topbar-date  { font-size: 11px; color: var(--muted); }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 12px;
+    font-size: 12px; color: var(--muted); cursor: text;
+  }
+
+  .topbar-btn {
+    width: 34px; height: 34px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 6px; right: 7px;
+    width: 7px; height: 7px;
+    background: var(--red); border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+
+  /* ── PAGE CONTENT ── */
+  .content { padding: 28px; flex: 1; }
+
+  /* ── GREETING ── */
+  .greeting { margin-bottom: 28px; }
+  .greeting h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .greeting p  { font-size: 12px; color: var(--muted); }
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    background: linear-gradient(135deg, #7c3aed22, #2563eb22);
+    border: 1px solid #7c3aed55;
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px;
+  }
+  .alert-icon { font-size: 22px; }
+  .alert-text { flex: 1; }
+  .alert-text strong { font-size: 13px; color: #c4b5fd; display: block; margin-bottom: 2px; }
+  .alert-text span   { font-size: 11px; color: var(--muted); }
+  .alert-action {
+    background: var(--accent2); color: #fff;
+    border: none; border-radius: 7px; padding: 7px 14px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+  }
+
+  /* ── KPI GRID ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+  }
+  .kpi-card:hover { transform: translateY(-2px); border-color: #2563eb55; }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.06;
+  }
+  .kpi-card.blue  { border-top: 2px solid var(--accent); }
+  .kpi-card.green { border-top: 2px solid var(--green); }
+  .kpi-card.orange{ border-top: 2px solid var(--orange); }
+  .kpi-card.red   { border-top: 2px solid var(--red); }
+  .kpi-card.teal  { border-top: 2px solid var(--teal); }
+  .kpi-card.purple{ border-top: 2px solid var(--accent2); }
+
+  .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .kpi-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .kpi-icon-wrap {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .bg-blue   { background: #2563eb22; }
+  .bg-green  { background: #10b98122; }
+  .bg-orange { background: #f59e0b22; }
+  .bg-red    { background: #ef444422; }
+  .bg-teal   { background: #06b6d422; }
+  .bg-purple { background: #7c3aed22; }
+
+  .kpi-value { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .kpi-sub {
+    font-size: 10px; display: flex; align-items: center; gap: 4px;
+  }
+  .trend-up   { color: var(--green); }
+  .trend-down { color: var(--red); }
+  .trend-text { color: var(--muted); }
+
+  /* ── GRID 2 cols ── */
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  /* Chart bars */
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 8px;
+    height: 100px; padding-bottom: 4px;
+  }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 0 0;
+    position: relative; min-height: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 9px; color: var(--muted); }
+  .bar-val   { font-size: 8px; font-weight: 700; }
+
+  /* Activity list */
+  .activity-list { display: flex; flex-direction: column; gap: 10px; }
+  .activity-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; border-radius: 8px;
+    background: var(--surface2);
+  }
+  .activity-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .activity-text  { flex: 1; }
+  .activity-name  { font-size: 12px; font-weight: 600; color: var(--text); }
+  .activity-sub   { font-size: 10px; color: var(--muted); }
+  .activity-time  { font-size: 10px; color: var(--muted); }
+
+  /* Quick actions */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quick-btn {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 6px;
+    padding: 14px 8px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .quick-btn:hover { border-color: var(--accent); background: #2563eb11; }
+  .quick-btn .qi { font-size: 20px; }
+  .quick-btn .ql { font-size: 10px; color: var(--muted); font-weight: 600; text-align: center; }
+
+  /* Mini table */
+  .mini-table { width: 100%; border-collapse: collapse; }
+  .mini-table th {
+    font-size: 9px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 6px 0; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .mini-table td {
+    font-size: 11px; padding: 8px 0;
+    border-bottom: 1px solid #1e2d4044;
+    vertical-align: middle;
+  }
+  .mini-table tr:last-child td { border-bottom: none; }
+
+  .pill {
+    display: inline-block; font-size: 9px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .pill-green  { background: #10b98122; color: #10b981; }
+  .pill-red    { background: #ef444422; color: #ef4444; }
+  .pill-orange { background: #f59e0b22; color: #f59e0b; }
+  .pill-blue   { background: #2563eb22; color: #93c5fd; }
+
+  /* Progress bars */
+  .prog-row { margin-bottom: 12px; }
+  .prog-label-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .prog-name { font-size: 11px; color: var(--text); }
+  .prog-pct  { font-size: 11px; font-weight: 700; }
+  .prog-track { background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+  .prog-fill  { height: 100%; border-radius: 99px; }
+
+  /* Attendance donut (CSS) */
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut {
+    width: 90px; height: 90px; border-radius: 50%; flex-shrink: 0;
+    background: conic-gradient(
+      #10b981 0deg 306deg,
+      #f59e0b 306deg 327.6deg,
+      #ef4444 327.6deg 360deg
+    );
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .donut::after {
+    content: '';
+    position: absolute;
+    width: 62px; height: 62px;
+    background: var(--surface);
+    border-radius: 50%;
+  }
+  .donut-center {
+    position: relative; z-index: 1;
+    font-size: 16px; font-weight: 900; color: #fff;
+  }
+  .donut-legend { flex: 1; }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--muted); margin-bottom: 6px;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .legend-val { margin-left: auto; font-weight: 700; color: var(--text); }
+
+  /* Urgent list */
+  .urgent-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; margin-bottom: 6px;
+    border-left: 3px solid transparent;
+  }
+  .urgent-item.high { background: #ef444410; border-color: var(--red); }
+  .urgent-item.med  { background: #f59e0b10; border-color: var(--orange); }
+  .urgent-item.low  { background: #2563eb10; border-color: var(--accent); }
+  .urgent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .urgent-text { flex: 1; font-size: 11px; color: var(--text); }
+  .urgent-sub  { font-size: 9px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo-icon">🎓</div>
+    <div>
+      <div class="logo-text">EduGest DZ</div>
+      <div class="logo-sub">Gestion Scolaire</div>
+    </div>
+  </div>
+
+  <div class="school-badge">
+    <strong>École Ibn Khaldoun</strong>
+    Oran · 247 élèves actifs
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <a class="nav-item active" href="#">
+      <span class="nav-icon">📊</span> Tableau de bord
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">👦</span> Élèves
+      <span class="nav-badge green">247</span>
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">👨‍🏫</span> Enseignants
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">📅</span> Planning
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">✅</span> Absences
+      <span class="nav-badge">12</span>
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">📝</span> Notes & Bulletins
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Administration</div>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">💰</span> Finance
+      <span class="nav-badge orange">3</span>
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🚌</span> Transport
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🍽️</span> Cantine
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">📦</span> Stock
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">📈</span> Budget
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🔧</span> Entretien
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Outils</div>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🔬</span> Diagnostic Niveau
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🔒</span> Surveillance
+    </a>
+    <a class="nav-item" href="#">
+      <span class="nav-icon">🛒</span> Marketplace
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">DA</div>
+      <div>
+        <div class="user-name">Dir. Amrani</div>
+        <div class="user-role">Administrateur</div>
+      </div>
+      <div class="user-arrow">›</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-title">Tableau de bord</div>
+    <div class="topbar-date">Dimanche 6 Juillet 2026</div>
+    <div class="search-box">🔍 Rechercher élève, facture...</div>
+    <div class="topbar-btn">🔔<div class="notif-dot"></div></div>
+    <div class="topbar-btn">⚙️</div>
+  </header>
+
+  <div class="content">
+
+    <!-- GREETING -->
+    <div class="greeting">
+      <h1>Bonjour, Directeur Amrani 👋</h1>
+      <p>Voici le résumé de la journée · Dimanche 6 Juillet 2026 · Semaine 27</p>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert-banner">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-text">
+        <strong>3 élèves en situation critique — Convocations parents requises</strong>
+        <span>Diagnostic niveau a détecté une chute de moyenne supérieure à 5 points ce trimestre</span>
+      </div>
+      <button class="alert-action">Voir les cas</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-top">
+          <div class="kpi-label">Élèves actifs</div>
+          <div class="kpi-icon-wrap bg-blue">👦</div>
+        </div>
+        <div class="kpi-value">247</div>
+        <div class="kpi-sub">
+          <span class="trend-up">↑ +8</span>
+          <span class="trend-text">vs trimestre précédent</span>
+        </div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-top">
+          <div class="kpi-label">CA ce mois</div>
+          <div class="kpi-icon-wrap bg-green">💰</div>
+        </div>
+        <div class="kpi-value">1.24M</div>
+        <div class="kpi-sub">
+          <span class="trend-up">↑ +12%</span>
+          <span class="trend-text">vs Juin 2026</span>
+        </div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-top">
+          <div class="kpi-label">Absences aujourd'hui</div>
+          <div class="kpi-icon-wrap bg-orange">⚠️</div>
+        </div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-sub">
+          <span class="trend-down">↑ +4</span>
+          <span class="trend-text">vs hier · SMS envoyés</span>
+        </div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-top">
+          <div class="kpi-label">Factures impayées</div>
+          <div class="kpi-icon-wrap bg-red">📋</div>
+        </div>
+        <div class="kpi-value">84K DA</div>
+        <div class="kpi-sub">
+          <span style="color:var(--red)">⚠ 7</span>
+          <span class="trend-text">factures · Relances envoyées</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECOND ROW KPIs -->
+    <div class="kpi-grid" style="margin-bottom:24px;">
+      <div class="kpi-card teal">
+        <div class="kpi-top">
+          <div class="kpi-label">Séances aujourd'hui</div>
+          <div class="kpi-icon-wrap bg-teal">📅</div>
+        </div>
+        <div class="kpi-value">18</div>
+        <div class="kpi-sub">
+          <span class="trend-text">3 à venir · 15 terminées</span>
+        </div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-top">
+          <div class="kpi-label">Elèves niveau critique</div>
+          <div class="kpi-icon-wrap bg-purple">🔬</div>
+        </div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-sub">
+          <span style="color:var(--accent2)">↑ 9</span>
+          <span class="trend-text">en vigilance</span>
+        </div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-top">
+          <div class="kpi-label">Enseignants présents</div>
+          <div class="kpi-icon-wrap bg-green">👨‍🏫</div>
+        </div>
+        <div class="kpi-value">14/16</div>
+        <div class="kpi-sub">
+          <span style="color:var(--orange)">2 absents</span>
+          <span class="trend-text">· Remplaçants assignés</span>
+        </div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-top">
+          <div class="kpi-label">Bus actifs</div>
+          <div class="kpi-icon-wrap bg-blue">🚌</div>
+        </div>
+        <div class="kpi-value">4/4</div>
+        <div class="kpi-sub">
+          <span class="trend-up">✓</span>
+          <span class="trend-text">Tous circuits opérationnels</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="grid-2">
+      <!-- CA Bar Chart -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot" style="background:var(--accent)"></div>
+          Évolution CA — 6 derniers mois
+          <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:400">DA (milliers)</span>
+        </div>
+        <div class="chart-bars">
+          <div class="bar-wrap">
+            <div class="bar" style="height:55%;background:linear-gradient(180deg,#2563eb,#1d4ed8)"></div>
+            <div class="bar-label">Fév</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:72%;background:linear-gradient(180deg,#2563eb,#1d4ed8)"></div>
+            <div class="bar-label">Mar</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:68%;background:linear-gradient(180deg,#2563eb,#1d4ed8)"></div>
+            <div class="bar-label">Avr</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:85%;background:linear-gradient(180deg,#2563eb,#1d4ed8)"></div>
+            <div class="bar-label">Mai</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:78%;background:linear-gradient(180deg,#2563eb,#1d4ed8)"></div>
+            <div class="bar-label">Jun</div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:100%;background:linear-gradient(180deg,#10b981,#059669)"></div>
+            <div class="bar-label" style="color:var(--green)">Jul ↑</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:10px;color:var(--muted);">
+          <span>Total 6 mois : <strong style="color:var(--text)">6.84M DA</strong></span>
+          <span>Objectif mensuel : <strong style="color:var(--green)">120%</strong></span>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot" style="background:var(--teal)"></div>
+          Activité récente
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon bg-red" style="background:#ef444422">⚠️</div>
+            <div class="activity-text">
+              <div class="activity-name">Absence — Benali Amira (3AS)</div>
+              <div class="activity-sub">SMS envoyé au parent · il y a 12 min</div>
+            </div>
+            <div class="activity-time">08:47</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background:#10b98122">💳</div>
+            <div class="activity-text">
+              <div class="activity-name">Paiement CIB — Facture #0042</div>
+              <div class="activity-sub">4 500 DA · Famille Khelil</div>
+            </div>
+            <div class="activity-time">08:31</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background:#7c3aed22">📝</div>
+            <div class="activity-text">
+              <div class="activity-name">Notes saisies — Maths 3AS-A</div>
+              <div class="activity-sub">Prof. Meziani · 28 notes</div>
+            </div>
+            <div class="activity-time">08:15</div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon" style="background:#f59e0b22">🚌</div>
+            <div class="activity-text">
+              <div class="activity-name">Bus Circuit Nord — Arrivée</div>
+              <div class="activity-sub">23 élèves · À l'heure</div>
+            </div>
+            <div class="activity-time">07:52</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="grid-3">
+      <!-- Attendance Donut -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot" style="background:var(--green)"></div>
+          Présence aujourd'hui
+        </div>
+        <div class="donut-wrap">
+          <div class="donut">
+            <div class="donut-center">85%</div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--green)"></div>
+              Présents
+              <span class="legend-val" style="color:var(--green)">210</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--orange)"></div>
+              Retards
+              <span class="legend-val" style="color:var(--orange)">5</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--red)"></div>
+              Absents
+              <span class="legend-val" style="color:var(--red)">12</span>
+            </div>
+            <div style="margin-top:10px;font-size:10px;color:var(--muted)">
+              Total : 247 élèves inscrits
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">Par niveau</div>
+          <div class="prog-row">
+            <div class="prog-label-row"><span class="prog-name">1AS-2AS</span><span class="prog-pct" style="color:var(--green)">91%</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:91%;background:var(--green)"></div></div>
+          </div>
+          <div class="prog-row">
+            <div class="prog-label-row"><span class="prog-name">3AS</span><span class="prog-pct" style="color:var(--orange)">78%</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:78%;background:var(--orange)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urgent actions -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot" style="background:var(--red)"></div>
+          Actions urgentes
+        </div>
+        <div class="urgent-item high">
+          <div class="urgent-dot" style="background:var(--red)"></div>
+          <div>
+            <div class="urgent-text">Convoquer parents — 3 élèves critiques</div>
+            <div class="urgent-sub">Diagnostic niveau · Moyenne &lt; 5/20</div>
+          </div>
+        </div>
+        <div class="urgent-item high">
+          <div class="urgent-dot" style="background:var(--red)"></div>
+          <div>
+            <div class="urgent-text">Alerte caméra — Bâtiment B 22h</div>
+            <div class="urgent-sub">Surveillance Dahua · Hors horaires</div>
+          </div>
+        </div>
+        <div class="urgent-item med">
+          <div class="urgent-dot" style="background:var(--orange)"></div>
+          <div>
+            <div class="urgent-text">Stock craies blanc — Seuil bas (8)</div>
+            <div class="urgent-sub">Module Stock · Commander avant lundi</div>
+          </div>
+        </div>
+        <div class="urgent-item med">
+          <div class="urgent-dot" style="background:var(--orange)"></div>
+          <div>
+            <div class="urgent-text">Entretien préventif — Climatiseur S12</div>
+            <div class="urgent-sub">Échéance dépassée depuis 3 jours</div>
+          </div>
+        </div>
+        <div class="urgent-item low">
+          <div class="urgent-dot" style="background:var(--accent)"></div>
+          <div>
+            <div class="urgent-text">Bulletins T3 — Groupe 3AS-B</div>
+            <div class="urgent-sub">Générer les bulletins trimestriels</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card">
+        <div class="card-title">
+          <div class="dot" style="background:var(--accent2)"></div>
+          Actions rapides
+        </div>
+        <div class="quick-grid">
+          <a class="quick-btn" href="#">
+            <span class="qi">👤</span><span class="ql">Nouvel élève</span>
+          </a>
+          <a class="quick-btn" href="#">
+            <span class="qi">✅</span><span class="ql">Déclarer absence</span>
+          </a>
+          <a class="quick-btn" href="#">
+            <span class="qi">💰</span><span class="ql">Émettre facture</span>
+          </a>
+          <a class="quick-btn" href="#">
+            <span class="qi">📋</span><span class="ql">Signalement</span>
+          </a>
+          <a class="quick-btn" href="#">
+            <span class="qi">📄</span><span class="ql">Générer bulletin</span>
+          </a>
+          <a class="quick-btn" href="#">
+            <span class="qi">📊</span><span class="ql">Rapport absences</span>
+          </a>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-size:10px;color:var(--muted);text-align:center;">
+          🌐 Swagger API disponible sur <span style="color:var(--accent)">/api/documentation</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main>
+
+</body>
+</html>

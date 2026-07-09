@@ -8,6 +8,12 @@ use Carbon\Carbon;
 
 class FacturationService
 {
+    /**
+     * Créer une nouvelle facture avec ses lignes.
+     *
+     * @param array $data Données de la facture (eleve_id, mois, annee, lignes, etc.)
+     * @return Facture
+     */
     public function creerFacture(array $data): Facture
     {
         return DB::transaction(function () use ($data) {
@@ -53,6 +59,12 @@ class FacturationService
         });
     }
 
+    /**
+     * Enregistrer un paiement et mettre à jour le statut de la facture.
+     *
+     * @param array $data Données du paiement (facture_id, montant, mode_paiement, date_paiement)
+     * @return Paiement
+     */
     public function enregistrerPaiement(array $data): Paiement
     {
         return DB::transaction(function () use ($data) {
@@ -85,6 +97,12 @@ class FacturationService
         });
     }
 
+    /**
+     * Générer le PDF d'une facture et le stocker.
+     *
+     * @param Facture $facture La facture à générer
+     * @return string Chemin du fichier PDF
+     */
     public function genererFacturePDF(Facture $facture): string
     {
         $facture->load(['eleve.parents', 'lignes', 'paiements']);
@@ -102,6 +120,12 @@ class FacturationService
         return $path;
     }
 
+    /**
+     * Générer le reçu PDF d'un paiement.
+     *
+     * @param Paiement $paiement Le paiement à imprimer
+     * @return string Chemin du fichier PDF
+     */
     public function genererRecuPDF(Paiement $paiement): string
     {
         $paiement->load(['facture.eleve', 'facture.lignes']);
@@ -118,6 +142,11 @@ class FacturationService
         return $path;
     }
 
+    /**
+     * Obtenir les indicateurs financiers du tableau de bord.
+     *
+     * @return array {ca_mois, ca_annee, impayes, nb_impayes, ca_par_mois, modes_payment}
+     */
     public function getTableauBord(): array
     {
         $moisActuel = now()->month;

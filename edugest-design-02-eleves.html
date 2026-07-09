@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Design 2 : Gestion Élèves</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#070B14; --surface:#0D1117; --surface2:#161C26;
+    --border:#1E2D40; --text:#E2E8F0; --muted:#64748B;
+    --accent:#2563EB; --green:#10B981; --orange:#F59E0B;
+    --red:#EF4444; --purple:#7C3AED;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* TOP NAV */
+  .topnav {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:0 28px; height:60px;
+    display:flex; align-items:center; gap:20px;
+    position:sticky; top:0; z-index:10;
+  }
+  .back-btn {
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--muted); cursor:pointer;
+    padding:6px 10px; border-radius:7px;
+    background:var(--surface2); border:1px solid var(--border);
+    text-decoration:none;
+  }
+  .page-title { font-size:15px; font-weight:700; color:var(--text); flex:1; }
+  .breadcrumb { font-size:11px; color:var(--muted); }
+  .breadcrumb span { color:var(--text); }
+
+  /* CONTENT */
+  .content { padding:28px; max-width:1400px; }
+
+  /* STATS ROW */
+  .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
+  .stat-mini {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .stat-mini-icon {
+    width:38px; height:38px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+    flex-shrink:0;
+  }
+  .stat-mini-val { font-size:20px; font-weight:900; color:#fff; }
+  .stat-mini-lbl { font-size:10px; color:var(--muted); }
+
+  /* TOOLBAR */
+  .toolbar {
+    display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .search-input {
+    flex:1; min-width:220px;
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:9px; padding:9px 14px;
+    font-size:12px; color:var(--text);
+  }
+  .filter-select {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:9px; padding:9px 14px;
+    font-size:12px; color:var(--text); cursor:pointer;
+  }
+  .btn-primary {
+    background:linear-gradient(135deg,var(--accent),#1d4ed8);
+    color:#fff; border:none; border-radius:9px;
+    padding:9px 18px; font-size:12px; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+  }
+  .btn-secondary {
+    background:var(--surface); border:1px solid var(--border);
+    color:var(--text); border-radius:9px;
+    padding:9px 14px; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+  }
+  .view-toggle {
+    display:flex; background:var(--surface2); border-radius:8px; padding:3px;
+    border:1px solid var(--border);
+  }
+  .view-btn {
+    padding:5px 10px; border-radius:6px; font-size:13px; cursor:pointer;
+    border:none; background:none; color:var(--muted);
+  }
+  .view-btn.active { background:var(--accent); color:#fff; }
+
+  /* TABLE */
+  .table-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden;
+  }
+  .table-header {
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .table-title { font-size:13px; font-weight:700; color:var(--text); }
+  .table-count { font-size:11px; color:var(--muted); }
+
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:var(--surface2); }
+  th {
+    padding:11px 16px; text-align:left;
+    font-size:10px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  th input[type="checkbox"], td input[type="checkbox"] {
+    width:14px; height:14px; cursor:pointer;
+    accent-color:var(--accent);
+  }
+  td {
+    padding:13px 16px; font-size:12px;
+    border-bottom:1px solid #1e2d4044;
+    vertical-align:middle;
+  }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:#161c2688; }
+
+  /* ELEVE CELL */
+  .eleve-cell { display:flex; align-items:center; gap:12px; }
+  .eleve-avatar {
+    width:36px; height:36px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:800; flex-shrink:0;
+    color:#fff;
+  }
+  .eleve-name   { font-size:13px; font-weight:700; color:var(--text); }
+  .eleve-id     { font-size:10px; color:var(--muted); }
+  .eleve-niveau {
+    display:inline-block; font-size:10px; font-weight:700;
+    padding:3px 9px; border-radius:20px;
+    background:#2563eb22; color:#93c5fd;
+  }
+
+  /* STATUS BADGE */
+  .badge {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px;
+  }
+  .badge::before { content:''; width:5px; height:5px; border-radius:50%; }
+  .badge.actif   { background:#10b98122; color:#10b981; }
+  .badge.actif::before { background:#10b981; }
+  .badge.inactif { background:#64748b22; color:#94a3b8; }
+  .badge.suspendu{ background:#ef444422; color:#ef4444; }
+  .badge.suspendu::before{ background:#ef4444; }
+
+  /* PROGRESS MINI */
+  .prog-mini { display:flex; align-items:center; gap:6px; }
+  .prog-mini-bar { flex:1; height:5px; background:var(--surface2); border-radius:99px; overflow:hidden; min-width:60px; }
+  .prog-mini-fill { height:100%; border-radius:99px; }
+  .prog-mini-val { font-size:11px; font-weight:700; min-width:30px; }
+
+  /* ACTIONS */
+  .actions { display:flex; gap:4px; }
+  .action-btn {
+    width:28px; height:28px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; cursor:pointer;
+    background:var(--surface2); border:1px solid var(--border);
+    transition:all 0.15s;
+  }
+  .action-btn:hover { border-color:var(--accent); background:#2563eb22; }
+
+  /* DIAGNOSTIC BADGE */
+  .diag {
+    display:inline-block; font-size:9px; font-weight:800;
+    padding:2px 8px; border-radius:20px;
+  }
+  .diag.excellent { background:#10b98122; color:#10b981; }
+  .diag.normal    { background:#2563eb22; color:#93c5fd; }
+  .diag.vigilance { background:#f59e0b22; color:#f59e0b; }
+  .diag.danger    { background:#ef444422; color:#ef4444; }
+  .diag.critique  { background:#ef4444; color:#fff; animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+
+  /* PAGINATION */
+  .pagination {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-top:1px solid var(--border);
+    font-size:11px; color:var(--muted);
+  }
+  .page-btns { display:flex; gap:4px; }
+  .page-btn {
+    width:28px; height:28px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; cursor:pointer;
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--muted);
+  }
+  .page-btn.active {
+    background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;
+  }
+
+  /* SIDE PANEL */
+  .layout { display:grid; grid-template-columns:1fr 320px; gap:20px; }
+  .side-panel {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:20px;
+    height:fit-content; position:sticky; top:80px;
+  }
+  .panel-title {
+    font-size:13px; font-weight:700; color:var(--text); margin-bottom:16px;
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* Filter groups */
+  .filter-group { margin-bottom:16px; }
+  .filter-label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .filter-options { display:flex; flex-wrap:wrap; gap:6px; }
+  .filter-chip {
+    font-size:10px; font-weight:600; padding:4px 10px;
+    border-radius:20px; cursor:pointer;
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--muted); transition:all 0.15s;
+  }
+  .filter-chip.active { background:#2563eb22; border-color:var(--accent); color:#93c5fd; }
+  .filter-chip:hover { border-color:var(--accent); }
+
+  /* Top élèves */
+  .top-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+  .top-item {
+    display:flex; align-items:center; gap:10px;
+    padding:8px 10px; border-radius:9px;
+    background:var(--surface2);
+  }
+  .top-rank { font-size:14px; font-weight:900; color:var(--muted); width:20px; text-align:center; }
+  .top-rank.gold   { color:#fbbf24; }
+  .top-rank.silver { color:#94a3b8; }
+  .top-rank.bronze { color:#cd7c2f; }
+  .top-avatar {
+    width:28px; height:28px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:#fff; flex-shrink:0;
+  }
+  .top-name { flex:1; font-size:11px; font-weight:600; color:var(--text); }
+  .top-avg  { font-size:12px; font-weight:900; color:var(--green); }
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a class="back-btn" href="#">← Dashboard</a>
+  <div class="page-title">Gestion des Élèves</div>
+  <div class="breadcrumb">EduGest DZ / <span>Élèves</span></div>
+</div>
+
+<div class="content">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-mini">
+      <div class="stat-mini-icon" style="background:#2563eb22">👦</div>
+      <div><div class="stat-mini-val">247</div><div class="stat-mini-lbl">Total actifs</div></div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-icon" style="background:#10b98122">⭐</div>
+      <div><div class="stat-mini-val" style="color:#10b981">18</div><div class="stat-mini-lbl">Excellents (≥15/20)</div></div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-icon" style="background:#f59e0b22">⚠️</div>
+      <div><div class="stat-mini-val" style="color:#f59e0b">9</div><div class="stat-mini-lbl">En vigilance</div></div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-icon" style="background:#ef444422">🚨</div>
+      <div><div class="stat-mini-val" style="color:#ef4444">3</div><div class="stat-mini-lbl">Niveau critique</div></div>
+    </div>
+    <div class="stat-mini">
+      <div class="stat-mini-icon" style="background:#7c3aed22">➕</div>
+      <div><div class="stat-mini-val" style="color:#a78bfa">+8</div><div class="stat-mini-lbl">Ce trimestre</div></div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-input">🔍 <span style="color:var(--muted)">Rechercher par nom, prénom, ID...</span></div>
+    <select class="filter-select">
+      <option>Tous les niveaux</option>
+      <option>3AS Sciences</option>
+      <option>3AS Maths</option>
+      <option>2AS</option>
+      <option>1AS</option>
+    </select>
+    <select class="filter-select">
+      <option>Tous les statuts</option>
+      <option>Actif</option>
+      <option>Suspendu</option>
+    </select>
+    <div class="view-toggle">
+      <button class="view-btn active">☰</button>
+      <button class="view-btn">⊞</button>
+    </div>
+    <button class="btn-secondary">⬇ Exporter</button>
+    <button class="btn-primary">+ Nouvel élève</button>
+  </div>
+
+  <div class="layout">
+    <!-- TABLE -->
+    <div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Tous les élèves</div>
+          <div class="table-count">Affichage 1-8 sur 247 résultats</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox"></th>
+              <th>Élève</th>
+              <th>Niveau</th>
+              <th>Statut</th>
+              <th>Moyenne</th>
+              <th>Absences/mois</th>
+              <th>Diagnostic</th>
+              <th>Inscrit le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>
+                <div class="eleve-cell">
+                  <div class="eleve-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">BA</div>
+                  <div>
+                    <div class="eleve-name">Benali Amira</div>
+                    <div class="eleve-id">EL-2024-0001</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="eleve-niveau">3AS Sciences</span></td>
+              <td><span class="badge actif">Actif</span></td>
+              <td>
+                <div class="prog-mini">
+                  <div class="prog-mini-bar"><div class="prog-mini-fill" style="width:87%;background:var(--green)"></div></div>
+                  <span class="prog-mini-val" style="color:var(--green)">17.4</span>
+                </div>
+              </td>
+              <td style="color:var(--green);font-weight:700;">0</td>
+              <td><span class="diag excellent">⭐ Excellent</span></td>
+              <td style="color:var(--muted)">15 Sep 2024</td>
+              <td>
+                <div class="actions">
+                  <div class="action-btn" title="Voir">👁</div>
+                  <div class="action-btn" title="Modifier">✏️</div>
+                  <div class="action-btn" title="QR Code">🔲</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>
+                <div class="eleve-cell">
+                  <div class="eleve-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">KM</div>
+                  <div>
+                    <div class="eleve-name">Khelil Mohamed</div>
+                    <div class="eleve-id">EL-2024-0002</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="eleve-niveau">3AS Maths</span></td>
+              <td><span class="badge actif">Actif</span></td>
+              <td>
+                <div class="prog-mini">
+                  <div class="prog-mini-bar"><div class="prog-mini-fill" style="width:72%;background:#60a5fa"></div></div>
+                  <span class="prog-mini-val" style="color:#60a5fa">14.4</span>
+                </div>
+              </td>
+              <td style="color:var(--muted)">1</td>
+              <td><span class="diag normal">✅ Normal</span></td>
+              <td style="color:var(--muted)">15 Sep 2024</td>
+              <td>
+                <div class="actions">
+                  <div class="action-btn">👁</div>
+                  <div class="action-btn">✏️</div>
+                  <div class="action-btn">🔲</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>
+                <div class="eleve-cell">
+                  <div class="eleve-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">BK</div>
+                  <div>
+                    <div class="eleve-name">Boudiaf Karim</div>
+                    <div class="eleve-id">EL-2024-0047</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="eleve-niveau">2AS</span></td>
+              <td><span class="badge actif">Actif</span></td>
+              <td>
+                <div class="prog-mini">
+                  <div class="prog-mini-bar"><div class="prog-mini-fill" style="width:45%;background:var(--orange)"></div></div>
+                  <span class="prog-mini-val" style="color:var(--orange)">9.0</span>
+                </div>
+              </td>
+              <td style="color:var(--orange);font-weight:700;">4</td>
+              <td><span class="diag vigilance">⚠️ Vigilance</span></td>
+              <td style="color:var(--muted)">12 Jan 2025</td>
+              <td>
+                <div class="actions">
+                  <div class="action-btn">👁</div>
+                  <div class="action-btn">✏️</div>
+                  <div class="action-btn">🔲</div>
+                </div>
+              </td>
+            </tr>
+            <tr style="background:#ef444408;">
+              <td><input type="checkbox"></td>
+              <td>
+                <div class="eleve-cell">
+                  <div class="eleve-avatar" style="background:linear-gradient(135deg,#ef4444,#7c3aed)">SL</div>
+                  <div>
+                    <div class="eleve-name">Saadi Lina</div>
+                    <div class="eleve-id">EL-2024-0089</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="eleve-niveau">3AS Lettres</span></td>
+              <td><span class="badge actif">Actif</span></td>
+              <td>
+                <div class="prog-mini">
+                  <div class="prog-mini-bar"><div class="prog-mini-fill" style="width:22%;background:var(--red)"></div></div>
+                  <span class="prog-mini-val" style="color:var(--red)">4.4</span>
+                </div>
+              </td>
+              <td style="color:var(--red);font-weight:700;">9 🚨</td>
+              <td><span class="diag critique">🚨 Critique</span></td>
+              <td style="color:var(--muted)">02 Oct 2024</td>
+              <td>
+                <div class="actions">
+                  <div class="action-btn">👁</div>
+                  <div class="action-btn">📱</div>
+                  <div class="action-btn">✏️</div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>
+                <div class="eleve-cell">
+                  <div class="eleve-avatar" style="background:linear-gradient(135deg,#06b6d4,#2563eb)">MA</div>
+                  <div>
+                    <div class="eleve-name">Mansouri Adam</div>
+                    <div class="eleve-id">EL-2025-0012</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="eleve-niveau">1AS</span></td>
+              <td><span class="badge actif">Actif</span></td>
+              <td>
+                <div class="prog-mini">
+                  <div class="prog-mini-bar"><div class="prog-mini-fill" style="width:60%;background:#60a5fa"></div></div>
+                  <span class="prog-mini-val" style="color:#60a5fa">12.0</span>
+                </div>
+              </td>
+              <td style="color:var(--muted)">2</td>
+              <td><span class="diag normal">✅ Normal</span></td>
+              <td style="color:var(--muted)">15 Sep 2025</td>
+              <td>
+                <div class="actions">
+                  <div class="action-btn">👁</div>
+                  <div class="action-btn">✏️</div>
+                  <div class="action-btn">🔲</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="pagination">
+          <span>Affichage 1-5 sur <strong style="color:var(--text)">247</strong> élèves</span>
+          <div class="page-btns">
+            <div class="page-btn">‹</div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="page-btn">...</div>
+            <div class="page-btn">25</div>
+            <div class="page-btn">›</div>
+          </div>
+          <span>Lignes par page : <select style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:2px 6px;font-size:11px;"><option>20</option><option>50</option></select></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel">
+      <div class="panel-title">🔎 Filtres avancés</div>
+
+      <div class="filter-group">
+        <div class="filter-label">Niveau</div>
+        <div class="filter-options">
+          <div class="filter-chip active">Tous</div>
+          <div class="filter-chip">3AS</div>
+          <div class="filter-chip">2AS</div>
+          <div class="filter-chip">1AS</div>
+          <div class="filter-chip">4AM</div>
+          <div class="filter-chip">3AM</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">Diagnostic</div>
+        <div class="filter-options">
+          <div class="filter-chip" style="background:#10b98122;border-color:#10b981;color:#10b981">⭐ Excellent</div>
+          <div class="filter-chip">✅ Normal</div>
+          <div class="filter-chip" style="background:#f59e0b22;border-color:#f59e0b;color:#f59e0b">⚠️ Vigilance</div>
+          <div class="filter-chip" style="background:#ef444422;border-color:#ef4444;color:#ef4444">🚨 Critique</div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label">Absences ce mois</div>
+        <div class="filter-options">
+          <div class="filter-chip">Aucune</div>
+          <div class="filter-chip">1-3</div>
+          <div class="filter-chip">4-6</div>
+          <div class="filter-chip">+7</div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+        <div class="panel-title">⭐ Top Élèves</div>
+        <div class="top-list">
+          <div class="top-item">
+            <div class="top-rank gold">🥇</div>
+            <div class="top-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">BA</div>
+            <div class="top-name">Benali Amira<br><span style="font-size:9px;color:var(--muted)">3AS Sciences</span></div>
+            <div class="top-avg">17.4</div>
+          </div>
+          <div class="top-item">
+            <div class="top-rank silver">🥈</div>
+            <div class="top-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4)">ZR</div>
+            <div class="top-name">Zerrouki Rania<br><span style="font-size:9px;color:var(--muted)">3AS Maths</span></div>
+            <div class="top-avg">16.8</div>
+          </div>
+          <div class="top-item">
+            <div class="top-rank bronze">🥉</div>
+            <div class="top-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">HA</div>
+            <div class="top-name">Hamidi Amine<br><span style="font-size:9px;color:var(--muted)">1AS</span></div>
+            <div class="top-avg">16.2</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;">
+        <div class="panel-title">🚨 Actions requises</div>
+        <div style="background:#ef444411;border:1px solid #ef444433;border-radius:9px;padding:12px;font-size:11px;color:#f87171;margin-bottom:8px;">
+          <strong>3 élèves critiques</strong><br>
+          <span style="font-size:10px;color:var(--muted)">Convocations parents à envoyer</span>
+        </div>
+        <div style="background:#f59e0b11;border:1px solid #f59e0b33;border-radius:9px;padding:12px;font-size:11px;color:#fbbf24;">
+          <strong>9 élèves en vigilance</strong><br>
+          <span style="font-size:10px;color:var(--muted)">Rattrapages à programmer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1713245fb650d76',t:'MTc4MzM2ODAzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

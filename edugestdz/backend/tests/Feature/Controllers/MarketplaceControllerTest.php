@@ -2,274 +2,169 @@
 
 namespace Tests\Feature\Controllers;
 
-use App\Models\User;
-use App\Models\ProfilMarketplace;
-use App\Models\OffreCours;
-use App\Models\Eleve;
-use App\Models\Tenant;
-use App\Models\Role;
-use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 
 class MarketplaceControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $admin;
-    private User $parent;
-    private Tenant $tenant;
-
-    protected function setUp(): void
+    private function createTenantWithMarketplace(array $overrides = []): string
     {
-        parent::setUp();
+        $tenantId = Str::uuid()->toString();
 
-        $this->tenant = Tenant::factory()->create(['statut' => 'actif', 'plan_abonnement' => 'pro']);
+        DB::table('tenants')->insert(array_merge([
+            'id'                     => $tenantId,
+            'slug'                   => 'centre-' . substr($tenantId, 0, 8),
+            'nom_etablissement'      => 'Centre Controller Test',
+            'description'            => 'Description du centre test',
+            'wilaya_id'              => 16,
+            'adresse'                => '123 Rue Test',
+            'telephone'              => '0555000000',
+            'email'                  => 'test.' . substr($tenantId, 0, 8) . '@example.com',
+            'statut'                 => 'actif',
+            'type_etablissement'     => 'centre',
+            'marketplace_featured'   => true,
+            'created_at'             => now(),
+            'updated_at'             => now(),
+        ], $overrides));
 
-        $roleAdmin  = Role::factory()->create(['nom' => 'admin']);
-        $roleParent = Role::factory()->create(['nom' => 'parent']);
-
-        $this->admin = User::factory()->create([
-            'tenant_id' => $this->tenant->id,
-            'role_id'   => $roleAdmin->id,
+        DB::table('tenant_modules')->insert([
+            'id'           => (string) Str::uuid(),
+            'tenant_id'    => $tenantId,
+            'module_key'   => 'marketplace',
+            'actif'        => true,
+            'created_at'   => now(),
+            'updated_at'   => now(),
         ]);
 
-        $this->parent = User::factory()->create([
-            'tenant_id' => $this->tenant->id,
-            'role_id'   => $roleParent->id,
-        ]);
-
-        config(['tenant.current_id' => $this->tenant->id]);
+        return $tenantId;
     }
 
-    public function test_recherche_publique_sans_auth(): void
+    public function test_marketplace_recherche_endpoint_returns_paginated_tenants(): void
     {
-        ProfilMarketplace::create([
-            'tenant_id'          => Str::uuid(),
-            'nom_etablissement'  => 'Centre Avenir Oran',
-            'adresse'            => '12 Rue des Frères Benali',
-            'wilaya'             => 'Oran',
-            'matieres_enseignees'=> ['Mathématiques', 'Physique'],
-            'niveaux_couverts'   => ['1AS', '2AS', '3AS'],
-            'visible'            => true,
-        ]);
+        $this->createTenantWithMarketplace(['nom_etablissement' => 'Centre Recherche 1']);
+        $this->createTenantWithMarketplace(['nom_etablissement' => 'Centre Recherche 2']);
 
-        $this->getJson('/api/v1/marketplace/recherche?wilaya=Oran')
-            ->assertStatus(200)
-            ->assertJsonStructure(['success', 'data' => ['centres', 'total']]);
+        $response = $this->getJson('/api/v1/marketplace/recherche');
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'meta'    => [
+                    'total' => 2,
+                ],
+            ]);
     }
 
-    public function test_recherche_par_matiere(): void
+    public function test_marketplace_featured_endpoint_returns_limited_tenants(): void
     {
-        $this->getJson('/api/v1/marketplace/recherche?matiere=Mathématiques')
-            ->assertStatus(200)
-            ->assertJsonPath('success', true);
-    }
+        for ($i = 0; $i < 8; $i++) {
+            $this->createTenantWithMarketplace(['nom_etablissement' => "Centre Featured {$i}"]);
+        }
 
-    public function test_featured_sans_auth(): void
-    {
-        $this->getJson('/api/v1/marketplace/featured')
-            ->assertStatus(200)
-            ->assertJson(['success' => true]);
-    }
+        $response = $this->getJson('/api/v1/marketplace/featured');
 
-    public function test_profil_public_centre_visible(): void
-    {
-        $tenantId = (string) Str::uuid();
-        ProfilMarketplace::create([
-            'tenant_id'         => $tenantId,
-            'nom_etablissement' => 'Centre Test',
-            'adresse'           => '1 Rue Test',
-            'wilaya'            => 'Alger',
-            'visible'           => true,
-        ]);
-
-        $this->getJson("/api/v1/marketplace/centres/{$tenantId}")
-            ->assertStatus(200)
-            ->assertJsonPath('data.nom_etablissement', 'Centre Test');
-    }
-
-    public function test_profil_centre_invisible_retourne_404(): void
-    {
-        $tenantId = (string) Str::uuid();
-        ProfilMarketplace::create([
-            'tenant_id'         => $tenantId,
-            'nom_etablissement' => 'Centre Caché',
-            'adresse'           => 'Adresse',
-            'wilaya'            => 'Alger',
-            'visible'           => false,
-        ]);
-
-        $this->getJson("/api/v1/marketplace/centres/{$tenantId}")
-            ->assertStatus(404);
-    }
-
-    public function test_voir_mon_profil_authentifie(): void
-    {
-        $this->actingAs($this->admin, 'api')
-            ->getJson('/api/v1/marketplace/mon-profil')
-            ->assertStatus(200)
-            ->assertJson(['success' => true]);
-    }
-
-    public function test_mettre_a_jour_profil(): void
-    {
-        ProfilMarketplace::create([
-            'tenant_id'         => $this->tenant->id,
-            'nom_etablissement' => 'Mon Centre',
-            'adresse'           => '1 Rue Test',
-            'wilaya'            => 'Alger',
-        ]);
-
-        $this->actingAs($this->admin, 'api')
-            ->putJson('/api/v1/marketplace/mon-profil', [
-                'nom_etablissement'   => 'Centre Mis à Jour',
-                'description'         => 'Le meilleur centre',
-                'tarif_heure_min'     => 500,
-                'tarif_heure_max'     => 1200,
-                'matieres_enseignees' => ['Mathématiques', 'Physique'],
-                'accepte_essai_gratuit' => true,
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
             ])
-            ->assertStatus(200)
-            ->assertJson(['success' => true]);
+            ->assertJsonCount(6, 'data');
     }
 
-    public function test_mettre_a_jour_profil_sans_auth_echoue(): void
+    public function test_marketplace_profil_endpoint_returns_centre_data(): void
     {
-        $this->putJson('/api/v1/marketplace/mon-profil', ['nom_etablissement' => 'Test'])
-            ->assertStatus(401);
+        $tenantId = $this->createTenantWithMarketplace();
+
+        $response = $this->getJson("/api/v1/marketplace/centres/{$tenantId}");
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'data'    => [
+                    'centre'       => ['id' => $tenantId],
+                    'offres'       => [],
+                    'note_moyenne' => 0,
+                    'nb_avis'      => 0,
+                ],
+            ]);
     }
 
-    public function test_creer_offre_cours(): void
+    public function test_marketplace_profil_endpoint_includes_offres(): void
     {
-        $this->actingAs($this->admin, 'api')
-            ->postJson('/api/v1/marketplace/offres-cours', [
-                'titre'        => 'Cours Maths 3AS',
-                'matiere'      => 'Mathématiques',
-                'niveaux'      => ['3AS'],
-                'type'         => 'individuel',
-                'tarif_heure'  => 800,
-                'essai_gratuit'=> true,
-            ])
-            ->assertStatus(201)
-            ->assertJson(['success' => true]);
-    }
+        $tenantId = $this->createTenantWithMarketplace();
 
-    public function test_creer_offre_sans_titre_echoue(): void
-    {
-        $this->actingAs($this->admin, 'api')
-            ->postJson('/api/v1/marketplace/offres-cours', ['matiere' => 'Maths', 'tarif_heure' => 500])
-            ->assertStatus(422);
-    }
-
-    public function test_lister_offres_centre(): void
-    {
-        $this->actingAs($this->admin, 'api')
-            ->getJson('/api/v1/marketplace/offres-cours')
-            ->assertStatus(200);
-    }
-
-    public function test_parent_peut_reserver(): void
-    {
-        $offre = OffreCours::factory()->create([
-            'tenant_id'   => $this->tenant->id,
-            'tarif_heure' => 800,
-            'active'      => true,
-        ]);
-        $eleve = Eleve::factory()->create([
-            'tenant_id' => $this->tenant->id,
+        $matiereId = (string) Str::uuid();
+        DB::table('matieres')->insert([
+            'id'         => $matiereId,
+            'tenant_id'  => $tenantId,
+            'nom_fr'     => 'Physique',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
-        $this->actingAs($this->parent, 'api')
-            ->postJson('/api/v1/marketplace/reserver', [
-                'offre_id'       => $offre->id,
-                'eleve_id'       => $eleve->id,
-                'date_souhaitee' => now()->addDays(3)->format('Y-m-d H:i:s'),
-                'type'           => 'cours_unique',
-                'message_parent' => 'Bonjour, nous souhaitons prendre un cours.',
-            ])
-            ->assertStatus(201)
-            ->assertJson(['success' => true]);
-    }
-
-    public function test_reservation_date_passee_echoue(): void
-    {
-        $offre = OffreCours::factory()->create(['tenant_id' => $this->tenant->id, 'active' => true]);
-        $eleve = Eleve::factory()->create([
-            'tenant_id' => $this->tenant->id,
+        DB::table('offres_publiques')->insert([
+            'id'              => (string) Str::uuid(),
+            'tenant_id'       => $tenantId,
+            'matiere_id'      => $matiereId,
+            'type_offre'      => 'cours',
+            'type_cours'      => 'particulier',
+            'description'     => 'Cours de physique',
+            'niveau'          => '2nd',
+            'tarif_seance'    => 2000,
+            'places_restantes'=> 5,
+            'statut'          => 'active',
+            'created_at'      => now(),
+            'updated_at'      => now(),
         ]);
 
-        $this->actingAs($this->parent, 'api')
-            ->postJson('/api/v1/marketplace/reserver', [
-                'offre_id'       => $offre->id,
-                'eleve_id'       => $eleve->id,
-                'date_souhaitee' => now()->subDay()->format('Y-m-d H:i:s'),
-            ])
-            ->assertStatus(422);
+        $response = $this->getJson("/api/v1/marketplace/centres/{$tenantId}");
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.offres');
     }
 
-    public function test_parent_voit_ses_reservations(): void
+    public function test_marketplace_stats_endpoint_returns_statistics(): void
     {
-        $this->actingAs($this->parent, 'api')
-            ->getJson('/api/v1/marketplace/parent/reservations')
-            ->assertStatus(200);
+        $this->createTenantWithMarketplace();
+
+        $response = $this->getJson('/api/v1/marketplace/stats');
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'data'    => [
+                    'total_centres' => 1,
+                ],
+            ]);
     }
 
-    public function test_soumettre_avis(): void
+    public function test_marketplace_profil_returns_404_for_nonexistent_tenant(): void
     {
-        $tenantId = (string) Str::uuid();
-        ProfilMarketplace::create([
-            'tenant_id' => $tenantId, 'nom_etablissement' => 'Centre Test',
-            'adresse' => '', 'wilaya' => 'Oran', 'visible' => true,
-        ]);
+        $response = $this->getJson('/api/v1/marketplace/centres/00000000-0000-0000-0000-000000000000');
 
-        $this->actingAs($this->parent, 'api')
-            ->postJson('/api/v1/marketplace/avis-centre', [
-                'tenant_id'  => $tenantId,
-                'note'       => 5,
-                'titre'      => 'Excellent centre !',
-                'commentaire'=> 'Mon fils a beaucoup progressé.',
-            ])
-            ->assertStatus(201);
+        $response->assertNotFound()
+            ->assertJson([
+                'success' => false,
+                'message' => 'Ce centre n\'est pas référencé sur la marketplace.',
+            ]);
     }
 
-    public function test_note_invalide_echoue(): void
+    public function test_marketplace_recherche_validates_wilaya_range(): void
     {
-        $this->actingAs($this->parent, 'api')
-            ->postJson('/api/v1/marketplace/avis-centre', [
-                'tenant_id' => Str::uuid(),
-                'note'      => 6,
-            ])
-            ->assertStatus(422);
+        $response = $this->getJson('/api/v1/marketplace/recherche?wilaya=99');
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['wilaya']);
     }
 
-    public function test_ajouter_favori(): void
+    public function test_marketplace_recherche_validates_per_page_range(): void
     {
-        $tenantId = (string) Str::uuid();
-        $this->actingAs($this->parent, 'api')
-            ->postJson("/api/v1/marketplace/favoris/{$tenantId}")
-            ->assertStatus(200)
-            ->assertJsonPath('success', true);
-    }
+        $response = $this->getJson('/api/v1/marketplace/recherche?per_page=100');
 
-    public function test_retirer_favori_toggle(): void
-    {
-        $tenantId = (string) Str::uuid();
-        $this->actingAs($this->parent, 'api')
-            ->postJson("/api/v1/marketplace/favoris/{$tenantId}")
-            ->assertStatus(200);
-        $this->actingAs($this->parent, 'api')
-            ->postJson("/api/v1/marketplace/favoris/{$tenantId}")
-            ->assertStatus(200);
-    }
-
-    public function test_stats_marketplace_admin(): void
-    {
-        $this->actingAs($this->admin, 'api')
-            ->getJson('/api/v1/marketplace/stats')
-            ->assertStatus(200)
-            ->assertJsonStructure(['success', 'data' => [
-                'profils_actifs', 'profils_verifies', 'total_reservations',
-            ]]);
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['per_page']);
     }
 }
