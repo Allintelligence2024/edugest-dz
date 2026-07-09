@@ -4,6 +4,7 @@ namespace Tests\Feature\Controllers;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MarketplaceControllerTest extends TestCase
@@ -12,20 +13,26 @@ class MarketplaceControllerTest extends TestCase
 
     private function createTenantWithMarketplace(array $overrides = []): string
     {
-        $tenantId = DB::table('tenants')->insertGetId(array_merge([
-            'nom_etablissement'   => 'Centre Controller Test',
-            'description'         => 'Description du centre test',
-            'wilaya_id'           => 16,
-            'adresse'             => '123 Rue Test',
-            'telephone'           => '0555000000',
-            'email'               => 'test@example.com',
-            'statut'              => 'actif',
-            'type_etablissement'  => 'centre',
-            'created_at'          => now(),
-            'updated_at'          => now(),
+        $tenantId = Str::uuid()->toString();
+
+        DB::table('tenants')->insert(array_merge([
+            'id'                     => $tenantId,
+            'slug'                   => 'centre-' . substr($tenantId, 0, 8),
+            'nom_etablissement'      => 'Centre Controller Test',
+            'description'            => 'Description du centre test',
+            'wilaya_id'              => 16,
+            'adresse'                => '123 Rue Test',
+            'telephone'              => '0555000000',
+            'email'                  => 'test.' . substr($tenantId, 0, 8) . '@example.com',
+            'statut'                 => 'actif',
+            'type_etablissement'     => 'centre',
+            'marketplace_featured'   => true,
+            'created_at'             => now(),
+            'updated_at'             => now(),
         ], $overrides));
 
         DB::table('tenant_modules')->insert([
+            'id'           => (string) Str::uuid(),
             'tenant_id'    => $tenantId,
             'module_key'   => 'marketplace',
             'actif'        => true,
@@ -71,7 +78,7 @@ class MarketplaceControllerTest extends TestCase
     {
         $tenantId = $this->createTenantWithMarketplace();
 
-        $response = $this->getJson("/api/v1/marketplace/profil/{$tenantId}");
+        $response = $this->getJson("/api/v1/marketplace/centres/{$tenantId}");
 
         $response->assertOk()
             ->assertJson([
@@ -89,14 +96,17 @@ class MarketplaceControllerTest extends TestCase
     {
         $tenantId = $this->createTenantWithMarketplace();
 
-        $matiereId = DB::table('matieres')->insertGetId([
-            'nom'       => 'Physique',
-            'code'      => 'PHYS',
-            'created_at'=> now(),
-            'updated_at'=> now(),
+        $matiereId = (string) Str::uuid();
+        DB::table('matieres')->insert([
+            'id'         => $matiereId,
+            'tenant_id'  => $tenantId,
+            'nom_fr'     => 'Physique',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('offres_publiques')->insert([
+            'id'              => (string) Str::uuid(),
             'tenant_id'       => $tenantId,
             'matiere_id'      => $matiereId,
             'type_offre'      => 'cours',
@@ -110,7 +120,7 @@ class MarketplaceControllerTest extends TestCase
             'updated_at'      => now(),
         ]);
 
-        $response = $this->getJson("/api/v1/marketplace/profil/{$tenantId}");
+        $response = $this->getJson("/api/v1/marketplace/centres/{$tenantId}");
 
         $response->assertOk()
             ->assertJsonCount(1, 'data.offres');
@@ -133,7 +143,7 @@ class MarketplaceControllerTest extends TestCase
 
     public function test_marketplace_profil_returns_404_for_nonexistent_tenant(): void
     {
-        $response = $this->getJson('/api/v1/marketplace/profil/00000000-0000-0000-0000-000000000000');
+        $response = $this->getJson('/api/v1/marketplace/centres/00000000-0000-0000-0000-000000000000');
 
         $response->assertNotFound()
             ->assertJson([
