@@ -45,5 +45,8 @@ abstract class TestCase extends BaseTestCase
                 "Erreur: " . $e->getMessage() . "\n"
             );
         }
+
+        // ── GUARD 3 : Réinitialiser le contexte tenant entre les tests ──
+        config(['tenant.current_id' => null]);
     }
 }

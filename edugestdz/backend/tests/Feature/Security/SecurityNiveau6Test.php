@@ -9,7 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\AuditChainService;
 use App\Services\KillSwitchService;
-use App\Services\PostQuantumCryptoService;
+use App\Services\AsymmetricCryptoService;
 use App\Services\SiemService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -198,11 +198,20 @@ class SecurityNiveau6Test extends TestCase
         Cache::forget('kill_switch:active');
     }
 
-    // ── Post-Quantum Crypto ──
-
-    public function test_post_quantum_sign_and_verify(): void
+    public function test_kill_switch_persiste_en_bdd(): void
     {
-        $service = app(PostQuantumCryptoService::class);
+        $ks = app(\App\Services\KillSwitchService::class);
+
+        Cache::flush();
+
+        $this->assertFalse($ks->estActif());
+    }
+
+    // ── Asymmetric Crypto (anciennement "Post-Quantum" — corrigé audit Juillet 2026) ──
+
+    public function test_asymmetric_crypto_sign_and_verify(): void
+    {
+        $service = app(AsymmetricCryptoService::class);
 
         $data = 'donnees critiques à signer';
         $signature = $service->signer($data);
@@ -211,11 +220,31 @@ class SecurityNiveau6Test extends TestCase
         $this->assertFalse($service->verifier($data . 'modifie', $signature));
     }
 
-    public function test_post_quantum_public_key_accessible(): void
+    public function test_asymmetric_crypto_public_key_accessible(): void
     {
-        $service = app(PostQuantumCryptoService::class);
+        $service = app(AsymmetricCryptoService::class);
 
         $this->assertNotEmpty($service->getPublicKey());
+    }
+
+    public function test_asymmetric_crypto_honnete_resistant_quantique(): void
+    {
+        $service = app(AsymmetricCryptoService::class);
+        $statut = $service->niveauSecuriteReel();
+
+        $this->assertArrayHasKey('algorithme', $statut);
+        $this->assertArrayHasKey('resistant_quantique', $statut);
+        $this->assertArrayHasKey('resistant_classique', $statut);
+
+        // HONNÊTETÉ : Ed25519 n'est PAS post-quantique (correction audit externe)
+        $this->assertFalse($statut['resistant_quantique'],
+            'Ed25519 n\'est pas post-quantique (cassable par algorithme de Shor)');
+
+        // Mais excellent contre les attaques classiques
+        $this->assertTrue($statut['resistant_classique']);
+
+        $this->assertContains($statut['algorithme'],
+            ['Ed25519', 'RSA-4096', 'HMAC-SHA512-fallback']);
     }
 
     // ── SIEM Service ──
