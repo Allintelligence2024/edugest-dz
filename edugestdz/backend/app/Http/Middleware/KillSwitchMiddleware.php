@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\KillSwitchService;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class KillSwitchMiddleware
 {
@@ -16,7 +16,7 @@ class KillSwitchMiddleware
 
     public function handle(Request $request, Closure $next)
     {
-        if (Cache::get('kill_switch:active', false)) {
+        if (app(KillSwitchService::class)->estActif()) {
             foreach ($this->exclusions as $exclusion) {
                 if ($request->is($exclusion)) {
                     return $next($request);

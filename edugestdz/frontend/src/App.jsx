@@ -6,7 +6,7 @@ import { I18nProvider } from '@context/I18nContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { ModulesProvider } from '@context/ModulesContext';
 import Sidebar from '@components/Sidebar';
-import Header from '@components/Header';
+import Topbar from '@components/layout/Topbar';
 import LoginPage from '@pages/LoginPage';
 import DashboardPage from '@pages/DashboardPage';
 import PlanningPage from '@pages/PlanningPage';
@@ -51,11 +51,14 @@ function ProtectedLayout() {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎓</div>
-          <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '3px solid #1E2D40', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <div style={{ marginTop: '16px', fontSize: '13px', color: '#64748B' }}>Chargement EduGest DZ...</div>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="text-center">
+          <div className="text-[40px] mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5"/></svg>
+          </div>
+          <div className="w-10 h-10 mx-auto border-3 border-border rounded-full animate-spin"
+            style={{ borderTopColor: '#2563EB' }} />
+          <div className="mt-4 text-xs text-muted">Chargement EduGest DZ...</div>
         </div>
       </div>
     );
@@ -66,17 +69,11 @@ function ProtectedLayout() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14' }}>
+    <div className="flex min-h-screen bg-bg">
       <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Header user={user} />
-        <main style={{
-          flex: 1,
-          padding: '24px',
-          overflowY: 'auto',
-          background: '#070B14',
-          color: '#E2E8F0',
-        }}>
+      <div className="flex-1 flex flex-col min-w-0">
+        <Topbar user={user} />
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
@@ -102,11 +99,11 @@ export default function App() {
             duration: 3500,
             style: {
               borderRadius: '10px',
-              background: '#0D1117',
-              color: '#E2E8F0',
+              background: 'var(--surface)',
+              color: 'var(--text)',
               fontSize: '13px',
-              border: '1px solid #1E2D40',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow)',
             },
           }} />
           <Routes>
