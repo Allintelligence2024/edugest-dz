@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Policies\ElevePolicy;
+use App\Policies\FacturePolicy;
+use App\Models\Eleve;
+use App\Models\Facture;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -34,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
 
         \App\Models\AuditChain::observe(\App\Observers\AuditChainObserver::class);
 
+        Gate::policy(Eleve::class, ElevePolicy::class);
+        Gate::policy(Facture::class, FacturePolicy::class);
+
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(15, 10)
                 ->by($request->ip())
@@ -46,13 +54,33 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('api', function (Request $request) {
-            $tenantId = $request->header('X-Tenant-ID', $request->ip());
-            return Limit::perMinute(100)
-                ->by($tenantId)
-                ->response(function () {
+            $user = $request->user();
+            $role = $user?->role?->nom;
+
+            $limits = [
+                'super_admin' => 300,
+                'admin'       => 200,
+                'enseignant'  => 120,
+                'comptable'   => 100,
+                'secretariat' => 100,
+                'parent'      => 60,
+            ];
+
+            $baseLimit = $limits[$role] ?? 60;
+
+            $hour = now()->hour;
+            if ($hour >= 22 || $hour < 6) {
+                $baseLimit = (int) ceil($baseLimit * 0.5);
+            }
+
+            $key = $user?->id ?? $request->ip();
+
+            return Limit::perMinute($baseLimit)
+                ->by($key)
+                ->response(function () use ($baseLimit) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Limite de requêtes atteinte (100/min). Contactez le support si ce problème persiste.',
+                        'message' => "Limite de requêtes atteinte ({$baseLimit}/min). Réessayez plus tard.",
                     ], 429);
                 });
         });
