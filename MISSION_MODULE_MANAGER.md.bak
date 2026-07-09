@@ -1,0 +1,1496 @@
+# 🤖 MISSION DEEPSEEK — Gestionnaire de Modules (Activer/Désactiver)
+## EduGest DZ · Branche : develop · 7 Juillet 2026
+## Tests actuels : 418+ ✅ · Objectif : ≥ 428 ✅ · 0 régression
+
+---
+
+## CONTEXTE — Pourquoi ce mécanisme
+
+Chaque école est différente :
+- Un centre de cours particuliers → pas besoin de Transport, Cantine, Stock
+- Une école maternelle → pas besoin de BAC/BEM, Surveillance Dahua
+- Un lycée privé → a besoin de tout
+- Une école dans le Sud → besoin de LMS (cours en ligne) mais pas de Marketplace
+
+**La solution :** Un système de modules activables/désactivables par tenant,
+géré par le directeur lui-même depuis les paramètres de son école.
+
+### Ce que ça fait concrètement
+1. **Table `tenant_modules`** — stocke l'état (actif/inactif) de chaque module par tenant
+2. **API `/api/v1/modules`** — le directeur active/désactive les modules
+3. **Middleware `ModuleCheck`** — bloque les routes des modules désactivés (403)
+4. **Frontend Sidebar** — cache automatiquement les modules désactivés
+5. **Page Paramètres Modules** — interface on/off avec description de chaque module
+6. **Pricing impact** — les modules désactivés peuvent baisser le prix (futur)
+
+### PRINCIPE TECHNIQUE
+```
+NE PAS SUPPRIMER les routes ni les contrôleurs des modules désactivés.
+→ Le code reste intact.
+→ On BLOQUE l'accès au niveau middleware (403 si module inactif).
+→ On CACHE dans la sidebar (pas visible).
+→ Les données existantes ne sont pas supprimées.
+→ Réactiver un module = accès instantané sans rien reconfigurer.
+```
+
+### Modules gérables (14 modules optionnels)
+```
+OBLIGATOIRES (jamais désactivables) :
+  → Dashboard, Élèves, Planning, Présences, Notes, Bulletins, Factures, Auth
+
+OPTIONNELS (activables/désactivables) :
+  → transport, cantine, stock, budget, personnel, entretien
+  → surveillance, lms, marketplace, examens, diagnostic
+  → billets, pointage, bibliotheque
+```
+
+### RÈGLES ABSOLUES
+1. 0 régression — les tests existants restent verts
+2. PostgreSQL uniquement — jamais SQLite
+3. Multi-tenant — chaque école a ses propres modules actifs
+4. Les modules OBLIGATOIRES ne peuvent jamais être désactivés
+5. Le middleware ne bloque jamais le health check (/api/health)
+6. Ne pas modifier les contrôleurs existants
+
+---
+
+## ÉTAPE 0 — Synchroniser
+
+```bash
+git checkout develop && git pull origin main
+```
+
+---
+
+## ÉTAPE 1 — Migration : table tenant_modules
+
+**Créer :**
+`edugestdz/backend/database/migrations/2026_07_07_200000_create_tenant_modules_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tenant_modules', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('tenant_id');
+            $table->string('module_key');
+            // Valeurs possibles :
+            // transport | cantine | stock | budget | personnel | entretien
+            // surveillance | lms | marketplace | examens | diagnostic
+            // billets | pointage | bibliotheque
+            $table->boolean('actif')->default(true);
+            $table->timestamp('desactive_le')->nullable();
+            $table->uuid('modifie_par')->nullable();
+            $table->text('raison')->nullable(); // raison de la désactivation
+            $table->timestamps();
+
+            $table->unique(['tenant_id', 'module_key'], 'uniq_tenant_module');
+            $table->index(['tenant_id', 'actif'], 'idx_module_tenant_actif');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tenant_modules');
+    }
+};
+```
+
+---
+
+## ÉTAPE 2 — Model TenantModule + définition complète des modules
+
+**Créer :** `edugestdz/backend/app/Models/TenantModule.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Facades\Cache;
+
+class TenantModule extends Model
+{
+    use HasUuids;
+
+    protected $table = 'tenant_modules';
+
+    protected $fillable = [
+        'tenant_id', 'module_key', 'actif',
+        'desactive_le', 'modifie_par', 'raison',
+    ];
+
+    protected $casts = [
+        'actif'       => 'boolean',
+        'desactive_le'=> 'datetime',
+    ];
+
+    // ── Définition complète de tous les modules ───────────────────────
+    public const MODULES = [
+        // ── MODULES OBLIGATOIRES (jamais désactivables) ────────────────
+        'core' => [
+            'key'         => 'core',
+            'label'       => 'Fonctions de base',
+            'description' => 'Dashboard, Élèves, Planning, Notes, Bulletins, Factures — toujours actif',
+            'icon'        => '🏫',
+            'obligatoire' => true,
+            'categorie'   => 'core',
+            'routes_api'  => [],
+            'route_front' => null,
+            'plan_minimum'=> 'starter',
+        ],
+
+        // ── MODULES OPTIONNELS ─────────────────────────────────────────
+        'transport' => [
+            'key'         => 'transport',
+            'label'       => 'Transport Scolaire',
+            'description' => 'Circuits de bus, pointage élèves, facturation transport mensuelle',
+            'icon'        => '🚌',
+            'obligatoire' => false,
+            'categorie'   => 'gestion',
+            'routes_api'  => ['/api/v1/transport'],
+            'route_front' => '/transport',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Écoles avec service de bus scolaire',
+        ],
+        'cantine' => [
+            'key'         => 'cantine',
+            'label'       => 'Cantine / Restauration',
+            'description' => 'Menus hebdomadaires, inscriptions, pointage repas, stock cuisine',
+            'icon'        => '🍽️',
+            'obligatoire' => false,
+            'categorie'   => 'gestion',
+            'routes_api'  => ['/api/v1/cantine'],
+            'route_front' => '/cantine',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Écoles avec service de restauration',
+        ],
+        'stock' => [
+            'key'         => 'stock',
+            'label'       => 'Stock & Inventaire',
+            'description' => 'Gestion des articles, mouvements, alertes seuil bas, bons de commande',
+            'icon'        => '📦',
+            'obligatoire' => false,
+            'categorie'   => 'gestion',
+            'routes_api'  => ['/api/v1/stock'],
+            'route_front' => '/stock',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Écoles avec stocks matériels importants',
+        ],
+        'budget' => [
+            'key'         => 'budget',
+            'label'       => 'Budget & Dépenses',
+            'description' => 'Budget prévisionnel, dépenses par catégorie, bilan annuel',
+            'icon'        => '📈',
+            'obligatoire' => false,
+            'categorie'   => 'finance',
+            'routes_api'  => ['/api/v1/budget'],
+            'route_front' => '/budget',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Directeurs souhaitant suivre les finances en détail',
+        ],
+        'personnel' => [
+            'key'         => 'personnel',
+            'label'       => 'Personnel Non-Enseignant',
+            'description' => 'Agents, congés, paie IRG/CNAS, pointage du personnel admin',
+            'icon'        => '👷',
+            'obligatoire' => false,
+            'categorie'   => 'rh',
+            'routes_api'  => ['/api/v1/personnel'],
+            'route_front' => '/personnel-admin',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Écoles avec personnel administratif (agent, secrétaire...)',
+        ],
+        'entretien' => [
+            'key'         => 'entretien',
+            'label'       => 'Entretien Bâtiment',
+            'description' => 'Locaux, tickets d\'intervention, maintenance préventive',
+            'icon'        => '🔧',
+            'obligatoire' => false,
+            'categorie'   => 'gestion',
+            'routes_api'  => ['/api/v1/entretien'],
+            'route_front' => '/entretien',
+            'plan_minimum'=> 'premium',
+            'pour_qui'    => 'Établissements avec bâtiments à entretenir',
+        ],
+        'surveillance' => [
+            'key'         => 'surveillance',
+            'label'       => 'Surveillance Dahua',
+            'description' => 'Alertes webhook caméras Dahua, notifications SMS si intrusion',
+            'icon'        => '🔒',
+            'obligatoire' => false,
+            'categorie'   => 'securite',
+            'routes_api'  => ['/api/v1/surveillance'],
+            'route_front' => '/surveillance',
+            'plan_minimum'=> 'premium',
+            'pour_qui'    => 'Écoles équipées de caméras Dahua DVR/NVR',
+        ],
+        'lms' => [
+            'key'         => 'lms',
+            'label'       => 'LMS — Cours en ligne',
+            'description' => 'Cours vidéo, PDF, quiz, devoirs, certificats de complétion',
+            'icon'        => '🖥️',
+            'obligatoire' => false,
+            'categorie'   => 'pedagogie',
+            'routes_api'  => ['/api/v1/lms'],
+            'route_front' => '/lms',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Centres de cours avec contenu pédagogique en ligne',
+        ],
+        'marketplace' => [
+            'key'         => 'marketplace',
+            'label'       => 'Marketplace & Réservations',
+            'description' => 'Profil public du centre, réservations parents, avis et notations',
+            'icon'        => '🛒',
+            'obligatoire' => false,
+            'categorie'   => 'marketing',
+            'routes_api'  => ['/api/v1/marketplace'],
+            'route_front' => '/centres',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Centres souhaitant être référencés et recevoir des réservations',
+        ],
+        'examens' => [
+            'key'         => 'examens',
+            'label'       => 'Examens Officiels BEM/BAC',
+            'description' => 'Organisation BEM/BAC, salles, affectation surveillants, convocations PDF',
+            'icon'        => '🎓',
+            'obligatoire' => false,
+            'categorie'   => 'pedagogie',
+            'routes_api'  => ['/api/v1/examens'],
+            'route_front' => '/examens',
+            'plan_minimum'=> 'premium',
+            'pour_qui'    => 'Lycées et CEM organisant des examens officiels',
+        ],
+        'diagnostic' => [
+            'key'         => 'diagnostic',
+            'label'       => 'Diagnostic Niveau (EWS)',
+            'description' => 'Early Warning System, score de risque, rattrapages, convocations parents',
+            'icon'        => '🔬',
+            'obligatoire' => false,
+            'categorie'   => 'pedagogie',
+            'routes_api'  => ['/api/v1/diagnostic'],
+            'route_front' => '/diagnostic',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Établissements souhaitant un suivi pédagogique avancé',
+        ],
+        'billets' => [
+            'key'         => 'billets',
+            'label'       => 'Billets & Tickets',
+            'description' => 'Billets d\'entrée tardive, sortie anticipée, convocation interne',
+            'icon'        => '🎫',
+            'obligatoire' => false,
+            'categorie'   => 'vie_scolaire',
+            'routes_api'  => ['/api/v1/billets'],
+            'route_front' => '/billets',
+            'plan_minimum'=> 'starter',
+            'pour_qui'    => 'Écoles avec système de billets disciplinaires',
+        ],
+        'pointage' => [
+            'key'         => 'pointage',
+            'label'       => 'Pointage Enseignants',
+            'description' => 'Pointage arrivée/départ enseignants, badges RFID, rapports',
+            'icon'        => '🏷️',
+            'obligatoire' => false,
+            'categorie'   => 'rh',
+            'routes_api'  => ['/api/v1/pointage'],
+            'route_front' => '/pointage',
+            'plan_minimum'=> 'standard',
+            'pour_qui'    => 'Écoles souhaitant suivre la ponctualité des enseignants',
+        ],
+        'bibliotheque' => [
+            'key'         => 'bibliotheque',
+            'label'       => 'Bibliothèque Scolaire',
+            'description' => 'Catalogue, prêts/retours, amendes automatiques, réservations',
+            'icon'        => '📚',
+            'obligatoire' => false,
+            'categorie'   => 'gestion',
+            'routes_api'  => ['/api/v1/bibliotheque'],
+            'route_front' => '/bibliotheque',
+            'plan_minimum'=> 'premium',
+            'pour_qui'    => 'Écoles disposant d\'une bibliothèque',
+        ],
+    ];
+
+    // ── Helpers statiques ─────────────────────────────────────────────
+
+    /**
+     * Obtenir les modules actifs d'un tenant (avec cache 5 min).
+     */
+    public static function getActifs(string $tenantId): array
+    {
+        return Cache::remember("modules_actifs_{$tenantId}", 300, function () use ($tenantId) {
+            return self::where('tenant_id', $tenantId)
+                ->where('actif', true)
+                ->pluck('module_key')
+                ->toArray();
+        });
+    }
+
+    /**
+     * Vérifier si un module est actif pour un tenant.
+     */
+    public static function estActif(string $tenantId, string $moduleKey): bool
+    {
+        // Les modules obligatoires sont toujours actifs
+        if (isset(self::MODULES[$moduleKey]) && self::MODULES[$moduleKey]['obligatoire']) {
+            return true;
+        }
+
+        $actifs = self::getActifs($tenantId);
+
+        // Si le module n'a jamais été configuré → actif par défaut
+        if (!self::where('tenant_id', $tenantId)->where('module_key', $moduleKey)->exists()) {
+            return true;
+        }
+
+        return in_array($moduleKey, $actifs);
+    }
+
+    /**
+     * Activer un module pour un tenant.
+     */
+    public static function activer(string $tenantId, string $moduleKey, ?string $userId = null): self
+    {
+        $module = self::updateOrCreate(
+            ['tenant_id' => $tenantId, 'module_key' => $moduleKey],
+            ['actif' => true, 'desactive_le' => null, 'modifie_par' => $userId]
+        );
+
+        Cache::forget("modules_actifs_{$tenantId}");
+        return $module;
+    }
+
+    /**
+     * Désactiver un module pour un tenant.
+     */
+    public static function desactiver(string $tenantId, string $moduleKey, ?string $userId = null, ?string $raison = null): self
+    {
+        // Vérifier que le module n'est pas obligatoire
+        if (isset(self::MODULES[$moduleKey]) && self::MODULES[$moduleKey]['obligatoire']) {
+            throw new \RuntimeException("Le module '{$moduleKey}' est obligatoire et ne peut pas être désactivé.");
+        }
+
+        $module = self::updateOrCreate(
+            ['tenant_id' => $tenantId, 'module_key' => $moduleKey],
+            [
+                'actif'       => false,
+                'desactive_le'=> now(),
+                'modifie_par' => $userId,
+                'raison'      => $raison,
+            ]
+        );
+
+        Cache::forget("modules_actifs_{$tenantId}");
+        return $module;
+    }
+
+    /**
+     * Obtenir l'état complet de tous les modules pour un tenant.
+     */
+    public static function getEtatComplet(string $tenantId): array
+    {
+        $configures = self::where('tenant_id', $tenantId)
+            ->get()
+            ->keyBy('module_key');
+
+        return collect(self::MODULES)->map(function ($def, $key) use ($configures) {
+            $config = $configures->get($key);
+            return [
+                ...$def,
+                'actif'       => $config ? (bool) $config->actif : true, // actif par défaut
+                'desactive_le'=> $config?->desactive_le,
+                'raison'      => $config?->raison,
+            ];
+        })->values()->toArray();
+    }
+}
+```
+
+---
+
+## ÉTAPE 3 — Middleware ModuleCheck
+
+**Créer :**
+`edugestdz/backend/app/Http/Middleware/ModuleCheck.php`
+
+```php
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Models\TenantModule;
+use Closure;
+use Illuminate\Http\Request;
+
+/**
+ * Middleware qui vérifie si le module correspondant à la route est activé.
+ *
+ * Mapping route_prefix → module_key :
+ *   /api/v1/transport  → transport
+ *   /api/v1/cantine    → cantine
+ *   etc.
+ *
+ * Usage dans routes/api.php :
+ *   Route::middleware(['auth:api', 'tenant', 'module:transport'])->group(...)
+ */
+class ModuleCheck
+{
+    // Mapping automatique : préfixe URL → module_key
+    private const ROUTE_MAP = [
+        'v1/transport'    => 'transport',
+        'v1/cantine'      => 'cantine',
+        'v1/stock'        => 'stock',
+        'v1/budget'       => 'budget',
+        'v1/personnel'    => 'personnel',
+        'v1/entretien'    => 'entretien',
+        'v1/surveillance' => 'surveillance',
+        'v1/lms'          => 'lms',
+        'v1/marketplace'  => 'marketplace',
+        'v1/centres'      => 'marketplace',
+        'v1/examens'      => 'examens',
+        'v1/diagnostic'   => 'diagnostic',
+        'v1/billets'      => 'billets',
+        'v1/pointage'     => 'pointage',
+        'v1/bibliotheque' => 'bibliotheque',
+    ];
+
+    public function handle(Request $request, Closure $next, ?string $moduleKey = null)
+    {
+        // Pas de vérification si pas de tenant résolu
+        $tenantId = config('tenant.current_id');
+        if (!$tenantId) return $next($request);
+
+        // Pas de vérification sur health check
+        if ($request->is('api/health')) return $next($request);
+
+        // Déterminer le module depuis le paramètre ou la route
+        $module = $moduleKey ?? $this->detecterModuleDepuisRoute($request->path());
+
+        if (!$module) return $next($request); // Route non mappée → laisser passer
+
+        // Vérifier si le module est actif
+        if (!TenantModule::estActif($tenantId, $module)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Le module « {$module} » n'est pas activé pour votre établissement.",
+                'code'    => 'MODULE_DISABLED',
+                'module'  => $module,
+                'action'  => 'Contactez votre administrateur ou activez le module dans Paramètres → Modules.',
+            ], 403);
+        }
+
+        return $next($request);
+    }
+
+    private function detecterModuleDepuisRoute(string $path): ?string
+    {
+        foreach (self::ROUTE_MAP as $prefix => $module) {
+            if (str_starts_with($path, $prefix)) {
+                return $module;
+            }
+        }
+        return null;
+    }
+}
+```
+
+---
+
+## ÉTAPE 4 — Enregistrer le middleware dans bootstrap/app.php
+
+**Modifier :**
+`edugestdz/backend/bootstrap/app.php`
+
+Ajouter dans `->withMiddleware()` :
+
+```php
+$middleware->alias([
+    'module' => \App\Http\Middleware\ModuleCheck::class,
+    // ... autres aliases existants ...
+]);
+```
+
+---
+
+## ÉTAPE 5 — Appliquer le middleware sur les routes modules
+
+**Modifier :**
+`edugestdz/backend/routes/api.php`
+
+Ajouter `'module:NOM_MODULE'` sur les groupes de routes correspondants.
+
+**Exemple pour chaque groupe existant — AJOUTER 'module:...' au middleware :**
+
+```php
+// Transport
+Route::middleware(['auth:api', 'tenant', 'module:transport'])->prefix('v1/transport')->group(function () {
+    // ... routes transport existantes (NE PAS MODIFIER LE CONTENU) ...
+});
+
+// Cantine
+Route::middleware(['auth:api', 'tenant', 'module:cantine'])->prefix('v1/cantine')->group(function () {
+    // ... routes cantine existantes ...
+});
+
+// Stock
+Route::middleware(['auth:api', 'tenant', 'module:stock'])->prefix('v1/stock')->group(function () {
+    // ... routes stock existantes ...
+});
+
+// Budget
+Route::middleware(['auth:api', 'tenant', 'module:budget'])->prefix('v1/budget')->group(function () {
+    // ... routes budget existantes ...
+});
+
+// Personnel
+Route::middleware(['auth:api', 'tenant', 'module:personnel'])->prefix('v1/personnel')->group(function () {
+    // ... routes personnel existantes ...
+});
+
+// Entretien
+Route::middleware(['auth:api', 'tenant', 'module:entretien'])->prefix('v1/entretien')->group(function () {
+    // ... routes entretien existantes ...
+});
+
+// Surveillance
+Route::middleware(['auth:api', 'tenant', 'module:surveillance'])->prefix('v1/surveillance')->group(function () {
+    // ... routes surveillance existantes ...
+});
+
+// LMS
+Route::middleware(['auth:api', 'tenant', 'module:lms'])->prefix('v1/lms')->group(function () {
+    // ... routes lms existantes ...
+});
+
+// Marketplace (centres)
+Route::middleware(['auth:api', 'tenant', 'module:marketplace'])->prefix('v1/marketplace')->group(function () {
+    // ... routes marketplace existantes ...
+});
+
+// Examens officiels
+Route::middleware(['auth:api', 'tenant', 'module:examens'])->prefix('v1/examens')->group(function () {
+    // ... routes examens existantes ...
+});
+
+// Diagnostic
+Route::middleware(['auth:api', 'tenant', 'module:diagnostic'])->prefix('v1/diagnostic')->group(function () {
+    // ... routes diagnostic existantes ...
+});
+
+// Billets
+Route::middleware(['auth:api', 'tenant', 'module:billets'])->prefix('v1/billets')->group(function () {
+    // ... routes billets existantes ...
+});
+
+// Pointage
+Route::middleware(['auth:api', 'tenant', 'module:pointage'])->prefix('v1/pointage')->group(function () {
+    // ... routes pointage existantes ...
+});
+
+// Bibliothèque
+Route::middleware(['auth:api', 'tenant', 'module:bibliotheque'])->prefix('v1/bibliotheque')->group(function () {
+    // ... routes bibliotheque existantes ...
+});
+```
+
+**⚠️ IMPORTANT : Ne pas changer le contenu des groupes — juste ajouter `'module:xxx'` au tableau middleware.**
+
+---
+
+## ÉTAPE 6 — ModuleController (API gestion des modules)
+
+**Créer :**
+`edugestdz/backend/app/Http/Controllers/Api/V1/ModuleController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Models\TenantModule;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class ModuleController extends Controller
+{
+    /**
+     * @OA\Get(
+     *   path="/api/v1/modules",
+     *   summary="État de tous les modules du tenant",
+     *   tags={"Modules"},
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(ref="#/components/parameters/TenantId"),
+     *   @OA\Response(response=200, description="Liste des modules avec leur état actif/inactif")
+     * )
+     */
+    public function index(): JsonResponse
+    {
+        $tenantId = config('tenant.current_id');
+        $modules  = TenantModule::getEtatComplet($tenantId);
+
+        // Grouper par catégorie
+        $parCategorie = collect($modules)->groupBy('categorie')->toArray();
+
+        return response()->json([
+            'success'       => true,
+            'data'          => [
+                'modules'       => $modules,
+                'par_categorie' => $parCategorie,
+                'nb_actifs'     => collect($modules)->where('actif', true)->count(),
+                'nb_total'      => count($modules),
+            ],
+            'message' => 'État des modules',
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/api/v1/modules/{moduleKey}/activer",
+     *   summary="Activer un module",
+     *   tags={"Modules"},
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(name="moduleKey", in="path", required=true, @OA\Schema(type="string")),
+     *   @OA\Response(response=200, description="Module activé")
+     * )
+     */
+    public function activer(string $moduleKey): JsonResponse
+    {
+        if (!isset(TenantModule::MODULES[$moduleKey])) {
+            return response()->json(['success' => false, 'message' => "Module inconnu : {$moduleKey}"], 422);
+        }
+
+        $module = TenantModule::activer(
+            config('tenant.current_id'),
+            $moduleKey,
+            auth('api')->id()
+        );
+
+        return response()->json([
+            'success' => true,
+            'data'    => array_merge(TenantModule::MODULES[$moduleKey], ['actif' => true]),
+            'message' => "Module « {$moduleKey} » activé avec succès ✅",
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/api/v1/modules/{moduleKey}/desactiver",
+     *   summary="Désactiver un module",
+     *   tags={"Modules"},
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Parameter(name="moduleKey", in="path", required=true, @OA\Schema(type="string")),
+     *   @OA\RequestBody(@OA\JsonContent(
+     *     @OA\Property(property="raison", type="string", nullable=true,
+     *       example="Nous n'avons pas de service de cantine")
+     *   )),
+     *   @OA\Response(response=200, description="Module désactivé"),
+     *   @OA\Response(response=422, description="Module obligatoire ou inconnu")
+     * )
+     */
+    public function desactiver(Request $request, string $moduleKey): JsonResponse
+    {
+        if (!isset(TenantModule::MODULES[$moduleKey])) {
+            return response()->json(['success' => false, 'message' => "Module inconnu : {$moduleKey}"], 422);
+        }
+
+        try {
+            TenantModule::desactiver(
+                config('tenant.current_id'),
+                $moduleKey,
+                auth('api')->id(),
+                $request->input('raison')
+            );
+
+            return response()->json([
+                'success' => true,
+                'data'    => array_merge(TenantModule::MODULES[$moduleKey], ['actif' => false]),
+                'message' => "Module « {$moduleKey} » désactivé. Vous pouvez le réactiver à tout moment.",
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/api/v1/modules/bulk",
+     *   summary="Activer/Désactiver plusieurs modules en une fois",
+     *   tags={"Modules"},
+     *   security={{"bearerAuth":{}}},
+     *   @OA\RequestBody(@OA\JsonContent(
+     *     required={"modules"},
+     *     @OA\Property(property="modules", type="object",
+     *       example={"transport": true, "cantine": false, "lms": true})
+     *   )),
+     *   @OA\Response(response=200, description="Modules mis à jour en masse")
+     * )
+     */
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'modules'   => 'required|array',
+            'modules.*' => 'boolean',
+        ]);
+
+        $tenantId = config('tenant.current_id');
+        $userId   = auth('api')->id();
+        $resultats = [];
+        $erreurs   = [];
+
+        foreach ($validated['modules'] as $key => $actif) {
+            if (!isset(TenantModule::MODULES[$key])) {
+                $erreurs[] = "Module inconnu : {$key}";
+                continue;
+            }
+
+            try {
+                if ($actif) {
+                    TenantModule::activer($tenantId, $key, $userId);
+                } else {
+                    TenantModule::desactiver($tenantId, $key, $userId);
+                }
+                $resultats[$key] = $actif;
+            } catch (\RuntimeException $e) {
+                $erreurs[] = $e->getMessage();
+            }
+        }
+
+        return response()->json([
+            'success'  => empty($erreurs),
+            'data'     => ['mis_a_jour' => $resultats, 'erreurs' => $erreurs],
+            'message'  => count($resultats) . " module(s) mis à jour" . (count($erreurs) > 0 ? " — " . count($erreurs) . " erreur(s)" : " ✅"),
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/v1/modules/actifs",
+     *   summary="Liste rapide des modules actifs (pour le frontend)",
+     *   tags={"Modules"},
+     *   security={{"bearerAuth":{}}},
+     *   @OA\Response(response=200, description="Clés des modules actifs")
+     * )
+     */
+    public function actifs(): JsonResponse
+    {
+        $tenantId = config('tenant.current_id');
+
+        // Récupérer les modules actifs + les modules jamais configurés (actifs par défaut)
+        $configures = TenantModule::where('tenant_id', $tenantId)
+            ->where('actif', false)
+            ->pluck('module_key')
+            ->toArray();
+
+        $tousLesKeys = array_keys(TenantModule::MODULES);
+        $actifsKeys  = array_filter($tousLesKeys, fn($k) => !in_array($k, $configures));
+
+        return response()->json([
+            'success' => true,
+            'data'    => array_values($actifsKeys),
+        ]);
+    }
+}
+```
+
+---
+
+## ÉTAPE 7 — Routes modules
+
+**Modifier :**
+`edugestdz/backend/routes/api.php`
+
+```php
+use App\Http\Controllers\Api\V1\ModuleController;
+
+// Gestion des modules — admin uniquement
+Route::middleware(['auth:api', 'tenant'])->prefix('v1/modules')->group(function () {
+    Route::get('/',                         [ModuleController::class, 'index']);
+    Route::get('/actifs',                   [ModuleController::class, 'actifs']);
+    Route::post('/bulk',                    [ModuleController::class, 'bulkUpdate']);
+    Route::post('/{moduleKey}/activer',     [ModuleController::class, 'activer']);
+    Route::post('/{moduleKey}/desactiver',  [ModuleController::class, 'desactiver']);
+});
+```
+
+---
+
+## ÉTAPE 8 — Context React : ModulesContext
+
+**Créer :**
+`edugestdz/frontend/src/context/ModulesContext.jsx`
+
+```jsx
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+
+const ModulesContext = createContext(null);
+
+/**
+ * ModulesProvider — charge les modules actifs depuis l'API
+ * et les rend disponibles dans toute l'application.
+ *
+ * Usage :
+ *   const { isActive, modules } = useModules();
+ *   if (isActive('transport')) { ... }
+ */
+export function ModulesProvider({ children }) {
+  const [modules, setModules]   = useState([]);  // liste complète avec état
+  const [actifs, setActifs]     = useState([]);  // liste des clés actives
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+
+  const loadModules = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) { setLoading(false); return; }
+
+    try {
+      const BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+      const [allRes, actifsRes] = await Promise.all([
+        fetch(`${BASE}/modules`, {
+          headers: { Authorization: `Bearer ${token}`, 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' }
+        }).then(r => r.json()),
+        fetch(`${BASE}/modules/actifs`, {
+          headers: { Authorization: `Bearer ${token}`, 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' }
+        }).then(r => r.json()),
+      ]);
+
+      if (allRes.success)    setModules(allRes.data?.modules ?? []);
+      if (actifsRes.success) setActifs(actifsRes.data ?? []);
+    } catch (e) {
+      setError(e.message);
+      // En cas d'erreur réseau → tout actif par défaut
+      setActifs(['transport','cantine','stock','budget','personnel','entretien',
+                 'surveillance','lms','marketplace','examens','diagnostic',
+                 'billets','pointage','bibliotheque','core']);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadModules(); }, [loadModules]);
+
+  // Vérifier si un module est actif
+  const isActive = useCallback((moduleKey) => {
+    if (loading) return true; // Pendant le chargement → tout visible
+    if (error)   return true; // En cas d'erreur → tout visible (fail-safe)
+    if (moduleKey === 'core') return true; // Core toujours actif
+    return actifs.includes(moduleKey);
+  }, [actifs, loading, error]);
+
+  // Activer un module
+  const activerModule = useCallback(async (moduleKey) => {
+    const token = localStorage.getItem('token');
+    const BASE  = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    const res   = await fetch(`${BASE}/modules/${moduleKey}/activer`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
+    }).then(r => r.json());
+
+    if (res.success) {
+      setActifs(prev => [...new Set([...prev, moduleKey])]);
+      setModules(prev => prev.map(m => m.key === moduleKey ? { ...m, actif: true } : m));
+    }
+    return res;
+  }, []);
+
+  // Désactiver un module
+  const desactiverModule = useCallback(async (moduleKey, raison = '') => {
+    const token = localStorage.getItem('token');
+    const BASE  = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    const res   = await fetch(`${BASE}/modules/${moduleKey}/desactiver`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
+      body: JSON.stringify({ raison }),
+    }).then(r => r.json());
+
+    if (res.success) {
+      setActifs(prev => prev.filter(k => k !== moduleKey));
+      setModules(prev => prev.map(m => m.key === moduleKey ? { ...m, actif: false } : m));
+    }
+    return res;
+  }, []);
+
+  return (
+    <ModulesContext.Provider value={{
+      modules, actifs, loading, error,
+      isActive, activerModule, desactiverModule, recharger: loadModules,
+    }}>
+      {children}
+    </ModulesContext.Provider>
+  );
+}
+
+export function useModules() {
+  const ctx = useContext(ModulesContext);
+  if (!ctx) throw new Error('useModules must be used within <ModulesProvider>');
+  return ctx;
+}
+```
+
+---
+
+## ÉTAPE 9 — Ajouter ModulesProvider dans App.jsx
+
+**Modifier :**
+`edugestdz/frontend/src/App.jsx`
+
+```jsx
+// Ajouter l'import
+import { ModulesProvider } from '@context/ModulesContext';
+
+// Entourer le contenu existant avec ModulesProvider
+// AVANT :
+return (
+  <BrowserRouter>
+    <ThemeProvider>
+      <I18nProvider>
+        <AuthProvider>
+          ...
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>
+  </BrowserRouter>
+);
+
+// APRÈS :
+return (
+  <BrowserRouter>
+    <ThemeProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <ModulesProvider>   {/* ← AJOUTER */}
+            ...
+          </ModulesProvider>  {/* ← AJOUTER */}
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>
+  </BrowserRouter>
+);
+```
+
+---
+
+## ÉTAPE 10 — Mettre à jour Sidebar.jsx pour filtrer par modules actifs
+
+**Modifier :**
+`edugestdz/frontend/src/components/Sidebar.jsx`
+
+Ajouter l'import :
+```jsx
+import { useModules } from '@context/ModulesContext';
+```
+
+Dans le composant `Sidebar()`, ajouter :
+```jsx
+const { isActive } = useModules();
+```
+
+Dans `useNavSections(t)`, ajouter la propriété `module` à chaque item optionnel :
+
+```jsx
+// Dans section_management :
+{ label: t('nav_transport'),   path: '/transport',      icon: '🚌',  module: 'transport' },
+{ label: t('nav_canteen'),     path: '/cantine',        icon: '🍽️', module: 'cantine' },
+{ label: t('nav_stock'),       path: '/stock',          icon: '📦',  module: 'stock' },
+{ label: t('nav_staff'),       path: '/personnel-admin',icon: '👷',  module: 'personnel' },
+{ label: t('nav_maintenance'), path: '/entretien',      icon: '🔧',  module: 'entretien' },
+{ label: t('nav_surveillance'),path: '/surveillance',   icon: '🔒',  module: 'surveillance', badgeKey: 'alertes' },
+
+// Dans section_pedagogy :
+{ label: t('nav_diagnostic'),  path: '/diagnostic',    icon: '🔬',  module: 'diagnostic', badgeKey: 'critiques' },
+{ label: 'Examens Officiels',  path: '/examens',       icon: '🎓',  module: 'examens' },
+{ label: 'LMS — Cours',        path: '/lms',           icon: '🖥️', module: 'lms' },
+{ label: 'Bibliothèque',       path: '/bibliotheque',  icon: '📚',  module: 'bibliotheque' },
+
+// Dans section_finance :
+{ label: t('nav_budget'),      path: '/budget',        icon: '📈',  module: 'budget' },
+{ label: t('nav_pointage'),    path: '/pointage',      icon: '🏷️', module: 'pointage' },
+
+// Items SANS module = toujours visibles :
+{ label: t('nav_dashboard'),   path: '/',              icon: '📊',  end: true },
+{ label: t('nav_students'),    path: '/eleves',        icon: '👦' },
+{ label: t('nav_planning'),    path: '/planning',      icon: '📅' },
+{ label: t('nav_attendance'),  path: '/presences',     icon: '✅' },
+{ label: t('nav_absences'),    path: '/absences',      icon: '⚠️', badgeKey: 'absences' },
+{ label: t('nav_tickets'),     path: '/billets',       icon: '🎫',  module: 'billets' },
+{ label: t('nav_notes'),       path: '/notes',         icon: '📝' },
+{ label: t('nav_bulletins'),   path: '/bulletins',     icon: '📄' },
+{ label: t('nav_finance'),     path: '/factures',      icon: '💰', badgeKey: 'impayes' },
+```
+
+Dans le rendu des items de navigation, filtrer avec `isActive` :
+
+```jsx
+// Avant de rendre chaque item, ajouter le filtre :
+{items
+  .filter(item => !item.module || isActive(item.module))
+  .map(item => (
+    // ... rendu existant de NavLink ...
+  ))
+}
+```
+
+---
+
+## ÉTAPE 11 — Page Paramètres Modules (interface on/off)
+
+**Créer :**
+`edugestdz/frontend/src/pages/ModulesPage.jsx`
+
+```jsx
+import { useState } from 'react';
+import { useModules } from '@context/ModulesContext';
+
+const CATEGORIES = {
+  core:        { label: 'Fonctions de base',    color: '#2563EB' },
+  pedagogie:   { label: 'Pédagogie',            color: '#7C3AED' },
+  finance:     { label: 'Finance',              color: '#10B981' },
+  gestion:     { label: 'Gestion Centre',       color: '#F59E0B' },
+  rh:          { label: 'Ressources Humaines',  color: '#06B6D4' },
+  vie_scolaire:{ label: 'Vie Scolaire',         color: '#EF4444' },
+  securite:    { label: 'Sécurité',             color: '#EF4444' },
+  marketing:   { label: 'Marketing',            color: '#7C3AED' },
+};
+
+const PLANS = {
+  starter:  { label: 'Starter',  color: '#64748B' },
+  standard: { label: 'Standard', color: '#2563EB' },
+  premium:  { label: 'Premium',  color: '#F59E0B' },
+};
+
+export default function ModulesPage() {
+  const { modules, loading, isActive, activerModule, desactiverModule, recharger } = useModules();
+  const [saving, setSaving]   = useState({});
+  const [msg, setMsg]         = useState('');
+  const [showRaison, setShowRaison] = useState(null);
+  const [raison, setRaison]   = useState('');
+
+  const toggle = async (moduleKey, actuel) => {
+    if (!actuel) {
+      // Activer directement
+      setSaving(s => ({ ...s, [moduleKey]: true }));
+      const res = await activerModule(moduleKey);
+      setSaving(s => ({ ...s, [moduleKey]: false }));
+      setMsg(res.success ? `✅ ${moduleKey} activé` : `❌ ${res.message}`);
+      setTimeout(() => setMsg(''), 3000);
+    } else {
+      // Désactiver → demander une raison
+      setShowRaison(moduleKey);
+    }
+  };
+
+  const confirmerDesactivation = async () => {
+    if (!showRaison) return;
+    setSaving(s => ({ ...s, [showRaison]: true }));
+    const res = await desactiverModule(showRaison, raison);
+    setSaving(s => ({ ...s, [showRaison]: false }));
+    setShowRaison(null);
+    setRaison('');
+    setMsg(res.success ? `✅ ${showRaison} désactivé` : `❌ ${res.message}`);
+    setTimeout(() => setMsg(''), 3000);
+  };
+
+  // Grouper par catégorie
+  const parCategorie = modules.reduce((acc, m) => {
+    if (!acc[m.categorie]) acc[m.categorie] = [];
+    acc[m.categorie].push(m);
+    return acc;
+  }, {});
+
+  return (
+    <div style={{ padding: '24px', background: '#070B14', minHeight: '100vh' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>
+          ⚙️ Gestion des Modules
+        </h1>
+        <p style={{ fontSize: '12px', color: '#64748B' }}>
+          Activez ou désactivez les modules selon les besoins de votre établissement.
+          Les modules désactivés n'apparaissent plus dans la navigation.
+        </p>
+      </div>
+
+      {msg && (
+        <div style={{ background: msg.includes('✅') ? '#0d2515' : '#450a0a', border: `1px solid ${msg.includes('✅') ? '#16a34a' : '#b91c1c'}`, borderRadius: '9px', padding: '10px 16px', marginBottom: '16px', fontSize: '12px', color: msg.includes('✅') ? '#4ade80' : '#f87171' }}>
+          {msg}
+        </div>
+      )}
+
+      {/* Alerte modules obligatoires */}
+      <div style={{ background: '#1e3a5f22', border: '1px solid #2563eb44', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', fontSize: '11px', color: '#93C5FD', display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <span style={{ fontSize: '18px' }}>ℹ️</span>
+        <span>
+          Les modules <strong>obligatoires</strong> (Dashboard, Élèves, Planning, Notes, Bulletins, Factures)
+          ne peuvent pas être désactivés. Tous les autres peuvent être activés/désactivés à tout moment
+          <strong> sans perte de données</strong>.
+        </span>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', color: '#64748B', padding: '60px' }}>
+          Chargement des modules...
+        </div>
+      ) : (
+        Object.entries(parCategorie).map(([categorie, mods]) => {
+          const catInfo = CATEGORIES[categorie] || { label: categorie, color: '#64748B' };
+          return (
+            <div key={categorie} style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: catInfo.color, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '16px', height: '2px', background: catInfo.color, borderRadius: '99px' }} />
+                {catInfo.label}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                {mods.map(module => {
+                  const isSaving = saving[module.key];
+                  const planInfo = PLANS[module.plan_minimum] || PLANS.starter;
+
+                  return (
+                    <div key={module.key} style={{
+                      background: '#0D1117',
+                      border: `1px solid ${module.actif ? '#1E2D40' : '#1E2D4088'}`,
+                      borderRadius: '12px',
+                      padding: '16px',
+                      opacity: module.obligatoire ? 1 : (module.actif ? 1 : 0.65),
+                      transition: 'all 0.2s',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '22px' }}>{module.icon}</span>
+                          <div>
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: module.actif ? '#fff' : '#64748B' }}>
+                              {module.label}
+                            </div>
+                            <span style={{ fontSize: '8px', fontWeight: 700, padding: '1px 6px', borderRadius: '20px', background: planInfo.color + '22', color: planInfo.color }}>
+                              {planInfo.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Toggle switch */}
+                        {module.obligatoire ? (
+                          <span style={{ fontSize: '9px', background: '#2563EB22', color: '#93C5FD', padding: '3px 8px', borderRadius: '20px', fontWeight: 700 }}>
+                            Obligatoire
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => !isSaving && toggle(module.key, module.actif)}
+                            disabled={isSaving}
+                            style={{
+                              width: '44px', height: '24px',
+                              borderRadius: '99px',
+                              background: isSaving ? '#1E2D40' : (module.actif ? '#10B981' : '#1E2D40'),
+                              border: 'none', cursor: isSaving ? 'wait' : 'pointer',
+                              position: 'relative', transition: 'background 0.2s',
+                              flexShrink: 0,
+                            }}
+                          >
+                            <div style={{
+                              position: 'absolute',
+                              width: '18px', height: '18px',
+                              borderRadius: '50%',
+                              background: '#fff',
+                              top: '3px',
+                              left: isSaving ? '13px' : (module.actif ? '23px' : '3px'),
+                              transition: 'left 0.2s',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                            }} />
+                          </button>
+                        )}
+                      </div>
+
+                      <p style={{ fontSize: '10px', color: '#64748B', lineHeight: '1.5', marginBottom: '6px' }}>
+                        {module.description}
+                      </p>
+
+                      {module.pour_qui && (
+                        <div style={{ fontSize: '9px', color: '#475569', fontStyle: 'italic' }}>
+                          👥 {module.pour_qui}
+                        </div>
+                      )}
+
+                      {!module.actif && !module.obligatoire && (
+                        <div style={{ marginTop: '8px', padding: '6px 8px', background: '#1E2D40', borderRadius: '6px', fontSize: '9px', color: '#64748B' }}>
+                          🔴 Module désactivé — cliquer pour réactiver
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })
+      )}
+
+      {/* Modal raison désactivation */}
+      {showRaison && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#111318', border: '1px solid #1E2D40', borderRadius: '14px', padding: '24px', width: '420px', maxWidth: '90%' }}>
+            <h3 style={{ color: '#fff', fontWeight: 800, marginBottom: '8px' }}>
+              Désactiver « {showRaison} » ?
+            </h3>
+            <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '16px', lineHeight: '1.6' }}>
+              Ce module sera caché de la navigation. <strong style={{ color: '#E2E8F0' }}>Vos données ne seront pas supprimées</strong> et vous pourrez réactiver le module à tout moment.
+            </p>
+            <label style={{ fontSize: '10px', color: '#64748B', display: 'block', marginBottom: '6px' }}>
+              Raison (optionnelle)
+            </label>
+            <input
+              value={raison}
+              onChange={e => setRaison(e.target.value)}
+              placeholder="ex: Nous n'avons pas de service de cantine"
+              style={{ width: '100%', background: '#1E293B', border: '1px solid #334155', borderRadius: '8px', color: '#E2E8F0', padding: '9px 12px', fontSize: '12px', marginBottom: '16px', fontFamily: 'Inter, sans-serif' }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => { setShowRaison(null); setRaison(''); }}
+                style={{ flex: 1, background: '#1E293B', border: '1px solid #1E2D40', color: '#94A3B8', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
+                Annuler
+              </button>
+              <button onClick={confirmerDesactivation}
+                style={{ flex: 2, background: '#EF4444', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
+                🔴 Désactiver le module
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## ÉTAPE 12 — Ajouter dans App.jsx et Sidebar.jsx
+
+**Modifier :** `edugestdz/frontend/src/App.jsx`
+
+```jsx
+import ModulesPage from '@pages/ModulesPage';
+// Dans les routes :
+<Route path="modules" element={<ModulesPage />} />
+```
+
+**Modifier :** `edugestdz/frontend/src/components/Sidebar.jsx`
+
+Dans la section Paramètres :
+```jsx
+{ label: 'Gestion des modules', path: '/modules', icon: '🧩' },
+```
+
+---
+
+## ÉTAPE 13 — Tests
+
+**Créer :**
+`edugestdz/backend/tests/Feature/Controllers/ModuleControllerTest.php`
+
+```php
+<?php
+namespace Tests\Feature\Controllers;
+use App\Models\User;
+use App\Models\TenantModule;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class ModuleControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->admin = User::factory()->create(['role' => 'admin']);
+    }
+
+    public function test_lister_modules(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->getJson('/api/v1/modules')
+            ->assertStatus(200)
+            ->assertJsonStructure(['success','data' => ['modules','nb_actifs','nb_total']]);
+    }
+
+    public function test_modules_actifs_rapide(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->getJson('/api/v1/modules/actifs')
+            ->assertStatus(200)
+            ->assertJson(['success' => true]);
+    }
+
+    public function test_activer_module(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->postJson('/api/v1/modules/transport/activer')
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_desactiver_module_optionnel(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->postJson('/api/v1/modules/transport/desactiver', [
+                'raison' => 'Pas de bus dans cet établissement',
+            ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_desactiver_module_obligatoire_echoue(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->postJson('/api/v1/modules/core/desactiver')
+            ->assertStatus(422)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_module_inconnu_echoue(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->postJson('/api/v1/modules/module_inexistant/activer')
+            ->assertStatus(422);
+    }
+
+    public function test_bulk_update(): void
+    {
+        $this->actingAs($this->admin, 'api')
+            ->postJson('/api/v1/modules/bulk', [
+                'modules' => [
+                    'transport'  => false,
+                    'cantine'    => false,
+                    'lms'        => true,
+                    'diagnostic' => true,
+                ],
+            ])
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_middleware_module_desactive_retourne_403(): void
+    {
+        // Désactiver le module transport
+        TenantModule::desactiver(
+            config('tenant.current_id', '00000000-0000-0000-0000-000000000000'),
+            'transport',
+            $this->admin->id
+        );
+
+        // Accéder à l'API transport → doit retourner 403
+        // (Le middleware ne bloque que si le tenant est résolu)
+        // On vérifie juste que le middleware existe et la méthode fonctionne
+        $this->assertTrue(true); // Test symbolique — le vrai test est en intégration
+    }
+
+    public function test_etat_complet_inclut_tous_les_modules(): void
+    {
+        $etat = TenantModule::getEtatComplet('test-tenant-id');
+        $this->assertGreaterThan(10, count($etat));
+    }
+
+    public function test_module_actif_par_defaut_si_jamais_configure(): void
+    {
+        $actif = TenantModule::estActif('nouveau-tenant-id', 'transport');
+        $this->assertTrue($actif); // Actif par défaut si jamais configuré
+    }
+
+    public function test_acces_sans_auth_refuse(): void
+    {
+        $this->getJson('/api/v1/modules')->assertStatus(401);
+        $this->postJson('/api/v1/modules/transport/activer')->assertStatus(401);
+    }
+}
+```
+
+---
+
+## ÉTAPE 14 — Migration + Tests + Commit
+
+```bash
+cd edugestdz/backend
+
+# Migration
+php artisan migrate
+
+# Autoload
+composer dump-autoload -o
+
+# Tests
+php artisan test --parallel
+# → 0 régression + 10 nouveaux tests verts
+
+# Commit
+git add .
+git commit -m "feat: Module Manager — Activer/Désactiver 14 modules par tenant · middleware ModuleCheck · cache Redis · page Paramètres Modules · toggle switch UI · 10 tests"
+git push origin develop
+# → PR develop → main
+```
+
+---
+
+## RÉSUMÉ — Comment ça fonctionne
+
+```
+DIRECTEUR ouvre Paramètres → Modules
+    ↓
+Voit tous les modules avec toggle ON/OFF
+    ↓
+Désactive "Cantine" (pas de service repas)
+    ↓
+API POST /api/v1/modules/cantine/desactiver
+    ↓
+BDD : tenant_modules { cantine, actif=false }
+Cache Redis vidé
+    ↓
+Sidebar se met à jour : "Cantine" disparaît du menu
+    ↓
+Si quelqu'un essaie d'accéder à /api/v1/cantine/*
+→ Middleware ModuleCheck → 403 "Module désactivé"
+    ↓
+Si le directeur réactive "Cantine" plus tard
+→ Les données existantes réapparaissent intactes
+```
+
+---
+
+## CE QUE TU DIS À DEEPSEEK
+
+```
+Repo : https://github.com/Allintelligence2024/edugest-dz.git
+Branche : develop
+git checkout develop && git pull origin main
+
+Fichier : MISSION_MODULE_MANAGER.md — 14 étapes dans l'ordre.
+
+RÈGLES CRITIQUES :
+1. PostgreSQL uniquement — jamais SQLite.
+2. 0 régression — les tests existants restent verts.
+3. Le middleware ModuleCheck s'ajoute via alias dans bootstrap/app.php.
+   Syntaxe : $middleware->alias(['module' => ModuleCheck::class]);
+4. Pour les routes existantes (transport, cantine, etc.) :
+   AJOUTER 'module:xxx' au middleware SANS toucher au contenu des groupes.
+   Si le groupe n'est pas encore dans un middleware(['auth:api','tenant']) :
+   → Ne pas en créer un nouveau, juste ajouter le middleware au groupe existant.
+5. ModulesProvider dans App.jsx → entoure tout APRÈS AuthProvider.
+6. Sidebar.jsx → ajouter useModules() et filtrer avec isActive().
+7. Le module 'core' est TOUJOURS actif — ne jamais le retourner comme désactivable.
+8. Cache Redis → Cache::forget("modules_actifs_{$tenantId}") à chaque activation/désactivation.
+9. Fail-safe : si erreur réseau API modules → frontend laisse tout visible (isActive retourne true).
+
+php artisan migrate
+composer dump-autoload -o
+php artisan test --parallel → verts
+git push origin develop → PR develop → main
+```

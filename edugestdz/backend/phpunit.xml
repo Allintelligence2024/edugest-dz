@@ -24,7 +24,7 @@
         <!-- ── Application ─────────────────────────────────────────── -->
         <env name="APP_ENV"                   value="testing"/>
         <env name="APP_DEBUG"                 value="true"/>
-        <env name="APP_KEY"                   value="base64:TEST_KEY_WILL_BE_GENERATED_BY_ARTISAN="/>
+        <env name="APP_KEY"                   value="base64:U/ZYtuLMkSoBx3tJTmCXQJ4a8Ku1sFHneFDXEUdWC+c="/>
         <env name="APP_MAINTENANCE_DRIVER"    value="file"/>
         <env name="BCRYPT_ROUNDS"             value="4"/>
 

@@ -1,0 +1,376 @@
+﻿PHPUnit 11.5.55 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.31
+Configuration: C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\phpunit.xml
+
+...............................................................  63 / 641 (  9%)
+............................................................... 126 / 641 ( 19%)
+...............................EEEEEEE......................... 189 / 641 ( 29%)
+............................................................... 252 / 641 ( 39%)
+............................................................... 315 / 641 ( 49%)
+............................................................... 378 / 641 ( 58%)
+..............E...................F............................ 441 / 641 ( 68%)
+...SS.SSSS..............................................E...... 504 / 641 ( 78%)
+..................S..E............................EE........... 567 / 641 ( 88%)
+..............................E................................ 630 / 641 ( 98%)
+...........                                                     641 / 641 (100%)
+
+Time: 04:01.856, Memory: 110.00 MB
+
+There were 13 errors:
+
+1) Tests\Feature\Api\Marketplace\MarketplaceTest::test_recherche_publique
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+2) Tests\Feature\Api\Marketplace\MarketplaceTest::test_recherche_avec_filtres
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+3) Tests\Feature\Api\Marketplace\MarketplaceTest::test_creer_offre
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+4) Tests\Feature\Api\Marketplace\MarketplaceTest::test_reservation_flow
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+5) Tests\Feature\Api\Marketplace\MarketplaceTest::test_calcul_commission
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+6) Tests\Feature\Api\Marketplace\MarketplaceTest::test_isolation_tenant
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+7) Tests\Feature\Api\Marketplace\MarketplaceTest::test_avis
+BadMethodCallException: Call to undefined method App\Models\TenantModule::factory()
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Api\Marketplace\MarketplaceTest.php:25
+
+8) Tests\Feature\Controllers\IntegrationsTest::test_connecte_status
+RuntimeException: Unsupported cipher or incorrect key length. Supported ciphers are: aes-128-cbc, aes-256-cbc, aes-128-gcm, aes-256-gcm.
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php:62
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\EncryptionServiceProvider.php:32
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:952
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1580
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:239
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:210
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:355
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Controllers\IntegrationsTest.php:125
+
+9) Tests\Feature\ExampleTest::test_the_application_returns_a_successful_response
+RuntimeException: Unsupported cipher or incorrect key length. Supported ciphers are: aes-128-cbc, aes-256-cbc, aes-128-gcm, aes-256-gcm.
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php:62
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\EncryptionServiceProvider.php:32
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:952
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1133
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1043
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:994
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php:258
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php:216
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php:611
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php:368
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\ExampleTest.php:15
+
+10) Tests\Feature\Infrastructure\PostgreSqlPurTest::test_savepoint_postgresql
+Illuminate\Database\QueryException: SQLSTATE[25P01]: No active sql transaction: 7 ERREUR:  SAVEPOINT peut seulement ├¬tre utilis├® dans des blocs de transaction (Connection: pgsql, SQL: SAVEPOINT test_savepoint)
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:825
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:779
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:560
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\DatabaseManager.php:495
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:361
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Infrastructure\PostgreSqlPurTest.php:78
+
+Caused by
+PDOException: SQLSTATE[25P01]: No active sql transaction: 7 ERREUR:  SAVEPOINT peut seulement ├¬tre utilis├® dans des blocs de transaction
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:571
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:812
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:779
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:560
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\DatabaseManager.php:495
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:361
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Infrastructure\PostgreSqlPurTest.php:78
+
+11) Tests\Feature\Security\SecurityNiveau2Test::test_encrypted_cast_chiffre_et_dechiffre
+RuntimeException: Unsupported cipher or incorrect key length. Supported ciphers are: aes-128-cbc, aes-256-cbc, aes-128-gcm, aes-256-gcm.
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php:62
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\EncryptionServiceProvider.php:32
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:952
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1580
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:239
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:210
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:355
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Casts\EncryptedString.php:28
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Security\SecurityNiveau2Test.php:136
+
+12) Tests\Feature\Security\SecurityNiveau2Test::test_valeur_non_chiffree_retournee_brute
+RuntimeException: Unsupported cipher or incorrect key length. Supported ciphers are: aes-128-cbc, aes-256-cbc, aes-128-gcm, aes-256-gcm.
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php:62
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\EncryptionServiceProvider.php:32
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:952
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1580
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:239
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:210
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:355
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Casts\EncryptedString.php:16
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Security\SecurityNiveau2Test.php:146
+
+13) Tests\Feature\Security\SecurityNiveau5Test::test_vault_fallback_bdd_quand_non_config
+RuntimeException: Unsupported cipher or incorrect key length. Supported ciphers are: aes-128-cbc, aes-256-cbc, aes-128-gcm, aes-256-gcm.
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\Encrypter.php:62
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Encryption\EncryptionServiceProvider.php:32
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:952
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:832
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1078
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:763
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Application.php:1058
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Container\Container.php:1580
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:239
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:210
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Support\Facades\Facade.php:355
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Services\VaultSecretsService.php:128
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Services\VaultSecretsService.php:57
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Security\SecurityNiveau5Test.php:172
+
+--
+
+There was 1 failure:
+
+1) Tests\Feature\Controllers\MarketplaceControllerTest::test_profil_public_centre_visible
+Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+PDOException: SQLSTATE[42703]: Undefined column: 7 ERREUR:  la colonne ┬½ approuve ┬╗ n'existe pas
+LINE 1: ...rom "avis_marketplace" where "tenant_id" = $1 and "approuve"...
+                                                             ^ in C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:412
+Stack trace:
+#0 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(412): PDOStatement->execute()
+#1 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(812): Illuminate\Database\Connection->Illuminate\Database\{closure}('select AVG(note...', Array)
+#2 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(779): Illuminate\Database\Connection->runQueryCallback('select AVG(note...', Array, Object(Closure))
+#3 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(398): Illuminate\Database\Connection->run('select AVG(note...', Array, Object(Closure))
+#4 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3106): Illuminate\Database\Connection->select('select AVG(note...', Array, true)
+#5 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3091): Illuminate\Database\Query\Builder->runSelect()
+#6 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3676): Illuminate\Database\Query\Builder->Illuminate\Database\Query\{closure}()
+#7 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3090): Illuminate\Database\Query\Builder->onceWithColumns(Array, Object(Closure))
+#8 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Concerns\BuildsQueries.php(343): Illuminate\Database\Query\Builder->get(Array)
+#9 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Controllers\Api\V1\MarketplaceController.php(129): Illuminate\Database\Query\Builder->first()
+#10 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\ControllerDispatcher.php(47): App\Http\Controllers\Api\V1\MarketplaceController->profil('37c98d4f-dad4-4...')
+#11 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Route.php(266): Illuminate\Routing\ControllerDispatcher->dispatch(Object(Illuminate\Routing\Route), Object(App\Http\Controllers\Api\V1\MarketplaceController), 'profil')
+#12 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Route.php(212): Illuminate\Routing\Route->runController()
+#13 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(808): Illuminate\Routing\Route->run()
+#14 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Routing\Router->Illuminate\Routing\{closure}(Object(Illuminate\Http\Request))
+#15 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\IntelligentRateLimiter.php(13): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#16 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\IntelligentRateLimiter->handle(Object(Illuminate\Http\Request), Object(Closure))
+#17 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\SubstituteBindings.php(51): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#18 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Routing\Middleware\SubstituteBindings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#19 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(161): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#20 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(127): Illuminate\Routing\Middleware\ThrottleRequests->handleRequest(Object(Illuminate\Http\Request), Object(Closure), Array)
+#21 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(89): Illuminate\Routing\Middleware\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\Http\Request), Object(Closure), 'api', Object(Closure))
+#22 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Routing\Middleware\ThrottleRequests->handle(Object(Illuminate\Http\Request), Object(Closure), 'api')
+#23 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\SqlInjectionDetectorMiddleware.php(67): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#24 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\SqlInjectionDetectorMiddleware->handle(Object(Illuminate\Http\Request), Object(Closure))
+#25 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\QueryMonitor.php(28): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#26 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\QueryMonitor->handle(Object(Illuminate\Http\Request), Object(Closure))
+#27 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\SecurityHeaders.php(12): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#28 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\SecurityHeaders->handle(Object(Illuminate\Http\Request), Object(Closure))
+#29 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\LicenceCheck.php(17): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#30 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\LicenceCheck->handle(Object(Illuminate\Http\Request), Object(Closure))
+#31 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\KillSwitchMiddleware.php(33): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#32 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\KillSwitchMiddleware->handle(Object(Illuminate\Http\Request), Object(Closure))
+#33 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#34 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(807): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#35 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(786): Illuminate\Routing\Router->runRouteWithinStack(Object(Illuminate\Routing\Route), Object(Illuminate\Http\Request))
+#36 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(750): Illuminate\Routing\Router->runRoute(Object(Illuminate\Http\Request), Object(Illuminate\Routing\Route))
+#37 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(739): Illuminate\Routing\Router->dispatchToRoute(Object(Illuminate\Http\Request))
+#38 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(201): Illuminate\Routing\Router->dispatch(Object(Illuminate\Http\Request))
+#39 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Foundation\Http\Kernel->Illuminate\Foundation\Http\{closure}(Object(Illuminate\Http\Request))
+#40 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#41 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#42 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle(Object(Illuminate\Http\Request), Object(Closure))
+#43 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#44 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#45 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\TrimStrings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#46 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#47 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\ValidatePostSize->handle(Object(Illuminate\Http\Request), Object(Closure))
+#48 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#49 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle(Object(Illuminate\Http\Request), Object(Closure))
+#50 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\HandleCors.php(62): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#51 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\HandleCors->handle(Object(Illuminate\Http\Request), Object(Closure))
+#52 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\TrustProxies.php(58): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#53 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\TrustProxies->handle(Object(Illuminate\Http\Request), Object(Closure))
+#54 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#55 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle(Object(Illuminate\Http\Request), Object(Closure))
+#56 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#57 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(176): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#58 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(145): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#59 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(607): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#60 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(573): Illuminate\Foundation\Testing\TestCase->call('GET', '/api/v1/marketp...', Array, Array, Array, Array, '[]')
+#61 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(381): Illuminate\Foundation\Testing\TestCase->json('GET', '/api/v1/marketp...', Array, Array, 0)
+#62 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Controllers\MarketplaceControllerTest.php(89): Illuminate\Foundation\Testing\TestCase->getJson('/api/v1/marketp...')
+#63 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(1667): Tests\Feature\Controllers\MarketplaceControllerTest->test_profil_public_centre_visible()
+#64 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(519): PHPUnit\Framework\TestCase->runTest()
+#65 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestRunner\TestRunner.php(87): PHPUnit\Framework\TestCase->runBare()
+#66 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(365): PHPUnit\Framework\TestRunner->run(Object(Tests\Feature\Controllers\MarketplaceControllerTest))
+#67 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestCase->run()
+#68 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#69 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#70 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\TextUI\TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#71 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\TextUI\Application.php(211): PHPUnit\TextUI\TestRunner->run(Object(PHPUnit\TextUI\Configuration\Configuration), Object(PHPUnit\Runner\ResultCache\DefaultResultCache), Object(PHPUnit\Framework\TestSuite))
+#72 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\phpunit(104): PHPUnit\TextUI\Application->run(Array)
+#73 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\bin\phpunit(122): include('C:\\Users\\Youcef...')
+#74 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[42703]: Undefined column: 7 ERREUR:  la colonne ┬½ approuve ┬╗ n'existe pas
+LINE 1: ...rom "avis_marketplace" where "tenant_id" = $1 and "approuve"...
+                                                             ^ (Connection: pgsql, SQL: select AVG(note) as note_moyenne, COUNT(*) as nb_avis from "avis_marketplace" where "tenant_id" = 37c98d4f-dad4-4a23-89b0-2e6a76a97765 and "approuve" = 1 limit 1) in C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php:825
+Stack trace:
+#0 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(779): Illuminate\Database\Connection->runQueryCallback('select AVG(note...', Array, Object(Closure))
+#1 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Connection.php(398): Illuminate\Database\Connection->run('select AVG(note...', Array, Object(Closure))
+#2 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3106): Illuminate\Database\Connection->select('select AVG(note...', Array, true)
+#3 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3091): Illuminate\Database\Query\Builder->runSelect()
+#4 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3676): Illuminate\Database\Query\Builder->Illuminate\Database\Query\{closure}()
+#5 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php(3090): Illuminate\Database\Query\Builder->onceWithColumns(Array, Object(Closure))
+#6 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Database\Concerns\BuildsQueries.php(343): Illuminate\Database\Query\Builder->get(Array)
+#7 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Controllers\Api\V1\MarketplaceController.php(129): Illuminate\Database\Query\Builder->first()
+#8 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\ControllerDispatcher.php(47): App\Http\Controllers\Api\V1\MarketplaceController->profil('37c98d4f-dad4-4...')
+#9 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Route.php(266): Illuminate\Routing\ControllerDispatcher->dispatch(Object(Illuminate\Routing\Route), Object(App\Http\Controllers\Api\V1\MarketplaceController), 'profil')
+#10 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Route.php(212): Illuminate\Routing\Route->runController()
+#11 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(808): Illuminate\Routing\Route->run()
+#12 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Routing\Router->Illuminate\Routing\{closure}(Object(Illuminate\Http\Request))
+#13 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\IntelligentRateLimiter.php(13): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#14 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\IntelligentRateLimiter->handle(Object(Illuminate\Http\Request), Object(Closure))
+#15 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\SubstituteBindings.php(51): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#16 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Routing\Middleware\SubstituteBindings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#17 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(161): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#18 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(127): Illuminate\Routing\Middleware\ThrottleRequests->handleRequest(Object(Illuminate\Http\Request), Object(Closure), Array)
+#19 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Middleware\ThrottleRequests.php(89): Illuminate\Routing\Middleware\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\Http\Request), Object(Closure), 'api', Object(Closure))
+#20 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Routing\Middleware\ThrottleRequests->handle(Object(Illuminate\Http\Request), Object(Closure), 'api')
+#21 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\SqlInjectionDetectorMiddleware.php(67): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#22 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\SqlInjectionDetectorMiddleware->handle(Object(Illuminate\Http\Request), Object(Closure))
+#23 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\QueryMonitor.php(28): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#24 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\QueryMonitor->handle(Object(Illuminate\Http\Request), Object(Closure))
+#25 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\SecurityHeaders.php(12): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#26 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\SecurityHeaders->handle(Object(Illuminate\Http\Request), Object(Closure))
+#27 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\LicenceCheck.php(17): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#28 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\LicenceCheck->handle(Object(Illuminate\Http\Request), Object(Closure))
+#29 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\app\Http\Middleware\KillSwitchMiddleware.php(33): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#30 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): App\Http\Middleware\KillSwitchMiddleware->handle(Object(Illuminate\Http\Request), Object(Closure))
+#31 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#32 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(807): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#33 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(786): Illuminate\Routing\Router->runRouteWithinStack(Object(Illuminate\Routing\Route), Object(Illuminate\Http\Request))
+#34 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(750): Illuminate\Routing\Router->runRoute(Object(Illuminate\Http\Request), Object(Illuminate\Routing\Route))
+#35 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Routing\Router.php(739): Illuminate\Routing\Router->dispatchToRoute(Object(Illuminate\Http\Request))
+#36 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(201): Illuminate\Routing\Router->dispatch(Object(Illuminate\Http\Request))
+#37 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(170): Illuminate\Foundation\Http\Kernel->Illuminate\Foundation\Http\{closure}(Object(Illuminate\Http\Request))
+#38 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#39 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#40 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle(Object(Illuminate\Http\Request), Object(Closure))
+#41 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TransformsRequest.php(21): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#42 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#43 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\TrimStrings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#44 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#45 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\ValidatePostSize->handle(Object(Illuminate\Http\Request), Object(Closure))
+#46 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#47 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle(Object(Illuminate\Http\Request), Object(Closure))
+#48 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\HandleCors.php(62): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#49 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\HandleCors->handle(Object(Illuminate\Http\Request), Object(Closure))
+#50 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Http\Middleware\TrustProxies.php(58): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#51 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Http\Middleware\TrustProxies->handle(Object(Illuminate\Http\Request), Object(Closure))
+#52 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#53 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(209): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle(Object(Illuminate\Http\Request), Object(Closure))
+#54 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Pipeline\Pipeline.php(127): Illuminate\Pipeline\Pipeline->Illuminate\Pipeline\{closure}(Object(Illuminate\Http\Request))
+#55 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(176): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#56 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Http\Kernel.php(145): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#57 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(607): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#58 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(573): Illuminate\Foundation\Testing\TestCase->call('GET', '/api/v1/marketp...', Array, Array, Array, Array, '[]')
+#59 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\MakesHttpRequests.php(381): Illuminate\Foundation\Testing\TestCase->json('GET', '/api/v1/marketp...', Array, Array, 0)
+#60 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Controllers\MarketplaceControllerTest.php(89): Illuminate\Foundation\Testing\TestCase->getJson('/api/v1/marketp...')
+#61 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(1667): Tests\Feature\Controllers\MarketplaceControllerTest->test_profil_public_centre_visible()
+#62 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(519): PHPUnit\Framework\TestCase->runTest()
+#63 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestRunner\TestRunner.php(87): PHPUnit\Framework\TestCase->runBare()
+#64 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestCase.php(365): PHPUnit\Framework\TestRunner->run(Object(Tests\Feature\Controllers\MarketplaceControllerTest))
+#65 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestCase->run()
+#66 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#67 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\Framework\TestSuite.php(369): PHPUnit\Framework\TestSuite->run()
+#68 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\TextUI\TestRunner.php(64): PHPUnit\Framework\TestSuite->run()
+#69 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\src\TextUI\Application.php(211): PHPUnit\TextUI\TestRunner->run(Object(PHPUnit\TextUI\Configuration\Configuration), Object(PHPUnit\Runner\ResultCache\DefaultResultCache), Object(PHPUnit\Framework\TestSuite))
+#70 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\phpunit\phpunit\phpunit(104): PHPUnit\TextUI\Application->run(Array)
+#71 C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\bin\phpunit(122): include('C:\\Users\\Youcef...')
+#72 {main}
+
+----------------------------------------------------------------------------------
+
+SQLSTATE[42703]: Undefined column: 7 ERREUR:  la colonne ┬½ approuve ┬╗ n'existe pas
+LINE 1: ...rom "avis_marketplace" where "tenant_id" = $1 and "approuve"...
+                                                             ^ (Connection: pgsql, SQL: select AVG(note) as note_moyenne, COUNT(*) as nb_avis from "avis_marketplace" where "tenant_id" = 37c98d4f-dad4-4a23-89b0-2e6a76a97765 and "approuve" = 1 limit 1)
+
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:160
+C:\Users\Youcef\Documents\Projet Khellil Youcef\PROJET LOGICIEL GESTION COURS PARTICULIER\edugestdz\backend\tests\Feature\Controllers\MarketplaceControllerTest.php:90
+
+ERRORS!
+Tests: 641, Assertions: 1452, Errors: 13, Failures: 1, PHPUnit Deprecations: 10, Skipped: 7.

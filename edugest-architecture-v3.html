@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>EduGest DZ — Architecture v3 · Plan 100%</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #08090f;
+  color: #e2e8f0;
+  padding: 24px 18px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+.header .sub { font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.header-stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.hstat { background: #111318; border: 1px solid #1e293b; border-radius: 10px; padding: 10px 18px; text-align: center; }
+.hstat .val { font-size: 28px; font-weight: 900; display: block; }
+.hstat .lbl { font-size: 9px; color: #64748b; display: block; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── SECTION TITLE ── */
+.stitle {
+  font-size: 10px; font-weight: 800; color: #60a5fa;
+  text-transform: uppercase; letter-spacing: 2px;
+  border-bottom: 1px solid #1e293b; padding-bottom: 6px;
+  margin: 24px 0 12px;
+}
+
+/* ── GLOBAL PROGRESS ── */
+.gp-bar-wrap { background: #1e293b; border-radius: 999px; height: 18px; overflow: hidden; margin-bottom: 4px; position: relative; }
+.gp-bar { height: 100%; border-radius: 999px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+.gp-bar span { font-size: 10px; font-weight: 800; color: #fff; }
+.gp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.gp-label { font-size: 10px; width: 210px; flex-shrink: 0; color: #94a3b8; }
+
+/* ── MODULE GRID ── */
+.mod-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; }
+
+/* ── MODULE CARD ── */
+.mod { border-radius: 10px; border: 1px solid #1e293b; overflow: hidden; }
+.mod-head { padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
+.mod-icon { font-size: 18px; flex-shrink: 0; }
+.mod-info { flex: 1; min-width: 0; }
+.mod-code { font-size: 8px; font-weight: 700; color: #475569; letter-spacing: 1px; }
+.mod-name { font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mod-body { padding: 8px 12px 10px; }
+.mod-pct { font-size: 20px; font-weight: 900; margin-bottom: 3px; }
+.mini-bar { background: #1e293b; border-radius: 999px; height: 4px; margin-bottom: 7px; overflow: hidden; }
+.mini-fill { height: 100%; border-radius: 999px; }
+.mod-items { font-size: 9px; color: #64748b; line-height: 1.9; }
+.ok   { color: #4ade80; }
+.par  { color: #fb923c; }
+.miss { color: #f87171; }
+.badge-done    { background: #14532d; color: #4ade80; font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
+.badge-partial { background: #422006; color: #fb923c; font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
+.badge-todo    { background: #450a0a; color: #f87171; font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
+.badge-next    { background: #0c2240; color: #60a5fa; font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 20px; flex-shrink: 0; }
+
+/* Header colors */
+.hd { background: #0d2515; border-bottom: 1px solid #1a4d2a; }
+.hd .mod-name { color: #4ade80; }
+.hp { background: #1f1008; border-bottom: 1px solid #7c2d12; }
+.hp .mod-name { color: #fb923c; }
+.ht { background: #1a0808; border-bottom: 1px solid #7f1d1d; }
+.ht .mod-name { color: #f87171; }
+.hn { background: #091220; border-bottom: 1px solid #1e3a5f; }
+.hn .mod-name { color: #60a5fa; }
+
+/* ── STACK ── */
+.stack-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 24px; }
+.stack-box { background: #111318; border: 1px solid #1e293b; border-radius: 8px; padding: 10px; text-align: center; }
+.stack-box .si { font-size: 18px; display: block; margin-bottom: 3px; }
+.stack-box .sn { font-size: 10px; font-weight: 800; display: block; }
+.stack-box .sv { font-size: 9px; color: #64748b; display: block; }
+.stack-box .ss { font-size: 9px; font-weight: 700; margin-top: 5px; display: block; }
+
+/* ── ROADMAP ── */
+.road { width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 24px; }
+.road th { background: #111318; color: #475569; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 10px; text-align: left; }
+.road td { padding: 7px 10px; border-bottom: 1px solid #111318; vertical-align: middle; }
+.road tr:hover td { background: #0f1318; }
+.pill { display: inline-block; font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+.pill-done { background: #14532d; color: #4ade80; }
+.pill-now  { background: #422006; color: #fb923c; }
+.pill-next { background: #0c2240; color: #60a5fa; }
+.pill-mkt  { background: #2e1065; color: #d8b4fe; }
+
+/* ── CHECKLIST ── */
+.checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.cl-box { background: #111318; border: 1px solid #1e293b; border-radius: 10px; padding: 14px 16px; }
+.cl-title { font-size: 10px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.cl-item { display: flex; align-items: flex-start; gap: 8px; font-size: 10px; color: #94a3b8; margin-bottom: 6px; line-height: 1.5; }
+.cl-item .ci { flex-shrink: 0; font-size: 12px; margin-top: -1px; }
+.cl-item.done { color: #4ade80; }
+.cl-item.todo { color: #f87171; }
+.cl-item.now  { color: #fb923c; }
+.cl-item.skip { color: #60a5fa; }
+
+/* ── ALERT BOX ── */
+.alert { border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 11px; line-height: 1.8; }
+.alert-ok { background: #0d2515; border: 1px solid #16a34a; color: #86efac; }
+.alert-warn { background: #1f1008; border: 1px solid #ea580c; color: #fdba74; }
+.alert strong { font-weight: 800; }
+
+/* ── FOOTER SUMMARY ── */
+.summary { background: #0e1117; border: 1px solid #1e293b; border-radius: 10px; padding: 16px 20px; font-size: 11px; line-height: 2; color: #94a3b8; }
+.summary strong { color: #60a5fa; }
+
+/* ── API GRID ── */
+.api-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
+.api-box { background: #111318; border: 1px solid #1e293b; border-radius: 8px; padding: 10px 12px; }
+.api-box .ag-title { font-size: 10px; font-weight: 800; color: #60a5fa; margin-bottom: 6px; }
+.api-box .ag-item { font-size: 9px; color: #64748b; line-height: 1.9; }
+.api-box .ag-item .ok   { color: #4ade80; }
+.api-box .ag-item .miss { color: #f87171; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<div class="header">
+  <h1>🎓 EduGest DZ — Architecture Complète · Plan 100%</h1>
+  <div class="sub">État réel · 2 Juillet 2026 · Backend 313→316 tests · 12 PRs mergés</div>
+  <div class="header-stats">
+    <div class="hstat"><span class="val" style="color:#4ade80;">14</span><span class="lbl">Modules backend ✅</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">316</span><span class="lbl">Tests verts</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">25+</span><span class="lbl">Pages React</span></div>
+    <div class="hstat"><span class="val" style="color:#4ade80;">15</span><span class="lbl">Écrans mobile</span></div>
+    <div class="hstat"><span class="val" style="color:#fb923c;">4</span><span class="lbl">Missions en cours</span></div>
+    <div class="hstat"><span class="val" style="color:#c084fc;">1</span><span class="lbl">Marketplace (après)</span></div>
+    <div class="hstat"><span class="val" style="color:#38bdf8;">~85%</span><span class="lbl">Avancement global</span></div>
+  </div>
+</div>
+
+<!-- ══════════ ALERT STATUS ══════════ -->
+<div class="alert alert-ok">
+  <strong>✅ État au 2 Juillet 2026 :</strong> Backend complet (14 modules), frontend 25+ pages, mobile 15 écrans,
+  infra Docker prod + CD déployé, paiement CIB/Dahabia (Satim sandbox), 316 tests.
+  Missions en cours DeepSeek : Performance N+1 · Swagger/OpenAPI · Tests 80% (priorités 3-4-5).
+</div>
+<div class="alert alert-warn">
+  <strong>⚠️ Reste pour 100% :</strong> Exécuter missions P3/P4/P5 via DeepSeek · Branch protection GitHub (5 min manuel) ·
+  Marketplace (après stabilisation) · VPS prod (quand prêt) · 1 client pilote réel.
+</div>
+
+<!-- ══════════ AVANCEMENT GLOBAL ══════════ -->
+<div class="stitle">Avancement global par domaine</div>
+
+<div class="gp-row">
+  <div class="gp-label">🔐 Auth · RBAC · Multi-tenant</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:95%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>95%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">👦 Inscriptions & Élèves</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📅 Planning & Séances</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:85%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>85%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">💰 Finance · Facturation · CIB</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📚 Pédagogie · Notes · Bulletins</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:85%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>85%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">✅ Absences journalières + Billets</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🏷️ Pointage enseignants + RFID</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:85%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>85%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🚌 Transport Scolaire</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🍽️ Cantine / Restauration</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📦 Stock & Inventaire</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">👷 Personnel non-enseignant + Paie</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📈 Budget Annuel + Dépenses</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:90%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>90%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🔧 Entretien Bâtiment</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:85%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>85%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📱 Application Mobile (React Native)</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:80%;background:linear-gradient(90deg,#0369a1,#38bdf8)"><span>80%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🌐 Frontend React (SPA)</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:85%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>85%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">⚡ Performance · Index · Cache Redis</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:50%;background:linear-gradient(90deg,#b45309,#fb923c)"><span>50%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">📖 Swagger / OpenAPI Documentation</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:10%;background:linear-gradient(90deg,#b45309,#fb923c)"><span>10%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🧪 Couverture tests (cible 80%)</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:50%;background:linear-gradient(90deg,#b45309,#fb923c)"><span>50%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">⚙️ CI/CD · Docker prod · Nginx SSL</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:95%;background:linear-gradient(90deg,#16a34a,#4ade80)"><span>95%</span></div></div>
+</div>
+<div class="gp-row">
+  <div class="gp-label">🛒 Marketplace & Matching IA</div>
+  <div class="gp-bar-wrap" style="flex:1"><div class="gp-bar" style="width:40%;background:linear-gradient(90deg,#4c1d95,#a78bfa)"><span>40%</span></div></div>
+</div>
+
+<!-- ══════════ MODULES GRILLE ══════════ -->
+<div class="stitle">Modules — État détaillé (tous les 14 backend + frontend + mobile)</div>
+<div class="mod-grid">
+
+  <!-- M01 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📋</div>
+      <div class="mod-info"><div class="mod-code">M01</div><div class="mod-name">Inscriptions & Élèves</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ CRUD complet + UUID</span><br>
+        <span class="ok">✓ Parents BelongsToMany ✓</span><br>
+        <span class="ok">✓ Import/Export CSV</span><br>
+        <span class="ok">✓ Photo upload</span><br>
+        <span class="ok">✓ Page React ElevesPage</span><br>
+        <span class="par">⚠ Curriculum DZ — lier niveaux</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M02 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📅</div>
+      <div class="mod-info"><div class="mod-code">M02</div><div class="mod-name">Planning & Séances</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Emploi du temps + conflits</span><br>
+        <span class="ok">✓ Salles & groupes</span><br>
+        <span class="ok">✓ Séances : démarrer/terminer</span><br>
+        <span class="ok">✓ Calendrier scolaire algérien</span><br>
+        <span class="ok">✓ Écran Planning mobile (enseignant)</span><br>
+        <span class="par">⚠ Export iCal/PDF planning</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M03 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">💰</div>
+      <div class="mod-info"><div class="mod-code">M03</div><div class="mod-name">Finance & Paiements</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Factures + cycle relances</span><br>
+        <span class="ok">✓ Paiements cash/chèque/virement</span><br>
+        <span class="ok">✓ CIB/Dahabia via Satim sandbox</span><br>
+        <span class="ok">✓ SMS confirmation paiement</span><br>
+        <span class="ok">✓ Remboursement Satim</span><br>
+        <span class="ok">✓ Dashboard finance React</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M04 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📚</div>
+      <div class="mod-info"><div class="mod-code">M04</div><div class="mod-name">Pédagogie & Bulletins</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Notes + coefficients</span><br>
+        <span class="ok">✓ Moyenne pondérée auto</span><br>
+        <span class="ok">✓ Bulletins PDF trimestriels</span><br>
+        <span class="ok">✓ Curriculum DZ seeder SQL livré</span><br>
+        <span class="ok">✓ Écran Notes mobile (enseignant)</span><br>
+        <span class="par">⚠ Calcul BEM/BAC officiel filière</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M05 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">👨‍🏫</div>
+      <div class="mod-info"><div class="mod-code">M05</div><div class="mod-name">Enseignants & Paie</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dossier + contrats</span><br>
+        <span class="ok">✓ Paie IRG/CNAS auto</span><br>
+        <span class="ok">✓ Bulletin de paie PDF</span><br>
+        <span class="ok">✓ Pointage arrivée/départ</span><br>
+        <span class="ok">✓ Badges RFID assignés</span><br>
+        <span class="ok">✓ Dashboard enseignant mobile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M06 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">💬</div>
+      <div class="mod-info"><div class="mod-code">M06</div><div class="mod-name">Communication</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Push Firebase FCM</span><br>
+        <span class="ok">✓ SMS Twilio (absent auto 8h30)</span><br>
+        <span class="ok">✓ WhatsApp Webhook</span><br>
+        <span class="ok">✓ Chat parent ↔ prof</span><br>
+        <span class="ok">✓ Campagnes ciblées</span><br>
+        <span class="ok">✓ SMS confirmation paiement CIB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M07 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📊</div>
+      <div class="mod-info"><div class="mod-code">M07</div><div class="mod-name">Reporting & Dashboards</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dashboard Admin/Prof/Parent</span><br>
+        <span class="ok">✓ Dashboard Admin mobile</span><br>
+        <span class="ok">✓ Export Excel/PDF</span><br>
+        <span class="ok">✓ Audit logs (spatie/activitylog)</span><br>
+        <span class="ok">✓ KPIs finance (CA, impayés)</span><br>
+        <span class="par">⚠ Rapport absences PDF auto</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M08 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">🔐</div>
+      <div class="mod-info"><div class="mod-code">M08</div><div class="mod-name">Auth · RBAC · Multi-tenant</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">95%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:95%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ JWT + 2FA TOTP</span><br>
+        <span class="ok">✓ RBAC spatie/permission</span><br>
+        <span class="ok">✓ BelongsToTenant fail-safe</span><br>
+        <span class="ok">✓ 16 tests isolation tenant ✅</span><br>
+        <span class="ok">✓ Super-Admin routes</span><br>
+        <span class="par">⚠ Branch protection — 5 min GitHub</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M09 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">🚌</div>
+      <div class="mod-info"><div class="mod-code">M09</div><div class="mod-name">Transport Scolaire</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Circuits & arrêts</span><br>
+        <span class="ok">✓ Inscriptions élèves/circuit</span><br>
+        <span class="ok">✓ Pointage bus aller/retour</span><br>
+        <span class="ok">✓ Facturation mensuelle auto</span><br>
+        <span class="ok">✓ Page React TransportPage</span><br>
+        <span class="ok">✓ 13 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M10 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">🍽️</div>
+      <div class="mod-info"><div class="mod-code">M10</div><div class="mod-name">Cantine / Restauration</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Menus hebdomadaires</span><br>
+        <span class="ok">✓ Inscriptions + régimes/allergies</span><br>
+        <span class="ok">✓ Pointage repas journalier</span><br>
+        <span class="ok">✓ Stock cuisine</span><br>
+        <span class="ok">✓ Page React CantinePage</span><br>
+        <span class="ok">✓ 14 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M11 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📦</div>
+      <div class="mod-info"><div class="mod-code">M11</div><div class="mod-name">Stock & Inventaire</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Articles + mouvements</span><br>
+        <span class="ok">✓ Prêts matériels</span><br>
+        <span class="ok">✓ Bons de commande</span><br>
+        <span class="ok">✓ Alertes seuil bas</span><br>
+        <span class="ok">✓ Rapport inventaire PDF</span><br>
+        <span class="ok">✓ Page React StockInventairePage</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M12 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">👷</div>
+      <div class="mod-info"><div class="mod-code">M12</div><div class="mod-name">Personnel Non-Enseignant</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ CRUD + contrats + dossier</span><br>
+        <span class="ok">✓ Pointage entrée/sortie</span><br>
+        <span class="ok">✓ Congés workflow</span><br>
+        <span class="ok">✓ Paie IRG/CNAS auto</span><br>
+        <span class="ok">✓ Page React PersonnelAdminPage</span><br>
+        <span class="ok">✓ 15 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M13 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📈</div>
+      <div class="mod-info"><div class="mod-code">M13</div><div class="mod-name">Budget Annuel</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Dépenses par catégorie</span><br>
+        <span class="ok">✓ Budget prévisionnel vs réalisé</span><br>
+        <span class="ok">✓ Bilan mensuel/annuel</span><br>
+        <span class="ok">✓ Dashboard recettes + dépenses</span><br>
+        <span class="ok">✓ Page React BudgetPage</span><br>
+        <span class="ok">✓ 13 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- M14 -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">🔧</div>
+      <div class="mod-info"><div class="mod-code">M14</div><div class="mod-name">Entretien Bâtiment</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Locaux + état</span><br>
+        <span class="ok">✓ Interventions + prestataires</span><br>
+        <span class="ok">✓ Entretien préventif planifié</span><br>
+        <span class="ok">✓ Coûts → dépenses M13 auto</span><br>
+        <span class="ok">✓ Page React EntretienPage</span><br>
+        <span class="ok">✓ 11 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Absences & Billets -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">✅</div>
+      <div class="mod-info"><div class="mod-code">ABS</div><div class="mod-name">Absences + Billets</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">90%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:90%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Absences journalières</span><br>
+        <span class="ok">✓ SMS parent auto 8h30</span><br>
+        <span class="ok">✓ Justificatifs + workflow</span><br>
+        <span class="ok">✓ Billets entrée/retard/sortie</span><br>
+        <span class="ok">✓ Page React AbsencesPage + BilletsPage</span><br>
+        <span class="ok">✓ Écran Absences mobile admin</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pointage RFID -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">🏷️</div>
+      <div class="mod-info"><div class="mod-code">P2</div><div class="mod-name">Pointage + Badges RFID</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">85%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:85%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ Pointage arrivée/départ profs</span><br>
+        <span class="ok">✓ Table badges (badge_uid → user)</span><br>
+        <span class="ok">✓ API RFID scan</span><br>
+        <span class="ok">✓ Rapport pointage période</span><br>
+        <span class="ok">✓ Impact paie si absent</span><br>
+        <span class="ok">✓ 10 tests ✅</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">📱</div>
+      <div class="mod-info"><div class="mod-code">MOB</div><div class="mod-name">App Mobile (RN + Expo)</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">80%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:80%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ 8 écrans parent</span><br>
+        <span class="ok">✓ 4 écrans enseignant</span><br>
+        <span class="ok">✓ 3 écrans admin</span><br>
+        <span class="ok">✓ Navigation par rôle JWT</span><br>
+        <span class="ok">✓ React Native 0.76 + Expo 52</span><br>
+        <span class="par">⚠ Push notifications mobile</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance -->
+  <div class="mod">
+    <div class="mod-head hp">
+      <div class="mod-icon">⚡</div>
+      <div class="mod-info"><div class="mod-code">PERF</div><div class="mod-name">Performance N+1 + Cache</div></div>
+      <span class="badge-partial">🔄 EN COURS</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c">50%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:50%;background:#fb923c"></div></div>
+      <div class="mod-items">
+        <span class="par">⚠ Mission prête — DeepSeek executes</span><br>
+        <span class="miss">✗ Index PostgreSQL composites</span><br>
+        <span class="miss">✗ Eager loading EleveController</span><br>
+        <span class="miss">✗ Cache Redis BudgetController</span><br>
+        <span class="miss">✗ EleveObserver cache invalidation</span><br>
+        <span class="miss">✗ QueryMonitor middleware</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Swagger -->
+  <div class="mod">
+    <div class="mod-head hp">
+      <div class="mod-icon">📖</div>
+      <div class="mod-info"><div class="mod-code">API</div><div class="mod-name">Swagger / OpenAPI</div></div>
+      <span class="badge-partial">🔄 EN COURS</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c">10%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:10%;background:#fb923c"></div></div>
+      <div class="mod-items">
+        <span class="par">⚠ Mission prête — DeepSeek executes</span><br>
+        <span class="miss">✗ l5-swagger installé</span><br>
+        <span class="miss">✗ 11 contrôleurs annotés</span><br>
+        <span class="miss">✗ /api/documentation live</span><br>
+        <span class="miss">✗ JWT Bearer documenté</span><br>
+        <span class="miss">✗ 3 tests Swagger</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tests 80% -->
+  <div class="mod">
+    <div class="mod-head hp">
+      <div class="mod-icon">🧪</div>
+      <div class="mod-info"><div class="mod-code">TST</div><div class="mod-name">Couverture Tests 80%</div></div>
+      <span class="badge-partial">🔄 EN COURS</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#fb923c">50%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:50%;background:#fb923c"></div></div>
+      <div class="mod-items">
+        <span class="par">⚠ Mission prête — DeepSeek executes</span><br>
+        <span class="miss">✗ Unit PaieService / BulletinService</span><br>
+        <span class="miss">✗ Feature Cantine / Stock / Budget</span><br>
+        <span class="miss">✗ Edge cases 401/403/422</span><br>
+        <span class="miss">✗ 316 → ≥380 tests</span><br>
+        <span class="miss">✗ Couverture ≥ 80%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marketplace -->
+  <div class="mod">
+    <div class="mod-head hn">
+      <div class="mod-icon">🛒</div>
+      <div class="mod-info"><div class="mod-code">MKT</div><div class="mod-name">Marketplace & Matching IA</div></div>
+      <span class="badge-next">⏸ APRÈS</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#60a5fa">40%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:40%;background:#60a5fa"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ OffrePublique + Avis/Notation</span><br>
+        <span class="ok">✓ MatchingService (score algo)</span><br>
+        <span class="miss">✗ Réservations + paiement ligne</span><br>
+        <span class="miss">✗ Interface publique (sans auth)</span><br>
+        <span class="miss">✗ Nécessite 50+ centres actifs</span><br>
+        <span class="miss">✗ Priorité 7 — après 100% logiciel</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Infra -->
+  <div class="mod">
+    <div class="mod-head hd">
+      <div class="mod-icon">⚙️</div>
+      <div class="mod-info"><div class="mod-code">OPS</div><div class="mod-name">CI/CD · Docker · SSL</div></div>
+      <span class="badge-done">✅ DONE</span>
+    </div>
+    <div class="mod-body">
+      <div class="mod-pct" style="color:#4ade80">95%</div>
+      <div class="mini-bar"><div class="mini-fill" style="width:95%;background:#4ade80"></div></div>
+      <div class="mod-items">
+        <span class="ok">✓ CI GitHub Actions (58 runs)</span><br>
+        <span class="ok">✓ CD SSH deploy → main</span><br>
+        <span class="ok">✓ Docker Compose prod + dev</span><br>
+        <span class="ok">✓ Nginx SSL (Certbot)</span><br>
+        <span class="ok">✓ deploy.sh + server-setup.sh</span><br>
+        <span class="par">⚠ Branch protection — 5 min GitHub</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ STACK TECHNIQUE ══════════ -->
+<div class="stitle">Stack technique</div>
+<div class="stack-grid">
+  <div class="stack-box">
+    <span class="si">🐘</span>
+    <span class="sn">Laravel 11</span>
+    <span class="sv">PHP 8.2 · API REST</span>
+    <span class="ss" style="color:#4ade80">✅ Production</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">🐘</span>
+    <span class="sn">PostgreSQL 16</span>
+    <span class="sv">UUID · JSONB · ACID</span>
+    <span class="ss" style="color:#4ade80">✅ Production</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">🔴</span>
+    <span class="sn">Redis 7</span>
+    <span class="sv">Cache · Queue · Sessions</span>
+    <span class="ss" style="color:#4ade80">✅ Production</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">🔍</span>
+    <span class="sn">Meilisearch v1.8</span>
+    <span class="sv">Fulltext DZ (AR + FR)</span>
+    <span class="ss" style="color:#4ade80">✅ Configuré</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">⚛️</span>
+    <span class="sn">React 18 + Vite</span>
+    <span class="sv">SPA · 25+ pages</span>
+    <span class="ss" style="color:#4ade80">✅ Production</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">📱</span>
+    <span class="sn">React Native 0.76</span>
+    <span class="sv">Expo 52 · 15 écrans</span>
+    <span class="ss" style="color:#4ade80">✅ Développement</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">🐳</span>
+    <span class="sn">Docker Compose</span>
+    <span class="sv">9 services · dev + prod</span>
+    <span class="ss" style="color:#4ade80">✅ Production</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">💳</span>
+    <span class="sn">Satim (CIB/Dahabia)</span>
+    <span class="sv">Paiement bancaire DZ</span>
+    <span class="ss" style="color:#fb923c">⚠ Sandbox actif</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">📨</span>
+    <span class="sn">Twilio SMS</span>
+    <span class="sv">Absences + Paiements</span>
+    <span class="ss" style="color:#4ade80">✅ Intégré</span>
+  </div>
+  <div class="stack-box">
+    <span class="si">🔔</span>
+    <span class="sn">Firebase FCM</span>
+    <span class="sv">Push notifications</span>
+    <span class="ss" style="color:#4ade80">✅ Intégré</span>
+  </div>
+</div>
+
+<!-- ══════════ CHECKLIST 100% ══════════ -->
+<div class="stitle">Checklist pour atteindre 100%</div>
+<div class="checklist">
+
+  <div class="cl-box">
+    <div class="cl-title">✅ Déjà fait (backend)</div>
+    <div class="cl-item done"><span class="ci">✅</span>14 modules backend complets</div>
+    <div class="cl-item done"><span class="ci">✅</span>313→316 tests verts sur main</div>
+    <div class="cl-item done"><span class="ci">✅</span>Multi-tenant + 16 tests isolation</div>
+    <div class="cl-item done"><span class="ci">✅</span>Satim CIB/Dahabia (sandbox)</div>
+    <div class="cl-item done"><span class="ci">✅</span>SMS absences auto + WhatsApp</div>
+    <div class="cl-item done"><span class="ci">✅</span>Curriculum DZ seeder (1AP→3AS)</div>
+    <div class="cl-item done"><span class="ci">✅</span>Facturation transport + cantine auto</div>
+    <div class="cl-item done"><span class="ci">✅</span>Paie IRG/CNAS personnel</div>
+    <div class="cl-item done"><span class="ci">✅</span>CI GitHub Actions (58 runs verts)</div>
+    <div class="cl-item done"><span class="ci">✅</span>CD SSH deploy → main</div>
+    <div class="cl-item done"><span class="ci">✅</span>Docker prod + Nginx SSL + deploy.sh</div>
+    <div class="cl-item done"><span class="ci">✅</span>12 PRs mergés sur main</div>
+  </div>
+
+  <div class="cl-box">
+    <div class="cl-title">✅ Déjà fait (frontend + mobile)</div>
+    <div class="cl-item done"><span class="ci">✅</span>25+ pages React (toutes les pages modules)</div>
+    <div class="cl-item done"><span class="ci">✅</span>TransportPage, CantinePage, StockPage</div>
+    <div class="cl-item done"><span class="ci">✅</span>BudgetPage, PersonnelPage, EntretienPage</div>
+    <div class="cl-item done"><span class="ci">✅</span>AbsencesPage, BilletsPage</div>
+    <div class="cl-item done"><span class="ci">✅</span>Sidebar.jsx — tous les modules</div>
+    <div class="cl-item done"><span class="ci">✅</span>8 écrans mobile parent</div>
+    <div class="cl-item done"><span class="ci">✅</span>4 écrans mobile enseignant</div>
+    <div class="cl-item done"><span class="ci">✅</span>3 écrans mobile admin</div>
+    <div class="cl-item done"><span class="ci">✅</span>Navigation par rôle JWT (mobile)</div>
+    <div class="cl-item done"><span class="ci">✅</span>App.jsx — toutes les routes</div>
+    <div class="cl-item done"><span class="ci">✅</span>Dashboard finance + paiement CIB React</div>
+  </div>
+
+  <div class="cl-box">
+    <div class="cl-title">🔄 Missions DeepSeek en cours (P3→P5)</div>
+    <div class="cl-item now"><span class="ci">🔄</span><strong>P3 — Performance N+1</strong><br>
+    Index PostgreSQL + eager loading + cache Redis + EleveObserver + QueryMonitor</div>
+    <div class="cl-item now"><span class="ci">🔄</span><strong>P4 — Swagger / OpenAPI</strong><br>
+    l5-swagger + 11 contrôleurs annotés + /api/documentation + 3 tests</div>
+    <div class="cl-item now"><span class="ci">🔄</span><strong>P5 — Tests couverture 80%</strong><br>
+    316 → ≥380 tests · Unit Services · Feature Controllers · Edge cases</div>
+    <div class="cl-item todo"><span class="ci">❌</span><strong>Branch protection GitHub</strong><br>
+    Settings → Branches → Add rule: require PR + CI check · 5 minutes manuelles</div>
+    <div class="cl-item todo"><span class="ci">❌</span><strong>VPS production</strong><br>
+    Quand prêt : ./server-setup.sh → docker-compose.prod.yml → SSL auto Certbot</div>
+  </div>
+
+  <div class="cl-box">
+    <div class="cl-title">⏸ Après 100% logiciel</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Marketplace réservations + paiement ligne</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Interface publique marketplace (sans auth)</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Satim prod (après agrément bancaire)</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>App mobile store (Play Store / App Store)</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>1er client pilote réel → feedback</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Calcul BEM/BAC officiel par filière</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Export iCal planning enseignant</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>QR code étiquetage inventaire</div>
+    <div class="cl-item skip"><span class="ci">⏸</span>Rapport mensuel absences PDF auto</div>
+  </div>
+
+</div>
+
+<!-- ══════════ ROADMAP TABLE ══════════ -->
+<div class="stitle">Roadmap — Ce qui reste pour 100%</div>
+<table class="road">
+  <tr>
+    <th>#</th><th>Action</th><th>Qui</th><th>Durée</th><th>Statut</th><th>Déblocage</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>⚡ <strong>Performance N+1</strong> — Index PG + eager loading + cache Redis</td>
+    <td>DeepSeek</td>
+    <td>~30 min exec</td>
+    <td><span class="pill pill-now">🔄 Mission prête</span></td>
+    <td>Temps réponse &lt; 200ms</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>📖 <strong>Swagger/OpenAPI</strong> — /api/documentation live + 3 tests</td>
+    <td>DeepSeek</td>
+    <td>~30 min exec</td>
+    <td><span class="pill pill-now">🔄 Mission prête</span></td>
+    <td>Docs API complète</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>🧪 <strong>Tests 80%</strong> — 316 → ≥380 tests · couverture 80%</td>
+    <td>DeepSeek</td>
+    <td>~45 min exec</td>
+    <td><span class="pill pill-now">🔄 Mission prête</span></td>
+    <td>Qualité prod</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>🔒 <strong>Branch protection</strong> — Settings GitHub → Add rule</td>
+    <td>Toi (5 min)</td>
+    <td>5 minutes</td>
+    <td><span class="pill pill-now">❌ Manuel</span></td>
+    <td>Sécurité main</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>✅ <strong>Vérification finale</strong> — Tests + Swagger UI + perfs</td>
+    <td>Moi (Arena)</td>
+    <td>10 min</td>
+    <td><span class="pill pill-next">⏳ Après P3-P5</span></td>
+    <td>Validation 100%</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>🛒 <strong>Marketplace</strong> — Réservations + paiement + interface pub</td>
+    <td>DeepSeek</td>
+    <td>2-3 semaines</td>
+    <td><span class="pill pill-mkt">⏸ Après logiciel</span></td>
+    <td>50+ centres actifs</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>🖥️ <strong>VPS Production</strong> — server-setup.sh + domaine + SSL</td>
+    <td>Toi</td>
+    <td>1-2h setup</td>
+    <td><span class="pill pill-next">⏳ Quand prêt</span></td>
+    <td>1er client pilote</td>
+  </tr>
+</table>
+
+<!-- ══════════ API COVERAGE ══════════ -->
+<div class="stitle">Couverture API — Endpoints /api/v1/</div>
+<div class="api-grid">
+  <div class="api-box">
+    <div class="ag-title">🔐 Auth</div>
+    <div class="ag-item">
+      <span class="ok">✓ POST /auth/login</span><br>
+      <span class="ok">✓ POST /auth/logout</span><br>
+      <span class="ok">✓ POST /auth/refresh</span><br>
+      <span class="ok">✓ GET  /auth/me</span><br>
+      <span class="ok">✓ POST /auth/2fa/enable</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">👦 Élèves</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /eleves (paginé)</span><br>
+      <span class="ok">✓ POST /eleves</span><br>
+      <span class="ok">✓ GET  /eleves/{id}</span><br>
+      <span class="ok">✓ PUT  /eleves/{id}</span><br>
+      <span class="ok">✓ DEL  /eleves/{id}</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">💰 Finance</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /finance/tableau-bord</span><br>
+      <span class="ok">✓ GET  /finance/factures</span><br>
+      <span class="ok">✓ POST /finance/paiements</span><br>
+      <span class="ok">✓ POST /paiements/cib/initier</span><br>
+      <span class="ok">✓ POST /paiements/cib/confirmer</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">🚌 Transport</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /transport/circuits</span><br>
+      <span class="ok">✓ POST /transport/circuits</span><br>
+      <span class="ok">✓ POST /transport/inscriptions</span><br>
+      <span class="ok">✓ POST /transport/pointage</span><br>
+      <span class="ok">✓ GET  /transport/dashboard</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">🍽️ Cantine</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /cantine/menus</span><br>
+      <span class="ok">✓ POST /cantine/menus</span><br>
+      <span class="ok">✓ GET  /cantine/inscriptions</span><br>
+      <span class="ok">✓ POST /cantine/pointage</span><br>
+      <span class="ok">✓ GET  /cantine/dashboard</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">📦 Stock</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /stock/articles</span><br>
+      <span class="ok">✓ POST /stock/articles</span><br>
+      <span class="ok">✓ POST /stock/mouvements</span><br>
+      <span class="ok">✓ GET  /stock/prets</span><br>
+      <span class="ok">✓ GET  /stock/rapport</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">📈 Budget</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /budget/dashboard</span><br>
+      <span class="ok">✓ GET  /budget/depenses</span><br>
+      <span class="ok">✓ POST /budget/depenses</span><br>
+      <span class="ok">✓ GET  /budget/previsionnel</span><br>
+      <span class="ok">✓ GET  /budget/bilan</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">🔧 Entretien</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET  /entretien/locaux</span><br>
+      <span class="ok">✓ POST /entretien/interventions</span><br>
+      <span class="ok">✓ GET  /entretien/interventions</span><br>
+      <span class="ok">✓ POST /entretien/preventif</span><br>
+      <span class="ok">✓ GET  /entretien/dashboard</span>
+    </div>
+  </div>
+  <div class="api-box">
+    <div class="ag-title">👷 Personnel + ✅ Abs + 🏷️ Badges</div>
+    <div class="ag-item">
+      <span class="ok">✓ GET/POST /personnel</span><br>
+      <span class="ok">✓ POST /personnel/{id}/paie</span><br>
+      <span class="ok">✓ GET/POST /absences</span><br>
+      <span class="ok">✓ POST /billets</span><br>
+      <span class="ok">✓ POST /pointage/badges</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SUMMARY ══════════ -->
+<div class="summary">
+  <strong>Résumé honnête · 2 Juillet 2026</strong><br><br>
+  EduGest DZ est à <strong>~85% de complétion</strong>. Le backend est entièrement codé (14 modules, 316 tests, 12 PRs mergés).
+  Le frontend React couvre tous les modules (25+ pages). Le mobile a 15 écrans (parent + enseignant + admin).
+  L'infrastructure de production est prête (Docker, Nginx SSL, CI/CD).<br><br>
+  <strong>Les 15% restants</strong> sont 3 missions DeepSeek déjà préparées (Performance, Swagger, Tests 80%)
+  + 5 minutes de configuration GitHub (branch protection). Une fois ces 4 points exécutés,
+  le logiciel est <strong>techniquement complet à 100%</strong>.<br><br>
+  <strong>Ce qui vient ensuite</strong> : 1 client pilote réel → feedback → corrections → marketplace (priorité 7).
+  Un SaaS n'est jamais "fini" — mais EduGest DZ sera prêt à affronter le marché algérien
+  sans équivalent sur Transport + Cantine + Stock + Badge RFID + CIB dans un seul produit.
+</div>
+
+</body>
+</html>
