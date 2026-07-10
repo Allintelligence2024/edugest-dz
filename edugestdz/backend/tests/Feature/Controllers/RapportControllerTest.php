@@ -26,9 +26,20 @@ class RapportControllerTest extends TestCase
     public function test_peut_generer_rapport_absences_pdf(): void
     {
         $eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
-        AbsenceJournaliere::factory()->count(3)->create([
+        AbsenceJournaliere::factory()->create([
             'tenant_id' => $this->tenant->id,
             'eleve_id' => $eleve->id,
+            'date_absence' => now()->subDays(5)->format('Y-m-d'),
+        ]);
+        AbsenceJournaliere::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'eleve_id' => $eleve->id,
+            'date_absence' => now()->subDays(4)->format('Y-m-d'),
+        ]);
+        AbsenceJournaliere::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'eleve_id' => $eleve->id,
+            'date_absence' => now()->subDays(3)->format('Y-m-d'),
         ]);
 
         $this->withToken($this->token)
@@ -41,14 +52,31 @@ class RapportControllerTest extends TestCase
     {
         $eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        AbsenceJournaliere::factory()->count(3)->create([
+        $dates = [
+            now()->subDays(5)->format('Y-m-d'),
+            now()->subDays(4)->format('Y-m-d'),
+            now()->subDays(3)->format('Y-m-d'),
+        ];
+        foreach ($dates as $date) {
+            AbsenceJournaliere::factory()->create([
+                'tenant_id' => $this->tenant->id,
+                'eleve_id' => $eleve->id,
+                'date_absence' => $date,
+                'statut' => 'non_justifiée',
+            ]);
+        }
+
+        AbsenceJournaliere::factory()->create([
             'tenant_id' => $this->tenant->id,
             'eleve_id' => $eleve->id,
-            'statut' => 'non_justifiée',
+            'date_absence' => now()->subDays(2)->format('Y-m-d'),
+            'statut' => 'justifiée',
         ]);
-        AbsenceJournaliere::factory()->count(2)->justifiee()->create([
+        AbsenceJournaliere::factory()->create([
             'tenant_id' => $this->tenant->id,
             'eleve_id' => $eleve->id,
+            'date_absence' => now()->subDay()->format('Y-m-d'),
+            'statut' => 'justifiée',
         ]);
 
         $this->withToken($this->token)

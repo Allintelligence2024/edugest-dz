@@ -41,7 +41,20 @@ class SecurityNiveau6Test extends TestCase
 
     protected function tearDown(): void
     {
-        Cache::forget('kill_switch:active');
+        try {
+            Cache::forget('kill_switch:active');
+
+            // Nettoyer aussi la BDD (fallback du KillSwitch) — évite pollution parallèle
+            if (\Illuminate\Support\Facades\Schema::hasTable('kill_switch_state')) {
+                DB::table('kill_switch_state')->where('is_active', true)->update([
+                    'is_active' => false,
+                    'deactivated_at' => now(),
+                ]);
+            }
+        } catch (\Throwable) {
+            // Ignorer les erreurs de nettoyage en tearDown (transaction déjà échouée)
+        }
+
         parent::tearDown();
     }
 
