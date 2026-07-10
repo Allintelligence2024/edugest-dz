@@ -694,6 +694,33 @@ use App\Http\Controllers\Api\V1\{
     // ── Google Classroom OAuth Callback (public) ──
     Route::get('google/classroom/callback',  [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'callback']);
 
+    // ── Absences enseignants ──────────────────────────────────────────────
+    Route::prefix('absences-enseignants')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'signaler']);
+        Route::post('/{id}/remplacer',     [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'assigner']);
+    });
+
+    // ── Devoirs ───────────────────────────────────────────────────────────
+    Route::prefix('devoirs')->group(function () {
+        Route::get('/',    [\App\Http\Controllers\Api\V1\DevoirController::class, 'index']);
+        Route::post('/',   [\App\Http\Controllers\Api\V1\DevoirController::class, 'store']);
+    });
+
+    // ── Feedbacks pédagogiques (élève → directeur) ────────────────────────
+    Route::prefix('feedbacks-pedagogiques')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'store']);
+        Route::get('/resume/{ensId}',      [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'resume']);
+    });
+
+    // ── Signalements graves (élève → directeur — confidentiel) ─────────────
+    Route::prefix('signalements-graves')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store']);
+        Route::patch('/{id}/traiter',      [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter']);
+    });
+
     // ══════════════════════════════════════════════════════════════════════
     // SURVEILLANCE DAHUA — Télésurveillance
     // ══════════════════════════════════════════════════════════════════════
