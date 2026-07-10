@@ -16,7 +16,13 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\NotificationInAppService::class);
+        $this->app->singleton(\App\Services\AbsenceEnseignantService::class, function ($app) {
+            return new \App\Services\AbsenceEnseignantService(
+                $app->make(\App\Services\ParentNotificationService::class),
+                $app->make(\App\Services\NotificationInAppService::class),
+            );
+        });
     }
 
     public function boot(): void
