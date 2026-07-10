@@ -26,7 +26,7 @@ class NotificationsEmailTest extends TestCase
             'urlApplication' => 'http://localhost',
         ], fn($m) => $m->to('test@test.com')->subject('Test'));
 
-        Mail::assertSent(\Illuminate\Mail\Mailable::class);
+        Mail::assertSent(\Illuminate\Mail\Message::class);
     }
 
     public function test_template_absence_compilee_sans_erreur(): void
