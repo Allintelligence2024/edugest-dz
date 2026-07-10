@@ -4,7 +4,9 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Classe de base pour tous les tests EduGest DZ.
@@ -47,5 +49,13 @@ abstract class TestCase extends BaseTestCase
 
         // ── Nettoyer le cache KillSwitch (évite pollution parallèle) ──
         Cache::forget('kill_switch:active');
+
+        // ── Nettoyer aussi la BDD KillSwitch (fallback Redis) ────────
+        if (Schema::hasTable('kill_switch_state')) {
+            DB::table('kill_switch_state')->where('is_active', true)->update([
+                'is_active' => false,
+                'deactivated_at' => now(),
+            ]);
+        }
     }
 }
