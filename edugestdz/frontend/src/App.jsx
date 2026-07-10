@@ -45,6 +45,7 @@ import SurveillancePage from '@pages/SurveillancePage';
 import DiagnosticPage from '@pages/DiagnosticPage';
 import ExamensPage from '@pages/ExamensPage';
 import ModulesPage from '@pages/ModulesPage';
+import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -92,6 +93,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ThemeProvider>
+        <OfflineBanner />
         <I18nProvider>
           <AuthProvider>
           <ModulesProvider>
