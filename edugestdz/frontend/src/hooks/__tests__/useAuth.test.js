@@ -7,7 +7,7 @@ describe('useAuth', () => {
 
     expect(() => {
       renderHook(() => useAuth());
-    }).toThrow('useAuth must be used within <AuthProvider>');
+    }).toThrow('useAuth doit être utilisé dans <AuthProvider>');
 
     consoleSpy.mockRestore();
   });

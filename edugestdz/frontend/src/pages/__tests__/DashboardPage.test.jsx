@@ -5,7 +5,7 @@ import { I18nProvider } from '@context/I18nContext';
 import DashboardPage from '@pages/DashboardPage';
 
 vi.mock('@hooks/useAuth', () => ({
-  useAuth: () => ({ isDemoMode: true }),
+  useAuth: () => ({ user: { role: 'admin' }, isAuthenticated: true, isLoading: false }),
 }));
 
 vi.mock('@api/axiosInstance', () => ({
@@ -48,12 +48,6 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Enseignants')).toBeInTheDocument();
     expect(screen.getByText('Groupes')).toBeInTheDocument();
     expect(screen.getByText('Séances cette semaine')).toBeInTheDocument();
-  });
-
-  it('shows demo mode badge', () => {
-    renderDashboard();
-    act(() => { vi.advanceTimersByTime(400); });
-    expect(screen.getByText(/Mode démo/)).toBeInTheDocument();
   });
 
   it('renders seances aujourdhui section', () => {

@@ -1,109 +1,87 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '@api/axiosInstance';
-import { DEMO_MODE as GLOBAL_DEMO } from '@api/axiosInstance';
-
-const DEMO_USER = {
-  id: 1,
-  nom: 'Khellil',
-  prenom: 'Youcef',
-  email: 'admin@edugestdz.local',
-  role: 'admin',
-};
-
-const DEMO_TENANT = {
-  id: 1,
-  nom: 'Centre EduGest — Alger',
-  ville: 'Alger',
-  statut: 'actif',
-};
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api from '@api/client';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [tenant, setTenant] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isDemoMode, setIsDemoMode] = useState(GLOBAL_DEMO);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
-  const activateDemo = useCallback(() => {
-    setUser(DEMO_USER);
-    setTenant(DEMO_TENANT);
-    setIsAuthenticated(true);
-    setIsDemoMode(true);
-    setIsLoading(false);
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) { setIsLoading(false); return; }
+
+    api('/auth/me')
+      .then(data => {
+        const userData = data?.data ?? data?.user ?? null;
+        if (userData) setUser(userData);
+      })
+      .catch(() => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
-  const loadUser = useCallback(async () => {
-    if (GLOBAL_DEMO) {
-      activateDemo();
-      return;
-    }
+  const login = useCallback(async (email, password) => {
+    const data = await api('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
 
+    const token = data?.access_token ?? data?.token;
+    if (!token) throw new Error(data?.message ?? 'Identifiants incorrects');
+
+    localStorage.setItem('access_token', token);
+    const userData = data?.user ?? null;
+    setUser(userData);
+    setSessionExpired(false);
+    return userData;
+  }, []);
+
+  const logout = useCallback(async () => {
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const res = await api.get('/auth/me');
-      const data = res.data || res;
-      setUser(data.user || data);
-      setTenant(res.tenant || null);
-      setIsAuthenticated(true);
-    } catch {
-      console.warn('[EduGest] Backend inaccessible — activation mode démo');
-      activateDemo();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activateDemo]);
-
-  useEffect(() => { loadUser(); }, [loadUser]);
-
-  const login = async (email, password) => {
-    if (GLOBAL_DEMO) {
-      activateDemo();
-      return { user: DEMO_USER, tenant: DEMO_TENANT };
-    }
-
-    const res = await api.post('/auth/login', { email, password });
-    const { access_token, refresh_token, user: u, tenant: t } = res;
-
-    localStorage.setItem('access_token', access_token);
-    if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
-
-    setUser(u);
-    setTenant(t);
-    setIsAuthenticated(true);
-    return { user: u, tenant: t };
-  };
-
-  const logout = async () => {
-    if (!isDemoMode) {
-      try { await api.post('/auth/logout'); } catch { /* ignore */ }
+    if (token) {
+      api('/auth/logout', { method: 'POST' }).catch(() => {});
     }
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
-    setTenant(null);
-    setIsAuthenticated(false);
-    setIsDemoMode(false);
-    window.location.href = '/login';
-  };
+  }, []);
+
+  const onSessionExpired = useCallback(() => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    setUser(null);
+    setSessionExpired(true);
+  }, []);
+
+  const isAuthenticated = !!user;
+  const role = user?.role ?? null;
+
+  const homeRoute = useCallback(() => {
+    switch (role) {
+      case 'admin':      return '/';
+      case 'enseignant': return '/planning';
+      case 'eleve':      return '/devoirs';
+      case 'parent':     return '/';
+      default:           return '/';
+    }
+  }, [role]);
 
   return (
-    <AuthContext.Provider
-      value={{ user, tenant, isLoading, isAuthenticated, isDemoMode, login, logout, loadUser, activateDemo }}
-    >
+    <AuthContext.Provider value={{
+      user, isLoading, isAuthenticated, role, sessionExpired,
+      login, logout, onSessionExpired, homeRoute,
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within <AuthProvider>');
+  if (!ctx) throw new Error('useAuth doit être utilisé dans <AuthProvider>');
   return ctx;
-}
+};
