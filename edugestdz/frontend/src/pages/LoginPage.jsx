@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
+import { api } from '@api/client';
 
 export default function LoginPage() {
   const { login, isAuthenticated, homeRoute, sessionExpired } = useAuth();
@@ -19,9 +20,18 @@ export default function LoginPage() {
     setError(''); setLoading(true);
     try {
       const user = await login(email, password);
-      const dest = user?.role === 'eleve' ? '/devoirs'
-                 : user?.role === 'enseignant' ? '/planning'
-                 : '/';
+
+      let dest = '/';
+      if (user?.role === 'admin') {
+        const onboardingRes = await api('/onboarding').catch(() => null);
+        dest = onboardingRes?.complete === false && onboardingRes?.etape < 5
+          ? '/onboarding'
+          : '/';
+      } else if (user?.role === 'eleve') {
+        dest = '/devoirs';
+      } else if (user?.role === 'enseignant') {
+        dest = '/planning';
+      }
       navigate(dest, { replace: true });
     } catch (err) {
       setError(err.message ?? 'Identifiants incorrects. Réessayez.');

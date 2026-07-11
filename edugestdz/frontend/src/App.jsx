@@ -12,6 +12,7 @@ import Topbar from '@components/layout/Topbar';
 import LoginPage from '@pages/LoginPage';
 import MotDePasseOubliePage from '@pages/MotDePasseOubliePage';
 import AccesRefusePage from '@pages/AccesRefusePage';
+import OnboardingPage from '@pages/OnboardingPage';
 import DashboardPage from '@pages/DashboardPage';
 import PlanningPage from '@pages/PlanningPage';
 import PresencesPage from '@pages/PresencesPage';
@@ -123,6 +124,7 @@ function AppInner() {
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/mot-de-passe-oublie" element={<MotDePasseOubliePage />} />
             <Route path="/acces-refuse" element={<AccesRefusePage />} />
+            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route element={<ProtectedLayout />}>
               <Route index element={<DashboardPage />} />
               <Route path="planning" element={<PlanningPage />} />

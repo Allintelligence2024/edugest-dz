@@ -7,6 +7,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\LmsController;
+use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
@@ -374,7 +375,9 @@ use App\Http\Controllers\Api\V1\{
         // ── Paramètres ──
         Route::prefix('parametres')->group(function () {
             Route::get('/',                      [ParametreController::class, 'index']);
-            Route::put('/',                      [ParametreController::class, 'update']);
+            Route::patch('/',                    [ParametreController::class, 'update']);
+            Route::post('/logo',                 [ParametreController::class, 'uploadLogo']);
+            Route::post('/tester-smtp',          [ParametreController::class, 'testerSmtp']);
             Route::get('wilayas',                [ParametreController::class, 'wilayas']);
             Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
@@ -691,6 +694,16 @@ use App\Http\Controllers\Api\V1\{
         Route::post('/bulk',                    [ModuleController::class, 'bulkUpdate']);
         Route::post('/{moduleKey}/activer',     [ModuleController::class, 'activer']);
         Route::post('/{moduleKey}/desactiver',  [ModuleController::class, 'desactiver']);
+    });
+
+    // ────────────────────────────────────────────
+    // 🎯 ONBOARDING WIZARD (accessible hors modules)
+    // ────────────────────────────────────────────
+    Route::prefix('onboarding')->middleware(['auth:api', 'resolve.tenant'])->group(function () {
+        Route::get('/',                          [OnboardingController::class, 'statut']);
+        Route::post('/avancer',                  [OnboardingController::class, 'avancer']);
+        Route::post('/tester-notification',       [OnboardingController::class, 'testerNotification']);
+        Route::post('/ignorer',                  [OnboardingController::class, 'ignorer']);
     });
 
     // ────────────────────────────────────────────
