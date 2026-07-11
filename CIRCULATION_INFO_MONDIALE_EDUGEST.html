@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Circulation de l'Information : Monde → Notre Vision</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg:     #050912;
+    --s1:     #0A0F1E;
+    --s2:     #0F1729;
+    --s3:     #141F35;
+    --border: #1A2840;
+    --text:   #E2E8F0;
+    --muted:  #64748B;
+    --blue:   #2563EB;
+    --blue2:  #3B82F6;
+    --purple: #7C3AED;
+    --green:  #10B981;
+    --orange: #F59E0B;
+    --red:    #EF4444;
+    --teal:   #06B6D4;
+    --pink:   #EC4899;
+    --gold:   #F59E0B;
+  }
+
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg,#050912 0%,#0a1628 40%,#0d0a1f 100%);
+    border-bottom:1px solid var(--border);
+    padding:56px 40px 48px;
+    position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse 800px 400px at 30% 60%,rgba(37,99,235,.07),transparent 70%),
+                radial-gradient(ellipse 500px 300px at 80% 20%,rgba(124,58,237,.05),transparent 70%);
+  }
+  .hero-inner { position:relative; max-width:1200px; margin:0 auto; }
+  .hero-tag {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(37,99,235,.12); border:1px solid rgba(37,99,235,.3);
+    border-radius:20px; padding:5px 14px;
+    font-size:11px; font-weight:700; color:#93c5fd;
+    text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;
+  }
+  .hero-title {
+    font-size:40px; font-weight:900; line-height:1.1; margin-bottom:14px;
+    background:linear-gradient(135deg,#fff 0%,#93c5fd 55%,#c4b5fd 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero-sub { font-size:15px; color:var(--muted); max-width:750px; }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width:1200px; margin:0 auto; padding:48px 40px; }
+  .section { margin-bottom:64px; }
+
+  /* ── SECTION HEADER ── */
+  .sec-h {
+    display:flex; align-items:center; gap:14px;
+    margin-bottom:28px; padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .sec-icon {
+    width:42px; height:42px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
+  }
+  .sec-title { font-size:20px; font-weight:800; }
+  .sec-sub   { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* ── WORLD MAP CARDS ── */
+  .world-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:32px; }
+
+  .country-card {
+    background:var(--s1); border:1px solid var(--border);
+    border-radius:16px; padding:22px; position:relative; overflow:hidden;
+    transition:border-color .2s, transform .2s;
+  }
+  .country-card:hover { border-color:rgba(37,99,235,.4); transform:translateY(-2px); }
+  .country-card::before {
+    content:''; position:absolute; top:-30px; right:-30px;
+    width:100px; height:100px; border-radius:50%; opacity:.04;
+  }
+  .cc-blue   { border-top:3px solid var(--blue);  } .cc-blue::before   { background:var(--blue); }
+  .cc-green  { border-top:3px solid var(--green); } .cc-green::before  { background:var(--green); }
+  .cc-orange { border-top:3px solid var(--orange);} .cc-orange::before { background:var(--orange); }
+  .cc-purple { border-top:3px solid var(--purple);} .cc-purple::before { background:var(--purple); }
+  .cc-teal   { border-top:3px solid var(--teal);  } .cc-teal::before   { background:var(--teal); }
+  .cc-red    { border-top:3px solid var(--red);   } .cc-red::before    { background:var(--red); }
+
+  .cc-flag   { font-size:28px; margin-bottom:10px; display:block; }
+  .cc-country{ font-size:13px; font-weight:800; color:var(--text); margin-bottom:4px; }
+  .cc-tool   { font-size:11px; font-weight:700; color:var(--blue2); margin-bottom:10px; }
+  .cc-list   { list-style:none; }
+  .cc-list li {
+    font-size:11px; color:var(--muted); padding:3px 0;
+    display:flex; align-items:flex-start; gap:6px;
+  }
+  .cc-list li::before { content:'→'; color:var(--blue2); font-weight:700; flex-shrink:0; margin-top:1px; }
+  .cc-lesson {
+    margin-top:12px; padding:10px; border-radius:8px;
+    background:rgba(37,99,235,.06); border:1px solid rgba(37,99,235,.2);
+    font-size:10px; color:#93c5fd; font-weight:600;
+  }
+  .cc-lesson-g { background:rgba(16,185,129,.06); border-color:rgba(16,185,129,.2); color:var(--green); }
+  .cc-lesson-o { background:rgba(245,158,11,.06); border-color:rgba(245,158,11,.2); color:var(--orange); }
+  .cc-lesson-p { background:rgba(124,58,237,.06); border-color:rgba(124,58,237,.2); color:#c4b5fd; }
+  .cc-lesson-r { background:rgba(239,68,68,.06); border-color:rgba(239,68,68,.2); color:var(--red); }
+  .cc-lesson-t { background:rgba(6,182,212,.06); border-color:rgba(6,182,212,.2); color:var(--teal); }
+
+  /* ── FLUX PRINCIPAL (diagramme central) ── */
+  .flux-container {
+    background:var(--s1); border:1px solid var(--border);
+    border-radius:20px; padding:36px; position:relative;
+  }
+  .flux-title {
+    text-align:center; font-size:16px; font-weight:800; color:var(--text);
+    margin-bottom:32px; padding-bottom:16px; border-bottom:1px solid var(--border);
+  }
+
+  /* Acteurs */
+  .actors-row {
+    display:flex; justify-content:space-between; gap:12px;
+    margin-bottom:24px; position:relative;
+  }
+  .actors-row::after {
+    content:''; position:absolute; bottom:-12px; left:5%; right:5%; height:1px;
+    background:linear-gradient(90deg,transparent,var(--border),var(--border),transparent);
+  }
+
+  .actor {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    padding:16px 8px; border-radius:14px; cursor:pointer;
+    border:1px solid var(--border); transition:all .2s; text-align:center;
+  }
+  .actor:hover { transform:scale(1.03); }
+  .actor.a-blue   { background:rgba(37,99,235,.08);  border-color:rgba(37,99,235,.3);  }
+  .actor.a-green  { background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.3); }
+  .actor.a-orange { background:rgba(245,158,11,.08); border-color:rgba(245,158,11,.3); }
+  .actor.a-purple { background:rgba(124,58,237,.08); border-color:rgba(124,58,237,.3); }
+  .actor.a-red    { background:rgba(239,68,68,.08);  border-color:rgba(239,68,68,.3);  }
+  .actor.a-teal   { background:rgba(6,182,212,.08);  border-color:rgba(6,182,212,.3);  }
+
+  .actor-icon { font-size:28px; margin-bottom:8px; }
+  .actor-name { font-size:12px; font-weight:700; color:var(--text); }
+  .actor-role { font-size:10px; color:var(--muted); margin-top:2px; }
+
+  /* Canaux de flux */
+  .channels { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:32px; }
+  .channel-card {
+    background:var(--s2); border:1px solid var(--border);
+    border-radius:12px; padding:16px;
+  }
+  .ch-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .ch-from { font-size:11px; font-weight:700; }
+  .ch-arrow { color:var(--muted); font-size:14px; }
+  .ch-to   { font-size:11px; font-weight:700; }
+  .ch-messages { display:flex; flex-direction:column; gap:6px; }
+  .ch-msg {
+    display:flex; align-items:flex-start; gap:8px;
+    padding:7px 9px; border-radius:8px; font-size:10px;
+  }
+  .msg-blue   { background:rgba(37,99,235,.08);  color:#93c5fd; }
+  .msg-green  { background:rgba(16,185,129,.08); color:var(--green); }
+  .msg-orange { background:rgba(245,158,11,.08); color:var(--orange); }
+  .msg-red    { background:rgba(239,68,68,.08);  color:var(--red); }
+  .msg-purple { background:rgba(124,58,237,.08); color:#c4b5fd; }
+  .msg-teal   { background:rgba(6,182,212,.08);  color:var(--teal); }
+  .msg-icon   { flex-shrink:0; font-size:12px; }
+  .msg-text   { flex:1; font-weight:500; line-height:1.4; }
+  .msg-badge  { flex-shrink:0; font-size:9px; font-weight:700; padding:2px 6px; border-radius:10px; }
+  .badge-auto { background:rgba(16,185,129,.15); color:var(--green); }
+  .badge-man  { background:rgba(245,158,11,.15); color:var(--orange); }
+  .badge-alrt { background:rgba(239,68,68,.15);  color:var(--red); }
+
+  /* ── INNOVATION CARDS ── */
+  .innov-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .innov-card {
+    background:var(--s1); border:1px solid var(--border);
+    border-radius:14px; padding:22px;
+  }
+  .innov-tag {
+    display:inline-block; font-size:9px; font-weight:700; padding:3px 10px;
+    border-radius:12px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .it-nouveau  { background:rgba(16,185,129,.12); color:var(--green);  border:1px solid rgba(16,185,129,.3); }
+  .it-adapte   { background:rgba(37,99,235,.12);  color:#93c5fd;       border:1px solid rgba(37,99,235,.3);  }
+  .it-algerien { background:rgba(245,158,11,.12); color:var(--orange); border:1px solid rgba(245,158,11,.3); }
+  .it-critique { background:rgba(239,68,68,.12);  color:var(--red);    border:1px solid rgba(239,68,68,.3);  }
+
+  .innov-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:6px; }
+  .innov-world { font-size:11px; color:var(--muted); margin-bottom:12px; font-style:italic; }
+  .innov-impl  { font-size:12px; color:var(--text); font-weight:600; margin-bottom:6px; }
+  .innov-list  { list-style:none; }
+  .innov-list li {
+    font-size:11px; color:var(--muted); padding:3px 0;
+    display:flex; gap:6px; align-items:flex-start;
+  }
+  .innov-list li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
+
+  /* ── SIGNALEMENT TABLE ── */
+  .signal-table {
+    width:100%; border-collapse:collapse;
+    background:var(--s1); border-radius:12px; overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .signal-table th {
+    font-size:10px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.8px;
+    padding:12px 16px; text-align:left;
+    background:var(--s2); border-bottom:1px solid var(--border);
+  }
+  .signal-table td {
+    font-size:11px; padding:12px 16px; color:var(--text);
+    border-bottom:1px solid rgba(26,40,64,.5); vertical-align:top;
+  }
+  .signal-table tr:last-child td { border-bottom:none; }
+  .signal-table tr:hover td { background:rgba(37,99,235,.03); }
+
+  /* ── ARCHITECTURE FINAL ── */
+  .arch-final {
+    background:var(--s1); border:1px solid var(--border);
+    border-radius:20px; padding:36px;
+  }
+  .arch-layer {
+    border-radius:12px; padding:20px; margin-bottom:10px;
+  }
+  .al-b { background:rgba(37,99,235,.06); border:1px solid rgba(37,99,235,.2); }
+  .al-g { background:rgba(16,185,129,.06); border:1px solid rgba(16,185,129,.2); }
+  .al-o { background:rgba(245,158,11,.06); border:1px solid rgba(245,158,11,.2); }
+  .al-p { background:rgba(124,58,237,.06); border:1px solid rgba(124,58,237,.2); }
+  .al-r { background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.2); }
+  .al-t { background:rgba(6,182,212,.06); border:1px solid rgba(6,182,212,.2); }
+
+  .al-title {
+    font-size:11px; font-weight:800; text-transform:uppercase;
+    letter-spacing:1.2px; margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .al-b .al-title { color:#93c5fd; }
+  .al-g .al-title { color:var(--green); }
+  .al-o .al-title { color:var(--orange); }
+  .al-p .al-title { color:#c4b5fd; }
+  .al-r .al-title { color:var(--red); }
+  .al-t .al-title { color:var(--teal); }
+
+  .chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .chip {
+    font-size:10px; font-weight:600; padding:5px 10px;
+    border-radius:7px; white-space:nowrap;
+  }
+  .ch-b  { background:rgba(37,99,235,.12); color:#93c5fd; border:1px solid rgba(37,99,235,.2); }
+  .ch-g  { background:rgba(16,185,129,.12); color:var(--green); border:1px solid rgba(16,185,129,.2); }
+  .ch-o  { background:rgba(245,158,11,.12); color:var(--orange); border:1px solid rgba(245,158,11,.2); }
+  .ch-p  { background:rgba(124,58,237,.12); color:#c4b5fd; border:1px solid rgba(124,58,237,.2); }
+  .ch-r  { background:rgba(239,68,68,.12); color:var(--red); border:1px solid rgba(239,68,68,.2); }
+  .ch-t  { background:rgba(6,182,212,.12); color:var(--teal); border:1px solid rgba(6,182,212,.2); }
+  .ch-m  { background:rgba(100,116,139,.12); color:#94a3b8; border:1px solid rgba(100,116,139,.2); }
+
+  .arch-arrow { text-align:center; color:var(--muted); font-size:22px; margin:4px 0; }
+
+  /* Pill */
+  .pill {
+    display:inline-block; font-size:9px; font-weight:700;
+    padding:2px 8px; border-radius:12px;
+  }
+  .p-g  { background:rgba(16,185,129,.12); color:var(--green); }
+  .p-o  { background:rgba(245,158,11,.12); color:var(--orange); }
+  .p-r  { background:rgba(239,68,68,.12);  color:var(--red); }
+  .p-b  { background:rgba(37,99,235,.12);  color:#93c5fd; }
+
+  /* Grid 2 */
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+  /* Verdict */
+  .verdict {
+    background:linear-gradient(135deg,rgba(16,185,129,.06),rgba(37,99,235,.06));
+    border:1px solid rgba(16,185,129,.2); border-radius:18px;
+    padding:40px; text-align:center; position:relative; overflow:hidden;
+  }
+  .verdict::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 0%,rgba(16,185,129,.04),transparent 60%);
+  }
+  .verdict-icon { font-size:44px; margin-bottom:14px; position:relative; }
+  .verdict-title {
+    font-size:26px; font-weight:900; position:relative;
+    background:linear-gradient(135deg,#fff,#6ee7b7,#93c5fd);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:14px;
+  }
+  .verdict-text { font-size:14px; color:var(--muted); max-width:700px; margin:0 auto; position:relative; line-height:1.7; }
+  .verdict-tags { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:24px; position:relative; }
+  .vtag { padding:6px 16px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid; }
+
+  /* Timeline */
+  .timeline { padding:0; }
+  .tl-item { display:flex; gap:20px; padding:16px 0; border-bottom:1px solid var(--border); }
+  .tl-item:last-child { border-bottom:none; }
+  .tl-num {
+    width:30px; height:30px; border-radius:8px; flex-shrink:0;
+    background:var(--blue); color:#fff; font-size:12px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tl-content { flex:1; }
+  .tl-title { font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .tl-desc  { font-size:11px; color:var(--muted); line-height:1.5; }
+  .tl-who   { font-size:10px; color:var(--blue2); margin-top:5px; font-weight:600; }
+  .tl-right { flex-shrink:0; }
+
+  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">🌍 Recherche mondiale · Juillet 2026</div>
+    <h1 class="hero-title">Comment le monde fait circuler<br>l'information dans les écoles</h1>
+    <p class="hero-sub">Analyse de 10 systèmes mondiaux (USA, France, Singapour, Finlande, Corée du Sud, Inde, Maroc, EAU, Royaume-Uni, Australie) et comment EduGest DZ peut faire mieux pour l'Algérie.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ══ SECTION 1 : TOUR DU MONDE ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(37,99,235,.12)">🌍</div>
+    <div>
+      <div class="sec-title">Tour du monde — Comment chaque pays gère l'information scolaire</div>
+      <div class="sec-sub">Recherche basée sur PowerSchool, ClassDojo, Seesaw, Pronote (ENT), iSams, SOCS, Classter, et les systèmes nationaux</div>
+    </div>
+  </div>
+
+  <div class="world-grid">
+
+    <!-- USA -->
+    <div class="country-card cc-blue">
+      <span class="cc-flag">🇺🇸</span>
+      <div class="cc-country">États-Unis — Modèle Multi-outils</div>
+      <div class="cc-tool">PowerSchool + ClassDojo + Canvas + Seesaw</div>
+      <ul class="cc-list">
+        <li>SIS central (PowerSchool) : notes, absences, bulletins — accès parent 24h/24</li>
+        <li>ClassDojo : comportement en temps réel — enseignant attribue points positifs/négatifs → parent notifié immédiatement</li>
+        <li>Canvas/Google Classroom : devoirs, cours en ligne, soumission travaux</li>
+        <li>Seesaw : portfolio élève — photos travaux partagées avec famille</li>
+        <li>Remind : SMS groupes sans partager le numéro du prof</li>
+        <li><strong>Problème identifié :</strong> trop d'outils séparés → parents perdus entre 4-5 apps</li>
+      </ul>
+      <div class="cc-lesson">💡 Leçon clé : l'intégration dans UN seul outil = meilleure adoption</div>
+    </div>
+
+    <!-- FRANCE -->
+    <div class="country-card cc-orange">
+      <span class="cc-flag">🇫🇷</span>
+      <div class="cc-country">France — ENT National (Pronote)</div>
+      <div class="cc-tool">ENT Régional + Pronote + EduConnect</div>
+      <ul class="cc-list">
+        <li>ENT (Espace Numérique de Travail) : portail unique national financé par l'État</li>
+        <li>Pronote : notes, absences, cahier de textes, vie scolaire, messagerie — rôles séparés parents/élèves</li>
+        <li>EduConnect : authentification unique nationale (FranceConnect)</li>
+        <li><strong>Innovation 2025 :</strong> ENT déconnecté de 20h à 7h + week-end (droit à la déconnexion élèves)</li>
+        <li>Messagerie tracée : parent → prof via ENT (pas WhatsApp)</li>
+        <li>Sanctions visibles par parent dans Pronote (retenu, avertissement)</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-o">💡 Leçon clé : plages horaires de notification = équilibre vie privée / suivi scolaire</div>
+    </div>
+
+    <!-- SINGAPOUR -->
+    <div class="country-card cc-green">
+      <span class="cc-flag">🇸🇬</span>
+      <div class="cc-country">Singapour — Système National Centralisé</div>
+      <div class="cc-tool">MOE Student Learning Space (SLS)</div>
+      <ul class="cc-list">
+        <li>SLS : plateforme nationale unique financée par le Ministère de l'Éducation</li>
+        <li>Chaque élève a un compte national dès la primaire (StudentID unifié)</li>
+        <li>Parents Portal : résultats, présences, communication — temps réel</li>
+        <li>Enseignant notifie l'absence à l'admin → système notifie le parent automatiquement</li>
+        <li>Pas de notation comportementale publique — confidentialité stricte</li>
+        <li>IA analyse les patterns d'apprentissage → alerte enseignant si élève décroche</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-g">💡 Leçon clé : 1 identifiant national pour toute la scolarité = traçabilité totale</div>
+    </div>
+
+    <!-- FINLANDE -->
+    <div class="country-card cc-teal">
+      <span class="cc-flag">🇫🇮</span>
+      <div class="cc-country">Finlande — Modèle de Confiance</div>
+      <div class="cc-tool">Wilma + Helmi (plateformes nationales)</div>
+      <ul class="cc-list">
+        <li>Wilma : carnet de communication numérique parent-école — notes, absences, messages</li>
+        <li>Philosophie : moins de notation comportementale, plus de dialogue qualitatif</li>
+        <li>Parent peut justifier une absence en ligne (pas besoin d'appeler)</li>
+        <li>Enseignant peut envoyer une observation positive ou préoccupante → parent reçoit notification</li>
+        <li>Réunion parent-prof : prise de RDV en ligne via Wilma</li>
+        <li>Élève ≥ 15 ans : accès à ses propres données complètes</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-t">💡 Leçon clé : donner à l'élève l'accès à ses données dès un certain âge = responsabilisation</div>
+    </div>
+
+    <!-- CORÉE DU SUD -->
+    <div class="country-card cc-purple">
+      <span class="cc-flag">🇰🇷</span>
+      <div class="cc-country">Corée du Sud — Digital First</div>
+      <div class="cc-tool">NEIS (National Education Information System)</div>
+      <ul class="cc-list">
+        <li>NEIS : système national couvrant 100% des écoles publiques</li>
+        <li>Carte scolaire numérique : identifié sur tous les services</li>
+        <li>Résultats publiés dans les 24h après l'évaluation</li>
+        <li>Application mobile officielle : parent suit en temps réel</li>
+        <li>Prof absent : saisie dans NEIS → remplaçant assigné automatiquement depuis le pool national</li>
+        <li>SMS automatique à tous les parents du groupe si cours annulé ou modifié</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-p">💡 Leçon clé : pool de remplaçants centralisé → zéro cours perdu même sans préavis</div>
+    </div>
+
+    <!-- ROYAUME-UNI -->
+    <div class="country-card cc-red">
+      <span class="cc-flag">🇬🇧</span>
+      <div class="cc-country">Royaume-Uni — Outil Professionnel</div>
+      <div class="cc-tool">iSams + SOCS + ParentPay + Arbor</div>
+      <ul class="cc-list">
+        <li>iSams : SIS complet — données académiques, présences, santé, safeguarding</li>
+        <li>SOCS : activités co-curriculaires, transport, calendrier, streaming événements</li>
+        <li>ParentPay : paiement cantine, sorties — tout en ligne</li>
+        <li>Safeguarding strict : signalement préoccupation bien-être élève → chef d'établissement alerté automatiquement</li>
+        <li>Lesson Cover : prof absent → système cherche remplaçant dans le staff → notification automatique</li>
+        <li>Parents App : notifications push pour chaque changement de planning</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-r">💡 Leçon clé : "Safeguarding" = signalement préoccupations bien-être est LÉGALEMENT obligatoire</div>
+    </div>
+
+    <!-- INDE -->
+    <div class="country-card cc-orange">
+      <span class="cc-flag">🇮🇳</span>
+      <div class="cc-country">Inde — Mobile First (WhatsApp dominant)</div>
+      <div class="cc-tool">DIKSHA + ERP locaux + WhatsApp</div>
+      <ul class="cc-list">
+        <li>DIKSHA : plateforme nationale cours en ligne (100M+ utilisateurs)</li>
+        <li>Réalité terrain : 80% des écoles privées utilisent WhatsApp Groups pour communiquer</li>
+        <li>ERPs locaux : iPrems, Fedena, Extramarks — adaptation au contexte local</li>
+        <li>Devoirs envoyés par WhatsApp/PDF — élèves photographient et renvoient</li>
+        <li>Problème : WhatsApp = pas de traçabilité, perte d'informations, harcèlement possible</li>
+        <li>Trend 2025 : migration vers apps dédiées (LEAD School, Classplus)</li>
+      </ul>
+      <div class="cc-lesson">💡 Leçon clé : contexte similaire à l'Algérie — WhatsApp dominant mais risqué, les apps gagnent du terrain</div>
+    </div>
+
+    <!-- MAROC / MAGHREB -->
+    <div class="country-card cc-green">
+      <span class="cc-flag">🇲🇦</span>
+      <div class="cc-country">Maroc / Maghreb — En transition</div>
+      <div class="cc-tool">MassarPLUS + Taalim.ma + Solutions locales</div>
+      <ul class="cc-list">
+        <li>Massar : système national écoles publiques (notes, absences) — pas toujours accessible parents</li>
+        <li>Secteur privé : logiciels marocains (SchoolFlix, EduMorocco) ou solutions importées</li>
+        <li>Communication : WhatsApp dominant + SMS — pas d'app unifiée</li>
+        <li>Bulletins : encore souvent papier dans le privé</li>
+        <li>Opportunité : marché Maghreb sous-équipé en solutions adaptées</li>
+        <li>Langue : nécessité FR + AR natif (darija utile pour les parents)</li>
+      </ul>
+      <div class="cc-lesson cc-lesson-g">💡 Leçon clé : marché Maghreb vierge de vraies solutions SaaS locales = opportunité EduGest DZ</div>
+    </div>
+
+    <!-- EAU -->
+    <div class="country-card cc-blue">
+      <span class="cc-flag">🇦🇪</span>
+      <div class="cc-country">Émirats Arabes Unis — Premium Digital</div>
+      <div class="cc-tool">Seesaw + iParent + MoE UAE Platform</div>
+      <ul class="cc-list">
+        <li>iParent : app officielle Ministère Éducation EAU — notes, absences, devoirs, paiements</li>
+        <li>Seesaw (lancé en arabe 2026) : portfolios élèves partagés avec famille en arabe natif</li>
+        <li>Écoles privées premium : apps dédiées, communication bilingue AR/EN</li>
+        <li>Safeguarding : signalement obligatoire par loi (similaire UK)</li>
+        <li>Prof absent : notification mobile instantanée aux parents + élèves concernés</li>
+        <li>Paiement frais scolaires : 100% numérique, alertes automatiques impayés</li>
+      </ul>
+      <div class="cc-lesson">💡 Leçon clé : Seesaw a lancé l'arabe en 2026 — preuve que le marché arabe est stratégique</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 2 : FLUX PRINCIPAL EDUGEST DZ ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(16,185,129,.12)">🔄</div>
+    <div>
+      <div class="sec-title">Architecture de circulation de l'information — EduGest DZ</div>
+      <div class="sec-sub">Qui envoie quoi, à qui, par quel canal, à quel moment</div>
+    </div>
+  </div>
+
+  <div class="flux-container">
+    <div class="flux-title">🎓 EduGest DZ — Carte complète des flux d'information</div>
+
+    <!-- Acteurs -->
+    <div class="actors-row">
+      <div class="actor a-blue">
+        <div class="actor-icon">👨‍💼</div>
+        <div class="actor-name">Directeur</div>
+        <div class="actor-role">Décide · Valide · Arbitre</div>
+      </div>
+      <div class="actor a-orange">
+        <div class="actor-icon">👨‍🏫</div>
+        <div class="actor-name">Enseignant</div>
+        <div class="actor-role">Saisit · Enseigne · Signale</div>
+      </div>
+      <div class="actor a-green">
+        <div class="actor-icon">👦</div>
+        <div class="actor-name">Élève</div>
+        <div class="actor-role">Reçoit · Consulte · Réagit</div>
+      </div>
+      <div class="actor a-purple">
+        <div class="actor-icon">👨‍👩‍👧</div>
+        <div class="actor-name">Parent</div>
+        <div class="actor-role">Suit · Paie · Alerte</div>
+      </div>
+      <div class="actor a-teal">
+        <div class="actor-icon">⚙️</div>
+        <div class="actor-name">Système</div>
+        <div class="actor-role">Automatise · Alerte · Stocke</div>
+      </div>
+      <div class="actor a-red">
+        <div class="actor-icon">🏛️</div>
+        <div class="actor-name">Administration</div>
+        <div class="actor-role">Archive · Rapporte · Gère</div>
+      </div>
+    </div>
+
+    <!-- Canaux -->
+    <div class="channels">
+
+      <!-- Enseignant → Élève -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#F59E0B">👨‍🏫 Enseignant</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#10B981">👦 Élève</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">📝</span>
+            <span class="msg-text">Devoir : intitulé + date remise + fichier PDF</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">📅</span>
+            <span class="msg-text">Planning : cours annulé / remplacé demain</span>
+            <span class="msg-badge badge-auto">Auto</span>
+          </div>
+          <div class="ch-msg msg-green">
+            <span class="msg-icon">📊</span>
+            <span class="msg-text">Note publiée avec appréciation qualitative</span>
+            <span class="msg-badge badge-auto">Auto</span>
+          </div>
+          <div class="ch-msg msg-purple">
+            <span class="msg-icon">💬</span>
+            <span class="msg-text">Message privé (ex: "vois-moi après le cours")</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Système → Parent -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#06B6D4">⚙️ Système</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#7C3AED">👨‍👩‍👧 Parent</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-red">
+            <span class="msg-icon">⚠️</span>
+            <span class="msg-text">Absence enfant ce matin → SMS+Push+Email</span>
+            <span class="msg-badge badge-auto">8h30 auto</span>
+          </div>
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">💰</span>
+            <span class="msg-text">Facture impayée J+1, J+3, J+7, J+15</span>
+            <span class="msg-badge badge-auto">Scheduler</span>
+          </div>
+          <div class="ch-msg msg-green">
+            <span class="msg-icon">📄</span>
+            <span class="msg-text">Bulletin T3 disponible → PDF téléchargeable</span>
+            <span class="msg-badge badge-auto">Auto</span>
+          </div>
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">📝</span>
+            <span class="msg-text">Nouvelle note publiée (si < 5/20 → SMS urgent)</span>
+            <span class="msg-badge badge-auto">Auto</span>
+          </div>
+          <div class="ch-msg msg-purple">
+            <span class="msg-icon">🔬</span>
+            <span class="msg-text">Alerte EWS : enfant en difficulté → convocation</span>
+            <span class="msg-badge badge-alrt">Urgent</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enseignant → Directeur -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#F59E0B">👨‍🏫 Enseignant</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#2563EB">👨‍💼 Directeur</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-red">
+            <span class="msg-icon">🚫</span>
+            <span class="msg-text">Signal absence demain (empêchement personnel)</span>
+            <span class="msg-badge badge-alrt">Avant 20h</span>
+          </div>
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">🎓</span>
+            <span class="msg-text">Signalement comportement élève + gravité</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">📋</span>
+            <span class="msg-text">Rapport cours : objectifs atteints / difficultés</span>
+            <span class="msg-badge badge-man">Optionnel</span>
+          </div>
+          <div class="ch-msg msg-purple">
+            <span class="msg-icon">🔒</span>
+            <span class="msg-text">Demande congé / formation / ressource</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent → Directeur -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#7C3AED">👨‍👩‍👧 Parent</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#2563EB">👨‍💼 Directeur</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">✅</span>
+            <span class="msg-text">Justifier une absence de l'enfant en ligne</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">💬</span>
+            <span class="msg-text">Demande RDV directeur (via messagerie)</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+          <div class="ch-msg msg-red">
+            <span class="msg-icon">🚨</span>
+            <span class="msg-text">Signalement grave concernant un enseignant</span>
+            <span class="msg-badge badge-alrt">Confidentiel</span>
+          </div>
+          <div class="ch-msg msg-purple">
+            <span class="msg-icon">💳</span>
+            <span class="msg-text">Paiement facture en ligne (CIB / Dahabia)</span>
+            <span class="msg-badge badge-auto">Satim</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Élève → Système -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#10B981">👦 Élève</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#06B6D4">⚙️ Système</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-green">
+            <span class="msg-icon">📱</span>
+            <span class="msg-text">Consultation : notes, devoirs, planning, bulletins</span>
+            <span class="msg-badge badge-auto">Lecture</span>
+          </div>
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">📚</span>
+            <span class="msg-text">Accès LMS : cours en ligne, quiz, certificats</span>
+            <span class="msg-badge badge-auto">LMS</span>
+          </div>
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">💬</span>
+            <span class="msg-text">Feedback pédagogique (qualité cours, pédagogie)</span>
+            <span class="msg-badge badge-man">Encadré</span>
+          </div>
+          <div class="ch-msg msg-red">
+            <span class="msg-icon">🚨</span>
+            <span class="msg-text">Signalement situation grave → directeur uniquement</span>
+            <span class="msg-badge badge-alrt">Confidentiel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Directeur → Tous -->
+      <div class="channel-card">
+        <div class="ch-header">
+          <span class="ch-from" style="color:#2563EB">👨‍💼 Directeur</span>
+          <span class="ch-arrow">→</span>
+          <span class="ch-to" style="color:#94a3b8">👥 Tous</span>
+        </div>
+        <div class="ch-messages">
+          <div class="ch-msg msg-blue">
+            <span class="msg-icon">📢</span>
+            <span class="msg-text">Annonce école → parents + élèves + profs</span>
+            <span class="msg-badge badge-man">Broadcast</span>
+          </div>
+          <div class="ch-msg msg-green">
+            <span class="msg-icon">🔄</span>
+            <span class="msg-text">Remplaçant assigné → élèves + parents notifiés</span>
+            <span class="msg-badge badge-auto">Auto</span>
+          </div>
+          <div class="ch-msg msg-orange">
+            <span class="msg-icon">📅</span>
+            <span class="msg-text">Convocation parent → push + email + SMS</span>
+            <span class="msg-badge badge-man">Manuel</span>
+          </div>
+          <div class="ch-msg msg-purple">
+            <span class="msg-icon">📊</span>
+            <span class="msg-text">Rapport mensuel analytics → email automatique</span>
+            <span class="msg-badge badge-auto">Scheduler</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 3 : FLUX PROF ABSENT (détaillé) ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(239,68,68,.12)">🚫</div>
+    <div>
+      <div class="sec-title">Flux critique : Prof absent — Comment l'information circule</div>
+      <div class="sec-sub">Du signal d'absence jusqu'aux élèves — étapes, délais, règles métier</div>
+    </div>
+  </div>
+
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:28px;">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-num">1</div>
+        <div class="tl-content">
+          <div class="tl-title">Prof signale son empêchement <span class="pill p-g">Avant 20h la veille</span></div>
+          <div class="tl-desc">Via l'app enseignant → formulaire simple : "Je serai absent demain" + motif optionnel + sélection des séances concernées. Délai limite recommandé : 20h pour que le directeur ait le soir pour agir.</div>
+          <div class="tl-who">📱 Canal : App mobile enseignant → API Laravel → table absences_enseignants</div>
+        </div>
+        <div class="tl-right"><span class="pill p-g">Idéal</span></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-num">2</div>
+        <div class="tl-content">
+          <div class="tl-title">Directeur reçoit l'alerte immédiate</div>
+          <div class="tl-desc">Push Firebase + SMS + email → "Prof X absent demain · 3 séances affectées · 2 groupes". Directeur ouvre l'app et voit la liste des remplaçants disponibles (RemplacementController existant).</div>
+          <div class="tl-who">📱 Canal : ParentNotificationService → Firebase + Twilio</div>
+        </div>
+        <div class="tl-right"><span class="pill p-b">Auto</span></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-num">3</div>
+        <div class="tl-content">
+          <div class="tl-title">Directeur assigne le remplaçant</div>
+          <div class="tl-desc">RemplacementController.php suggère les enseignants disponibles sur ce créneau (même matière ou compatibles). Directeur sélectionne → confirmation en 2 clics. Si aucun remplaçant → marquer séance "suspendue".</div>
+          <div class="tl-who">⚙️ Canal : RemplacementController → DB update séances</div>
+        </div>
+        <div class="tl-right"><span class="pill p-o">Manuel</span></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-num">4</div>
+        <div class="tl-content">
+          <div class="tl-title">Système notifie élèves ET parents automatiquement</div>
+          <div class="tl-desc">"Cours Physique de 10h demain remplacé par Prof Khelil" → push silencieux la nuit si avant 22h, ou push matinal à 7h si signal reçu après 22h. Parents notifiés en même temps.</div>
+          <div class="tl-who">📱 Canal : notifications_inapp + Firebase Push + SMS pour les parents (optional)</div>
+        </div>
+        <div class="tl-right"><span class="pill p-b">Auto</span></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-num">5</div>
+        <div class="tl-content">
+          <div class="tl-title">Si absence non signalée → Pointage 8h détecte <span class="pill p-r">Urgence</span></div>
+          <div class="tl-desc">Si le prof ne signale rien et ne pointe pas à 8h → système déclenche alerte urgence au directeur. Il a 30 min pour trouver une solution avant le début du cours. Élèves voient "Cours en attente de confirmation" dans l'app.</div>
+          <div class="tl-who">⏰ Canal : Scheduler 8h → SecurityMonitor → alerte directeur</div>
+        </div>
+        <div class="tl-right"><span class="pill p-r">Urgent</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 4 : CE QUE L'ÉLÈVE VOIT ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(16,185,129,.12)">👦</div>
+    <div>
+      <div class="sec-title">Espace Élève — Ce qu'il reçoit et peut faire</div>
+      <div class="sec-sub">Inspiré de Seesaw (USA), Pronote (France), SLS Singapore — adapté au contexte algérien</div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-bottom:24px;">
+
+    <div style="background:var(--s1);border:1px solid rgba(16,185,129,.2);border-radius:14px;padding:22px;">
+      <div style="font-size:13px;font-weight:800;color:var(--green);margin-bottom:16px;">📥 Ce que l'élève REÇOIT (push + in-app)</div>
+      <ul class="cc-list" style="gap:0;">
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">📝 <strong style="color:var(--text);">Devoir publié</strong> par le prof : intitulé, date limite, pièce jointe</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">📊 <strong style="color:var(--text);">Note publiée</strong> : matière, note, appréciation du prof</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">📄 <strong style="color:var(--text);">Bulletin disponible</strong> : PDF téléchargeable + résumé in-app</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">🎫 <strong style="color:var(--text);">Billet reçu</strong> : retard, avertissement, félicitation (visible uniquement élève + parents)</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">📅 <strong style="color:var(--text);">Cours modifié/annulé</strong> : planning mis à jour instantanément</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">💬 <strong style="color:var(--text);">Message du directeur</strong> ou administration (convocation, info école)</li>
+        <li style="padding:6px 0;">🔬 <strong style="color:var(--text);">Alerte EWS</strong> : "Ton niveau nécessite un suivi — un plan de rattrapage est disponible"</li>
+      </ul>
+    </div>
+
+    <div style="background:var(--s1);border:1px solid rgba(37,99,235,.2);border-radius:14px;padding:22px;">
+      <div style="font-size:13px;font-weight:800;color:#93c5fd;margin-bottom:16px;">📤 Ce que l'élève PEUT FAIRE (encadré)</div>
+      <ul class="cc-list" style="gap:0;">
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">📚 <strong style="color:var(--text);">Consulter</strong> : notes, planning, bulletins, devoirs, cours LMS</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">🎓 <strong style="color:var(--text);">LMS</strong> : suivre les cours en ligne, répondre aux quiz, télécharger certificats</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">⭐ <strong style="color:var(--text);">Feedback pédagogique</strong> (1x/trimestre/matière) : note 1-5 étoiles + commentaire → directeur seulement</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">🚨 <strong style="color:var(--text);">Signalement grave</strong> : situation problématique → directeur uniquement, confidentiel</li>
+        <li style="padding:6px 0;border-bottom:1px solid rgba(26,40,64,.5);">💬 <strong style="color:var(--text);">Répondre</strong> aux billets : expliquer son point de vue (optionnel, validé par admin)</li>
+        <li style="padding:6px 0;">📅 <strong style="color:var(--text);">Voir son planning</strong> en temps réel (cours annulé, remplacé, nouvelle salle)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 5 : SIGNALEMENT ÉLÈVE → PROF (la vraie question) ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(239,68,68,.12)">⚖️</div>
+    <div>
+      <div class="sec-title">La vraie question : l'élève peut-il signaler un prof ? Comment ?</div>
+      <div class="sec-sub">Approche mondiale comparée + règles spécifiques au contexte algérien</div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+    <table class="signal-table">
+      <thead>
+        <tr>
+          <th>Pays</th>
+          <th>L'élève peut signaler ?</th>
+          <th>Comment ?</th>
+          <th>Qui voit le signalement ?</th>
+          <th>Le prof est notifié ?</th>
+          <th>Action automatique ?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🇬🇧 UK (Safeguarding)</td>
+          <td><span class="pill p-g">Oui — Obligatoire</span></td>
+          <td>Via l'app iSams ou au bureau du CPE</td>
+          <td>Directeur + Designated Safeguarding Lead</td>
+          <td><span class="pill p-r">NON — jamais directement</span></td>
+          <td>Investigation obligatoire dans 24h</td>
+        </tr>
+        <tr>
+          <td>🇺🇸 USA (ClassDojo)</td>
+          <td><span class="pill p-o">Partiel</span></td>
+          <td>ClassDojo : feedback positif/négatif mais pas de signalement formel</td>
+          <td>Parents voient les notes comportement. Direction séparément.</td>
+          <td><span class="pill p-o">Pas en temps réel</span></td>
+          <td>Aucune — humain obligatoire</td>
+        </tr>
+        <tr>
+          <td>🇫🇷 France (ENT)</td>
+          <td><span class="pill p-b">Via l'administration</span></td>
+          <td>Message à l'administration via ENT messagerie</td>
+          <td>Chef d'établissement</td>
+          <td><span class="pill p-o">Après investigation</span></td>
+          <td>Aucune automatique</td>
+        </tr>
+        <tr>
+          <td>🇸🇬 Singapour</td>
+          <td><span class="pill p-b">Via admin seulement</span></td>
+          <td>Formulaire confidentiel en ligne → directeur</td>
+          <td>Directeur + inspecteur MOE si grave</td>
+          <td><span class="pill p-r">NON — procédure formelle</span></td>
+          <td>Escalade automatique si grave (MOE)</td>
+        </tr>
+        <tr style="background:rgba(37,99,235,.03);">
+          <td>🇩🇿 <strong style="color:var(--blue2);">EduGest DZ (notre approche)</strong></td>
+          <td><span class="pill p-g">Oui — 2 niveaux</span></td>
+          <td>
+            <strong>Niveau 1 :</strong> Feedback 1-5★ par trimestre<br>
+            <strong>Niveau 2 :</strong> Signalement grave confidentiel
+          </td>
+          <td>
+            Feedback → Directeur uniquement<br>
+            Signalement → Directeur uniquement (jamais prof directement)
+          </td>
+          <td><span class="pill p-r">JAMAIS directement</span></td>
+          <td>Accusé de réception + ticket confidentiel. Investigation humaine obligatoire.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:20px;margin-top:16px;">
+    <div style="font-size:13px;font-weight:800;color:var(--red);margin-bottom:12px;">🚨 Les 3 règles absolues pour EduGest DZ</div>
+    <div class="g3">
+      <div style="padding:12px;background:var(--s2);border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;">Règle 1 — Identifié</div>
+        <div style="font-size:11px;color:var(--muted);">Tout signalement est lié au compte de l'élève (pas d'anonymat). Cela évite les faux signalements malveillants et permet un suivi responsable.</div>
+      </div>
+      <div style="padding:12px;background:var(--s2);border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;">Règle 2 — Directeur SEUL</div>
+        <div style="font-size:11px;color:var(--muted);">Le prof ne reçoit jamais le signalement directement. Le directeur décide des suites. Chaque consultation du signalement est logguée dans l'audit_chain.</div>
+      </div>
+      <div style="padding:12px;background:var(--s2);border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;">Règle 3 — Humain obligatoire</div>
+        <div style="font-size:11px;color:var(--muted);">Aucune action automatique sur un enseignant. Délai légal 48h minimum avant toute décision. Le prof a droit à réponse dans les 7 jours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 6 : INNOVATIONS À ADOPTER ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(124,58,237,.12)">💡</div>
+    <div>
+      <div class="sec-title">Ce qu'on peut emprunter au monde — Adapté au contexte algérien</div>
+      <div class="sec-sub">Pratiques mondiales triées par faisabilité et pertinence pour EduGest DZ</div>
+    </div>
+  </div>
+
+  <div class="innov-grid">
+    <div class="innov-card">
+      <div class="innov-tag it-nouveau">À adopter maintenant</div>
+      <div class="innov-title">📚 Portfolio numérique élève (Seesaw)</div>
+      <div class="innov-world">Seesaw (USA, EAU) : travaux de l'élève partagés avec la famille — photos, vidéos, documents</div>
+      <div class="innov-impl">Notre implémentation :</div>
+      <ul class="innov-list">
+        <li>Enseignant publie travaux notables de l'élève</li>
+        <li>Parent reçoit notification push → voit le travail dans l'app</li>
+        <li>Élève construit un dossier de progression trimestriel</li>
+        <li>Remplace les photos WhatsApp du tableau noir</li>
+      </ul>
+    </div>
+
+    <div class="innov-card">
+      <div class="innov-tag it-nouveau">À adopter maintenant</div>
+      <div class="innov-title">📅 Plages horaires de notification (Pronote France)</div>
+      <div class="innov-world">France 2025 : ENT déconnecté de 20h à 7h et le week-end — droit à la déconnexion</div>
+      <div class="innov-impl">Notre implémentation :</div>
+      <ul class="innov-list">
+        <li>Notifications push : 7h → 20h uniquement (heure Algérie)</li>
+        <li>Notes/devoirs publiés après 20h → push différé à 7h lendemain</li>
+        <li>SMS urgence (absence, billet grave) : toujours actif</li>
+        <li>Parent peut désactiver les plages dans ses préférences</li>
+      </ul>
+    </div>
+
+    <div class="innov-card">
+      <div class="innov-tag it-adapte">Adapter à l'Algérie</div>
+      <div class="innov-title">🔄 Pool de remplaçants + planning auto (Corée du Sud, UK)</div>
+      <div class="innov-world">Corée : remplacement auto depuis pool national. UK : Lesson Cover intégré au SMS.</div>
+      <div class="innov-impl">Notre implémentation (déjà en route) :</div>
+      <ul class="innov-list">
+        <li>RemplacementController.php : suggestions remplaçants disponibles ✅</li>
+        <li>À ajouter : notification automatique au remplaçant confirmé</li>
+        <li>À ajouter : rappel SMS 1h avant la séance de remplacement</li>
+        <li>Élèves notifiés immédiatement dès confirmation</li>
+      </ul>
+    </div>
+
+    <div class="innov-card">
+      <div class="innov-tag it-adapte">Adapter à l'Algérie</div>
+      <div class="innov-title">💬 Messagerie école structurée (France ENT)</div>
+      <div class="innov-world">ENT France : messagerie tracée, pas de WhatsApp direct prof-parent — passe par l'administration</div>
+      <div class="innov-impl">Notre implémentation :</div>
+      <ul class="innov-list">
+        <li>Parent → Enseignant : via messagerie in-app (pas WhatsApp)</li>
+        <li>Délai de réponse attendu : 48h (affiché dans l'interface)</li>
+        <li>Tous les messages archivés + recherchables</li>
+        <li>Admin peut voir les fils de discussion (pas de communication cachée)</li>
+      </ul>
+    </div>
+
+    <div class="innov-card">
+      <div class="innov-tag it-algerien">Spécifique Algérie</div>
+      <div class="innov-title">📱 WhatsApp → In-app (migration douce)</div>
+      <div class="innov-world">Inde : 80% des écoles sur WhatsApp. Solution : offrir mieux sans forcer. EduGest doit être plus pratique que WhatsApp.</div>
+      <div class="innov-impl">Notre stratégie :</div>
+      <ul class="innov-list">
+        <li>Groupe WhatsApp de classe → tableau d'annonces in-app</li>
+        <li>Devoirs WhatsApp → module devoirs avec date remise + notification</li>
+        <li>Ne pas interdire WhatsApp — rendre l'app plus utile</li>
+        <li>Intégration WhatsApp Business pour les écoles qui refusent de migrer</li>
+      </ul>
+    </div>
+
+    <div class="innov-card">
+      <div class="innov-tag it-critique">À implémenter avec soin</div>
+      <div class="innov-title">🎯 Behavior Points adapté (ClassDojo)</div>
+      <div class="innov-world">ClassDojo USA : points comportement en temps réel → parent notifié instantanément. Critiqué : datafication du comportement.</div>
+      <div class="innov-impl">Notre version algérienne (moins intrusive) :</div>
+      <ul class="innov-list">
+        <li>Billets disciplinaires (déjà présents) → visibles élève + parent</li>
+        <li>PAS de points comportement en temps réel (trop intrusif)</li>
+        <li>Félicitations visibles immédiatement — sanctions avec délai 24h</li>
+        <li>Rapport comportement global mensuel (pas quotidien)</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 7 : ARCHITECTURE FINALE ══ -->
+<div class="section">
+  <div class="sec-h">
+    <div class="sec-icon" style="background:rgba(37,99,235,.12)">🏗️</div>
+    <div>
+      <div class="sec-title">Architecture finale des flux — EduGest DZ complet</div>
+      <div class="sec-sub">Vision technique de comment l'information circule dans le système</div>
+    </div>
+  </div>
+
+  <div class="arch-final">
+
+    <div class="arch-layer al-b">
+      <div class="al-title">📤 SOURCES D'INFORMATION (qui crée l'info)</div>
+      <div class="chips">
+        <div class="chip ch-o">👨‍🏫 Enseignant saisit note</div>
+        <div class="chip ch-o">👨‍🏫 Enseignant publie devoir</div>
+        <div class="chip ch-o">👨‍🏫 Enseignant signale absence</div>
+        <div class="chip ch-o">👨‍🏫 Enseignant enregistre présence</div>
+        <div class="chip ch-b">👨‍💼 Directeur valide bulletin</div>
+        <div class="chip ch-b">👨‍💼 Directeur assigne remplaçant</div>
+        <div class="chip ch-b">👨‍💼 Directeur émet billet</div>
+        <div class="chip ch-p">👨‍👩‍👧 Parent justifie absence</div>
+        <div class="chip ch-p">👨‍👩‍👧 Parent paie facture</div>
+        <div class="chip ch-g">👦 Élève accède LMS</div>
+        <div class="chip ch-g">👦 Élève donne feedback</div>
+        <div class="chip ch-t">⚙️ Scheduler (automatique)</div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓</div>
+
+    <div class="arch-layer al-g">
+      <div class="al-title">⚙️ MOTEUR DE TRAITEMENT (Laravel 11 — Observers + Events)</div>
+      <div class="chips">
+        <div class="chip ch-g">NoteObserver → calcul moyenne</div>
+        <div class="chip ch-g">BulletinObserver → génère PDF</div>
+        <div class="chip ch-g">AbsenceJournaliereObserver → alerte parent</div>
+        <div class="chip ch-g">PresenceController → pointage</div>
+        <div class="chip ch-t">RemplacementController → suggestions</div>
+        <div class="chip ch-b">FacturationService → relances auto</div>
+        <div class="chip ch-r">SecurityMonitorService → détection anomalies</div>
+        <div class="chip ch-p">DiagnosticService → scoring EWS</div>
+        <div class="chip ch-g">ParentNotificationService → orchestrateur</div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓</div>
+
+    <div class="arch-layer al-o">
+      <div class="al-title">📡 CANAUX DE DISTRIBUTION (selon urgence + préférence)</div>
+      <div class="chips">
+        <div class="chip ch-o">📱 Push Firebase (immédiat)</div>
+        <div class="chip ch-o">📲 SMS Twilio (urgent + fallback)</div>
+        <div class="chip ch-o">📧 Email HTML (bulletins, bienvenue)</div>
+        <div class="chip ch-o">💬 WhatsApp Business (annonces)</div>
+        <div class="chip ch-o">🔔 Notification in-app (tout)</div>
+        <div class="chip ch-m">Règle horaire : 7h-20h uniquement (sauf urgence)</div>
+        <div class="chip ch-m">Dégradation gracieuse : si push échoue → SMS</div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓</div>
+
+    <div class="arch-layer al-p">
+      <div class="al-title">👥 DESTINATAIRES (rôle-based — chacun voit ce qui le concerne)</div>
+      <div class="g3" style="gap:10px;">
+        <div style="background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:6px;">👦 Élève voit :</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.8;">
+            Ses notes · Ses devoirs · Son planning<br>
+            Ses bulletins · Ses billets reçus<br>
+            LMS · Feedback donné · Signalements envoyés
+          </div>
+        </div>
+        <div style="background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:6px;">👨‍👩‍👧 Parent voit :</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.8;">
+            Notes enfant · Absences · Bulletins<br>
+            Billets reçus · Factures · Paiements<br>
+            Planning · Messages école
+          </div>
+        </div>
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;">👨‍💼 Directeur voit :</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.8;">
+            TOUT (son établissement uniquement)<br>
+            Feedbacks élèves (anonymisés) · Signalements<br>
+            Analytics · Rapports · Alertes sécurité
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓</div>
+
+    <div class="arch-layer al-r">
+      <div class="al-title">🔒 AUDIT + TRAÇABILITÉ (immuable — audit_chain Merkle)</div>
+      <div class="chips">
+        <div class="chip ch-r">Chaque notification → loggée avec timestamp</div>
+        <div class="chip ch-r">Signalement élève → qui a accédé + quand</div>
+        <div class="chip ch-r">Feedback pédagogique → archivé 1 an minimum</div>
+        <div class="chip ch-r">Modification de note → avant + après tracés</div>
+        <div class="chip ch-r">Toute action sensible → AuditChain SHA3-256</div>
+        <div class="chip ch-m">Falsification impossible → chaîne Merkle</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ VERDICT ══ -->
+<div class="verdict">
+  <div class="verdict-icon">🎯</div>
+  <div class="verdict-title">Ce que EduGest DZ peut faire mieux que le monde</div>
+  <div class="verdict-text">
+    Les meilleurs systèmes mondiaux (Singapour, France, Corée) ont soit l'intégration (une seule app) soit l'adaptation locale (langue, culture) — rarement les deux.
+    <br><br>
+    EduGest DZ a l'opportunité unique d'être <strong>la première plateforme qui combine les deux pour le Maghreb</strong> :
+    intégration complète (comme le SLS de Singapour) + adaptation 100% algérienne (FR+AR+Darija, Satim, barème ONEC, loi 18-07).
+    <br><br>
+    Le marché du logiciel scolaire atteindra <strong>42 milliards de dollars d'ici 2030</strong>.
+    L'Afrique du Nord est quasi vierge de vraies solutions SaaS locales.
+    La fenêtre est ouverte.
+  </div>
+  <div class="verdict-tags">
+    <div class="vtag" style="background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3);">✅ 1 seule app (vs 4-5 aux USA)</div>
+    <div class="vtag" style="background:rgba(37,99,235,.1);color:#93c5fd;border-color:rgba(37,99,235,.3);">✅ FR + AR + Darija natif</div>
+    <div class="vtag" style="background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3);">✅ Satim CIB/Dahabia</div>
+    <div class="vtag" style="background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3);">✅ Sécurité niveau banque</div>
+    <div class="vtag" style="background:rgba(245,158,11,.1);color:var(--orange);border-color:rgba(245,158,11,.3);">🎯 Premier sur le marché Maghreb</div>
+    <div class="vtag" style="background:rgba(124,58,237,.1);color:#c4b5fd;border-color:rgba(124,58,237,.3);">🚀 Expansion Tunisie + Maroc possible</div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<div style="border-top:1px solid var(--border);padding:24px 40px;text-align:center;color:var(--muted);font-size:11px;">
+  EduGest DZ — Analyse mondiale Juillet 2026 · Sources : PowerSchool, ClassDojo, Seesaw, Pronote/ENT, Singapore SLS, Classter, iSams, NEIS Korea · Marché SMS : $20.18B → $42.58B d'ici 2030
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1985f9b8f248f14',t:'MTc4Mzc3ODgzNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

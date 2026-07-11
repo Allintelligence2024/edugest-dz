@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
+    SearchController,
+    ExportRgpdController,
     EleveController,
     ParentController,
     InscriptionController,
@@ -101,6 +103,9 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'])
          ->group(function () {
+
+        // ── Recherche globale ──
+        Route::get('search', SearchController::class);
 
         // ── Auth ──
         Route::prefix('auth')->group(function () {
@@ -381,6 +386,15 @@ use App\Http\Controllers\Api\V1\{
             Route::get('wilayas',                [ParametreController::class, 'wilayas']);
             Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
+        });
+
+        // ── RGPD / Loi 18-07 ──
+        Route::prefix('rgpd')->group(function () {
+            Route::get('/export-tenant',             [ExportRgpdController::class, 'exporterTenant']);
+            Route::get('/export-eleve/{eleveId}',    [ExportRgpdController::class, 'exporterEleve']);
+            Route::post('/demande-suppression',      [ExportRgpdController::class, 'demanderSuppression']);
+            Route::post('/archiver-annee',           [ExportRgpdController::class, 'archiverAnnee']);
+            Route::get('/demandes',                  [ExportRgpdController::class, 'listeDemandes']);
         });
 
         // ── Personnel Non-Enseignant (M12) ──

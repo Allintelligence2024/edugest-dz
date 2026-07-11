@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Audit Complet v2 · 11 Juillet 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #070B14; --surface: #0f172a; --surface2: #1e293b;
+    --border: #1e293b; --text: #e2e8f0; --muted: #64748b;
+    --accent: #2563eb; --green: #10b981; --red: #ef4444;
+    --orange: #f97316; --yellow: #eab308; --purple: #8b5cf6;
+    --teal: #0891b2;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+  .header { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); padding: 48px 40px; border-bottom: 2px solid var(--border); position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(37,99,235,0.12) 0%, transparent 60%); }
+  .header h1 { font-size: 32px; font-weight: 900; letter-spacing: -1px; position: relative; }
+  .header h1 span { color: var(--accent); }
+  .header .meta { color: var(--muted); font-size: 13px; margin-top: 10px; position: relative; }
+  .header .badge-tests { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--green); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 12px; }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px 40px; }
+
+  /* Scorecard */
+  .scorecard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 40px; }
+  .score-item { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; position: relative; overflow: hidden; }
+  .score-item::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .score-item.green::before { background: var(--green); }
+  .score-item.yellow::before { background: var(--yellow); }
+  .score-item.orange::before { background: var(--orange); }
+  .score-item.red::before { background: var(--red); }
+  .score-item.blue::before { background: var(--accent); }
+  .score-num { font-size: 36px; font-weight: 900; line-height: 1; }
+  .score-item.green .score-num { color: var(--green); }
+  .score-item.yellow .score-num { color: var(--yellow); }
+  .score-item.orange .score-num { color: var(--orange); }
+  .score-item.red .score-num { color: var(--red); }
+  .score-item.blue .score-num { color: var(--accent); }
+  .score-label { font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  /* Section */
+  .section { margin-bottom: 48px; }
+  .section-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title span { font-size: 14px; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
+  .section-title span.ok { background: rgba(16,185,129,0.15); color: var(--green); }
+  .section-title span.warn { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .section-title span.crit { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* Table audit */
+  .audit-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+  .audit-table thead th { background: var(--surface2); padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .audit-table tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+  .audit-table tbody tr:hover { background: var(--surface2); }
+  .audit-table td { padding: 14px 16px; vertical-align: top; }
+  .audit-table td:first-child { font-weight: 600; color: var(--text); }
+  .audit-table td.desc { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .pill.ok { background: rgba(16,185,129,0.15); color: var(--green); }
+  .pill.warn { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .pill.crit { background: rgba(239,68,68,0.15); color: var(--red); }
+  .pill.info { background: rgba(37,99,235,0.15); color: #60a5fa; }
+  .pill.orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+
+  /* Cards grid */
+  .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; position: relative; overflow: hidden; }
+  .card.mission { border-left: 4px solid var(--accent); }
+  .card.mission.red-l { border-left-color: var(--red); }
+  .card.mission.orange-l { border-left-color: var(--orange); }
+  .card.mission.green-l { border-left-color: var(--green); }
+  .card.mission.yellow-l { border-left-color: var(--yellow); }
+  .card.mission.purple-l { border-left-color: var(--purple); }
+  .card.mission.teal-l { border-left-color: var(--teal); }
+  .card h3 { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+  .card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+  .card .file-ref { font-size: 10px; color: var(--accent); font-family: monospace; margin-top: 10px; }
+
+  /* Issue list */
+  .issue-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .issue-list li { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
+  .issue-list li .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .issue-list li .content h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .issue-list li .content p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .issue-list li.critical { border-left: 3px solid var(--red); }
+  .issue-list li.warning { border-left: 3px solid var(--orange); }
+  .issue-list li.info { border-left: 3px solid var(--accent); }
+  .issue-list li.missing { border-left: 3px solid var(--yellow); }
+
+  /* Progress bars */
+  .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .progress-label { width: 180px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .progress-bar { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+  .progress-pct { width: 40px; text-align: right; font-size: 12px; font-weight: 700; }
+
+  /* Timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .timeline::before { content: ''; position: absolute; left: 20px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .timeline-item { display: flex; gap: 20px; padding-bottom: 24px; position: relative; }
+  .timeline-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; position: relative; z-index: 1; }
+  .timeline-dot.done { background: rgba(16,185,129,0.2); border: 2px solid var(--green); }
+  .timeline-dot.todo { background: rgba(37,99,235,0.2); border: 2px solid var(--accent); }
+  .timeline-dot.urgent { background: rgba(239,68,68,0.2); border: 2px solid var(--red); }
+  .timeline-content { flex: 1; padding-top: 8px; }
+  .timeline-content h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .timeline-content p { font-size: 12px; color: var(--muted); }
+
+  /* Tech stack */
+  .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .tech-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .tech-icon { font-size: 20px; }
+  .tech-name { font-size: 12px; font-weight: 700; }
+  .tech-ver { font-size: 10px; color: var(--muted); }
+
+  /* Risk matrix */
+  .risk-matrix { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .risk-cell { border-radius: 10px; padding: 12px; font-size: 11px; font-weight: 600; }
+
+  .footer { background: var(--surface); border-top: 1px solid var(--border); padding: 24px 40px; text-align: center; color: var(--muted); font-size: 12px; margin-top: 60px; }
+
+  code { background: var(--surface2); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #60a5fa; }
+  
+  @media (max-width: 1024px) {
+    .scorecard { grid-template-columns: repeat(3, 1fr); }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .tech-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>🎓 <span>EduGest DZ</span> — Audit Complet v2</h1>
+  <div class="meta">Branche : develop · Commit analysé : 02d479f · 11 Juillet 2026 · Oran, Algérie 🇩🇿</div>
+  <div class="badge-tests">✅ 859 tests · 0 failures · 10 skipped · CI GitHub Actions verte</div>
+</div>
+
+<div class="container">
+
+  <!-- SCORECARD GLOBAL -->
+  <div class="scorecard" style="margin-top:32px">
+    <div class="score-item green">
+      <div class="score-num">859</div>
+      <div class="score-label">Tests passants</div>
+      <div class="score-sub">+111 vs il y a 24h</div>
+    </div>
+    <div class="score-item blue">
+      <div class="score-num">55+</div>
+      <div class="score-label">Contrôleurs API</div>
+      <div class="score-sub">V1 / Marketplace / SuperAdmin</div>
+    </div>
+    <div class="score-item blue">
+      <div class="score-num">75+</div>
+      <div class="score-label">Modèles Eloquent</div>
+      <div class="score-sub">+ BelongsToTenant</div>
+    </div>
+    <div class="score-item yellow">
+      <div class="score-num">6</div>
+      <div class="score-label">Missions en attente</div>
+      <div class="score-sub">Identifiées dans cet audit</div>
+    </div>
+    <div class="score-item orange">
+      <div class="score-num">0</div>
+      <div class="score-label">Client réel</div>
+      <div class="score-sub">Aucune école pilote encore</div>
+    </div>
+  </div>
+
+  <!-- STACK TECHNOLOGIQUE -->
+  <div class="section">
+    <div class="section-title">🛠️ Stack Technique <span class="ok">Solide</span></div>
+    <div class="tech-grid">
+      <div class="tech-item"><span class="tech-icon">🐘</span><div><div class="tech-name">Laravel 11</div><div class="tech-ver">PHP 8.2 · API REST JWT</div></div></div>
+      <div class="tech-item"><span class="tech-icon">🐘</span><div><div class="tech-name">PostgreSQL 16</div><div class="tech-ver">JSONB · GIN index · RLS</div></div></div>
+      <div class="tech-item"><span class="tech-icon">⚡</span><div><div class="tech-name">Redis 7</div><div class="tech-ver">Cache · Sessions · Queues</div></div></div>
+      <div class="tech-item"><span class="tech-icon">🔍</span><div><div class="tech-name">Meilisearch v1.8</div><div class="tech-ver">Recherche fulltext</div></div></div>
+      <div class="tech-item"><span class="tech-icon">⚛️</span><div><div class="tech-name">React 19 + Vite 8</div><div class="tech-ver">Dark/Light · i18n 4 langues</div></div></div>
+      <div class="tech-item"><span class="tech-icon">📱</span><div><div class="tech-name">React Native 0.76</div><div class="tech-ver">Expo 52 · RNTL tests</div></div></div>
+      <div class="tech-item"><span class="tech-icon">🚀</span><div><div class="tech-name">Railway + Vercel</div><div class="tech-ver">CI/CD GitHub Actions</div></div></div>
+      <div class="tech-item"><span class="tech-icon">🇩🇿</span><div><div class="tech-name">Loi 18-07</div><div class="tech-ver">Cible Hostarts DZ VPS</div></div></div>
+    </div>
+  </div>
+
+  <!-- ÉTAT ACTUEL — CE QUI EXISTE -->
+  <div class="section">
+    <div class="section-title">✅ Ce qui existe et fonctionne <span class="ok">Confirmé par les tests</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Modules Backend (tous testés)</div>
+        <div class="progress-row"><span class="progress-label">Auth + JWT + MFA</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Sécurité 6 niveaux</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Élèves / Inscriptions</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Facturation + Paiements</span><div class="progress-bar"><div class="progress-fill" style="width:95%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">95%</span></div>
+        <div class="progress-row"><span class="progress-label">Planning + Séances</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">LMS (cours/quiz/certif)</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">BEM/BAC Examens</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Diagnostic EWS</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Prédiction IA (ML PHP)</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Marketplace</span><div class="progress-bar"><div class="progress-fill" style="width:75%;background:var(--orange)"></div></div><span class="progress-pct" style="color:var(--orange)">75%</span></div>
+        <div class="progress-row"><span class="progress-label">WhatsApp + Classroom</span><div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">90%</span></div>
+        <div class="progress-row"><span class="progress-label">Transport + Cantine</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Bibliothèque</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Flux info (absence/devoir)</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Monitoring / Health</span><div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--red)"></div></div><span class="progress-pct" style="color:var(--red)">40%</span></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Frontend React + Mobile</div>
+        <div class="progress-row"><span class="progress-label">Dashboard Directeur</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Pages Modules (28px)</span><div class="progress-bar"><div class="progress-fill" style="width:95%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">95%</span></div>
+        <div class="progress-row"><span class="progress-label">Espace Élève (devoirs…)</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Page Marketplace UI</span><div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--red)"></div></div><span class="progress-pct" style="color:var(--red)">30%</span></div>
+        <div class="progress-row"><span class="progress-label">Mobile Parent (écrans)</span><div class="progress-bar"><div class="progress-fill" style="width:90%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">90%</span></div>
+        <div class="progress-row"><span class="progress-label">Mobile Enseignant</span><div class="progress-bar"><div class="progress-fill" style="width:85%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">85%</span></div>
+        <div class="progress-row"><span class="progress-label">PWA + offline</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Dark/Light i18n 4 langues</span><div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div><span class="progress-pct" style="color:var(--green)">100%</span></div>
+        <div class="progress-row"><span class="progress-label">Login / Auth Flow</span><div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--yellow)"></div></div><span class="progress-pct" style="color:var(--yellow)">80%</span></div>
+        <div class="progress-row"><span class="progress-label">Page Paramètres École</span><div class="progress-bar"><div class="progress-fill" style="width:50%;background:var(--orange)"></div></div><span class="progress-pct" style="color:var(--orange)">50%</span></div>
+        <div class="progress-row"><span class="progress-label">Profil Utilisateur</span><div class="progress-bar"><div class="progress-fill" style="width:70%;background:var(--yellow)"></div></div><span class="progress-pct" style="color:var(--yellow)">70%</span></div>
+        <div class="progress-row"><span class="progress-label">Recherche globale UI</span><div class="progress-bar"><div class="progress-fill" style="width:20%;background:var(--red)"></div></div><span class="progress-pct" style="color:var(--red)">20%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLÈMES ET MANQUES IDENTIFIÉS -->
+  <div class="section">
+    <div class="section-title">🔴 Problèmes critiques identifiés <span class="crit">6 missions requises</span></div>
+
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Problème</th>
+          <th>Impact</th>
+          <th>Gravité</th>
+          <th>Fichier Mission</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-size:18px">1</td>
+          <td>
+            <strong>Page Login/Auth Flow incomplète</strong><br>
+            <span style="color:var(--muted);font-size:12px">Pas de page LoginPage.jsx dédiée. Le token JWT est stocké dans localStorage sans refresh automatique. Expiration → utilisateur éjecté sans message. Pas de "Mot de passe oublié". Pas de redirection post-login selon le rôle (admin → dashboard, élève → espace élève).</span>
+          </td>
+          <td class="desc">Première impression du client = catastrophique</td>
+          <td><span class="pill crit">🔴 CRITIQUE</span></td>
+          <td><code>MISSION_AUTH_FLOW.md</code></td>
+        </tr>
+        <tr>
+          <td style="font-size:18px">2</td>
+          <td>
+            <strong>UI Marketplace inexistante côté client</strong><br>
+            <span style="color:var(--muted);font-size:12px">Le backend marketplace est 75% complet mais il n'y a PAS de page React pour : chercher des offres de cours, réserver, payer, voir le lien Jitsi, laisser un avis. Le parent doit utiliser l'API directement. MarketplacePage.jsx n'existe pas.</span>
+          </td>
+          <td class="desc">Principale source de revenus = inutilisable par un client</td>
+          <td><span class="pill crit">🔴 CRITIQUE</span></td>
+          <td><code>MISSION_MARKETPLACE_UI.md</code></td>
+        </tr>
+        <tr>
+          <td style="font-size:18px">3</td>
+          <td>
+            <strong>Recherche globale Meilisearch non branchée au frontend</strong><br>
+            <span style="color:var(--muted);font-size:12px">Meilisearch v1.8 est installé et configuré côté backend (NoteController, EleveService utilisent Scout). Mais il n'y a aucune barre de recherche globale dans le frontend React. Le directeur doit naviguer page par page pour trouver un élève, une facture, un enseignant.</span>
+          </td>
+          <td class="desc">Frein majeur à la productivité quotidienne</td>
+          <td><span class="pill orange">🟠 ÉLEVÉ</span></td>
+          <td><code>MISSION_RECHERCHE_GLOBALE.md</code></td>
+        </tr>
+        <tr>
+          <td style="font-size:18px">4</td>
+          <td>
+            <strong>Page Paramètres École incomplète</strong><br>
+            <span style="color:var(--muted);font-size:12px">ParametreController.php existe (initial commit juin 2026) mais la page frontend est basique. Manque : logo école (upload), couleurs personnalisées, horaires d'ouverture, configuration SMTP propre à l'école, gestion des niveaux scolaires custom, tarifs par défaut.</span>
+          </td>
+          <td class="desc">Chaque école doit se personnaliser avant d'utiliser l'app</td>
+          <td><span class="pill orange">🟠 ÉLEVÉ</span></td>
+          <td><code>MISSION_PARAMETRES_ECOLE.md</code></td>
+        </tr>
+        <tr>
+          <td style="font-size:18px">5</td>
+          <td>
+            <strong>Onboarding / Wizard première utilisation absent</strong><br>
+            <span style="color:var(--muted);font-size:12px">Un directeur qui s'inscrit se retrouve face à un dashboard vide sans aucune donnée. Pas de guide d'installation pas-à-pas : "1. Ajoutez vos matières → 2. Créez vos enseignants → 3. Inscrivez vos élèves → 4. Créez votre premier cours". Le taux d'abandon après inscription est probablement de 90%.</span>
+          </td>
+          <td class="desc">Conversion inscription → utilisation réelle = bloquée</td>
+          <td><span class="pill orange">🟠 ÉLEVÉ</span></td>
+          <td><code>MISSION_ONBOARDING.md</code></td>
+        </tr>
+        <tr>
+          <td style="font-size:18px">6</td>
+          <td>
+            <strong>Export données et RGPD/Loi 18-07 manquants</strong><br>
+            <span style="color:var(--muted);font-size:12px">ElevesExport.php existe pour Excel mais : pas de GDPR/18-07 export complet (droit à l'export + suppression des données), pas de "purger mes données" pour un tenant, pas d'archivage fin d'année scolaire, pas de sauvegarde exportable pour migration vers autre logiciel. Risque légal ANPDP.</span>
+          </td>
+          <td class="desc">Risque légal + frein à la confiance des directeurs</td>
+          <td><span class="pill orange">🟠 ÉLEVÉ</span></td>
+          <td><code>MISSION_RGPD_EXPORT.md</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PROBLÈMES SECONDAIRES -->
+  <div class="section">
+    <div class="section-title">🟡 Problèmes secondaires <span class="warn">À corriger dans les 30 jours</span></div>
+    <ul class="issue-list">
+      <li class="warning">
+        <span class="icon">⚡</span>
+        <div class="content">
+          <h4>N+1 non contrôlé sur EleveController et FactureController</h4>
+          <p>Les endpoints /api/v1/eleves et /api/v1/factures n'ont pas tous leurs relations eager-loaded. Avec 500 élèves → potentiellement 500+ requêtes SQL par page. Pas détecté par les tests (BDD vide). À fixer avec <code>->with(['groupe', 'inscriptions', 'parents'])</code> systématique.</p>
+        </div>
+      </li>
+      <li class="warning">
+        <span class="icon">🔐</span>
+        <div class="content">
+          <h4>Rate limiting asymétrique : login protégé, recherche non protégée</h4>
+          <p>L'IntelligentRateLimiter est sur l'API entière mais le endpoint <code>/api/v1/marketplace/offres</code> (public, sans auth) n'a pas de rate limiting spécifique. Un crawler peut extraire tout le catalogue en quelques secondes.</p>
+        </div>
+      </li>
+      <li class="warning">
+        <span class="icon">📧</span>
+        <div class="content">
+          <h4>Templates email : 5 créés mais pas de test de rendu réel</h4>
+          <p>Les 5 templates Blade existent mais n'ont jamais été envoyés à un vrai client email. Risque de problèmes d'encodage UTF-8 avec les caractères arabes (العربية). Pas de test avec Mailtrap pour valider le rendu cross-client (Gmail, Outlook, mobile).</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">📊</span>
+        <div class="content">
+          <h4>AnalyticsPage frontend : données hardcodées dans certains composants</h4>
+          <p>Certains graphiques du dashboard analytique affichent des valeurs "0" même quand des données existent, car l'endpoint <code>/api/v1/analytics/dashboard</code> n'était pas enregistré (fixé il y a 1h). À vérifier que toutes les métriques se remplissent correctement.</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">📱</span>
+        <div class="content">
+          <h4>Mobile React Native : écrans Admin incomplets</h4>
+          <p>4 écrans admin existent mais pas de navigation vers Marketplace, ni vers Prédiction IA, ni vers Signalements graves. Le directeur mobile ne peut pas gérer les situations d'urgence depuis son téléphone.</p>
+        </div>
+      </li>
+      <li class="missing">
+        <span class="icon">💳</span>
+        <div class="content">
+          <h4>Satim production : toujours en sandbox</h4>
+          <p><code>SATIM_BASE_URL=https://test.satim.dz</code> dans .env.example. Aucun vrai paiement CIB/Dahabia n'est possible. Nécessite un contrat avec une banque partenaire Satim. Délai estimé : 1-2 mois après premier client signé.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 6 MISSIONS IDENTIFIÉES -->
+  <div class="section">
+    <div class="section-title">🎯 6 Missions identifiées par cet audit <span class="info">Chacune dans son propre fichier</span></div>
+    <div class="cards-grid">
+      <div class="card mission red-l">
+        <h3>🔐 Mission 1 — Auth Flow Complet</h3>
+        <p>LoginPage.jsx, refresh token silencieux, redirect post-login par rôle, "Mot de passe oublié", logout propre, session expirée → message clair.</p>
+        <div class="tags">
+          <span class="pill crit">Critique</span>
+          <span class="pill info">Frontend + Backend</span>
+          <span class="pill warn">~3h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_AUTH_FLOW.md</div>
+      </div>
+      <div class="card mission orange-l">
+        <h3>🛒 Mission 2 — Marketplace UI Complète</h3>
+        <p>MarketplacePage.jsx (recherche offres), OffreDetailPage.jsx (fiche enseignant), ReservationFlow (3 étapes), lien Jitsi affiché, avis post-cours.</p>
+        <div class="tags">
+          <span class="pill crit">Élevé</span>
+          <span class="pill info">Frontend React</span>
+          <span class="pill warn">~4h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_MARKETPLACE_UI.md</div>
+      </div>
+      <div class="card mission yellow-l">
+        <h3>🔍 Mission 3 — Recherche Globale Meilisearch</h3>
+        <p>Barre recherche dans Topbar, résultats groupés (élèves/factures/enseignants/cours), shortcut Ctrl+K, suggestions instant, mobile-compatible.</p>
+        <div class="tags">
+          <span class="pill orange">Élevé</span>
+          <span class="pill info">Frontend + Backend</span>
+          <span class="pill warn">~2h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_RECHERCHE_GLOBALE.md</div>
+      </div>
+      <div class="card mission green-l">
+        <h3>⚙️ Mission 4 — Paramètres École Complets</h3>
+        <p>Logo upload, couleurs école, horaires, config email SMTP propre, niveaux scolaires custom, tarifs par défaut, profil directeur complet.</p>
+        <div class="tags">
+          <span class="pill orange">Élevé</span>
+          <span class="pill info">Frontend + Backend</span>
+          <span class="pill warn">~3h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_PARAMETRES_ECOLE.md</div>
+      </div>
+      <div class="card mission purple-l">
+        <h3>🚀 Mission 5 — Onboarding Wizard</h3>
+        <p>Wizard 5 étapes post-inscription : matières → enseignants → élèves → 1er cours → test notification. Progress bar, skip possible, relance par email.</p>
+        <div class="tags">
+          <span class="pill orange">Élevé</span>
+          <span class="pill info">Frontend + Backend</span>
+          <span class="pill warn">~4h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_ONBOARDING.md</div>
+      </div>
+      <div class="card mission teal-l">
+        <h3>📋 Mission 6 — Export RGPD + Archivage</h3>
+        <p>Export complet données élève (ZIP), suppression compte RGPD, archivage fin d'année scolaire, migration CSV vers autre logiciel, log ANPDP.</p>
+        <div class="tags">
+          <span class="pill orange">Élevé</span>
+          <span class="pill info">Backend Laravel</span>
+          <span class="pill warn">~3h DeepSeek</span>
+        </div>
+        <div class="file-ref">📄 deepseek-exchange/MISSION_RGPD_EXPORT.md</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATRICE DE RISQUE -->
+  <div class="section">
+    <div class="section-title">⚖️ Matrice Risque / Valeur Business</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:12px">Impact Business vs Effort</div>
+        <table class="audit-table">
+          <thead><tr><th>Mission</th><th>Impact</th><th>Effort</th><th>ROI</th></tr></thead>
+          <tbody>
+            <tr><td>1. Auth Flow</td><td><span class="pill crit">Bloquant</span></td><td><span class="pill ok">3h</span></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>2. Marketplace UI</td><td><span class="pill crit">CA direct</span></td><td><span class="pill warn">4h</span></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>5. Onboarding</td><td><span class="pill orange">Conversion</span></td><td><span class="pill warn">4h</span></td><td>⭐⭐⭐⭐⭐</td></tr>
+            <tr><td>3. Recherche</td><td><span class="pill orange">Prod. quotid.</span></td><td><span class="pill ok">2h</span></td><td>⭐⭐⭐⭐</td></tr>
+            <tr><td>4. Paramètres</td><td><span class="pill warn">Setup école</span></td><td><span class="pill ok">3h</span></td><td>⭐⭐⭐⭐</td></tr>
+            <tr><td>6. RGPD Export</td><td><span class="pill warn">Légal</span></td><td><span class="pill ok">3h</span></td><td>⭐⭐⭐</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:12px">Ordre d'exécution recommandé</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot urgent">1</div>
+            <div class="timeline-content"><h4 style="color:var(--red)">URGENT — Auth Flow</h4><p>Sans login fonctionnel → aucune démo possible. À faire EN PREMIER.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot todo">2</div>
+            <div class="timeline-content"><h4>Onboarding Wizard</h4><p>Permet de présenter l'app à une première école sans support manuel.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot todo">3</div>
+            <div class="timeline-content"><h4>Paramètres École</h4><p>L'école doit se personnaliser avant d'envoyer des emails à ses parents.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot todo">4</div>
+            <div class="timeline-content"><h4>Marketplace UI</h4><p>Ouvre la source de revenus commissions.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot todo">5</div>
+            <div class="timeline-content"><h4>Recherche Globale</h4><p>Productivité directeur dès 50+ élèves.</p></div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot todo">6</div>
+            <div class="timeline-content"><h4>Export RGPD</h4><p>Obligatoire avant ANPDP + VPS Algérie.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CE QUI EST EXCELLENT -->
+  <div class="section">
+    <div class="section-title">🏆 Points forts exceptionnels <span class="ok">Avantages compétitifs réels</span></div>
+    <ul class="issue-list">
+      <li class="info">
+        <span class="icon">🧠</span>
+        <div class="content">
+          <h4>IA Prédiction Échec Scolaire — Unique en Algérie</h4>
+          <p>Régression logistique PHP natif, 11 features, confiance 20-98%, 10 profils apprentissage, explications en français. Aucun concurrent local n'a ça. 0 dépendance externe = conforme loi 18-07.</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">🔒</span>
+        <div class="content">
+          <h4>6 niveaux de sécurité — Niveau enterprise</h4>
+          <p>RLS PostgreSQL, JWT blacklist, MFA obligatoire, audit chain HMAC-SHA256, KillSwitch MPC 2-admins, Zero Trust, Device Fingerprint, SIEM 5 règles, Honeypots. Rare pour une startup éducative.</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">🌍</span>
+        <div class="content">
+          <h4>Multitenancy réel avec isolation RLS</h4>
+          <p>BelongsToTenant sur 75+ modèles. RLS PostgreSQL en base. Un bug dans un tenant ne peut pas voir les données d'un autre. Architecture SaaS professionnelle.</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">📱</span>
+        <div class="content">
+          <h4>Triple interface : Web + Mobile + PWA</h4>
+          <p>React 19 (Vercel), React Native Expo 52 (iOS/Android), PWA offline. 4 langues : Français, Arabe, Anglais, Darija algérienne. Couverture maximale du marché local.</p>
+        </div>
+      </li>
+      <li class="info">
+        <span class="icon">🇩🇿</span>
+        <div class="content">
+          <h4>Adapté au contexte algérien</h4>
+          <p>Curriculum officiel DZ (1AP→3AS, 7 branches BAC), ONEC (règles BEM/BAC), Satim CIB/Dahabia, IRG/CNAS barème algérien, 48 wilayas, fuseau Africa/Algiers, loi 18-07 ANPDP.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- VUE D'ENSEMBLE CI/CD -->
+  <div class="section">
+    <div class="section-title">🔄 État CI/CD et Déploiement</div>
+    <table class="audit-table">
+      <thead><tr><th>Composant</th><th>État</th><th>Détails</th></tr></thead>
+      <tbody>
+        <tr><td>GitHub Actions CI</td><td><span class="pill ok">✅ Vert</span></td><td class="desc">PHP 8.2 · PostgreSQL 16 · Redis · 859 tests · concurrency cancel-in-progress</td></tr>
+        <tr><td>GitHub Actions CD</td><td><span class="pill warn">⚠️ Partiel</span></td><td class="desc">deploy.yml sur push main → SSH deploy. Cible Railway (non-conforme loi 18-07 pour données réelles)</td></tr>
+        <tr><td>Railway (Backend)</td><td><span class="pill warn">⚠️ USA</span></td><td class="desc">Fonctionnel pour dev/staging. Non-conforme loi 18-07 pour données élèves réels</td></tr>
+        <tr><td>Vercel (Frontend)</td><td><span class="pill ok">✅ OK</span></td><td class="desc">VITE_API_URL fixé. CORS Railway/Vercel résolu.</td></tr>
+        <tr><td>VPS Algérie</td><td><span class="pill crit">❌ Non commandé</span></td><td class="desc">Hostarts DZ ou Macnethost DZ. ~6000-8000 DA/mois. BLOQUANT pour données réelles</td></tr>
+        <tr><td>ANPDP Déclaration</td><td><span class="pill crit">❌ Non déposée</span></td><td class="desc">Obligatoire avant tout stockage de données élèves. Délai : 2-4 semaines</td></tr>
+        <tr><td>Sentry</td><td><span class="pill crit">❌ DSN vide</span></td><td class="desc">config/sentry.php créé mais DSN pas renseigné. Erreurs production invisibles.</td></tr>
+        <tr><td>UptimeRobot</td><td><span class="pill crit">❌ Non configuré</span></td><td class="desc">Guide dans MONITORING_SETUP.md. 5 minutes pour setup.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- RÉSUMÉ EXÉCUTIF -->
+  <div class="section">
+    <div class="section-title">📋 Résumé Exécutif — Pour le Fondateur</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:12px">✅ CE QUI EST PRÊT</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">
+            <li>✅ 859 tests · 0 failures · CI verte</li>
+            <li>✅ Backend 95% complet (55+ contrôleurs)</li>
+            <li>✅ Sécurité niveau enterprise (RLS, MFA, SIEM)</li>
+            <li>✅ IA prédiction échec scolaire unique en DZ</li>
+            <li>✅ Multi-tenant isolé (RLS PostgreSQL)</li>
+            <li>✅ Mobile (iOS/Android) + PWA offline</li>
+            <li>✅ Marketplace backend 75% (commissions calculées)</li>
+            <li>✅ Flux info mondial (signalement, feedback, devoirs)</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:12px">❌ CE QUI BLOQUE LE LANCEMENT</div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)">
+            <li>🔴 Pas de page Login/Auth → aucune démo possible</li>
+            <li>🔴 Pas d'Onboarding → directeur abandonne à l'inscription</li>
+            <li>🟠 Marketplace UI manquante → revenus commissions bloqués</li>
+            <li>🟠 Paramètres école incomplets → chaque école est identique</li>
+            <li>🟠 VPS Algérie non commandé → non conforme loi 18-07</li>
+            <li>🟠 Sentry DSN vide → pannes production invisibles</li>
+            <li>🟡 Recherche globale absente → frein productivité quotidienne</li>
+            <li>🟡 Export RGPD manquant → risque légal ANPDP</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;color:var(--yellow);margin-bottom:8px">🎯 Estimation pour être "Prêt pour Première École Pilote"</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.8">
+          <strong style="color:var(--text)">6 missions DeepSeek</strong> (estimation ~19h code) +
+          <strong style="color:var(--text)">VPS Hostarts DZ</strong> (1 semaine délai) +
+          <strong style="color:var(--text)">ANPDP déclaration</strong> (2-4 semaines) +
+          <strong style="color:var(--text)">Sentry/UptimeRobot</strong> (30 min manuelle) = 
+          <strong style="color:var(--green)">~3-4 semaines pour la première démo réelle avec données.</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  EduGest DZ · Audit Complet v2 · Généré le 11 Juillet 2026 · Oran, Algérie 🇩🇿<br>
+  Branche develop · 859 tests · 5 commits en avance sur main<br>
+  Missions : MISSION_AUTH_FLOW · MISSION_MARKETPLACE_UI · MISSION_RECHERCHE_GLOBALE · MISSION_PARAMETRES_ECOLE · MISSION_ONBOARDING · MISSION_RGPD_EXPORT
+</div>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a19a6a29ae1d6d96',t:'MTc4MzgwMDIzOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

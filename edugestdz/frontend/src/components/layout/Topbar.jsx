@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import LanguageThemeSelector from '@components/LanguageThemeSelector';
 import { useTheme } from '@context/ThemeContext';
+import SearchModal from '@components/SearchModal';
 
 const PAGE_META = {
   '/':                 { title: 'Tableau de bord',     crumb: [] },
@@ -37,6 +38,7 @@ export default function Topbar({ user }) {
   const { isDark, toggleTheme } = useTheme();
   const [notifCount, setNotifCount] = useState(0);
   const [today, setToday] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const meta = PAGE_META[location.pathname] || { title: 'EduGest DZ', crumb: [] };
 
@@ -80,6 +82,19 @@ export default function Topbar({ user }) {
       </div>
 
       <span className="text-[11px] text-muted2 hidden md:block">{today}</span>
+
+      <button
+        onClick={() => setSearchOpen(true)}
+        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-surface2 text-muted hover:text-text hover:border-accent transition-colors text-xs"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        Rechercher...
+        <kbd className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-surface border border-border font-mono">⌘K</kbd>
+      </button>
+
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <label className="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" checked={!isDark} onChange={toggleTheme} className="sr-only peer" />
