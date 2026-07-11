@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
+    SearchController,
     EleveController,
     ParentController,
     InscriptionController,
@@ -101,6 +102,9 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'])
          ->group(function () {
+
+        // ── Recherche globale ──
+        Route::get('search', SearchController::class);
 
         // ── Auth ──
         Route::prefix('auth')->group(function () {
