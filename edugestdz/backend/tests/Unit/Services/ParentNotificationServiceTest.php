@@ -7,6 +7,7 @@ use App\Services\{ParentNotificationService, NotificationTimingService, Firebase
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Mockery;
 use Tests\TestCase;
 
 class ParentNotificationServiceTest extends TestCase
@@ -22,6 +23,15 @@ class ParentNotificationServiceTest extends TestCase
         config(['tenant.current_id' => $this->tenant->id]);
     }
 
+    private function createTimingMock(): NotificationTimingService
+    {
+        $timing = Mockery::mock(NotificationTimingService::class);
+        $timing->shouldReceive('doitEnvoyerPush')->andReturn(true);
+        $timing->shouldReceive('doitEnvoyerSMS')->andReturn(true);
+        $timing->shouldReceive('doitEnvoyerEmail')->andReturn(true);
+        return $timing;
+    }
+
     public function test_timing_service_injecte(): void
     {
         $timing = new NotificationTimingService();
@@ -33,7 +43,7 @@ class ParentNotificationServiceTest extends TestCase
     {
         $firebase = $this->createMock(FirebaseService::class);
         $sms      = $this->createMock(SmsService::class);
-        $timing   = new NotificationTimingService();
+        $timing   = $this->createTimingMock();
 
         $service = new ParentNotificationService($firebase, $sms, $timing);
 
@@ -66,7 +76,7 @@ class ParentNotificationServiceTest extends TestCase
             ->willReturn(true);
 
         $sms = $this->createMock(SmsService::class);
-        $timing = new NotificationTimingService();
+        $timing = $this->createTimingMock();
 
         $service = new ParentNotificationService($firebase, $sms, $timing);
 
@@ -95,7 +105,7 @@ class ParentNotificationServiceTest extends TestCase
         $firebase->method('notifyUser')->willReturn(true);
 
         $sms = $this->createMock(SmsService::class);
-        $timing = new NotificationTimingService();
+        $timing = $this->createTimingMock();
 
         $service = new ParentNotificationService($firebase, $sms, $timing);
 
@@ -123,7 +133,7 @@ class ParentNotificationServiceTest extends TestCase
         $sms = $this->createMock(SmsService::class);
         $sms->expects($this->once())->method('send');
 
-        $timing = new NotificationTimingService();
+        $timing = $this->createTimingMock();
 
         $service = new ParentNotificationService($firebase, $sms, $timing);
 
