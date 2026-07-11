@@ -42,6 +42,7 @@ use App\Http\Controllers\Api\V1\{
     DiagnosticController,
     ExamenController,
     ModuleController,
+    PredictionController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -566,6 +567,14 @@ use App\Http\Controllers\Api\V1\{
             Route::post('/analyser-tous',               [DiagnosticController::class, 'analyserTous']);
             Route::post('/rattrapages',                 [DiagnosticController::class, 'creerRattrapage']);
             Route::post('/convocations',                [DiagnosticController::class, 'envoyerConvocation']);
+        });
+
+        // ── IA Prediction Échec Scolaire ──────────────────────────────
+        Route::prefix('ia/prediction')->middleware('module:diagnostic')->group(function () {
+            Route::get('/classement',                    [PredictionController::class, 'classementRisque']);
+            Route::get('/tout',                          [PredictionController::class, 'predireTous']);
+            Route::post('/tout',                         [PredictionController::class, 'predireTous']);
+            Route::get('/eleve/{eleveId}',               [PredictionController::class, 'predireEleve']);
         });
 
         // ── Examens Officiels BEM/BAC ──

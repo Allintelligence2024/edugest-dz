@@ -48,6 +48,7 @@ import ModulesPage from '@pages/ModulesPage';
 import NotificationsPage from '@pages/NotificationsPage';
 import DevoirsPage from '@pages/DevoirsPage';
 import FeedbackEnseignantPage from '@pages/FeedbackEnseignantPage';
+import PredictionIAPage from '@pages/PredictionIAPage';
 import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
@@ -152,6 +153,7 @@ export default function App() {
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="devoirs" element={<DevoirsPage />} />
             <Route path="feedback-enseignant" element={<FeedbackEnseignantPage />} />
+            <Route path="prediction-ia" element={<PredictionIAPage />} />
           </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />

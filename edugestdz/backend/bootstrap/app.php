@@ -106,6 +106,14 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->weekly()
                  ->mondays()
                  ->at('04:00');
+
+        $schedule->command('edugest:recalculer-predictions')
+                 ->weekly()
+                 ->wednesdays()
+                 ->at('03:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ── Sentry : reporter les exceptions en production ────────────
