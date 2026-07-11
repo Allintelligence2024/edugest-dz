@@ -12,6 +12,8 @@ return [
     'allowed_origins_patterns' => [
         '#^https://.*\.vercel\.app$#',
         '#^https://edugest.*\.vercel\.app$#',
+        '#^https://.*\.up\.railway\.app$#',
+        '#^https://.*\.railway\.app$#',
     ],
     'allowed_headers'          => ['*'],
     'exposed_headers'          => ['X-Query-Count', 'X-Response-Time'],
