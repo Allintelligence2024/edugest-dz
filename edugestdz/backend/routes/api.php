@@ -829,6 +829,9 @@ Route::get('/health', function () {
     ], $allOk ? 200 : 503);
 })->name('health');
 
+// ── Health Ping — léger, sans auth, pour UptimeRobot ──────────────────
+Route::get('/health/ping', [\App\Http\Controllers\Api\HealthController::class, 'ping'])->name('health.ping');
+
 // ── Fichier (signé, authentifié) ──
 Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
     ->middleware('auth:api');
