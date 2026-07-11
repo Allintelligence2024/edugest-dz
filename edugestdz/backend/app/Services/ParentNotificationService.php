@@ -4,13 +4,16 @@ namespace App\Services;
 
 use App\Models\Eleve;
 use App\Models\NotificationParent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ParentNotificationService
 {
     public function __construct(
         private FirebaseService $firebase,
-        private Sms\SmsService      $sms,
+        private Sms\SmsService  $sms,
+        private NotificationTimingService $timing,
     ) {}
 
     public function notifier(
@@ -20,9 +23,10 @@ class ParentNotificationService
         string $corps,
         array  $meta        = [],
         bool   $avecSMS     = false,
-        bool   $forcerSMS   = false
+        bool   $forcerSMS   = false,
+        bool   $urgence     = false
     ): void {
-        $eleve = Eleve::with('parents:id,nom,prenom,telephone_1,telephone_2')->find($eleveId);
+        $eleve = Eleve::with('parents:id,nom,prenom,telephone_1,telephone_2,email')->find($eleveId);
         if (!$eleve) return;
 
         foreach ($eleve->parents as $parent) {
@@ -36,19 +40,22 @@ class ParentNotificationService
                 'meta'      => $meta,
             ]);
 
-            $pushed = $this->firebase->notifyUser(
-                $parent->id,
-                $titre,
-                $corps,
-                array_merge($meta, [
-                    'type'     => $type,
-                    'eleve_id' => $eleveId,
-                    'notif_id' => $notif->id,
-                ])
-            );
-            if ($pushed) $notif->update(['push_envoye' => true]);
+            if ($this->timing->doitEnvoyerPush($urgence)) {
+                $pushed = $this->firebase->notifyUser(
+                    $parent->id,
+                    $titre,
+                    $corps,
+                    array_merge($meta, [
+                        'type'     => $type,
+                        'eleve_id' => $eleveId,
+                        'notif_id' => $notif->id,
+                    ])
+                );
+                if ($pushed) $notif->update(['push_envoye' => true]);
+            }
 
-            if ($avecSMS || $forcerSMS) {
+            $envoyerSMS = $avecSMS || $forcerSMS;
+            if ($envoyerSMS && $this->timing->doitEnvoyerSMS($urgence)) {
                 $tel = $parent->telephone_1 ?? $parent->telephone_2 ?? null;
                 if ($tel) {
                     try {
@@ -57,6 +64,85 @@ class ParentNotificationService
                     } catch (\Throwable $e) {
                         Log::warning("SMS parent échoué: " . $e->getMessage());
                     }
+                }
+            }
+
+            if (!$this->timing->doitEnvoyerEmail($urgence)) continue;
+
+            // ── Canal 3 : Email HTML ──────────────────────────────────────────────
+            $emailParent = $parent->email ?? null;
+            $emailActif  = config('mail.default') !== 'log'
+                && !empty(config('services.smtp.host', config('mail.mailers.smtp.host', '')));
+
+            if ($emailParent && $emailActif) {
+                try {
+                    $urlApp = config('app.url') . '/dashboard';
+
+                    $templateMap = [
+                        'absence'      => 'emails.absence-eleve',
+                        'bulletin'     => 'emails.bulletin-disponible',
+                        'note'         => 'emails.note-publiee',
+                        'signalement'  => 'emails.absence-eleve',
+                        'facture'      => 'emails.facture-relance',
+                        'bienvenue'    => 'emails.bienvenue',
+                    ];
+
+                    $template = $templateMap[$type] ?? null;
+
+                    if ($template) {
+                        $viewData = array_merge($meta, [
+                            'parentNom'     => $parent->nom ?? '',
+                            'parentPrenom'  => $parent->prenom ?? '',
+                            'eleveNom'      => $eleve->nom ?? '',
+                            'elevePrenom'   => $eleve->prenom ?? '',
+                            'nomEcole'      => config('app.name', 'EduGest DZ'),
+                            'urlApplication'=> $urlApp,
+                            'urlDesinscription' => null,
+                            'dateAbsence'   => $meta['date'] ?? now()->format('d/m/Y'),
+                            'motif'         => $meta['motif'] ?? null,
+                            'trimestre'     => $meta['trimestre'] ?? 'Trimestre',
+                            'moyenne'       => $meta['moyenne'] ?? 0,
+                            'rang'          => $meta['rang'] ?? 0,
+                            'effectif'      => $meta['effectif'] ?? 0,
+                            'mention'       => $meta['mention'] ?? '',
+                            'appreciation'  => $meta['appreciation'] ?? null,
+                            'anneeScolaire' => now()->year . '-' . (now()->year + 1),
+                            'urlBulletin'   => $urlApp . '/bulletins',
+                            'note'          => $meta['note'] ?? 0,
+                            'noteMax'       => $meta['note_sur'] ?? 20,
+                            'noteSur20'     => $meta['note_sur_20'] ?? 0,
+                            'matiere'       => $meta['matiere'] ?? '',
+                            'emoji'         => $meta['emoji'] ?? '📝',
+                            'noteColor'     => ($meta['note'] ?? 0) >= ($meta['note_sur'] ?? 20) * 0.5
+                                ? '#16a34a' : '#dc2626',
+                            'numeroFacture' => $meta['numero_facture'] ?? '',
+                            'montant'       => $meta['montant'] ?? 0,
+                            'dateEcheance'  => $meta['date_echeance'] ?? '',
+                            'joursRetard'   => $meta['jours_retard'] ?? 0,
+                            'periode'       => $meta['periode'] ?? '',
+                            'urlPaiementEnLigne' => $urlApp . '/factures',
+                            'telephoneEcole'=> $meta['telephone_ecole'] ?? '',
+                            'numeroRelance' => $meta['numero_relance'] ?? 1,
+                        ]);
+
+                        Mail::send($template, $viewData, function ($message) use ($emailParent, $titre) {
+                            $message
+                                ->to($emailParent)
+                                ->subject("EduGest DZ — {$titre}")
+                                ->from(
+                                    config('mail.from.address', 'noreply@edugestdz.dz'),
+                                    config('mail.from.name', 'EduGest DZ')
+                                );
+                        });
+
+                        $notif->update(['email_envoye' => true]);
+                    }
+
+                } catch (\Throwable $e) {
+                    Log::warning("Email parent échoué ({$type}): " . $e->getMessage(), [
+                        'parent_id' => $parent->id,
+                        'eleve_id'  => $eleveId,
+                    ]);
                 }
             }
         }

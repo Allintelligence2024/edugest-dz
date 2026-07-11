@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('kill_switch_votes')) {
+            return;
+        }
+
         Schema::create('kill_switch_votes', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('initiator_id', 36);

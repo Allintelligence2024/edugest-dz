@@ -2,8 +2,7 @@
 namespace App\Http\Controllers\Api\V1\Marketplace;
 
 use App\Http\Controllers\Controller;
-use App\Models\OffrePublique;
-use App\Models\Enseignant;
+use App\Models\{OffrePublique, Enseignant, Avis};
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\Auth;
 
@@ -35,8 +34,8 @@ class OffreController extends Controller
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function ($qry) use ($q) {
-                $qry->where('description', 'like', "%{$q}%")
-                    ->orWhere('niveau', 'like', "%{$q}%");
+                $qry->where('description', 'ilike', "%{$q}%")
+                    ->orWhere('niveau', 'ilike', "%{$q}%");
             });
         }
 

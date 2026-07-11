@@ -122,20 +122,109 @@ class KillSwitchService
             ->first();
     }
 
+    /**
+     * Exécuter l'action du KillSwitch avec persistance double (Redis + BDD).
+     * Si Redis est down → la BDD prend le relais (fail-safe).
+     */
     private function executerAction(KillSwitchVote $vote): void
     {
         try {
-            Cache::put('kill_switch:active', true, now()->addHour());
+            // ── Persistance Redis (principal) ─────────────────────────────
+            Cache::put('kill_switch:active', [
+                'reason'       => $vote->action,
+                'activated_at' => now()->toIso8601String(),
+                'vote_id'      => $vote->id,
+            ], now()->addHours(24)); // 24h max — doit être désactivé manuellement
 
-            Log::critical('KillSwitch: action executee', [
-                'action' => $vote->action,
-                'payload' => $vote->payload,
+            // ── Persistance BDD (fallback si Redis down) ──────────────────
+            \DB::table('kill_switch_state')
+                ->update([
+                    'is_active'    => true,
+                    'reason'       => $vote->action,
+                    'activated_by' => $vote->initiator_id,
+                    'approved_by'  => $vote->approver_id,
+                    'activated_at' => now(),
+                    'deactivated_at' => null,
+                    'updated_at'   => now(),
+                ]);
+
+            Log::critical('KillSwitch: action exécutée — persistance Redis + BDD', [
+                'action'  => $vote->action,
+                'vote_id' => $vote->id,
             ]);
+
         } catch (\Throwable $e) {
-            Log::error('KillSwitch: echec execution action', [
+            Log::error('KillSwitch: échec activation', [
                 'action' => $vote->action,
-                'error' => $e->getMessage(),
+                'error'  => $e->getMessage(),
             ]);
+            // Re-lancer pour que l'appelant sache que ça a échoué
+            throw $e;
         }
+    }
+
+    /**
+     * Vérifier si le KillSwitch est actif.
+     *
+     * Stratégie :
+     * 1. Redis disponible → répondre depuis Redis uniquement (rapide, sans BDD)
+     * 2. Redis down → fallback sur BDD kill_switch_state
+     * 3. Les deux down → fail-open (laisser passer)
+     */
+    public function estActif(): bool
+    {
+        // ── Vérification Redis (principale) ───────────────────────────────
+        try {
+            // Cache::has() lève une exception si Redis est down
+            // Sinon retourne true/false immédiatement (sans BDD)
+            return Cache::has('kill_switch:active');
+        } catch (\Throwable) {
+            // Redis indisponible → fallback BDD
+            Log::warning(
+                'KillSwitch: Redis indisponible — fallback BDD'
+            );
+        }
+
+        // ── Fallback BDD (seulement si Redis down) ─────────────────────────
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasTable('kill_switch_state')) {
+                return false;
+            }
+            return (bool) \DB::table('kill_switch_state')
+                ->where('is_active', true)
+                ->whereNull('deactivated_at')
+                ->exists();
+        } catch (\Throwable $e) {
+            Log::error(
+                'KillSwitch: impossible de vérifier (Redis + BDD down) — LAISSER PASSER',
+                ['error' => $e->getMessage()]
+            );
+            return false; // fail-open intentionnel
+        }
+    }
+
+    /**
+     * Désactiver le KillSwitch (Redis + BDD).
+     */
+    public function desactiver(string $adminId): void
+    {
+        // ── Désactiver dans Redis ──────────────────────────────────────────
+        try {
+            Cache::forget('kill_switch:active');
+        } catch (\Throwable) {}
+
+        // ── Désactiver dans BDD ───────────────────────────────────────────
+        try {
+            \DB::table('kill_switch_state')
+                ->update([
+                    'is_active'      => false,
+                    'deactivated_at' => now(),
+                    'updated_at'     => now(),
+                ]);
+        } catch (\Throwable $e) {
+            Log::error('KillSwitch: impossible de désactiver en BDD', ['error' => $e->getMessage()]);
+        }
+
+        Log::warning('KillSwitch: désactivé', ['admin' => $adminId]);
     }
 }

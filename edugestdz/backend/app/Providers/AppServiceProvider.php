@@ -2,29 +2,33 @@
 
 namespace App\Providers;
 
+use App\Policies\ElevePolicy;
+use App\Policies\FacturePolicy;
+use App\Policies\FluxInfoPolicy;
+use App\Models\Eleve;
+use App\Models\Facture;
+use App\Models\User;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\NotificationInAppService::class);
+        $this->app->singleton(\App\Services\AbsenceEnseignantService::class, function ($app) {
+            return new \App\Services\AbsenceEnseignantService(
+                $app->make(\App\Services\ParentNotificationService::class),
+                $app->make(\App\Services\NotificationInAppService::class),
+            );
+        });
     }
 
     public function boot(): void
     {
-        if (DB::getDriverName() === 'sqlite') {
-            $pdo = DB::connection()->getPdo();
-            $pdo->sqliteCreateFunction('gen_random_uuid', function () {
-                return (string) Str::uuid();
-            });
-        }
-
         \App\Models\Eleve::observe(\App\Observers\EleveObserver::class);
         \App\Models\AbsenceJournaliere::observe(\App\Observers\AbsenceJournaliereObserver::class);
         \App\Models\Note::observe(\App\Observers\NoteObserver::class);
@@ -33,6 +37,10 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\AlerteSurveillance::observe(\App\Observers\AlerteSurveillanceObserver::class);
 
         \App\Models\AuditChain::observe(\App\Observers\AuditChainObserver::class);
+
+        Gate::policy(Eleve::class, ElevePolicy::class);
+        Gate::policy(Facture::class, FacturePolicy::class);
+        Gate::policy(User::class, FluxInfoPolicy::class);
 
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(15, 10)
@@ -46,13 +54,33 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('api', function (Request $request) {
-            $tenantId = $request->header('X-Tenant-ID', $request->ip());
-            return Limit::perMinute(100)
-                ->by($tenantId)
-                ->response(function () {
+            $user = $request->user();
+            $role = $user?->role?->nom;
+
+            $limits = [
+                'super_admin' => 300,
+                'admin'       => 200,
+                'enseignant'  => 120,
+                'comptable'   => 100,
+                'secretariat' => 100,
+                'parent'      => 60,
+            ];
+
+            $baseLimit = $limits[$role] ?? 60;
+
+            $hour = now()->hour;
+            if ($hour >= 22 || $hour < 6) {
+                $baseLimit = (int) ceil($baseLimit * 0.5);
+            }
+
+            $key = $user?->id ?? $request->ip();
+
+            return Limit::perMinute($baseLimit)
+                ->by($key)
+                ->response(function () use ($baseLimit) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Limite de requêtes atteinte (100/min). Contactez le support si ce problème persiste.',
+                        'message' => "Limite de requêtes atteinte ({$baseLimit}/min). Réessayez plus tard.",
                     ], 429);
                 });
         });

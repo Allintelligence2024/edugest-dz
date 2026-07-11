@@ -7,9 +7,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\LmsController;
+use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\SecurityDashboardController;
 use App\Http\Controllers\Api\V1\{
     AuthController,
+    SearchController,
+    ExportRgpdController,
     EleveController,
     ParentController,
     InscriptionController,
@@ -42,6 +45,8 @@ use App\Http\Controllers\Api\V1\{
     DiagnosticController,
     ExamenController,
     ModuleController,
+    PredictionController,
+    AnalyticsDashboardController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -73,6 +78,14 @@ use App\Http\Controllers\Api\V1\{
             Route::post('reset-password',  [AuthController::class, 'resetPassword']);
             Route::post('2fa/challenge',   [TwoFactorController::class, 'challenge']);
             Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
+
+            // Alias for frontend client.js compatibility
+            Route::post('password/forgot', function (\Illuminate\Http\Request $request) {
+                $request->validate(['email' => 'required|email']);
+                try { \Illuminate\Support\Facades\Password::sendResetLink($request->only('email')); } catch (\Throwable) {}
+                return response()->json(['success' => true, 'message' => 'Si ce compte existe, un email a été envoyé.']);
+            });
+            Route::post('password/reset',  [AuthController::class, 'resetPassword']);
         });
 
         // ────────────────────────────────────────────
@@ -90,6 +103,9 @@ use App\Http\Controllers\Api\V1\{
     // ────────────────────────────────────────────
     Route::middleware(['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'])
          ->group(function () {
+
+        // ── Recherche globale ──
+        Route::get('search', SearchController::class);
 
         // ── Auth ──
         Route::prefix('auth')->group(function () {
@@ -133,6 +149,7 @@ use App\Http\Controllers\Api\V1\{
             Route::post('{id}/inscription',     [EleveController::class, 'inscrire']);
             Route::post('import',               [EleveController::class, 'import']);
             Route::get('export',                [EleveController::class, 'export']);
+            Route::get('export/excel',          [EleveController::class, 'exportExcel'])->middleware('throttle:exports');
         });
 
         // ── Parents ──
@@ -292,6 +309,19 @@ use App\Http\Controllers\Api\V1\{
             Route::post('envoyer',              [NotificationController::class, 'envoyer']);
         });
 
+        // ── Notifications In-App (notifications_inapp) ──
+        Route::prefix('notifications/in-app')->group(function () {
+            Route::get('/',                      [\App\Http\Controllers\Api\V1\NotificationInAppController::class, 'index']);
+            Route::patch('{id}/lu',              [\App\Http\Controllers\Api\V1\NotificationInAppController::class, 'marquerLue']);
+        });
+
+        // ── Remplacement Enseignant ──
+        Route::prefix('remplacements')->group(function () {
+            Route::get('seances-orphelines',     [\App\Http\Controllers\Api\V1\RemplacementController::class, 'seancesOrphelines']);
+            Route::get('suggestions/{seanceId}', [\App\Http\Controllers\Api\V1\RemplacementController::class, 'suggestions']);
+            Route::post('confirmer/{seanceId}',  [\App\Http\Controllers\Api\V1\RemplacementController::class, 'confirmer']);
+        });
+
         // ── Device Tokens (Push Notifications) ──
         Route::prefix('device-tokens')->group(function () {
             Route::post('/',                     [\App\Http\Controllers\Api\V1\DeviceTokenController::class, 'register']);
@@ -350,10 +380,21 @@ use App\Http\Controllers\Api\V1\{
         // ── Paramètres ──
         Route::prefix('parametres')->group(function () {
             Route::get('/',                      [ParametreController::class, 'index']);
-            Route::put('/',                      [ParametreController::class, 'update']);
+            Route::patch('/',                    [ParametreController::class, 'update']);
+            Route::post('/logo',                 [ParametreController::class, 'uploadLogo']);
+            Route::post('/tester-smtp',          [ParametreController::class, 'testerSmtp']);
             Route::get('wilayas',                [ParametreController::class, 'wilayas']);
             Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
             Route::get('calendrier',             [ParametreController::class, 'calendrier']);
+        });
+
+        // ── RGPD / Loi 18-07 ──
+        Route::prefix('rgpd')->group(function () {
+            Route::get('/export-tenant',             [ExportRgpdController::class, 'exporterTenant']);
+            Route::get('/export-eleve/{eleveId}',    [ExportRgpdController::class, 'exporterEleve']);
+            Route::post('/demande-suppression',      [ExportRgpdController::class, 'demanderSuppression']);
+            Route::post('/archiver-annee',           [ExportRgpdController::class, 'archiverAnnee']);
+            Route::get('/demandes',                  [ExportRgpdController::class, 'listeDemandes']);
         });
 
         // ── Personnel Non-Enseignant (M12) ──
@@ -554,6 +595,22 @@ use App\Http\Controllers\Api\V1\{
             Route::post('/convocations',                [DiagnosticController::class, 'envoyerConvocation']);
         });
 
+        // ── IA Prediction Échec Scolaire ──────────────────────────────
+        Route::prefix('ia/prediction')->middleware('module:diagnostic')->group(function () {
+            Route::get('/classement',                    [PredictionController::class, 'classementRisque']);
+            Route::get('/tout',                          [PredictionController::class, 'predireTous']);
+            Route::post('/tout',                         [PredictionController::class, 'predireTous']);
+            Route::get('/eleve/{eleveId}',               [PredictionController::class, 'predireEleve']);
+        });
+
+        // ── Analytics Dashboard ──────────────────────────────────────
+        Route::prefix('analytics')->group(function () {
+            Route::get('/dashboard',                     [AnalyticsDashboardController::class, 'dashboard']);
+            Route::get('/finances',                      [AnalyticsDashboardController::class, 'finances']);
+            Route::get('/pedagogique',                   [AnalyticsDashboardController::class, 'pedagogique']);
+            Route::get('/rapport-pdf',                   [AnalyticsDashboardController::class, 'rapportPdf']);
+        });
+
         // ── Examens Officiels BEM/BAC ──
         Route::prefix('examens')->middleware('module:examens')->group(function () {
             Route::get('/',                       [ExamenController::class, 'indexSessions']);
@@ -654,6 +711,16 @@ use App\Http\Controllers\Api\V1\{
     });
 
     // ────────────────────────────────────────────
+    // 🎯 ONBOARDING WIZARD (accessible hors modules)
+    // ────────────────────────────────────────────
+    Route::prefix('onboarding')->middleware(['auth:api', 'resolve.tenant'])->group(function () {
+        Route::get('/',                          [OnboardingController::class, 'statut']);
+        Route::post('/avancer',                  [OnboardingController::class, 'avancer']);
+        Route::post('/tester-notification',       [OnboardingController::class, 'testerNotification']);
+        Route::post('/ignorer',                  [OnboardingController::class, 'ignorer']);
+    });
+
+    // ────────────────────────────────────────────
     // 🔒 ROUTES SUPER-ADMIN (hors scope tenant)
     // ────────────────────────────────────────────
     Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
@@ -679,6 +746,33 @@ use App\Http\Controllers\Api\V1\{
 
     // ── Google Classroom OAuth Callback (public) ──
     Route::get('google/classroom/callback',  [\App\Http\Controllers\Api\V1\GoogleClassroomController::class, 'callback']);
+
+    // ── Absences enseignants ──────────────────────────────────────────────
+    Route::prefix('absences-enseignants')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'signaler']);
+        Route::post('/{id}/remplacer',     [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'assigner']);
+    });
+
+    // ── Devoirs ───────────────────────────────────────────────────────────
+    Route::prefix('devoirs')->group(function () {
+        Route::get('/',    [\App\Http\Controllers\Api\V1\DevoirController::class, 'index']);
+        Route::post('/',   [\App\Http\Controllers\Api\V1\DevoirController::class, 'store']);
+    });
+
+    // ── Feedbacks pédagogiques (élève → directeur) ────────────────────────
+    Route::prefix('feedbacks-pedagogiques')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'store']);
+        Route::get('/resume/{ensId}',      [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'resume']);
+    });
+
+    // ── Signalements graves (élève → directeur — confidentiel) ─────────────
+    Route::prefix('signalements-graves')->group(function () {
+        Route::get('/',                    [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index']);
+        Route::post('/',                   [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store']);
+        Route::patch('/{id}/traiter',      [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter']);
+    });
 
     // ══════════════════════════════════════════════════════════════════════
     // SURVEILLANCE DAHUA — Télésurveillance
@@ -770,6 +864,9 @@ Route::get('/health', function () {
     ], $allOk ? 200 : 503);
 })->name('health');
 
+// ── Health Ping — léger, sans auth, pour UptimeRobot ──────────────────
+Route::get('/health/ping', [\App\Http\Controllers\Api\HealthController::class, 'ping'])->name('health.ping');
+
 // ── Fichier (signé, authentifié) ──
 Route::get('/fichier/{cheminB64}', [\App\Http\Controllers\Api\FichierController::class, 'show'])
     ->middleware('auth:api');
@@ -792,3 +889,51 @@ Route::any('/v1/actuator', function () {
 Route::any('/v1/metrics', function () {
     return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
 })->name('honeypot.metrics');
+
+Route::any('/v1/.git/config', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.git-config');
+
+Route::any('/v1/swagger.json', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.swagger');
+
+Route::any('/v1/graphql', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.graphql');
+
+Route::any('/v1/health/check', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.health-check');
+
+Route::any('/v1/ping', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.ping');
+
+Route::any('/v1/test', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.test');
+
+Route::any('/v1/api-docs', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.api-docs');
+
+Route::any('/v1/robots.txt', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.robots');
+
+Route::any('/v1/sitemap.xml', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.sitemap');
+
+Route::any('/v1/cron', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.cron');
+
+Route::any('/v1/deploy', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.deploy');
+
+Route::any('/v1/websocket', function () {
+    return app(\App\Services\HoneypotService::class)->declencherRouteLeurre();
+})->name('honeypot.websocket');

@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->api(append: [
             \App\Http\Middleware\IntelligentRateLimiter::class,
+            \App\Http\Middleware\NotificationTimingMiddleware::class,
         ]);
 
         $middleware->alias([
@@ -41,6 +42,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant.verify'     => \App\Http\Middleware\TenantIsolationVerifier::class,
             'zero.trust'        => \App\Http\Middleware\ZeroTrustMiddleware::class,
             'zero.trust.strict' => \App\Http\Middleware\ZeroTrustMiddleware::class . ':strict',
+            'honeypot'          => \App\Http\Middleware\HoneypotRouteMiddleware::class,
+            'jwt.blacklist'     => \App\Http\Middleware\JwtBlacklistCheck::class,
+            'sql.protect'       => \App\Http\Middleware\SqlInjectionDetectorMiddleware::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
@@ -102,6 +106,14 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->weekly()
                  ->mondays()
                  ->at('04:00');
+
+        $schedule->command('edugest:recalculer-predictions')
+                 ->weekly()
+                 ->wednesdays()
+                 ->at('03:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ── Sentry : reporter les exceptions en production ────────────

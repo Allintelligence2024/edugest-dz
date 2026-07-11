@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from '@context/AuthContext';
+import { setSessionExpiredHandler } from '@api/client';
 import { I18nProvider } from '@context/I18nContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { ModulesProvider } from '@context/ModulesContext';
+import ProtectedRoute from '@components/ProtectedRoute';
 import Sidebar from '@components/Sidebar';
-import Header from '@components/Header';
+import Topbar from '@components/layout/Topbar';
 import LoginPage from '@pages/LoginPage';
+import MotDePasseOubliePage from '@pages/MotDePasseOubliePage';
+import AccesRefusePage from '@pages/AccesRefusePage';
+import OnboardingPage from '@pages/OnboardingPage';
 import DashboardPage from '@pages/DashboardPage';
 import PlanningPage from '@pages/PlanningPage';
 import PresencesPage from '@pages/PresencesPage';
@@ -45,17 +50,26 @@ import SurveillancePage from '@pages/SurveillancePage';
 import DiagnosticPage from '@pages/DiagnosticPage';
 import ExamensPage from '@pages/ExamensPage';
 import ModulesPage from '@pages/ModulesPage';
+import NotificationsPage from '@pages/NotificationsPage';
+import DevoirsPage from '@pages/DevoirsPage';
+import FeedbackEnseignantPage from '@pages/FeedbackEnseignantPage';
+import PredictionIAPage from '@pages/PredictionIAPage';
+import RgpdPage from '@pages/RgpdPage';
+import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#070B14' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🎓</div>
-          <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '3px solid #1E2D40', borderTop: '3px solid #2563EB', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-          <div style={{ marginTop: '16px', fontSize: '13px', color: '#64748B' }}>Chargement EduGest DZ...</div>
+      <div className="min-h-screen flex items-center justify-center bg-bg">
+        <div className="text-center">
+          <div className="text-[40px] mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.657 2.686 3 6 3s6-1.343 6-3v-5"/></svg>
+          </div>
+          <div className="w-10 h-10 mx-auto border-3 border-border rounded-full animate-spin"
+            style={{ borderTopColor: '#2563EB' }} />
+          <div className="mt-4 text-xs text-muted">Chargement EduGest DZ...</div>
         </div>
       </div>
     );
@@ -66,17 +80,11 @@ function ProtectedLayout() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#070B14' }}>
+    <div className="flex min-h-screen bg-bg">
       <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Header user={user} />
-        <main style={{
-          flex: 1,
-          padding: '24px',
-          overflowY: 'auto',
-          background: '#070B14',
-          color: '#E2E8F0',
-        }}>
+      <div className="flex-1 flex flex-col min-w-0">
+        <Topbar user={user} />
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
@@ -91,26 +99,33 @@ function PublicRoute({ children }) {
   return children;
 }
 
-export default function App() {
+function AppInner() {
+  const { onSessionExpired } = useAuth();
+  useEffect(() => {
+    setSessionExpiredHandler(onSessionExpired);
+  }, [onSessionExpired]);
+
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <I18nProvider>
-          <AuthProvider>
-          <ModulesProvider>
+    <ThemeProvider>
+      <OfflineBanner />
+      <I18nProvider>
+        <ModulesProvider>
           <Toaster position="top-right" toastOptions={{
             duration: 3500,
             style: {
               borderRadius: '10px',
-              background: '#0D1117',
-              color: '#E2E8F0',
+              background: 'var(--surface)',
+              color: 'var(--text)',
               fontSize: '13px',
-              border: '1px solid #1E2D40',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow)',
             },
           }} />
           <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/mot-de-passe-oublie" element={<MotDePasseOubliePage />} />
+            <Route path="/acces-refuse" element={<AccesRefusePage />} />
+            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route element={<ProtectedLayout />}>
               <Route index element={<DashboardPage />} />
               <Route path="planning" element={<PlanningPage />} />
@@ -147,15 +162,28 @@ export default function App() {
             <Route path="examens" element={<ExamensPage />} />
             <Route path="lms" element={<LmsPage />} />
             <Route path="modules" element={<ModulesPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="devoirs" element={<DevoirsPage />} />
+            <Route path="feedback-enseignant" element={<FeedbackEnseignantPage />} />
+            <Route path="prediction-ia" element={<PredictionIAPage />} />
+            <Route path="rgpd" element={<RgpdPage />} />
           </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          </ModulesProvider>
-          </AuthProvider>
-        </I18nProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+        </ModulesProvider>
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppInner />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

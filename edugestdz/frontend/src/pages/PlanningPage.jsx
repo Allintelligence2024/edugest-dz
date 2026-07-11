@@ -65,8 +65,8 @@ export default function PlanningPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">📅 Planning hebdomadaire</h1>
-          <p className="text-neutral-500 text-sm mt-1">{dateRange.label}</p>
+          <h1 className="text-2xl font-bold text-text">📅 Planning hebdomadaire</h1>
+          <p className="text-muted text-sm mt-1">{dateRange.label}</p>
         </div>
         <button onClick={() => { setEditingCours(null); setCoursModalOpen(true); }} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
           ➕ Nouveau cours
@@ -75,33 +75,33 @@ export default function PlanningPage() {
 
       <PlanningFilters filtres={filtres} onChange={setFiltres} />
 
-      <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
-        <div className="flex items-center justify-between p-3 border-b border-neutral-100">
-          <button onClick={handlePrevWeek} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 rounded-lg">← Semaine précédente</button>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg">Aujourd'hui</button>
-          <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-50 rounded-lg">Semaine suivante →</button>
+      <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+        <div className="flex items-center justify-between p-3 border-b border-border">
+          <button onClick={handlePrevWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">← Semaine précédente</button>
+          <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm font-medium rounded-lg" style={{ color: 'var(--accent)', background: 'var(--accent)12' }}>Aujourd'hui</button>
+          <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">Semaine suivante →</button>
         </div>
         <div className="overflow-x-auto">
           <div className="grid grid-cols-8 min-w-[800px]">
-            <div className="border-r border-neutral-100 bg-neutral-50 p-2">
-              <div className="text-xs font-bold text-neutral-400 uppercase text-center">Horaire</div>
+            <div className="border-r border-border p-2" style={{ background: 'var(--surface2)' }}>
+              <div className="text-xs font-bold text-muted uppercase text-center">Horaire</div>
             </div>
             {JOURS.map((jour, idx) => (
-              <div key={idx} className={`border-r border-neutral-100 p-2 text-center ${new Date().getDay() === idx ? 'bg-primary-50' : 'bg-neutral-50'}`}>
-                <div className="text-xs font-bold text-neutral-600 uppercase">{jour.substring(0, 3)}</div>
-                <div className="text-2xl font-bold text-neutral-800">{new Date(dateRange.start).getDate() + idx}</div>
+              <div key={idx} className={`border-r border-border p-2 text-center ${new Date().getDay() === idx ? 'bg-accent/10' : ''}`} style={{ background: new Date().getDay() === idx ? undefined : 'var(--surface2)' }}>
+                <div className="text-xs font-bold text-text2 uppercase">{jour.substring(0, 3)}</div>
+                <div className="text-2xl font-bold text-text">{new Date(dateRange.start).getDate() + idx}</div>
               </div>
             ))}
             {HEURES.map(heure => (
               <React.Fragment key={heure}>
-                <div className="border-r border-b border-neutral-100 p-1.5 text-center bg-neutral-50">
-                  <span className="text-[10px] font-mono text-neutral-400">{heure}</span>
+                <div className="border-r border-b border-border p-1.5 text-center" style={{ background: 'var(--surface2)' }}>
+                  <span className="text-[10px] font-mono text-muted">{heure}</span>
                 </div>
                 {[0,1,2,3,4,5,6].map(jourNum => {
                   const seances = getSeancesForJourHeure(jourNum, heure);
                   const isToday = new Date().getDay() === jourNum;
                   return (
-                    <div key={`${jourNum}-${heure}`} className={`border-r border-b border-neutral-100 p-0.5 min-h-[60px] ${isToday ? 'bg-primary-50/30' : ''}`}>
+                    <div key={`${jourNum}-${heure}`} className={`border-r border-b border-border p-0.5 min-h-[60px] ${isToday ? 'bg-accent/5' : ''}`}>
                       {seances.map(s => (
                         <SeanceCard key={s.id} seance={s} onClick={() => { setEditingCours(s); setCoursModalOpen(true); }} />
                       ))}

@@ -226,4 +226,33 @@ class ReservationController extends Controller
             'message' => 'Réservation terminée',
         ]);
     }
+
+    public function confirmer(string $id): JsonResponse
+    {
+        $reservation = Reservation::with('offre')->findOrFail($id);
+
+        $user = Auth::user();
+        $enseignant = Enseignant::where('user_id', $user->id)->first();
+
+        if (!$enseignant || $enseignant->id !== $reservation->offre->enseignant_id) {
+            abort(403, 'Seul l\'enseignant de cette offre peut confirmer la réservation');
+        }
+
+        if ($reservation->statut !== 'en_attente') {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'INVALID_STATUT', 'message' => 'Seules les réservations en attente peuvent être confirmées'],
+            ], 422);
+        }
+
+        $reservation->update(['statut' => 'confirmee']);
+
+        $this->commissionService->persistCommission($reservation);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Réservation confirmée',
+            'data'    => $reservation->fresh()->load(['offre.matiere', 'offre.enseignant.user']),
+        ]);
+    }
 }
