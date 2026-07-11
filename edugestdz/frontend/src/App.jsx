@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from '@context/AuthContext';
+import { setSessionExpiredHandler } from '@api/client';
 import { I18nProvider } from '@context/I18nContext';
 import { ThemeProvider } from '@context/ThemeContext';
 import { ModulesProvider } from '@context/ModulesContext';
+import ProtectedRoute from '@components/ProtectedRoute';
 import Sidebar from '@components/Sidebar';
 import Topbar from '@components/layout/Topbar';
 import LoginPage from '@pages/LoginPage';
+import MotDePasseOubliePage from '@pages/MotDePasseOubliePage';
+import AccesRefusePage from '@pages/AccesRefusePage';
 import DashboardPage from '@pages/DashboardPage';
 import PlanningPage from '@pages/PlanningPage';
 import PresencesPage from '@pages/PresencesPage';
@@ -93,14 +97,17 @@ function PublicRoute({ children }) {
   return children;
 }
 
-export default function App() {
+function AppInner() {
+  const { onSessionExpired } = useAuth();
+  useEffect(() => {
+    setSessionExpiredHandler(onSessionExpired);
+  }, [onSessionExpired]);
+
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <OfflineBanner />
-        <I18nProvider>
-          <AuthProvider>
-          <ModulesProvider>
+    <ThemeProvider>
+      <OfflineBanner />
+      <I18nProvider>
+        <ModulesProvider>
           <Toaster position="top-right" toastOptions={{
             duration: 3500,
             style: {
@@ -114,6 +121,8 @@ export default function App() {
           }} />
           <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/mot-de-passe-oublie" element={<MotDePasseOubliePage />} />
+            <Route path="/acces-refuse" element={<AccesRefusePage />} />
             <Route element={<ProtectedLayout />}>
               <Route index element={<DashboardPage />} />
               <Route path="planning" element={<PlanningPage />} />
@@ -159,10 +168,18 @@ export default function App() {
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          </ModulesProvider>
-          </AuthProvider>
-        </I18nProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+        </ModulesProvider>
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppInner />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

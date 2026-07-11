@@ -75,6 +75,14 @@ use App\Http\Controllers\Api\V1\{
             Route::post('reset-password',  [AuthController::class, 'resetPassword']);
             Route::post('2fa/challenge',   [TwoFactorController::class, 'challenge']);
             Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
+
+            // Alias for frontend client.js compatibility
+            Route::post('password/forgot', function (\Illuminate\Http\Request $request) {
+                $request->validate(['email' => 'required|email']);
+                try { \Illuminate\Support\Facades\Password::sendResetLink($request->only('email')); } catch (\Throwable) {}
+                return response()->json(['success' => true, 'message' => 'Si ce compte existe, un email a été envoyé.']);
+            });
+            Route::post('password/reset',  [AuthController::class, 'resetPassword']);
         });
 
         // ────────────────────────────────────────────

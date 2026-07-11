@@ -1,150 +1,150 @@
-import { useState } from 'react';
-import { authApi } from '../services/api';
-import { useI18n } from '@context/I18nContext';
-import { useTheme } from '@context/ThemeContext';
-import LanguageThemeSelector from '@components/LanguageThemeSelector';
+import React, { useState } from 'react';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useAuth } from '@context/AuthContext';
 
 export default function LoginPage() {
-  const { t } = useI18n();
-  const { isDark } = useTheme();
-  const [email, setEmail]       = useState('');
+  const { login, isAuthenticated, homeRoute, sessionExpired } = useAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
-  const handleLogin = async (e) => {
+  if (isAuthenticated) return <Navigate to={homeRoute()} replace />;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
+    setError(''); setLoading(true);
     try {
-      const res = await authApi.login(email, password);
-
-      if (res?.success && res?.data?.token) {
-        localStorage.setItem('token',    res.data.token);
-        localStorage.setItem('tenantId', res.data.user?.tenant_id ?? '');
-        localStorage.setItem('user',     JSON.stringify(res.data.user));
-        localStorage.setItem('role',     res.data.user?.role ?? '');
-
-        const role = res.data.user?.role;
-        if (role === 'super_admin') window.location.href = '/super-admin';
-        else                        window.location.href = '/dashboard';
-      } else {
-        setError(res?.message ?? t('login_error'));
-      }
-    } catch (e) {
-      if (e.message && e.message.includes('serveur')) {
-        setError(e.message);
-      } else if (!navigator.onLine) {
-        setError('Pas de connexion internet. Vérifiez votre réseau.');
-      } else {
-        setError(
-          'Le serveur est temporairement indisponible. ' +
-          'Réessayez dans quelques instants.'
-        );
-      }
+      const user = await login(email, password);
+      const dest = user?.role === 'eleve' ? '/devoirs'
+                 : user?.role === 'enseignant' ? '/planning'
+                 : '/';
+      navigate(dest, { replace: true });
+    } catch (err) {
+      setError(err.message ?? 'Identifiants incorrects. Réessayez.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{
-      minHeight: '100vh', background: 'var(--eg-bg)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px', position: 'relative',
-    }}>
-      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
-        <LanguageThemeSelector compact />
-      </div>
+    <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+      <div style={{ width:'100%', maxWidth:'400px' }}>
 
-      <div style={{
-        background: 'var(--eg-surface)', border: '1px solid var(--eg-border)',
-        borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ fontSize: '40px', marginBottom: '8px' }}>🎓</div>
-          <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--eg-text)', marginBottom: '4px' }}>
-            {t('app_name')}
+        <div style={{ textAlign:'center', marginBottom:'32px' }}>
+          <div style={{ fontSize:'40px', marginBottom:'8px' }}>🎓</div>
+          <h1 style={{ fontSize:'26px', fontWeight:900, color:'var(--text)', letterSpacing:'-0.5px' }}>
+            EduGest <span style={{ color:'var(--accent)' }}>DZ</span>
           </h1>
-          <p style={{ fontSize: '12px', color: 'var(--eg-muted)' }}>
-            {t('login_subtitle')}
+          <p style={{ color:'var(--muted)', fontSize:'13px', marginTop:'6px' }}>
+            Plateforme de gestion scolaire
           </p>
         </div>
 
-        {error && (
+        {sessionExpired && (
           <div style={{
-            background: '#450a0a', border: '1px solid #b91c1c',
-            borderRadius: '8px', padding: '12px', marginBottom: '16px',
-            color: '#f87171', fontSize: '12px',
+            background:'rgba(234,179,8,0.1)', border:'1px solid rgba(234,179,8,0.3)',
+            borderRadius:'10px', padding:'12px 14px', marginBottom:'16px',
+            color:'#ca8a04', fontSize:'13px', fontWeight:600,
           }}>
-            ❌ {error}
+            ⏱️ Votre session a expiré. Veuillez vous reconnecter.
           </div>
         )}
 
-        <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: '14px' }}>
-            <label style={{ fontSize: '11px', color: 'var(--eg-muted)', display: 'block', marginBottom: '6px' }}>
-              {t('login_email')}
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="directeur@ecole.dz"
-              required
+        <div style={{
+          background:'var(--surface)', border:'1px solid var(--border)',
+          borderRadius:'20px', padding:'32px', boxShadow:'0 20px 60px rgba(0,0,0,0.4)'
+        }}>
+          <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'24px' }}>
+            Connexion
+          </h2>
+
+          {error && (
+            <div style={{
+              background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)',
+              borderRadius:'10px', padding:'12px 14px', marginBottom:'16px',
+              color:'#f87171', fontSize:'13px'
+            }}>
+              ❌ {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom:'16px' }}>
+              <label style={{ display:'block', fontSize:'12px', fontWeight:700, color:'var(--text)', marginBottom:'6px' }}>
+                Email ou identifiant
+              </label>
+              <input
+                type="email"
+                required
+                autoFocus
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="directeur@mon-ecole.dz"
+                style={{
+                  width:'100%', background:'var(--surface2)', border:'1px solid var(--border)',
+                  borderRadius:'10px', padding:'10px 14px', color:'var(--text)', fontSize:'14px',
+                  outline:'none', boxSizing:'border-box',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom:'20px' }}>
+              <label style={{ display:'block', fontSize:'12px', fontWeight:700, color:'var(--text)', marginBottom:'6px' }}>
+                Mot de passe
+              </label>
+              <div style={{ position:'relative' }}>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  style={{
+                    width:'100%', background:'var(--surface2)', border:'1px solid var(--border)',
+                    borderRadius:'10px', padding:'10px 40px 10px 14px', color:'var(--text)', fontSize:'14px',
+                    outline:'none', boxSizing:'border-box',
+                  }}
+                />
+                <button type="button" onClick={() => setShowPass(s => !s)}
+                  style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)',
+                    background:'none', border:'none', cursor:'pointer', color:'var(--muted)', fontSize:'16px' }}>
+                  {showPass ? '🙈' : '👁️'}
+                </button>
+              </div>
+              <div style={{ textAlign:'right', marginTop:'6px' }}>
+                <Link to="/mot-de-passe-oublie" style={{ fontSize:'12px', color:'var(--accent)', textDecoration:'none' }}>
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
               style={{
-                width: '100%', background: 'var(--eg-input-bg)', border: '1px solid var(--eg-border)',
-                borderRadius: '8px', color: 'var(--eg-text)', padding: '12px 14px', fontSize: '13px',
+                width:'100%', background: loading ? 'var(--surface2)' : 'var(--accent)',
+                color:'white', border:'none', borderRadius:'10px', padding:'12px',
+                fontSize:'14px', fontWeight:700, cursor: loading ? 'not-allowed' : 'pointer',
+                transition:'all 0.2s',
               }}
-            />
-          </div>
+            >
+              {loading ? '⏳ Connexion...' : '🔓 Se connecter'}
+            </button>
+          </form>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ fontSize: '11px', color: 'var(--eg-muted)', display: 'block', marginBottom: '6px' }}>
-              {t('login_password')}
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={{
-                width: '100%', background: 'var(--eg-input-bg)', border: '1px solid var(--eg-border)',
-                borderRadius: '8px', color: 'var(--eg-text)', padding: '12px 14px', fontSize: '13px',
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              background: loading ? 'var(--eg-surface2)' : 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
-              color: '#fff', border: 'none', borderRadius: '8px',
-              padding: '13px', fontSize: '14px', fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'opacity .2s',
-            }}
-          >
-            {loading ? `⏳ ${t('login_loading')}` : `🔐 ${t('login_submit')}`}
-          </button>
-        </form>
-
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '11px', color: 'var(--eg-muted)' }}>
-          Problème de connexion ? Contactez l'administrateur de votre établissement.
-        </p>
-
-        <div style={{ marginTop: '24px', borderTop: '1px solid var(--eg-border)', paddingTop: '16px', textAlign: 'center' }}>
-          <p style={{ fontSize: '10px', color: 'var(--eg-border)' }}>
-            Vous êtes un centre ? Rejoignez la Marketplace →{' '}
-            <a href="/marketplace" style={{ color: '#60a5fa', textDecoration: 'none' }}>
-              Trouver un cours
-            </a>
+          <p style={{ fontSize:'11px', color:'var(--muted)', textAlign:'center', marginTop:'20px', lineHeight:'1.6' }}>
+            Problème de connexion ? Contactez votre administrateur.
           </p>
         </div>
+
+        <p style={{ textAlign:'center', color:'var(--muted)', fontSize:'11px', marginTop:'20px' }}>
+          EduGest DZ · Made in Oran 🇩🇿 ·
+          <Link to="/" style={{ color:'var(--accent)', textDecoration:'none' }}>Confidentialité</Link>
+        </p>
       </div>
     </div>
   );
