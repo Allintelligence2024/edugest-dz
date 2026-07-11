@@ -45,6 +45,9 @@ import SurveillancePage from '@pages/SurveillancePage';
 import DiagnosticPage from '@pages/DiagnosticPage';
 import ExamensPage from '@pages/ExamensPage';
 import ModulesPage from '@pages/ModulesPage';
+import NotificationsPage from '@pages/NotificationsPage';
+import DevoirsPage from '@pages/DevoirsPage';
+import FeedbackEnseignantPage from '@pages/FeedbackEnseignantPage';
 import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
@@ -146,6 +149,9 @@ export default function App() {
             <Route path="examens" element={<ExamensPage />} />
             <Route path="lms" element={<LmsPage />} />
             <Route path="modules" element={<ModulesPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="devoirs" element={<DevoirsPage />} />
+            <Route path="feedback-enseignant" element={<FeedbackEnseignantPage />} />
           </Route>
             <Route path="marketplace" element={<MarketplaceSearchPage />} />
             <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
