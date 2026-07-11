@@ -43,6 +43,7 @@ use App\Http\Controllers\Api\V1\{
     ExamenController,
     ModuleController,
     PredictionController,
+    AnalyticsDashboardController,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -575,6 +576,14 @@ use App\Http\Controllers\Api\V1\{
             Route::get('/tout',                          [PredictionController::class, 'predireTous']);
             Route::post('/tout',                         [PredictionController::class, 'predireTous']);
             Route::get('/eleve/{eleveId}',               [PredictionController::class, 'predireEleve']);
+        });
+
+        // ── Analytics Dashboard ──────────────────────────────────────
+        Route::prefix('analytics')->group(function () {
+            Route::get('/dashboard',                     [AnalyticsDashboardController::class, 'dashboard']);
+            Route::get('/finances',                      [AnalyticsDashboardController::class, 'finances']);
+            Route::get('/pedagogique',                   [AnalyticsDashboardController::class, 'pedagogique']);
+            Route::get('/rapport-pdf',                   [AnalyticsDashboardController::class, 'rapportPdf']);
         });
 
         // ── Examens Officiels BEM/BAC ──
