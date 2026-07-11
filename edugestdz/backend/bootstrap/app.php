@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->api(append: [
             \App\Http\Middleware\IntelligentRateLimiter::class,
+            \App\Http\Middleware\NotificationTimingMiddleware::class,
         ]);
 
         $middleware->alias([

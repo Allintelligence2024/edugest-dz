@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Eleve;
 use App\Models\NotificationParent;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -11,7 +12,8 @@ class ParentNotificationService
 {
     public function __construct(
         private FirebaseService $firebase,
-        private Sms\SmsService      $sms,
+        private Sms\SmsService  $sms,
+        private NotificationTimingService $timing,
     ) {}
 
     public function notifier(
@@ -21,7 +23,8 @@ class ParentNotificationService
         string $corps,
         array  $meta        = [],
         bool   $avecSMS     = false,
-        bool   $forcerSMS   = false
+        bool   $forcerSMS   = false,
+        bool   $urgence     = false
     ): void {
         $eleve = Eleve::with('parents:id,nom,prenom,telephone_1,telephone_2,email')->find($eleveId);
         if (!$eleve) return;
@@ -37,19 +40,22 @@ class ParentNotificationService
                 'meta'      => $meta,
             ]);
 
-            $pushed = $this->firebase->notifyUser(
-                $parent->id,
-                $titre,
-                $corps,
-                array_merge($meta, [
-                    'type'     => $type,
-                    'eleve_id' => $eleveId,
-                    'notif_id' => $notif->id,
-                ])
-            );
-            if ($pushed) $notif->update(['push_envoye' => true]);
+            if ($this->timing->doitEnvoyerPush($urgence)) {
+                $pushed = $this->firebase->notifyUser(
+                    $parent->id,
+                    $titre,
+                    $corps,
+                    array_merge($meta, [
+                        'type'     => $type,
+                        'eleve_id' => $eleveId,
+                        'notif_id' => $notif->id,
+                    ])
+                );
+                if ($pushed) $notif->update(['push_envoye' => true]);
+            }
 
-            if ($avecSMS || $forcerSMS) {
+            $envoyerSMS = $avecSMS || $forcerSMS;
+            if ($envoyerSMS && $this->timing->doitEnvoyerSMS($urgence)) {
                 $tel = $parent->telephone_1 ?? $parent->telephone_2 ?? null;
                 if ($tel) {
                     try {
@@ -60,6 +66,8 @@ class ParentNotificationService
                     }
                 }
             }
+
+            if (!$this->timing->doitEnvoyerEmail($urgence)) continue;
 
             // ── Canal 3 : Email HTML ──────────────────────────────────────────────
             $emailParent = $parent->email ?? null;

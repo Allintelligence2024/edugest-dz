@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Policies\ElevePolicy;
 use App\Policies\FacturePolicy;
+use App\Policies\FluxInfoPolicy;
 use App\Models\Eleve;
 use App\Models\Facture;
+use App\Models\User;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Eleve::class, ElevePolicy::class);
         Gate::policy(Facture::class, FacturePolicy::class);
+        Gate::policy(User::class, FluxInfoPolicy::class);
 
         RateLimiter::for('auth', function (Request $request) {
             return Limit::perMinutes(15, 10)
