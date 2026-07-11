@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduGest DZ — Design Système Complet (Dark + Light)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  /* ════════════════════════════════════════════════════
+     VARIABLES — DARK THEME (défaut)
+  ════════════════════════════════════════════════════ */
+  :root {
+    --bg:        #070B14;
+    --surface:   #0D1117;
+    --surface2:  #161C26;
+    --surface3:  #1A2236;
+    --border:    #1E2D40;
+    --border2:   #253347;
+    --text:      #E2E8F0;
+    --text2:     #CBD5E1;
+    --muted:     #64748B;
+    --muted2:    #475569;
+    --accent:    #2563EB;
+    --accent-h:  #1D4ED8;
+    --accent2:   #7C3AED;
+    --green:     #10B981;
+    --green-h:   #059669;
+    --orange:    #F59E0B;
+    --red:       #EF4444;
+    --teal:      #06B6D4;
+    --pink:      #EC4899;
+    --shadow:    0 4px 24px rgba(0,0,0,0.4);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --glow:      0 0 20px rgba(37,99,235,0.15);
+    /* Input */
+    --input-bg:  #161C26;
+    --input-border: #1E2D40;
+    /* Toggle */
+    --toggle-bg: #0D1117;
+    --toggle-btn:#2563EB;
+  }
+
+  /* ════════════════════════════════════════════════════
+     VARIABLES — LIGHT THEME
+  ════════════════════════════════════════════════════ */
+  [data-theme="light"] {
+    --bg:        #F0F4F8;
+    --surface:   #FFFFFF;
+    --surface2:  #F8FAFC;
+    --surface3:  #EEF2F7;
+    --border:    #E2E8F0;
+    --border2:   #CBD5E1;
+    --text:      #0F172A;
+    --text2:     #1E293B;
+    --muted:     #64748B;
+    --muted2:    #94A3B8;
+    --accent:    #2563EB;
+    --accent-h:  #1D4ED8;
+    --accent2:   #7C3AED;
+    --green:     #10B981;
+    --green-h:   #059669;
+    --orange:    #F59E0B;
+    --red:       #EF4444;
+    --teal:      #06B6D4;
+    --pink:      #EC4899;
+    --shadow:    0 4px 24px rgba(0,0,0,0.08);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --glow:      0 0 20px rgba(37,99,235,0.08);
+    --input-bg:  #F8FAFC;
+    --input-border: #E2E8F0;
+    --toggle-bg: #E2E8F0;
+    --toggle-btn:#FFFFFF;
+  }
+
+  /* ════════════════════════════════════════════════════
+     RESET & BASE
+  ════════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    line-height: 1.5;
+  }
+
+  /* ════════════════════════════════════════════════════
+     NAVIGATION ÉCRANS
+  ════════════════════════════════════════════════════ */
+  .screen-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+  }
+
+  .screen-nav .brand {
+    font-size: 13px; font-weight: 800; color: var(--accent);
+    margin-right: 12px; white-space: nowrap;
+  }
+
+  .screen-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface2); color: var(--muted);
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .screen-btn:hover, .screen-btn.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+
+  /* Theme Toggle */
+  .theme-toggle {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .toggle-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .toggle-track {
+    width: 40px; height: 22px; border-radius: 11px;
+    background: var(--toggle-bg); border: 1px solid var(--border);
+    position: relative; transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .toggle-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--toggle-btn); transition: all 0.3s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  [data-theme="light"] .toggle-thumb { left: 20px; background: var(--accent); }
+
+  /* ════════════════════════════════════════════════════
+     ÉCRANS (un seul visible)
+  ════════════════════════════════════════════════════ */
+  .screen {
+    display: none;
+    margin-top: 52px;
+    min-height: calc(100vh - 52px);
+  }
+  .screen.active { display: flex; }
+
+  /* ════════════════════════════════════════════════════
+     SIDEBAR — partagée
+  ════════════════════════════════════════════════════ */
+  .sidebar {
+    width: 232px; flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: fixed; top: 52px; left: 0; bottom: 0;
+    overflow-y: auto;
+    transition: background 0.3s, border-color 0.3s;
+    z-index: 100;
+  }
+
+  .logo-area {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  .logo-text { font-weight: 800; font-size: 14px; color: var(--text); line-height: 1.1; }
+  .logo-sub  { font-size: 9px; color: var(--muted); font-weight: 400; }
+
+  .school-badge {
+    margin: 10px 12px;
+    background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(124,58,237,0.08));
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: 9px; padding: 9px 11px; font-size: 10px; color: var(--muted);
+  }
+  .school-badge strong { display: block; font-size: 11px; color: var(--text); margin-bottom: 1px; font-weight: 700; }
+
+  .nav-section { padding: 6px 0; }
+  .nav-label {
+    font-size: 9px; font-weight: 700; color: var(--muted2);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 8px 16px 3px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 16px; font-size: 12px; font-weight: 500;
+    color: var(--muted); cursor: pointer;
+    transition: all 0.15s; position: relative;
+    text-decoration: none; border-radius: 0;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active {
+    color: #93c5fd; background: linear-gradient(90deg, rgba(37,99,235,0.12), transparent);
+  }
+  [data-theme="light"] .nav-item.active { color: var(--accent); }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 18px; background: var(--accent); border-radius: 0 3px 3px 0;
+  }
+  .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+  .nav-badge {
+    margin-left: auto; background: var(--red); color: #fff;
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px;
+  }
+  .nav-badge.g { background: var(--green); }
+  .nav-badge.o { background: var(--orange); color: #000; }
+  .nav-badge.b { background: var(--accent); }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 10px; border-radius: 9px;
+    background: var(--surface2); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--surface3); }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff;
+  }
+  .user-name  { font-size: 11px; font-weight: 600; color: var(--text); }
+  .user-role  { font-size: 9px; color: var(--muted); }
+  .user-arrow { margin-left: auto; color: var(--muted); font-size: 11px; }
+
+  /* ════════════════════════════════════════════════════
+     MAIN AREA
+  ════════════════════════════════════════════════════ */
+  .main {
+    margin-left: 232px; flex: 1;
+    display: flex; flex-direction: column;
+    min-height: calc(100vh - 52px);
+  }
+
+  /* ════════════════════════════════════════════════════
+     TOPBAR
+  ════════════════════════════════════════════════════ */
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 56px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 52px; z-index: 50;
+    transition: background 0.3s;
+  }
+  .topbar-title { font-size: 15px; font-weight: 700; color: var(--text); flex: 1; }
+  .breadcrumb   { font-size: 11px; color: var(--muted); }
+  .breadcrumb span { color: var(--text); font-weight: 600; }
+
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 8px; padding: 6px 12px; cursor: text;
+    min-width: 220px; transition: border-color 0.15s;
+  }
+  .search-box:hover { border-color: var(--accent); }
+  .search-box span { font-size: 11px; color: var(--muted); }
+
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 7px; cursor: pointer;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; position: relative; transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); background: rgba(37,99,235,0.08); }
+  .notif-dot {
+    position: absolute; top: 5px; right: 6px;
+    width: 7px; height: 7px; background: var(--red);
+    border-radius: 50%; border: 2px solid var(--surface);
+  }
+
+  /* ════════════════════════════════════════════════════
+     CONTENT
+  ════════════════════════════════════════════════════ */
+  .content { padding: 24px; flex: 1; }
+
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-title   { font-size: 20px; font-weight: 800; color: var(--text); }
+  .page-sub     { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* ════════════════════════════════════════════════════
+     BUTTONS
+  ════════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: 8px; font-size: 12px;
+    font-weight: 600; cursor: pointer; border: none; transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  .btn-primary:hover { background: var(--accent-h); transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .btn-success{ background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+
+  /* ════════════════════════════════════════════════════
+     CARDS
+  ════════════════════════════════════════════════════ */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px;
+    transition: background 0.3s, border-color 0.3s;
+    box-shadow: var(--shadow-sm);
+  }
+  .card:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .card-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* ════════════════════════════════════════════════════
+     KPI CARDS
+  ════════════════════════════════════════════════════ */
+  .kpi-grid { display: grid; gap: 14px; margin-bottom: 20px; }
+  .kpi-4 { grid-template-columns: repeat(4, 1fr); }
+  .kpi-3 { grid-template-columns: repeat(3, 1fr); }
+  .kpi-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    position: relative; overflow: hidden;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .kpi:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+  .kpi.kpi-blue   { border-top: 2px solid var(--accent); }
+  .kpi.kpi-green  { border-top: 2px solid var(--green); }
+  .kpi.kpi-orange { border-top: 2px solid var(--orange); }
+  .kpi.kpi-red    { border-top: 2px solid var(--red); }
+  .kpi.kpi-teal   { border-top: 2px solid var(--teal); }
+  .kpi.kpi-purple { border-top: 2px solid var(--accent2); }
+  .kpi.kpi-pink   { border-top: 2px solid var(--pink); }
+
+  .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .kpi-label{ font-size: 11px; color: var(--muted); font-weight: 500; }
+  .kpi-ico  {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .ico-b { background: rgba(37,99,235,0.12); }
+  .ico-g { background: rgba(16,185,129,0.12); }
+  .ico-o { background: rgba(245,158,11,0.12); }
+  .ico-r { background: rgba(239,68,68,0.12); }
+  .ico-t { background: rgba(6,182,212,0.12); }
+  .ico-p { background: rgba(124,58,237,0.12); }
+  .ico-pk{ background: rgba(236,72,153,0.12); }
+
+  .kpi-val  { font-size: 26px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+  .kpi-sub  { font-size: 10px; display: flex; align-items: center; gap: 4px; color: var(--muted); }
+  .up   { color: var(--green); }
+  .down { color: var(--red); }
+  .warn { color: var(--orange); }
+
+  /* ════════════════════════════════════════════════════
+     GRIDS
+  ════════════════════════════════════════════════════ */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .g21{ display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .g12{ display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 16px; }
+  .g31{ display: grid; grid-template-columns: 3fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+  /* ════════════════════════════════════════════════════
+     TABLES
+  ════════════════════════════════════════════════════ */
+  .table-wrap {
+    overflow-x: auto; border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 10px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    padding: 12px 16px; text-align: left;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    font-size: 12px; padding: 12px 16px; color: var(--text);
+    border-bottom: 1px solid rgba(30,45,64,0.4);
+    vertical-align: middle;
+  }
+  [data-theme="light"] tbody td { border-bottom-color: rgba(226,232,240,0.7); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  .avatar-sm {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+
+  /* ════════════════════════════════════════════════════
+     BADGES / PILLS
+  ════════════════════════════════════════════════════ */
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .pill::before { content: '●'; font-size: 6px; }
+  .pill-g   { background: rgba(16,185,129,0.12); color: var(--green); }
+  .pill-r   { background: rgba(239,68,68,0.12);  color: var(--red); }
+  .pill-o   { background: rgba(245,158,11,0.12); color: var(--orange); }
+  .pill-b   { background: rgba(37,99,235,0.12);  color: #93c5fd; }
+  [data-theme="light"] .pill-b { color: var(--accent); }
+  .pill-p   { background: rgba(124,58,237,0.12); color: #c4b5fd; }
+  [data-theme="light"] .pill-p { color: var(--accent2); }
+  .pill-m   { background: rgba(100,116,139,0.12); color: var(--muted); }
+
+  /* ════════════════════════════════════════════════════
+     FORMS
+  ════════════════════════════════════════════════════ */
+  .form-grid { display: grid; gap: 16px; }
+  .form-grid.g2 { grid-template-columns: 1fr 1fr; }
+  .form-grid.g3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .required { color: var(--red); font-size: 12px; }
+
+  .input, .select, .textarea {
+    background: var(--input-bg); border: 1px solid var(--input-border);
+    border-radius: 8px; padding: 9px 12px;
+    font-size: 12px; color: var(--text);
+    font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+  .input:focus, .select:focus, .textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+  .input::placeholder { color: var(--muted2); }
+  .select { cursor: pointer; }
+  .textarea { resize: vertical; min-height: 80px; }
+  .input-icon { position: relative; }
+  .input-icon .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+  .input-icon .input { padding-left: 32px; }
+
+  /* ════════════════════════════════════════════════════
+     PROGRESS BARS
+  ════════════════════════════════════════════════════ */
+  .prog-row { margin-bottom: 12px; }
+  .prog-hd { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .prog-name { font-size: 11px; color: var(--text); }
+  .prog-pct  { font-size: 11px; font-weight: 700; }
+  .prog-track { background: var(--surface2); border-radius: 99px; height: 6px; overflow: hidden; }
+  .prog-fill  { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+  /* ════════════════════════════════════════════════════
+     ALERTS
+  ════════════════════════════════════════════════════ */
+  .alert {
+    border-radius: 12px; padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .alert-icon { font-size: 20px; flex-shrink: 0; }
+  .alert-body { flex: 1; }
+  .alert-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .alert-text  { font-size: 11px; color: var(--muted); }
+  .alert-r { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); }
+  .alert-r .alert-title { color: var(--red); }
+  .alert-o { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); }
+  .alert-o .alert-title { color: var(--orange); }
+  .alert-b { background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.25); }
+  .alert-b .alert-title { color: #93c5fd; }
+  [data-theme="light"] .alert-b .alert-title { color: var(--accent); }
+  .alert-g { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); }
+  .alert-g .alert-title { color: var(--green); }
+  .alert-p { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25); }
+  .alert-p .alert-title { color: #c4b5fd; }
+  [data-theme="light"] .alert-p .alert-title { color: var(--accent2); }
+
+  /* ════════════════════════════════════════════════════
+     DONUT CHART (CSS)
+  ════════════════════════════════════════════════════ */
+  .donut-wrap { display: flex; align-items: center; gap: 20px; }
+  .donut {
+    width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0;
+    background: conic-gradient(
+      var(--green) 0deg 306deg,
+      var(--orange) 306deg 327.6deg,
+      var(--red) 327.6deg 360deg
+    );
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .donut::after {
+    content: ''; position: absolute;
+    width: 60px; height: 60px;
+    background: var(--surface); border-radius: 50%;
+  }
+  .donut-center { position: relative; z-index: 1; font-size: 15px; font-weight: 900; }
+  .donut-legend { flex: 1; }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: var(--muted); margin-bottom: 6px;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .legend-val { margin-left: auto; font-weight: 700; color: var(--text); font-size: 11px; }
+
+  /* ════════════════════════════════════════════════════
+     BAR CHARTS
+  ════════════════════════════════════════════════════ */
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 8px;
+    height: 100px; padding-bottom: 4px;
+  }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar {
+    width: 100%; border-radius: 4px 4px 0 0; min-height: 4px;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .bar:hover { opacity: 0.75; }
+  .bar-label { font-size: 9px; color: var(--muted); }
+  .bar-blue   { background: linear-gradient(180deg, #3b82f6, #1d4ed8); }
+  .bar-green  { background: linear-gradient(180deg, #10b981, #059669); }
+  .bar-orange { background: linear-gradient(180deg, #f59e0b, #d97706); }
+
+  /* ════════════════════════════════════════════════════
+     TIMELINE / ACTIVITY
+  ════════════════════════════════════════════════════ */
+  .activity-list { display: flex; flex-direction: column; gap: 8px; }
+  .activity-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 9px; background: var(--surface2);
+    transition: background 0.15s;
+  }
+  .activity-item:hover { background: var(--surface3); }
+  .act-icon {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex-shrink: 0;
+  }
+  .act-body { flex: 1; min-width: 0; }
+  .act-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .act-sub  { font-size: 10px; color: var(--muted); }
+  .act-time { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+  /* ════════════════════════════════════════════════════
+     QUICK ACTIONS GRID
+  ════════════════════════════════════════════════════ */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .quick-btn {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 5px;
+    padding: 12px 8px; border-radius: 9px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .quick-btn:hover { border-color: var(--accent); background: rgba(37,99,235,0.06); }
+  .qi { font-size: 18px; }
+  .ql { font-size: 10px; color: var(--muted); font-weight: 600; text-align: center; }
+
+  /* ════════════════════════════════════════════════════
+     URGENT ITEMS
+  ════════════════════════════════════════════════════ */
+  .urgent {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+    border-left: 3px solid transparent;
+  }
+  .urgent.u-r { background: rgba(239,68,68,0.06); border-color: var(--red); }
+  .urgent.u-o { background: rgba(245,158,11,0.06); border-color: var(--orange); }
+  .urgent.u-b { background: rgba(37,99,235,0.06); border-color: var(--accent); }
+  .urgent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .urgent-txt { font-size: 11px; color: var(--text); font-weight: 500; }
+  .urgent-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+  /* ════════════════════════════════════════════════════
+     TIMELINE (historique)
+  ════════════════════════════════════════════════════ */
+  .timeline { padding-left: 16px; }
+  .tl-item {
+    position: relative; padding: 0 0 18px 20px;
+    border-left: 2px solid var(--border);
+  }
+  .tl-item:last-child { border-left-color: transparent; }
+  .tl-dot {
+    position: absolute; left: -7px; top: 3px;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--surface); flex-shrink: 0;
+  }
+  .tl-title { font-size: 12px; font-weight: 600; color: var(--text); }
+  .tl-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .tl-time  { font-size: 9px; color: var(--muted2); margin-top: 4px; }
+
+  /* ════════════════════════════════════════════════════
+     MODAL STYLE (faux modal)
+  ════════════════════════════════════════════════════ */
+  .modal-overlay {
+    background: rgba(0,0,0,0.6); border-radius: 16px;
+    padding: 20px; display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+    max-width: 520px; width: 100%; box-shadow: var(--shadow);
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .modal-title  { font-size: 15px; font-weight: 800; color: var(--text); }
+  .modal-close  {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--muted);
+  }
+  .modal-footer {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
+  }
+
+  /* ════════════════════════════════════════════════════
+     TABS
+  ════════════════════════════════════════════════════ */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab {
+    padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 600;
+    cursor: pointer; color: var(--muted); transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+
+  /* ════════════════════════════════════════════════════
+     SECURITY HEATMAP
+  ════════════════════════════════════════════════════ */
+  .heat-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+  }
+  .heat-cell {
+    aspect-ratio: 1; border-radius: 3px;
+    background: var(--surface2);
+  }
+  .heat-1 { background: rgba(37,99,235,0.2); }
+  .heat-2 { background: rgba(37,99,235,0.4); }
+  .heat-3 { background: rgba(37,99,235,0.6); }
+  .heat-4 { background: rgba(37,99,235,0.85); }
+  .heat-r1{ background: rgba(239,68,68,0.2); }
+  .heat-r2{ background: rgba(239,68,68,0.5); }
+  .heat-r3{ background: rgba(239,68,68,0.85); }
+
+  /* ════════════════════════════════════════════════════
+     SECURITY SCORE
+  ════════════════════════════════════════════════════ */
+  .sec-score {
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(37,99,235,0.08));
+    border: 1px solid rgba(16,185,129,0.2); border-radius: 14px;
+  }
+  .sec-score .score-num { font-size: 52px; font-weight: 900; color: var(--green); line-height: 1; }
+  .sec-score .score-label { font-size: 12px; color: var(--muted); }
+  .sec-score .score-badge {
+    background: rgba(16,185,129,0.15); color: var(--green);
+    font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  /* ════════════════════════════════════════════════════
+     STATS ROW (mini KPIs inline)
+  ════════════════════════════════════════════════════ */
+  .stats-row {
+    display: flex; gap: 1px;
+    background: var(--border); border-radius: 10px; overflow: hidden;
+    margin-bottom: 16px; border: 1px solid var(--border);
+  }
+  .stat-cell {
+    flex: 1; padding: 12px; background: var(--surface);
+    text-align: center;
+  }
+  .stat-cell:first-child { border-radius: 9px 0 0 9px; }
+  .stat-cell:last-child  { border-radius: 0 9px 9px 0; }
+  .stat-num { font-size: 20px; font-weight: 800; color: var(--text); }
+  .stat-lbl { font-size: 9px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+  /* ════════════════════════════════════════════════════
+     RISK SCORE BAR
+  ════════════════════════════════════════════════════ */
+  .risk-bar-wrap { margin-bottom: 10px; }
+  .risk-bar-hd { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .risk-bar-name { font-size: 11px; color: var(--text); }
+  .risk-bar-val  { font-size: 11px; font-weight: 700; }
+  .risk-track {
+    height: 8px; border-radius: 99px; background: var(--surface2); overflow: hidden;
+  }
+  .risk-fill { height: 100%; border-radius: 99px; }
+
+  /* ════════════════════════════════════════════════════
+     MOBILE PREVIEW WRAPPER
+  ════════════════════════════════════════════════════ */
+  .mobile-preview {
+    display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .phone-frame {
+    width: 260px; flex-shrink: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 28px; overflow: hidden;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .phone-notch {
+    height: 28px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  .phone-body { padding: 12px; }
+  .phone-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .phone-title { font-size: 14px; font-weight: 800; color: var(--text); }
+  .phone-avatar {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+  .phone-kpi-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .phone-kpi {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 8px; text-align: center;
+  }
+  .phone-kpi .num { font-size: 16px; font-weight: 800; color: var(--text); }
+  .phone-kpi .lbl { font-size: 8px; color: var(--muted); }
+
+  .phone-list { display: flex; flex-direction: column; gap: 6px; }
+  .phone-list-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px; background: var(--surface2); border-radius: 9px;
+  }
+  .phone-list-item .pi { font-size: 16px; }
+  .phone-list-item .pt { font-size: 11px; font-weight: 600; color: var(--text); }
+  .phone-list-item .ps { font-size: 9px; color: var(--muted); }
+
+  .phone-nav {
+    display: flex; border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .phone-nav-btn {
+    flex: 1; padding: 10px 4px; text-align: center;
+    font-size: 8px; color: var(--muted); font-weight: 600; cursor: pointer;
+  }
+  .phone-nav-btn .ni { font-size: 16px; display: block; }
+  .phone-nav-btn.a { color: var(--accent); }
+
+  /* ════════════════════════════════════════════════════
+     SECURITY MIDDLEWARE CHAIN
+  ════════════════════════════════════════════════════ */
+  .mw-chain {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .mw-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 9px;
+    background: var(--surface2); border: 1px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .mw-item:hover { border-color: var(--accent); }
+  .mw-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .mw-icon { font-size: 16px; flex-shrink: 0; }
+  .mw-body { flex: 1; }
+  .mw-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .mw-desc { font-size: 10px; color: var(--muted); }
+  .mw-badge {
+    font-size: 9px; font-weight: 700; padding: 3px 8px;
+    border-radius: 20px; flex-shrink: 0;
+  }
+  .mw-ok   { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .mw-warn { background: rgba(245,158,11,0.12); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
+  .mw-crit { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* ════════════════════════════════════════════════════
+     GREETING
+  ════════════════════════════════════════════════════ */
+  .greeting h1 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+  .greeting p  { font-size: 12px; color: var(--muted); }
+  .greeting { margin-bottom: 22px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Transition globale */
+  .card, .kpi, .sidebar, .topbar, .table-wrap, .input, .select, .textarea,
+  .screen-nav, .modal, .alert { transition: background 0.3s, border-color 0.3s, color 0.3s; }
+
+</style>
+</head>
+<body>
+
+<!-- ════════ NAV ÉCRANS ════════ -->
+<nav class="screen-nav">
+  <div class="brand">🎓 EduGest DZ</div>
+  <button class="screen-btn active" onclick="showScreen('dashboard')">📊 Dashboard</button>
+  <button class="screen-btn" onclick="showScreen('eleves')">👦 Élèves</button>
+  <button class="screen-btn" onclick="showScreen('finance')">💰 Finance</button>
+  <button class="screen-btn" onclick="showScreen('notes')">📝 Notes</button>
+  <button class="screen-btn" onclick="showScreen('securite')">🛡️ Sécurité</button>
+  <button class="screen-btn" onclick="showScreen('planning')">📅 Planning</button>
+  <button class="screen-btn" onclick="showScreen('communication')">📱 Parents</button>
+  <button class="screen-btn" onclick="showScreen('superadmin')">⚙️ SuperAdmin</button>
+
+  <div class="theme-toggle" onclick="toggleTheme()">
+    <span class="toggle-label" id="theme-label">🌙 Dark</span>
+    <div class="toggle-track">
+      <div class="toggle-thumb" id="toggle-thumb">🌙</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     SIDEBAR COMMUNE
+══════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-area">
+    <div class="logo-icon">🎓</div>
+    <div>
+      <div class="logo-text">EduGest DZ</div>
+      <div class="logo-sub">Gestion Scolaire · Algérie</div>
+    </div>
+  </div>
+  <div class="school-badge">
+    <strong>École Ibn Khaldoun</strong>
+    Oran · 247 élèves actifs
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <a class="nav-item active" onclick="showScreen('dashboard')">
+      <span class="nav-icon">📊</span> Tableau de bord
+    </a>
+    <a class="nav-item" onclick="showScreen('eleves')">
+      <span class="nav-icon">👦</span> Élèves
+      <span class="nav-badge g">247</span>
+    </a>
+    <a class="nav-item" onclick="showScreen('notes')">
+      <span class="nav-icon">📝</span> Notes & Bulletins
+    </a>
+    <a class="nav-item" onclick="showScreen('planning')">
+      <span class="nav-icon">📅</span> Planning
+    </a>
+    <a class="nav-item">
+      <span class="nav-icon">✅</span> Absences
+      <span class="nav-badge">12</span>
+    </a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Administration</div>
+    <a class="nav-item" onclick="showScreen('finance')">
+      <span class="nav-icon">💰</span> Finance
+      <span class="nav-badge o">3</span>
+    </a>
+    <a class="nav-item"><span class="nav-icon">🚌</span> Transport</a>
+    <a class="nav-item"><span class="nav-icon">🍽️</span> Cantine</a>
+    <a class="nav-item"><span class="nav-icon">📦</span> Stock</a>
+    <a class="nav-item"><span class="nav-icon">📈</span> Budget</a>
+    <a class="nav-item"><span class="nav-icon">👷</span> Personnel</a>
+    <a class="nav-item"><span class="nav-icon">🔧</span> Entretien</a>
+    <a class="nav-item"><span class="nav-icon">📚</span> Bibliothèque</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Outils Avancés</div>
+    <a class="nav-item" onclick="showScreen('communication')">
+      <span class="nav-icon">📱</span> Parents Mobile
+    </a>
+    <a class="nav-item"><span class="nav-icon">🔬</span> Diagnostic EWS</a>
+    <a class="nav-item" onclick="showScreen('securite')">
+      <span class="nav-icon">🛡️</span> Sécurité
+      <span class="nav-badge b">6</span>
+    </a>
+    <a class="nav-item"><span class="nav-icon">🎓</span> BEM / BAC</a>
+    <a class="nav-item"><span class="nav-icon">🖥️</span> LMS</a>
+    <a class="nav-item"><span class="nav-icon">🛒</span> Marketplace</a>
+    <a class="nav-item" onclick="showScreen('superadmin')">
+      <span class="nav-icon">⚙️</span> Super Admin
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">DA</div>
+      <div>
+        <div class="user-name">Dir. Amrani</div>
+        <div class="user-role">Administrateur · MFA ✅</div>
+      </div>
+      <div class="user-arrow">›</div>
+    </div>
+  </div>
+</aside>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 1 — DASHBOARD
+══════════════════════════════════════════════ -->
+<section class="screen active" id="screen-dashboard">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">Tableau de bord</div>
+    <div style="font-size:11px;color:var(--muted)">Mer. 9 Juillet 2026 · Semaine 28</div>
+    <div class="search-box"><span>🔍 Rechercher élève, facture, enseignant...</span></div>
+    <div class="icon-btn">🔔<div class="notif-dot"></div></div>
+    <div class="icon-btn" onclick="toggleTheme()">🌙</div>
+    <div class="icon-btn">⚙️</div>
+  </header>
+  <div class="content">
+    <div class="greeting">
+      <h1>Bonjour, Directeur Amrani 👋</h1>
+      <p>Voici le résumé de la journée · École Ibn Khaldoun · Oran</p>
+    </div>
+
+    <div class="alert alert-p">
+      <div class="alert-icon">🛡️</div>
+      <div class="alert-body">
+        <div class="alert-title">Sécurité Niveau 6 activée — 607 tests verts · Score 9.5/10</div>
+        <div class="alert-text">Zero-Trust · Honeypots · Audit Chain Merkle · Kill Switch MPC · Post-Quantum ready</div>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(124,58,237,0.15);color:#c4b5fd;border:1px solid rgba(124,58,237,0.3)">Voir rapport</button>
+    </div>
+
+    <div class="alert alert-r">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-body">
+        <div class="alert-title">3 élèves en situation critique — Convocations parents requises</div>
+        <div class="alert-text">Diagnostic EWS · Chute de moyenne &gt; 5 points ce trimestre</div>
+      </div>
+      <button class="btn btn-sm btn-danger">Voir les cas</button>
+    </div>
+
+    <div class="kpi-grid kpi-4">
+      <div class="kpi kpi-blue">
+        <div class="kpi-top"><div class="kpi-label">Élèves actifs</div><div class="kpi-ico ico-b">👦</div></div>
+        <div class="kpi-val">247</div>
+        <div class="kpi-sub"><span class="up">↑ +8</span><span>vs trimestre précédent</span></div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-top"><div class="kpi-label">CA ce mois</div><div class="kpi-ico ico-g">💰</div></div>
+        <div class="kpi-val">1.24M</div>
+        <div class="kpi-sub"><span class="up">↑ +12%</span><span>vs Juin 2026</span></div>
+      </div>
+      <div class="kpi kpi-orange">
+        <div class="kpi-top"><div class="kpi-label">Absences aujourd'hui</div><div class="kpi-ico ico-o">⚠️</div></div>
+        <div class="kpi-val">12</div>
+        <div class="kpi-sub"><span class="down">↑ +4</span><span>SMS envoyés · Twilio</span></div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-top"><div class="kpi-label">Factures impayées</div><div class="kpi-ico ico-r">📋</div></div>
+        <div class="kpi-val">84K DA</div>
+        <div class="kpi-sub"><span class="down">⚠ 7</span><span>relances envoyées</span></div>
+      </div>
+    </div>
+
+    <div class="kpi-grid kpi-4">
+      <div class="kpi kpi-teal">
+        <div class="kpi-top"><div class="kpi-label">Séances aujourd'hui</div><div class="kpi-ico ico-t">📅</div></div>
+        <div class="kpi-val">18</div>
+        <div class="kpi-sub"><span>3 à venir · 15 terminées</span></div>
+      </div>
+      <div class="kpi kpi-purple">
+        <div class="kpi-top"><div class="kpi-label">Élèves critiques (EWS)</div><div class="kpi-ico ico-p">🔬</div></div>
+        <div class="kpi-val">3</div>
+        <div class="kpi-sub"><span class="warn">9 en vigilance</span></div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-top"><div class="kpi-label">Enseignants présents</div><div class="kpi-ico ico-g">👨‍🏫</div></div>
+        <div class="kpi-val">14/16</div>
+        <div class="kpi-sub"><span class="warn">2 absents</span><span>· Remplaçants assignés</span></div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-top"><div class="kpi-label">Sécurité Risk Score</div><div class="kpi-ico ico-b">🛡️</div></div>
+        <div class="kpi-val">12</div>
+        <div class="kpi-sub"><span class="up">✓ Faible</span><span>0 incident aujourd'hui</span></div>
+      </div>
+    </div>
+
+    <div class="g21">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>CA — 6 derniers mois (DA)</div>
+          <div style="font-size:10px;color:var(--muted)">Mis à jour à 08:45</div>
+        </div>
+        <div class="chart-bars">
+          <div class="bar-wrap"><div class="bar bar-blue" style="height:55%"></div><div class="bar-label">Fév</div></div>
+          <div class="bar-wrap"><div class="bar bar-blue" style="height:72%"></div><div class="bar-label">Mar</div></div>
+          <div class="bar-wrap"><div class="bar bar-blue" style="height:68%"></div><div class="bar-label">Avr</div></div>
+          <div class="bar-wrap"><div class="bar bar-blue" style="height:85%"></div><div class="bar-label">Mai</div></div>
+          <div class="bar-wrap"><div class="bar bar-blue" style="height:78%"></div><div class="bar-label">Jun</div></div>
+          <div class="bar-wrap"><div class="bar bar-green" style="height:100%"></div><div class="bar-label" style="color:var(--green)">Jul ↑</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:10px;color:var(--muted)">
+          <span>Total 6 mois : <strong style="color:var(--text)">6.84M DA</strong></span>
+          <span>Objectif : <strong style="color:var(--green)">120%</strong></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--teal)"></div>Activité récente</div></div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(239,68,68,0.12)">⚠️</div>
+            <div class="act-body"><div class="act-name">Absence — Benali Amira (3AS)</div><div class="act-sub">SMS envoyé · Twilio · 08:47</div></div>
+            <div class="act-time">08:47</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(16,185,129,0.12)">💳</div>
+            <div class="act-body"><div class="act-name">Paiement CIB — Facture #0042</div><div class="act-sub">4 500 DA · Famille Khelil</div></div>
+            <div class="act-time">08:31</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(124,58,237,0.12)">📝</div>
+            <div class="act-body"><div class="act-name">Notes saisies — Maths 3AS-A</div><div class="act-sub">Prof. Meziani · 28 notes</div></div>
+            <div class="act-time">08:15</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(239,68,68,0.12)">🍯</div>
+            <div class="act-body"><div class="act-name">Honeypot déclenché — /api/.env</div><div class="act-sub">IP 185.234.x.x blacklistée 24h</div></div>
+            <div class="act-time">07:33</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Présence aujourd'hui</div></div>
+        <div class="donut-wrap">
+          <div class="donut"><div class="donut-center">85%</div></div>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Présents<span class="legend-val" style="color:var(--green)">210</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Retards<span class="legend-val" style="color:var(--orange)">5</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Absents<span class="legend-val" style="color:var(--red)">12</span></div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">1AS-2AS</span><span class="prog-pct up">91%</span></div><div class="prog-track"><div class="prog-fill" style="width:91%;background:var(--green)"></div></div></div>
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">3AS</span><span class="prog-pct warn">78%</span></div><div class="prog-track"><div class="prog-fill" style="width:78%;background:var(--orange)"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--red)"></div>Actions urgentes</div></div>
+        <div class="urgent u-r"><div class="urgent-dot" style="background:var(--red)"></div><div><div class="urgent-txt">Convoquer parents — 3 élèves critiques</div><div class="urgent-sub">EWS · Moyenne &lt; 5/20</div></div></div>
+        <div class="urgent u-r"><div class="urgent-dot" style="background:var(--red)"></div><div><div class="urgent-txt">Alerte caméra Dahua — Bâtiment B 22h</div><div class="urgent-sub">Surveillance · Hors horaires</div></div></div>
+        <div class="urgent u-o"><div class="urgent-dot" style="background:var(--orange)"></div><div><div class="urgent-txt">Stock craies — Seuil bas (8 unités)</div><div class="urgent-sub">Commander avant lundi</div></div></div>
+        <div class="urgent u-o"><div class="urgent-dot" style="background:var(--orange)"></div><div><div class="urgent-txt">Entretien préventif — Clim. S12</div><div class="urgent-sub">Échéance dépassée 3 jours</div></div></div>
+        <div class="urgent u-b"><div class="urgent-dot" style="background:var(--accent)"></div><div><div class="urgent-txt">Bulletins T3 — Groupe 3AS-B</div><div class="urgent-sub">Générer avant fin de semaine</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent2)"></div>Actions rapides</div></div>
+        <div class="quick-grid">
+          <div class="quick-btn"><span class="qi">👤</span><span class="ql">Nouvel élève</span></div>
+          <div class="quick-btn"><span class="qi">✅</span><span class="ql">Absence</span></div>
+          <div class="quick-btn"><span class="qi">💰</span><span class="ql">Facture</span></div>
+          <div class="quick-btn"><span class="qi">📋</span><span class="ql">Signalement</span></div>
+          <div class="quick-btn"><span class="qi">📄</span><span class="ql">Bulletin PDF</span></div>
+          <div class="quick-btn"><span class="qi">📊</span><span class="ql">Rapport</span></div>
+        </div>
+        <div style="margin-top:10px;padding:9px;background:var(--surface2);border-radius:8px;font-size:10px;color:var(--muted);text-align:center">
+          🛡️ Sécurité active · Score risque global : <strong style="color:var(--green)">12/100 (Faible)</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 2 — ÉLÈVES
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-eleves">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">Gestion des Élèves</div>
+    <div class="search-box"><span>🔍 Rechercher par nom, prénom, groupe...</span></div>
+    <select class="select" style="width:130px;padding:6px 10px">
+      <option>Tous les niveaux</option>
+      <option>1AS</option><option>2AS</option><option>3AS</option>
+    </select>
+    <button class="btn btn-primary">+ Nouvel élève</button>
+    <div class="icon-btn">📥</div>
+    <div class="icon-btn">📤</div>
+  </header>
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Élèves inscrits</div>
+        <div class="page-sub">247 élèves actifs · Année scolaire 2025-2026</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-cell"><div class="stat-num">247</div><div class="stat-lbl">Total actifs</div></div>
+      <div class="stat-cell"><div class="stat-num" style="color:var(--green)">210</div><div class="stat-lbl">Présents aujourd'hui</div></div>
+      <div class="stat-cell"><div class="stat-num" style="color:var(--red)">12</div><div class="stat-lbl">Absents</div></div>
+      <div class="stat-cell"><div class="stat-num" style="color:var(--orange)">5</div><div class="stat-lbl">Retards</div></div>
+      <div class="stat-cell"><div class="stat-num" style="color:var(--accent2)">3</div><div class="stat-lbl">Critiques EWS</div></div>
+      <div class="stat-cell"><div class="stat-num" style="color:var(--teal)">87</div><div class="stat-lbl">Cantine</div></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">Tous (247)</div>
+      <div class="tab">1AS (84)</div>
+      <div class="tab">2AS (91)</div>
+      <div class="tab">3AS (72)</div>
+      <div class="tab" style="color:var(--red)">⚠️ Critiques (3)</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Élève</th>
+            <th>Niveau / Groupe</th>
+            <th>Présence</th>
+            <th>Moyenne T3</th>
+            <th>Score EWS</th>
+            <th>Factures</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar-sm">BA</div>
+                <div>
+                  <div style="font-weight:600">BENALI Amira</div>
+                  <div style="font-size:10px;color:var(--muted)">N°0142 · Inscrite: 01/09/2023</div>
+                </div>
+              </div>
+            </td>
+            <td><div style="font-weight:600">3AS-A</div><div style="font-size:10px;color:var(--muted)">Sciences</div></td>
+            <td><span class="pill pill-r">Absente</span></td>
+            <td><strong style="color:var(--red)">4.8/20</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--red)">82</div>
+                <div class="prog-track" style="width:60px"><div class="prog-fill" style="width:82%;background:var(--red)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-r">84K DA</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-secondary">👁️</button>
+                <button class="btn btn-sm btn-secondary">📝</button>
+                <button class="btn btn-sm btn-danger">📞</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#059669)">KM</div>
+                <div>
+                  <div style="font-weight:600">KHELIL Mohamed</div>
+                  <div style="font-size:10px;color:var(--muted)">N°0089 · Inscrit: 01/09/2022</div>
+                </div>
+              </div>
+            </td>
+            <td><div style="font-weight:600">2AS-B</div><div style="font-size:10px;color:var(--muted)">Littéraire</div></td>
+            <td><span class="pill pill-g">Présent</span></td>
+            <td><strong style="color:var(--green)">15.4/20</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--green)">18</div>
+                <div class="prog-track" style="width:60px"><div class="prog-fill" style="width:18%;background:var(--green)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-g">À jour</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-secondary">👁️</button>
+                <button class="btn btn-sm btn-secondary">📝</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#d97706)">MA</div>
+                <div>
+                  <div style="font-weight:600">MEZIANI Anis</div>
+                  <div style="font-size:10px;color:var(--muted)">N°0211 · Inscrit: 01/09/2024</div>
+                </div>
+              </div>
+            </td>
+            <td><div style="font-weight:600">1AS-C</div><div style="font-size:10px;color:var(--muted)">Tronc commun</div></td>
+            <td><span class="pill pill-o">Retard</span></td>
+            <td><strong style="color:var(--orange)">9.2/20</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--orange)">55</div>
+                <div class="prog-track" style="width:60px"><div class="prog-fill" style="width:55%;background:var(--orange)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-o">12 000 DA</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-secondary">👁️</button>
+                <button class="btn btn-sm btn-secondary">📝</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar-sm" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">BF</div>
+                <div>
+                  <div style="font-weight:600">BENSALEM Fatima</div>
+                  <div style="font-size:10px;color:var(--muted)">N°0055 · Inscrite: 01/09/2022</div>
+                </div>
+              </div>
+            </td>
+            <td><div style="font-weight:600">3AS-B</div><div style="font-size:10px;color:var(--muted)">Maths</div></td>
+            <td><span class="pill pill-g">Présente</span></td>
+            <td><strong style="color:var(--teal)">18.1/20</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--green)">5</div>
+                <div class="prog-track" style="width:60px"><div class="prog-fill" style="width:5%;background:var(--green)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-g">À jour</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-secondary">👁️</button>
+                <button class="btn btn-sm btn-secondary">📝</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div class="avatar-sm" style="background:linear-gradient(135deg,#ec4899,#be185d)">HA</div>
+                <div>
+                  <div style="font-weight:600">HAMDI Amine</div>
+                  <div style="font-size:10px;color:var(--muted)">N°0178 · Inscrit: 01/09/2023</div>
+                </div>
+              </div>
+            </td>
+            <td><div style="font-weight:600">2AS-A</div><div style="font-size:10px;color:var(--muted)">Sciences exp.</div></td>
+            <td><span class="pill pill-g">Présent</span></td>
+            <td><strong style="color:var(--orange)">10.7/20</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--orange)">42</div>
+                <div class="prog-track" style="width:60px"><div class="prog-fill" style="width:42%;background:var(--orange)"></div></div>
+              </div>
+            </td>
+            <td><span class="pill pill-b">Échelonné</span></td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-sm btn-secondary">👁️</button>
+                <button class="btn btn-sm btn-secondary">📝</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11px;color:var(--muted)">
+      <span>Affichage 1–5 sur 247 élèves</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm btn-secondary">‹ Préc</button>
+        <button class="btn btn-sm" style="background:var(--accent);color:#fff">1</button>
+        <button class="btn btn-sm btn-secondary">2</button>
+        <button class="btn btn-sm btn-secondary">3</button>
+        <button class="btn btn-sm btn-secondary">Suiv ›</button>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 3 — FINANCE
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-finance">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">Finance & Paiements</div>
+    <div class="search-box"><span>🔍 N° facture, élève, montant...</span></div>
+    <button class="btn btn-primary">+ Émettre facture</button>
+    <button class="btn btn-secondary">📊 Rapport mensuel</button>
+    <div class="icon-btn">📥</div>
+  </header>
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Gestion Financière</div>
+        <div class="page-sub">Juillet 2026 · Barème IRG 2026 · CIB & Dahabia (Satim)</div>
+      </div>
+    </div>
+
+    <div class="kpi-grid kpi-4">
+      <div class="kpi kpi-green">
+        <div class="kpi-top"><div class="kpi-label">CA Juillet 2026</div><div class="kpi-ico ico-g">💰</div></div>
+        <div class="kpi-val">1 244 500</div>
+        <div class="kpi-sub"><span class="up">↑ +12%</span><span>DA · vs Juin</span></div>
+      </div>
+      <div class="kpi kpi-blue">
+        <div class="kpi-top"><div class="kpi-label">Factures émises</div><div class="kpi-ico ico-b">📋</div></div>
+        <div class="kpi-val">247</div>
+        <div class="kpi-sub"><span class="up">✓ 240 générées</span><span>auto (1er juillet)</span></div>
+      </div>
+      <div class="kpi kpi-red">
+        <div class="kpi-top"><div class="kpi-label">Impayées</div><div class="kpi-ico ico-r">⚠️</div></div>
+        <div class="kpi-val">84 000</div>
+        <div class="kpi-sub"><span class="down">7 factures</span><span>DA · Relances J+1/J+3</span></div>
+      </div>
+      <div class="kpi kpi-teal">
+        <div class="kpi-top"><div class="kpi-label">Paiements en ligne</div><div class="kpi-ico ico-t">💳</div></div>
+        <div class="kpi-val">68%</div>
+        <div class="kpi-sub"><span class="up">CIB 45% · Dahabia 23%</span></div>
+      </div>
+    </div>
+
+    <div class="g21">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N° Facture</th><th>Élève</th><th>Mois</th><th>Montant</th><th>Mode</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:var(--accent)">#0847</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div class="avatar-sm">BA</div> BENALI Amira
+                </div>
+              </td>
+              <td>Juillet 2026</td>
+              <td><strong>12 500 DA</strong></td>
+              <td><span class="pill pill-r">Impayée</span></td>
+              <td><span class="pill pill-r">En retard</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">📄</button>
+                  <button class="btn btn-sm btn-success">✉️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--accent)">#0846</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#059669)">KM</div> KHELIL Mohamed
+                </div>
+              </td>
+              <td>Juillet 2026</td>
+              <td><strong>8 000 DA</strong></td>
+              <td><span class="pill pill-b">CIB</span></td>
+              <td><span class="pill pill-g">Payée</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">📄</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--accent)">#0845</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">BF</div> BENSALEM Fatima
+                </div>
+              </td>
+              <td>Juillet 2026</td>
+              <td><strong>15 000 DA</strong></td>
+              <td><span class="pill pill-p">Dahabia</span></td>
+              <td><span class="pill pill-g">Payée</span></td>
+              <td><button class="btn btn-sm btn-secondary">📄</button></td>
+            </tr>
+            <tr>
+              <td><strong style="color:var(--accent)">#0844</strong></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#d97706)">MA</div> MEZIANI Anis
+                </div>
+              </td>
+              <td>Juillet 2026</td>
+              <td><strong>9 500 DA</strong></td>
+              <td><span class="pill pill-m">Espèces</span></td>
+              <td><span class="pill pill-o">Partielle</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">📄</button>
+                  <button class="btn btn-sm btn-success">💳</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Répartition paiements</div></div>
+          <div class="prog-row">
+            <div class="prog-hd"><span class="prog-name">💳 CIB Algérie</span><span class="prog-pct" style="color:var(--accent)">45%</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:45%;background:var(--accent)"></div></div>
+          </div>
+          <div class="prog-row">
+            <div class="prog-hd"><span class="prog-name">💜 Dahabia</span><span class="prog-pct" style="color:var(--accent2)">23%</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:23%;background:var(--accent2)"></div></div>
+          </div>
+          <div class="prog-row">
+            <div class="prog-hd"><span class="prog-name">💵 Espèces</span><span class="prog-pct" style="color:var(--muted)">32%</span></div>
+            <div class="prog-track"><div class="prog-fill" style="width:32%;background:var(--muted)"></div></div>
+          </div>
+          <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-size:10px;color:var(--muted);text-align:center">
+            🔗 Intégration Satim · Sandbox → Production après contrat CIB
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>Impayés — Relances auto</div></div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot" style="background:var(--orange)"></div>
+              <div class="tl-title">SMS J+1 envoyé — 6 parents</div>
+              <div class="tl-sub">Twilio · "Votre facture de juillet est en attente"</div>
+              <div class="tl-time">02/07 à 09:00</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:var(--orange)"></div>
+              <div class="tl-title">Relance J+3 — 4 restants</div>
+              <div class="tl-sub">WhatsApp + SMS · Ton plus insistant</div>
+              <div class="tl-time">04/07 à 09:00</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:var(--red)"></div>
+              <div class="tl-title">Convocation J+7 — 2 cas</div>
+              <div class="tl-sub">Billet de convocation généré automatiquement</div>
+              <div class="tl-time">08/07 à 09:00</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="background:var(--muted2)"></div>
+              <div class="tl-title">Suspension accès J+15 — si toujours impayé</div>
+              <div class="tl-time">16/07 à 09:00 (prévu)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 4 — NOTES & BULLETINS
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-notes">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">Notes & Bulletins</div>
+    <select class="select" style="width:140px;padding:6px 10px">
+      <option>Trimestre 3 — 2026</option>
+      <option>Trimestre 2 — 2026</option>
+      <option>Trimestre 1 — 2026</option>
+    </select>
+    <select class="select" style="width:130px;padding:6px 10px">
+      <option>Tous les groupes</option>
+      <option>3AS-A</option><option>3AS-B</option><option>2AS-A</option>
+    </select>
+    <button class="btn btn-primary">📄 Générer bulletins</button>
+    <button class="btn btn-secondary">📊 Stats classe</button>
+  </header>
+  <div class="content">
+    <div class="g12">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Saisie rapide — Maths 3AS-A</div><button class="btn btn-sm btn-primary">💾 Enregistrer</button></div>
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px">
+              <span>Évaluation : Contrôle N°3 · 28 élèves · Note max : 20</span>
+            </div>
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;font-size:10px;color:var(--muted);padding:6px 0;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border)">Élève</th>
+                  <th style="text-align:center;font-size:10px;color:var(--muted);padding:6px;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border)">Note /20</th>
+                  <th style="text-align:center;font-size:10px;color:var(--muted);padding:6px;font-weight:700;text-transform:uppercase;border-bottom:1px solid var(--border)">Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px 0;font-size:12px;font-weight:600">BENALI Amira</td>
+                  <td style="padding:6px;text-align:center">
+                    <input class="input" type="number" value="4" min="0" max="20" style="width:60px;text-align:center;padding:5px;color:var(--red)">
+                  </td>
+                  <td style="padding:6px;text-align:center"><span class="pill pill-r">Insuffisant</span></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;font-size:12px;font-weight:600">KHELIL Mohamed</td>
+                  <td style="padding:6px;text-align:center">
+                    <input class="input" type="number" value="16" min="0" max="20" style="width:60px;text-align:center;padding:5px;color:var(--green)">
+                  </td>
+                  <td style="padding:6px;text-align:center"><span class="pill pill-g">Bien</span></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;font-size:12px;font-weight:600">BENSALEM Fatima</td>
+                  <td style="padding:6px;text-align:center">
+                    <input class="input" type="number" value="19" min="0" max="20" style="width:60px;text-align:center;padding:5px;color:var(--teal)">
+                  </td>
+                  <td style="padding:6px;text-align:center"><span class="pill pill-b">Excellent</span></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;font-size:12px;font-weight:600">MEZIANI Anis</td>
+                  <td style="padding:6px;text-align:center">
+                    <input class="input" type="number" value="9" min="0" max="20" style="width:60px;text-align:center;padding:5px;color:var(--orange)">
+                  </td>
+                  <td style="padding:6px;text-align:center"><span class="pill pill-o">Passable</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--muted);padding:10px;background:var(--surface2);border-radius:8px">
+            <span>Moyenne classe : <strong style="color:var(--orange)">10.4/20</strong></span>
+            <span style="margin-left:auto">Plus haute : <strong style="color:var(--green)">19/20</strong></span>
+            <span>Plus basse : <strong style="color:var(--red)">4/20</strong></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>Distribution des notes — 3AS-A</div></div>
+          <div class="chart-bars" style="height:80px">
+            <div class="bar-wrap"><div class="bar bar-red" style="height:30%;background:var(--red)"></div><div class="bar-label">0-5</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:45%;background:var(--orange)"></div><div class="bar-label">5-8</div></div>
+            <div class="bar-wrap"><div class="bar" style="height:70%;background:var(--orange)"></div><div class="bar-label">8-10</div></div>
+            <div class="bar-wrap"><div class="bar bar-blue" style="height:100%;background:var(--accent)"></div><div class="bar-label">10-12</div></div>
+            <div class="bar-wrap"><div class="bar bar-blue" style="height:85%"></div><div class="bar-label">12-15</div></div>
+            <div class="bar-wrap"><div class="bar bar-green" style="height:60%;background:var(--green)"></div><div class="bar-label">15-18</div></div>
+            <div class="bar-wrap"><div class="bar bar-green" style="height:35%;background:var(--teal)"></div><div class="bar-label">18-20</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent2)"></div>Bulletin — BENSALEM Fatima</div><button class="btn btn-sm btn-primary">📥 PDF</button></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px">
+            <div style="text-align:center;margin-bottom:12px">
+              <div style="font-size:13px;font-weight:800;color:var(--text)">BENSALEM FATIMA</div>
+              <div style="font-size:10px;color:var(--muted)">Classe : 3AS-B · Sciences Maths · T3 2026</div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-hd"><span class="prog-name">Mathématiques</span><span class="prog-pct" style="color:var(--teal)">19/20</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:95%;background:var(--teal)"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-hd"><span class="prog-name">Physique-Chimie</span><span class="prog-pct" style="color:var(--green)">17.5/20</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:87%;background:var(--green)"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-hd"><span class="prog-name">Sciences Nat.</span><span class="prog-pct" style="color:var(--green)">16/20</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:80%;background:var(--green)"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-hd"><span class="prog-name">Arabe</span><span class="prog-pct" style="color:var(--accent)">15.5/20</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:77%;background:var(--accent)"></div></div>
+            </div>
+            <div class="prog-row">
+              <div class="prog-hd"><span class="prog-name">Français</span><span class="prog-pct" style="color:var(--accent)">14/20</span></div>
+              <div class="prog-track"><div class="prog-fill" style="width:70%;background:var(--accent)"></div></div>
+            </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px">
+              <span style="color:var(--muted)">Moyenne générale</span>
+              <strong style="font-size:18px;color:var(--teal)">18.1/20</strong>
+            </div>
+            <div style="text-align:right;margin-top:4px">
+              <span class="pill pill-g" style="font-size:11px">🏆 1ère de classe</span>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);padding:8px;background:var(--surface2);border-radius:8px">
+            💬 Appréciation : <em>"Élève brillante et sérieuse. Excellent niveau en mathématiques."</em>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>Alertes EWS — Diagnostic</div></div>
+          <div class="urgent u-r" style="margin-bottom:6px">
+            <div class="urgent-dot" style="background:var(--red)"></div>
+            <div><div class="urgent-txt">BENALI Amira — Score 82/100 🔴</div><div class="urgent-sub">Chute moy: 14→4.8 · 8 absences T3</div></div>
+          </div>
+          <div class="urgent u-o">
+            <div class="urgent-dot" style="background:var(--orange)"></div>
+            <div><div class="urgent-txt">MEZIANI Anis — Score 55/100 🟡</div><div class="urgent-sub">Moy: 9.2 · Plan rattrapage proposé</div></div>
+          </div>
+          <button class="btn btn-sm" style="margin-top:10px;background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.3);width:100%">
+            📞 Générer convocations parents (2)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 5 — SÉCURITÉ
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-securite">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">🛡️ Centre de Sécurité</div>
+    <div style="font-size:11px;color:var(--muted)">Dernière analyse SIEM : il y a 3 min</div>
+    <button class="btn btn-sm" style="background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3)">🔴 Kill Switch</button>
+    <button class="btn btn-secondary btn-sm">📊 Rapport complet</button>
+  </header>
+  <div class="content">
+    <div class="g3" style="margin-bottom:20px">
+      <div class="sec-score">
+        <div class="score-num">9.5</div>
+        <div class="score-label">Score de sécurité global / 10</div>
+        <div class="score-badge">🛡️ NIVEAU FORTERESSE</div>
+        <div style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center">6 niveaux actifs · 607 tests verts</div>
+      </div>
+      <div class="card" style="grid-column:span 2">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>Chaîne middleware — 10 couches actives</div></div>
+        <div class="mw-chain">
+          <div class="mw-item"><div class="mw-num">1</div><div class="mw-icon">🔴</div><div class="mw-body"><div class="mw-name">KillSwitchMiddleware</div><div class="mw-desc">Arrêt d'urgence global · 2 super-admins requis</div></div><div class="mw-badge mw-ok">✅ Actif</div></div>
+          <div class="mw-item"><div class="mw-num">2</div><div class="mw-icon">🍯</div><div class="mw-body"><div class="mw-name">HoneypotRouteMiddleware</div><div class="mw-desc">16 routes leurres · IP blacklist 24h</div></div><div class="mw-badge mw-ok">✅ Actif</div></div>
+          <div class="mw-item"><div class="mw-num">3</div><div class="mw-icon">💉</div><div class="mw-body"><div class="mw-name">SqlInjectionDetector</div><div class="mw-desc">18 patterns bloqués · 0 tentative aujourd'hui</div></div><div class="mw-badge mw-ok">✅ Actif</div></div>
+          <div class="mw-item"><div class="mw-num">4</div><div class="mw-icon">🔑</div><div class="mw-body"><div class="mw-name">JwtBlacklistCheck</div><div class="mw-desc">Redis + DB · Révocation temps réel</div></div><div class="mw-badge mw-ok">✅ Actif</div></div>
+          <div class="mw-item"><div class="mw-num">5</div><div class="mw-icon">⚡</div><div class="mw-body"><div class="mw-name">ZeroTrustMiddleware</div><div class="mw-desc">Risk Score 0-100 · Fail-secure (exception→100)</div></div><div class="mw-badge mw-ok">✅ Actif</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>Risk Score — Dernières 24h</div></div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-hd"><span class="risk-bar-name">IP 185.234.x.x (Honeypot)</span><span class="risk-bar-val" style="color:var(--red)">100</span></div>
+          <div class="risk-track"><div class="risk-fill" style="width:100%;background:var(--red)"></div></div>
+        </div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-hd"><span class="risk-bar-name">User <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b5d4d1d8dcdbf5d0d6dad9d09bd1cf">[email&#160;protected]</a> (08h45)</span><span class="risk-bar-val" style="color:var(--orange)">58</span></div>
+          <div class="risk-track"><div class="risk-fill" style="width:58%;background:var(--orange)"></div></div>
+        </div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-hd"><span class="risk-bar-name">Requêtes API normales</span><span class="risk-bar-val" style="color:var(--green)">12</span></div>
+          <div class="risk-track"><div class="risk-fill" style="width:12%;background:var(--green)"></div></div>
+        </div>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar-hd"><span class="risk-bar-name">Mobile parent (heure normale)</span><span class="risk-bar-val" style="color:var(--green)">8</span></div>
+          <div class="risk-track"><div class="risk-fill" style="width:8%;background:var(--green)"></div></div>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:8px;font-size:10px;color:var(--muted)">
+          <strong style="color:var(--green)">0-50</strong> Sûr · <strong style="color:var(--orange)">51-75</strong> Vigilance · <strong style="color:var(--red)">76+</strong> Bloqué
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent2)"></div>6 Niveaux de Sécurité</div></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N1 · Fondations</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N2 · Chiffrement + MFA</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N3 · Audit + Password Policy</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N4 · Zero-Trust + Device</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N5 · Honeypots + Vault</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--text)">N6 · Merkle + SIEM + Quantum</div>
+            <span class="pill pill-g">✅ Actif</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--red)"></div>Événements 24h — SIEM</div></div>
+        <div class="kpi-grid kpi-2" style="margin-bottom:12px">
+          <div class="kpi kpi-green" style="padding:12px">
+            <div class="kpi-label">Autorisées</div>
+            <div class="kpi-val" style="font-size:20px">12 845</div>
+          </div>
+          <div class="kpi kpi-red" style="padding:12px">
+            <div class="kpi-label">Bloquées</div>
+            <div class="kpi-val" style="font-size:20px;color:var(--red)">23</div>
+          </div>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(239,68,68,0.12)">🍯</div>
+            <div class="act-body"><div class="act-name">Honeypot /api/.env déclenché</div><div class="act-sub">IP 185.234.x.x blacklistée</div></div>
+            <div class="act-time">07:33</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(245,158,11,0.12)">⚡</div>
+            <div class="act-body"><div class="act-name">Risk Score 58 — Admin connexion</div><div class="act-sub">Nouvelle IP détectée · Loggé</div></div>
+            <div class="act-time">08:45</div>
+          </div>
+          <div class="activity-item">
+            <div class="act-icon" style="background:rgba(16,185,129,0.12)">🔗</div>
+            <div class="act-body"><div class="act-name">Audit Chain — Intégrité ✅</div><div class="act-sub">4 847 blocs vérifiés · SHA3-256</div></div>
+            <div class="act-time">02:00</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:10px;color:var(--green);text-align:center">
+          ✅ Chaîne d'audit Merkle intègre · 0 falsification détectée
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 6 — PLANNING
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-planning">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">Planning & Séances</div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-secondary">‹</button>
+      <div style="font-size:13px;font-weight:700;color:var(--text);padding:0 8px;display:flex;align-items:center">Semaine 28 · Juillet 2026</div>
+      <button class="btn btn-sm btn-secondary">›</button>
+    </div>
+    <button class="btn btn-primary">+ Nouvelle séance</button>
+    <button class="btn btn-secondary">📅 Export iCal</button>
+  </header>
+  <div class="content">
+    <div class="g21">
+      <div class="card" style="overflow-x:auto">
+        <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>Emploi du temps — Semaine</div></div>
+        <div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:2px;min-width:500px">
+          <!-- Header jours -->
+          <div style="font-size:9px;color:var(--muted);padding:6px;text-align:center"></div>
+          <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--muted)">DIM</div>
+            <div style="font-size:13px;font-weight:800;color:var(--accent)">6</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--muted)">LUN</div>
+            <div style="font-size:13px;font-weight:800">7</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--muted)">MAR</div>
+            <div style="font-size:13px;font-weight:800">8</div>
+          </div>
+          <div style="background:rgba(37,99,235,0.12);border-radius:6px;padding:8px;text-align:center;border:1px solid var(--accent)">
+            <div style="font-size:9px;color:var(--accent)">MER</div>
+            <div style="font-size:13px;font-weight:800;color:var(--accent)">9</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:9px;color:var(--muted)">JEU</div>
+            <div style="font-size:13px;font-weight:800">10</div>
+          </div>
+
+          <!-- Créneaux -->
+          <div style="font-size:9px;color:var(--muted);padding:6px;text-align:right">08h</div>
+          <div style="background:rgba(37,99,235,0.15);border:1px solid var(--accent);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:#93c5fd">Maths</strong><br><span style="color:var(--muted)">3AS-A · S.12</span>
+          </div>
+          <div></div>
+          <div style="background:rgba(16,185,129,0.12);border:1px solid var(--green);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--green)">Physique</strong><br><span style="color:var(--muted)">2AS-B · Labo</span>
+          </div>
+          <div style="background:rgba(37,99,235,0.15);border:1px solid var(--accent);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:#93c5fd">Maths</strong><br><span style="color:var(--muted)">2AS-A · S.08</span>
+          </div>
+          <div></div>
+
+          <div style="font-size:9px;color:var(--muted);padding:6px;text-align:right">10h</div>
+          <div></div>
+          <div style="background:rgba(124,58,237,0.12);border:1px solid var(--accent2);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:#c4b5fd">Arabe</strong><br><span style="color:var(--muted)">3AS-B · S.04</span>
+          </div>
+          <div style="background:rgba(245,158,11,0.12);border:1px solid var(--orange);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--orange)">Hist-Géo</strong><br><span style="color:var(--muted)">1AS-C · S.06</span>
+          </div>
+          <div style="background:rgba(124,58,237,0.12);border:1px solid var(--accent2);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:#c4b5fd">Français</strong><br><span style="color:var(--muted)">3AS-A · S.11</span>
+          </div>
+          <div style="background:rgba(16,185,129,0.12);border:1px solid var(--green);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--green)">Sciences N.</strong><br><span style="color:var(--muted)">2AS-A · Labo</span>
+          </div>
+
+          <div style="font-size:9px;color:var(--muted);padding:6px;text-align:right">14h</div>
+          <div style="background:rgba(6,182,212,0.12);border:1px solid var(--teal);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--teal)">Anglais</strong><br><span style="color:var(--muted)">1AS-A · S.02</span>
+          </div>
+          <div style="background:rgba(37,99,235,0.15);border:1px solid var(--accent);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:#93c5fd">Maths</strong><br><span style="color:var(--muted)">3AS-B · S.12</span>
+          </div>
+          <div></div>
+          <div style="background:rgba(239,68,68,0.12);border:1px solid var(--red);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--red)">⚠️ Absent</strong><br><span style="color:var(--muted)">Prof. Bouzid</span>
+          </div>
+          <div style="background:rgba(245,158,11,0.12);border:1px solid var(--orange);border-radius:6px;padding:6px;font-size:10px">
+            <strong style="color:var(--orange)">EPS</strong><br><span style="color:var(--muted)">2AS-B · Terrain</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>Aujourd'hui — Mercredi 9/07</div></div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="act-icon" style="background:rgba(37,99,235,0.12)">📐</div>
+              <div class="act-body"><div class="act-name">Maths — 3AS-A · Salle 12</div><div class="act-sub">08h00–09h30 · Prof. Meziani</div></div>
+              <span class="pill pill-g">✅</span>
+            </div>
+            <div class="activity-item">
+              <div class="act-icon" style="background:rgba(124,58,237,0.12)">🇫🇷</div>
+              <div class="act-body"><div class="act-name">Français — 3AS-A · Salle 11</div><div class="act-sub">10h00–11h30 · Prof. Benali</div></div>
+              <span class="pill pill-g">✅</span>
+            </div>
+            <div class="activity-item">
+              <div class="act-icon" style="background:rgba(239,68,68,0.12)">⚠️</div>
+              <div class="act-body"><div class="act-name">Physique — 2AS-A · Absent</div><div class="act-sub">14h00–15h30 · Prof. Bouzid absent</div></div>
+              <span class="pill pill-r">🔄 Remplacement</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--red)"></div>Remplacement requis</div></div>
+          <div style="padding:14px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ Prof. Bouzid (Physique) — Absent</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Séance 14h-15h30 · 2AS-A · 28 élèves</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:8px">Remplaçants disponibles :</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:7px">
+                <span style="font-size:11px">Prof. Amrani — Physique · Libre</span>
+                <button class="btn btn-sm btn-success">✅ Assigner</button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:7px">
+                <span style="font-size:11px">Prof. Khelil — Sciences · Libre</span>
+                <button class="btn btn-sm btn-secondary">Assigner</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 7 — COMMUNICATION PARENTS MOBILE
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-communication">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">📱 Application Mobile Parents</div>
+    <div style="font-size:11px;color:var(--muted)">React Native + Expo 52 · iOS & Android</div>
+    <button class="btn btn-secondary">📤 Envoyer notif mass</button>
+  </header>
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Communication Parents</div>
+        <div class="page-sub">SMS · WhatsApp Business · Push Firebase · Notifications in-app</div>
+      </div>
+    </div>
+
+    <div class="mobile-preview">
+
+      <!-- Phone 1 : Dashboard Parent -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700">Écran Accueil</div>
+        <div class="phone-frame">
+          <div class="phone-notch">📶 09:41 🔋</div>
+          <div class="phone-body">
+            <div class="phone-header">
+              <div>
+                <div class="phone-title">Bonjour,</div>
+                <div style="font-size:11px;color:var(--muted)">Parent Benali 👋</div>
+              </div>
+              <div class="phone-avatar">PB</div>
+            </div>
+            <div class="phone-kpi-row">
+              <div class="phone-kpi">
+                <div class="num" style="color:var(--red)">1</div>
+                <div class="lbl">Absence</div>
+              </div>
+              <div class="phone-kpi">
+                <div class="num" style="color:var(--orange)">4.8</div>
+                <div class="lbl">Moy. T3</div>
+              </div>
+              <div class="phone-kpi">
+                <div class="num" style="color:var(--red)">12K</div>
+                <div class="lbl">DA dû</div>
+              </div>
+            </div>
+            <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px;margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:var(--red)">⚠️ Votre enfant est absent</div>
+              <div style="font-size:9px;color:var(--muted);margin-top:3px">Amira · Mercredi 9 Juillet 08h30</div>
+            </div>
+            <div class="phone-list">
+              <div class="phone-list-item"><span class="pi">📝</span><div><div class="pt">Nouvelle note — Maths</div><div class="ps">4/20 · Contrôle N°3</div></div></div>
+              <div class="phone-list-item"><span class="pi">📅</span><div><div class="pt">Convocation directeur</div><div class="ps">Jeudi 10 Juillet 14h</div></div></div>
+              <div class="phone-list-item"><span class="pi">💬</span><div><div class="pt">Message enseignant</div><div class="ps">Prof. Meziani · Hier 16h</div></div></div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <div class="phone-nav-btn a"><span class="ni">🏠</span>Accueil</div>
+            <div class="phone-nav-btn"><span class="ni">📝</span>Notes</div>
+            <div class="phone-nav-btn"><span class="ni">💰</span>Finance</div>
+            <div class="phone-nav-btn"><span class="ni">💬</span>Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 2 : Notes -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700">Écran Notes</div>
+        <div class="phone-frame">
+          <div class="phone-notch">📶 09:41 🔋</div>
+          <div class="phone-body">
+            <div class="phone-header">
+              <div class="phone-title">Notes & Bulletins</div>
+            </div>
+            <div style="display:flex;gap:4px;margin-bottom:12px">
+              <div style="background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:4px 8px;border-radius:6px">T3</div>
+              <div style="background:var(--surface2);color:var(--muted);font-size:9px;font-weight:700;padding:4px 8px;border-radius:6px">T2</div>
+              <div style="background:var(--surface2);color:var(--muted);font-size:9px;font-weight:700;padding:4px 8px;border-radius:6px">T1</div>
+            </div>
+            <div style="margin-bottom:10px;padding:12px;background:var(--surface2);border-radius:10px;text-align:center">
+              <div style="font-size:24px;font-weight:900;color:var(--red)">4.8</div>
+              <div style="font-size:10px;color:var(--muted)">/20 · Moyenne générale T3</div>
+              <div style="margin-top:6px"><span class="pill pill-r">En difficulté</span></div>
+            </div>
+            <div class="phone-list">
+              <div class="phone-list-item">
+                <span class="pi">📐</span>
+                <div style="flex:1"><div class="pt">Mathématiques</div><div class="ps">Contrôle N°3</div></div>
+                <strong style="font-size:13px;color:var(--red)">4/20</strong>
+              </div>
+              <div class="phone-list-item">
+                <span class="pi">⚗️</span>
+                <div style="flex:1"><div class="pt">Physique-Chimie</div><div class="ps">Devoir surveillé</div></div>
+                <strong style="font-size:13px;color:var(--orange)">8/20</strong>
+              </div>
+              <div class="phone-list-item">
+                <span class="pi">🇫🇷</span>
+                <div style="flex:1"><div class="pt">Français</div><div class="ps">Expression écrite</div></div>
+                <strong style="font-size:13px;color:var(--accent)">12/20</strong>
+              </div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <div class="phone-nav-btn"><span class="ni">🏠</span>Accueil</div>
+            <div class="phone-nav-btn a"><span class="ni">📝</span>Notes</div>
+            <div class="phone-nav-btn"><span class="ni">💰</span>Finance</div>
+            <div class="phone-nav-btn"><span class="ni">💬</span>Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone 3 : Paiement -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700">Écran Paiement</div>
+        <div class="phone-frame">
+          <div class="phone-notch">📶 09:41 🔋</div>
+          <div class="phone-body">
+            <div class="phone-header">
+              <div class="phone-title">💳 Payer en ligne</div>
+            </div>
+            <div style="background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;padding:16px;margin-bottom:12px;color:#fff">
+              <div style="font-size:10px;opacity:0.8;margin-bottom:4px">Facture Juillet 2026</div>
+              <div style="font-size:22px;font-weight:900">12 500 DA</div>
+              <div style="font-size:10px;opacity:0.7;margin-top:4px">BENALI Amira · École Ibn Khaldoun</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+              <div style="padding:12px;background:rgba(37,99,235,0.1);border:2px solid var(--accent);border-radius:10px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:18px">💳</span>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--accent)">CIB Algérie</div>
+                  <div style="font-size:9px;color:var(--muted)">Carte de crédit bancaire</div>
+                </div>
+                <div style="margin-left:auto;width:16px;height:16px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff">✓</div>
+              </div>
+              <div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:18px">💜</span>
+                <div>
+                  <div style="font-size:12px;font-weight:700">Dahabia</div>
+                  <div style="font-size:9px;color:var(--muted)">Carte Algérie Poste</div>
+                </div>
+              </div>
+            </div>
+            <div style="background:var(--accent);color:#fff;border-radius:12px;padding:12px;text-align:center;font-size:12px;font-weight:700;cursor:pointer">
+              💳 Payer 12 500 DA
+            </div>
+            <div style="text-align:center;margin-top:8px;font-size:9px;color:var(--muted)">🔒 Sécurisé par Satim · Conforme loi 18-07</div>
+          </div>
+          <div class="phone-nav">
+            <div class="phone-nav-btn"><span class="ni">🏠</span>Accueil</div>
+            <div class="phone-nav-btn"><span class="ni">📝</span>Notes</div>
+            <div class="phone-nav-btn a"><span class="ni">💰</span>Finance</div>
+            <div class="phone-nav-btn"><span class="ni">💬</span>Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canaux communication -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:14px;min-width:260px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Canaux de communication</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:9px">
+              <span style="font-size:18px">📱</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700">SMS Twilio</div><div style="font-size:10px;color:var(--muted)">Absences auto · 08h30 · Algérie +213</div></div>
+              <span class="pill pill-g">Actif</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:9px">
+              <span style="font-size:18px">💬</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700">WhatsApp Business</div><div style="font-size:10px;color:var(--muted)">API Meta officielle · Templates approuvés</div></div>
+              <span class="pill pill-g">Actif</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:9px">
+              <span style="font-size:18px">🔔</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700">Push Firebase FCM</div><div style="font-size:10px;color:var(--muted)">iOS & Android · Notifications in-app</div></div>
+              <span class="pill pill-g">Actif</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--teal)"></div>Stats communication 24h</div></div>
+          <div class="kpi-grid kpi-2" style="margin-bottom:0">
+            <div class="kpi kpi-green" style="padding:12px"><div class="kpi-label">SMS envoyés</div><div class="kpi-val" style="font-size:20px">42</div></div>
+            <div class="kpi kpi-blue" style="padding:12px"><div class="kpi-label">Push notifs</div><div class="kpi-val" style="font-size:20px">128</div></div>
+            <div class="kpi kpi-purple" style="padding:12px"><div class="kpi-label">WhatsApp</div><div class="kpi-val" style="font-size:20px">17</div></div>
+            <div class="kpi kpi-orange" style="padding:12px"><div class="kpi-label">Taux lecture</div><div class="kpi-val" style="font-size:20px">94%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ÉCRAN 8 — SUPERADMIN
+══════════════════════════════════════════════ -->
+<section class="screen" id="screen-superadmin">
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-title">⚙️ Super Admin — Multi-tenants</div>
+    <div style="font-size:11px;color:var(--muted)">Accès restreint · IP Allowlist · MFA obligatoire</div>
+    <button class="btn btn-primary">+ Nouveau tenant</button>
+    <button class="btn btn-sm" style="background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3)">🔴 Kill Switch Global</button>
+  </header>
+  <div class="content">
+    <div class="kpi-grid kpi-4">
+      <div class="kpi kpi-blue">
+        <div class="kpi-top"><div class="kpi-label">Tenants actifs</div><div class="kpi-ico ico-b">🏫</div></div>
+        <div class="kpi-val">14</div>
+        <div class="kpi-sub"><span class="up">+2 ce mois</span><span>Oran · Alger · Annaba</span></div>
+      </div>
+      <div class="kpi kpi-green">
+        <div class="kpi-top"><div class="kpi-label">Élèves total</div><div class="kpi-ico ico-g">👦</div></div>
+        <div class="kpi-val">3 281</div>
+        <div class="kpi-sub"><span class="up">↑ +124</span><span>vs mois précédent</span></div>
+      </div>
+      <div class="kpi kpi-orange">
+        <div class="kpi-top"><div class="kpi-label">MRR</div><div class="kpi-ico ico-o">💰</div></div>
+        <div class="kpi-val">892K</div>
+        <div class="kpi-sub"><span class="up">↑ +18%</span><span>DA · Monthly Recurring</span></div>
+      </div>
+      <div class="kpi kpi-purple">
+        <div class="kpi-top"><div class="kpi-label">Sécurité globale</div><div class="kpi-ico ico-p">🛡️</div></div>
+        <div class="kpi-val">607</div>
+        <div class="kpi-sub"><span class="up">✅ Tests verts</span><span>0 incident</span></div>
+      </div>
+    </div>
+
+    <div class="g21">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Établissement</th><th>Wilaya</th><th>Élèves</th><th>MRR (DA)</th><th>Modules</th><th>Statut</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar-sm">IK</div>
+                  <div>
+                    <div style="font-weight:700">École Ibn Khaldoun</div>
+                    <div style="font-size:10px;color:var(--muted)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b7d6d3daded9f7ded5d99adcdfd6dbd3d8c2d999d3cd">[email&#160;protected]</a> · Plan Premium</div>
+                  </div>
+                </div>
+              </td>
+              <td>🌍 Oran (31)</td>
+              <td><strong>247</strong></td>
+              <td><strong style="color:var(--green)">62 000</strong></td>
+              <td><span class="pill pill-b">14/14</span></td>
+              <td><span class="pill pill-g">Actif</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">👁️</button>
+                  <button class="btn btn-sm btn-secondary">⚙️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#10b981,#059669)">EA</div>
+                  <div>
+                    <div style="font-weight:700">Collège El-Amel</div>
+                    <div style="font-size:10px;color:var(--muted)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6e0f0a0307002e0b020f030b02400a14">[email&#160;protected]</a> · Plan Standard</div>
+                  </div>
+                </div>
+              </td>
+              <td>🌍 Alger (16)</td>
+              <td><strong>312</strong></td>
+              <td><strong style="color:var(--green)">78 000</strong></td>
+              <td><span class="pill pill-b">9/14</span></td>
+              <td><span class="pill pill-g">Actif</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">👁️</button>
+                  <button class="btn btn-sm btn-secondary">⚙️</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#ef4444,#dc2626)">LN</div>
+                  <div>
+                    <div style="font-weight:700">Lycée An-Nour</div>
+                    <div style="font-size:10px;color:var(--muted)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ceafaaa3a7a08eafa0a0a1bbbce0aab4">[email&#160;protected]</a> · Plan Starter</div>
+                  </div>
+                </div>
+              </td>
+              <td>🌍 Annaba (23)</td>
+              <td><strong>89</strong></td>
+              <td><strong style="color:var(--orange)">18 000</strong></td>
+              <td><span class="pill pill-b">5/14</span></td>
+              <td><span class="pill pill-o">Essai</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">👁️</button>
+                  <button class="btn btn-sm btn-secondary">⚙️</button>
+                  <button class="btn btn-sm btn-danger">⏸</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar-sm" style="background:linear-gradient(135deg,#6b7280,#4b5563)">CC</div>
+                  <div>
+                    <div style="font-weight:700">Centre Cheraga</div>
+                    <div style="font-size:10px;color:var(--muted)">Impayé depuis 32 jours</div>
+                  </div>
+                </div>
+              </td>
+              <td>🌍 Alger (16)</td>
+              <td><strong>156</strong></td>
+              <td><strong style="color:var(--red)">0</strong></td>
+              <td><span class="pill pill-m">6/14</span></td>
+              <td><span class="pill pill-r">Suspendu</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="btn btn-sm btn-secondary">👁️</button>
+                  <button class="btn btn-sm btn-success">▶️</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>Répartition par wilaya</div></div>
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">Oran (31)</span><span class="prog-pct" style="color:var(--accent)">5 tenants</span></div><div class="prog-track"><div class="prog-fill" style="width:35%;background:var(--accent)"></div></div></div>
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">Alger (16)</span><span class="prog-pct" style="color:var(--accent)">4 tenants</span></div><div class="prog-track"><div class="prog-fill" style="width:28%;background:var(--accent)"></div></div></div>
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">Annaba (23)</span><span class="prog-pct" style="color:var(--green)">2 tenants</span></div><div class="prog-track"><div class="prog-fill" style="width:14%;background:var(--green)"></div></div></div>
+          <div class="prog-row"><div class="prog-hd"><span class="prog-name">Autres wilayas</span><span class="prog-pct" style="color:var(--muted)">3 tenants</span></div><div class="prog-track"><div class="prog-fill" style="width:21%;background:var(--muted)"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>Infrastructure globale</div></div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">VPS Algérie (Hostarts DZ)</span>
+              <span class="pill pill-o">⏳ En cours</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">Déclaration ANPDP (loi 18-07)</span>
+              <span class="pill pill-o">⏳ En cours</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">Satim Production (CIB)</span>
+              <span class="pill pill-o">⏳ Démarches</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">Audit Chain Merkle</span>
+              <span class="pill pill-g">✅ Actif</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">607 tests CI/CD</span>
+              <span class="pill pill-g">✅ Verts</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--muted)">Sentry Monitoring</span>
+              <span class="pill pill-g">✅ Actif</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</section>
+
+
+<!-- ════════════════════
+     JAVASCRIPT
+════════════════════ -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + id)?.classList.add('active');
+
+    // Activer le bon bouton nav
+    document.querySelectorAll('.screen-btn').forEach(b => {
+      if (b.getAttribute('onclick')?.includes(id)) b.classList.add('active');
+    });
+
+    // Activer le bon lien sidebar
+    document.querySelectorAll('.nav-item').forEach(n => {
+      n.classList.remove('active');
+      if (n.getAttribute('onclick')?.includes(id)) n.classList.add('active');
+    });
+  }
+
+  function toggleTheme() {
+    const html  = document.documentElement;
+    const isLight = html.getAttribute('data-theme') === 'light';
+    html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    document.getElementById('theme-label').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+    document.getElementById('toggle-thumb').textContent = isLight ? '🌙' : '☀️';
+    // Icône bouton topbar
+    document.querySelectorAll('.icon-btn').forEach(btn => {
+      if (btn.textContent.includes('🌙') || btn.textContent.includes('☀️')) {
+        btn.textContent = isLight ? '🌙' : '☀️';
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
