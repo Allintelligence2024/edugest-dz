@@ -38,6 +38,7 @@ const MODULE_ICONS = {
   '/devoirs':       { icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', color: '#06B6D4' },
   '/feedback-enseignant': { icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', color: '#EC4899' },
   '/prediction-ia': { icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z', color: '#7C3AED' },
+  '/rgpd':         { icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', color: '#10B981' },
 };
 
 const SECTIONS = [
@@ -47,7 +48,7 @@ const SECTIONS = [
   { label: 'section_management', items: ['/transport','/cantine','/stock','/personnel-admin','/entretien','/surveillance'] },
   { label: 'section_communication', items: ['/messages','/campagnes'] },
   { label: 'section_main', items: ['/centres','/mes-reservations','/marketplace'] },
-  { label: 'section_settings', items: ['/profil','/audit-logs','/modules','/super-admin'] },
+  { label: 'section_settings', items: ['/profil','/audit-logs','/modules','/rgpd','/super-admin'] },
 ];
 
 const MODULE_MAP = {
@@ -58,7 +59,7 @@ const MODULE_MAP = {
   '/surveillance': 'surveillance', '/modules': 'modules',
 };
 
-const ROLE_MAP = { '/super-admin': 'super_admin' };
+const ROLE_MAP = { '/super-admin': 'super_admin', '/rgpd': 'admin' };
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
