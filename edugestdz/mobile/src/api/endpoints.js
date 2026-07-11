@@ -79,4 +79,15 @@ export const adminApi = {
     factures:(params)         => api.get('/factures', { params }),
     impayes: ()               => api.get('/finance/impayes'),
   },
+  marketplace: {
+    dashboard:  (token)       => api.get('/marketplace/dashboard', { headers: { Authorization: `Bearer ${token}` } }),
+    commissions:(token)       => api.get('/marketplace/commissions', { headers: { Authorization: `Bearer ${token}` } }),
+  },
+  predictions: {
+    classement: (token)       => api.get('/predictions/classement', { headers: { Authorization: `Bearer ${token}` } }),
+  },
+  signalements: {
+    list:   (token)           => api.get('/signalements', { headers: { Authorization: `Bearer ${token}` } }),
+    traiter:(token, id, data) => api.post(`/signalements/${id}/traiter`, data, { headers: { Authorization: `Bearer ${token}` } }),
+  },
 };

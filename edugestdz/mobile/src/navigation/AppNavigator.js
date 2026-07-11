@@ -37,6 +37,9 @@ import AdminAbsences    from '../screens/admin/AbsencesScreen';
 
 // Admin (nouveaux M3)
 import AdminPointageScreen from '../screens/admin/AdminPointageScreen';
+import AdminMarketplaceScreen from '../screens/admin/AdminMarketplaceScreen';
+import AdminIAScreen from '../screens/admin/AdminIAScreen';
+import AdminSignalementsScreen from '../screens/admin/AdminSignalementsScreen';
 
 const AuthStack      = createNativeStackNavigator();
 const ParentTab      = createBottomTabNavigator();
@@ -60,6 +63,8 @@ function tabIcon(name, focused) {
     Eleves:     focused ? '👦' : '👤',
     Absences:   focused ? '✅' : '☑️',
     Finance:    focused ? '💰' : '💳',
+    IA:         focused ? '🧠' : '🤖',
+    Signalements: focused ? '🚨' : '⚠️',
   };
   return map[name] || '📌';
 }
@@ -126,6 +131,9 @@ function AdminTabs() {
       <AdminTab.Screen name="Pointage"  component={AdminPointageScreen} options={{ title: 'Pointage' }} />
       <AdminTab.Screen name="Eleves"    component={AdminEleves}        options={{ title: 'Élèves' }} />
       <AdminTab.Screen name="Absences"  component={AdminAbsences}      options={{ title: 'Absences' }} />
+      <AdminTab.Screen name="Marketplace" component={AdminMarketplaceScreen} options={{ title: 'Marketplace' }} />
+      <AdminTab.Screen name="IA"        component={AdminIAScreen}      options={{ title: 'IA' }} />
+      <AdminTab.Screen name="Signalements" component={AdminSignalementsScreen} options={{ title: 'Signalements' }} />
     </AdminTab.Navigator>
   );
 }
