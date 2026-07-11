@@ -70,4 +70,12 @@ class HealthController extends Controller
         $fn();
         return (int) ((microtime(true) - $start) * 1000);
     }
+
+    public function ping(): JsonResponse
+    {
+        return response()->json([
+            'status'    => 'ok',
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
 }
