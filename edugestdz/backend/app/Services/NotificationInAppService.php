@@ -33,6 +33,8 @@ class NotificationInAppService
                 'titre'      => $titre,
                 'corps'      => $corps,
                 'lien'       => $meta['action_url'] ?? null,
+                'action_url' => $meta['action_url'] ?? null,
+                'icone'      => $meta['icone'] ?? null,
                 'lu'         => false,
                 'created_at' => now(),
                 'updated_at' => now(),
