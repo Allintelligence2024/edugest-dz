@@ -1,9 +1,11 @@
 <?php
 namespace App\Services;
 
-use App\Models\{Bulletin, Eleve, Groupe, Note, Presence};
+use App\Jobs\GenerateBulletinPdfJob;
+use App\Models\{Bulletin, Eleve, Groupe, Note, Presence, Tenant};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BulletinService
 {
@@ -90,8 +92,8 @@ class BulletinService
                     ]
                 );
 
-                $pdfPath = $this->genererPDF($bulletin->fresh()->load('eleve', 'groupe.matiere'));
-                $bulletin->update(['fichier_url' => $pdfPath]);
+                GenerateBulletinPdfJob::dispatch($bulletin)
+                    ->onQueue('pdf');
 
                 $bulletinsGeneres[] = [
                     'bulletin_id' => $bulletin->id,
@@ -142,7 +144,7 @@ class BulletinService
     {
         $eleve   = $bulletin->eleve->load(['parents', 'wilaya']);
         $groupe  = $bulletin->groupe->load('matiere');
-        $tenant  = app('tenant');
+        $tenant  = app('tenant') ?? Tenant::find(config('tenant.current_id'));
 
         $notes = Note::with('evaluation')
             ->where('eleve_id', $eleve->id)
@@ -169,6 +171,10 @@ class BulletinService
                 'presenceStats' => $presenceStats,
             ])->setPaper('A4', 'portrait');
         } catch (\Exception $e) {
+            Log::error('[BulletinPdf] Erreur génération PDF', [
+                'bulletin_id' => $bulletin->id,
+                'erreur'      => $e->getMessage(),
+            ]);
             return '';
         }
 

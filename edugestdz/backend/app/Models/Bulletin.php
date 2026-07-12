@@ -11,7 +11,7 @@ class Bulletin extends BaseModel
         'tenant_id', 'eleve_id', 'groupe_id',
         'trimestre', 'annee_scolaire',
         'moyenne_generale', 'rang', 'effectif_classe',
-        'appreciation_gen', 'fichier_url',
+        'appreciation_gen', 'fichier_url', 'statut_pdf',
         'genere_le', 'genere_par',
     ];
 
