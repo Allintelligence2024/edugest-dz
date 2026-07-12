@@ -28,7 +28,7 @@ class ApiEndpointsBasicTest extends TestCase
 
     public function test_health_check(): void
     {
-        $this->getJson('/api/health')->assertStatus(200);
+        $this->getJson('/api/v1/health')->assertStatus(200);
     }
 
     public function test_me_endpoint(): void

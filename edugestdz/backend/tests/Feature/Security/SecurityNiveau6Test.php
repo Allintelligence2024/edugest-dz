@@ -210,7 +210,7 @@ class SecurityNiveau6Test extends TestCase
     {
         Cache::put('kill_switch:active', true, 60);
 
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
 
         Cache::forget('kill_switch:active');
 

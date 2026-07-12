@@ -115,7 +115,8 @@ class CompletionTest extends TestCase
         $data = $resource->toArray(Request::create('/'));
 
         $this->assertArrayHasKey('nom_complet', $data);
-        $this->assertArrayHasKey('age', $data);
+        $this->assertArrayNotHasKey('age', $data);
+        $this->assertArrayNotHasKey('photo_url_full', $data);
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('nom', $data);
         $this->assertArrayHasKey('prenom', $data);

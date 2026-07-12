@@ -72,13 +72,13 @@ class MarketplaceCompletTest extends TestCase
 
     public function test_health_ping_sans_auth(): void
     {
-        $response = $this->getJson('/api/health/ping');
+        $response = $this->getJson('/api/v1/health/ping');
         $response->assertOk()->assertJsonPath('status', 'ok');
     }
 
     public function test_health_sans_auth(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $this->assertContains($response->status(), [200, 503]);
     }
 
@@ -93,7 +93,7 @@ class MarketplaceCompletTest extends TestCase
     public function test_health_ping_reponse_rapide(): void
     {
         $start = microtime(true);
-        $this->getJson('/api/health/ping');
+        $this->getJson('/api/v1/health/ping');
         $elapsed = (microtime(true) - $start) * 1000;
 
         $this->assertLessThan(500, $elapsed, 'Health ping should respond in < 500ms');

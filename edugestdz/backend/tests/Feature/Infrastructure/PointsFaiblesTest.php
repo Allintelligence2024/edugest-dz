@@ -22,7 +22,7 @@ class PointsFaiblesTest extends TestCase
 
     public function test_health_check_structure_complete(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -40,20 +40,20 @@ class PointsFaiblesTest extends TestCase
 
     public function test_health_check_postgresql_detecte(): void
     {
-        $data = $this->getJson('/api/health')->json();
+        $data = $this->getJson('/api/v1/health')->json();
         $this->assertEquals('postgresql', $data['checks']['database']['driver']);
         $this->assertEquals('ok', $data['checks']['database']['status']);
     }
 
     public function test_health_check_redis_ok(): void
     {
-        $data = $this->getJson('/api/health')->json();
+        $data = $this->getJson('/api/v1/health')->json();
         $this->assertEquals('ok', $data['checks']['redis']['status']);
     }
 
     public function test_health_check_sans_auth(): void
     {
-        $this->getJson('/api/health')->assertStatus(200);
+        $this->getJson('/api/v1/health')->assertStatus(200);
     }
 
     public function test_sentry_config_chargee(): void

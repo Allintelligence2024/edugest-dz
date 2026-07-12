@@ -9,11 +9,6 @@ class EleveResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $data = parent::toArray($request);
-
-        $data['nom_complet'] = $this->nom_complet;
-        $data['age'] = $this->age;
-
-        return $data;
+        return parent::toArray($request);
     }
 }

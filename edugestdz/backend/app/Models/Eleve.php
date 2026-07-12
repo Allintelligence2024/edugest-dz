@@ -27,7 +27,7 @@ class Eleve extends BaseModel
     ];
 
     // ── Appender les attributs calculés ──
-    protected $appends = ['nom_complet', 'age', 'photo_url_full'];
+    protected $appends = ['nom_complet'];
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // ACCESSEURS
@@ -38,9 +38,9 @@ class Eleve extends BaseModel
         return strtoupper($this->nom) . ' ' . ucfirst($this->prenom);
     }
 
-    public function getAgeAttribute(): int
+    public function getAgeAttribute(): ?int
     {
-        return $this->date_naissance?->age ?? 0;
+        return $this->date_naissance?->age;
     }
 
     public function getPhotoUrlFullAttribute(): string
