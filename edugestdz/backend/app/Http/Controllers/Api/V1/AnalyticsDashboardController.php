@@ -166,10 +166,14 @@ class AnalyticsDashboardController extends Controller
                 ? round((($caMois - $caMoisPrecedent) / $caMoisPrecedent) * 100, 1)
                 : 0;
 
+            $evolutionEleves = $elevesMoisPasse > 0
+                ? round((($totalEleves - $elevesMoisPasse) / $elevesMoisPasse) * 100, 1)
+                : 0;
+
             return [
                 'kpis' => [
                     'total_eleves'          => $totalEleves,
-                    'evolution_eleves'      => $totalEleves - $elevesMoisPasse,
+                    'evolution_eleves'      => $evolutionEleves,
                     'ca_mois'               => (float) $caMois,
                     'ca_mois_precedent'     => (float) $caMoisPrecedent,
                     'evolution_ca_pct'      => $evolutionCA,
