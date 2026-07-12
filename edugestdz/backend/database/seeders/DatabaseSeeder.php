@@ -14,5 +14,11 @@ class DatabaseSeeder extends Seeder
             TestUserSeeder::class,
             CurriculumAlgerienSeeder::class,
         ]);
+
+        if (in_array(config('app.env'), ['local', 'staging'])) {
+            $this->call([
+                EcoleDemoSeeder::class,
+            ]);
+        }
     }
 }
