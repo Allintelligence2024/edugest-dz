@@ -114,6 +114,12 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->timezone('Africa/Algiers')
                  ->withoutOverlapping()
                  ->runInBackground();
+
+        $schedule->command('edugest:resume-hebdo-parents')
+                 ->weeklyOn(5, '18:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ── Sentry : reporter les exceptions en production ────────────
