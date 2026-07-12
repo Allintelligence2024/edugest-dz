@@ -77,6 +77,14 @@ Route::middleware($protected)->group(function () {
         Route::put('/{id}/justifier',            [\App\Http\Controllers\Api\V1\AbsenceController::class, 'justifier']);
         Route::get('/rapport',                   [\App\Http\Controllers\Api\V1\AbsenceController::class, 'rapport']);
         Route::post('/badges/assigner',          [\App\Http\Controllers\Api\V1\AbsenceController::class, 'assignerBadge']);
+
+        // ── Absences géographiques (carte chaleur) ──
+        Route::prefix('geographie')->group(function () {
+            Route::get('/par-wilaya',            [\App\Http\Controllers\Api\V1\AbsencesGeographiquesController::class, 'parWilaya']);
+            Route::get('/taux-absentisme',       [\App\Http\Controllers\Api\V1\AbsencesGeographiquesController::class, 'tauxAbsentisme']);
+            Route::get('/wilaya/{wilayaId}',     [\App\Http\Controllers\Api\V1\AbsencesGeographiquesController::class, 'parWilayaDetail']);
+            Route::get('/resume',                [\App\Http\Controllers\Api\V1\AbsencesGeographiquesController::class, 'resume']);
+        });
     });
 
     // ── Évaluations ──
