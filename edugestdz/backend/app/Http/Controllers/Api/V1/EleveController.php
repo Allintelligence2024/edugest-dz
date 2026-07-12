@@ -5,6 +5,7 @@ use App\Exports\ElevesExport;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Eleve\StoreEleveRequest;
 use App\Http\Requests\Eleve\UpdateEleveRequest;
+use App\Http\Resources\EleveDetailResource;
 use App\Models\{Eleve, ParentEleve};
 use App\Services\{EleveService};
 use Illuminate\Http\{Request, JsonResponse};
@@ -51,7 +52,9 @@ class EleveController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $eleves = $this->indexQuery($request)
+        $perPage = $request->per_page ?? $this->perPage;
+
+        $query = $this->indexQuery($request)
             ->with([
                 'wilaya:id,nom_fr',
                 'commune:id,nom_fr',
@@ -65,8 +68,14 @@ class EleveController extends BaseApiController
                 'inscriptions as nb_inscriptions' => fn($q) => $q->where('statut', 'validée'),
                 'presences as nb_presences',
                 'presences as nb_absences' => fn($q) => $q->where('statut', 'absent'),
-            ])
-            ->paginate($request->per_page ?? $this->perPage);
+            ]);
+
+        if (!in_array($request->sort ?? 'created_at', $this->sortable)) {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $cursor = $query->cursorPaginate($perPage);
+        $total  = $query->toBase()->count();
 
         $stats = cache()->remember(
             "eleves_stats_" . config('tenant.current_id'),
@@ -78,7 +87,21 @@ class EleveController extends BaseApiController
             ]
         );
 
-        return $this->paginatedResponse($eleves, 'Élèves récupérés', ['stats' => $stats]);
+        $itemCount = $cursor->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Élèves récupérés',
+            'data'    => $cursor->items(),
+            'meta'    => [
+                'total'        => $total,
+                'per_page'     => (int) $perPage,
+                'current_page' => 1,
+                'last_page'    => (int) ceil($total / $perPage),
+                'has_more'     => $cursor->hasMorePages(),
+                'stats'        => $stats,
+            ],
+        ]);
     }
 
     /**
@@ -160,7 +183,7 @@ class EleveController extends BaseApiController
         $stats = $this->eleveService->getStatsAcademiques($eleve);
 
         return $this->success([
-            'eleve'       => $eleve,
+            'eleve'       => new EleveDetailResource($eleve),
             'statistiques'=> $stats,
         ]);
     }
