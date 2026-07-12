@@ -44,9 +44,11 @@ return [
     ],
 
     'twilio' => [
-        'sid'   => env('TWILIO_SID'),
-        'token' => env('TWILIO_TOKEN'),
-        'from'  => env('TWILIO_FROM'),
+        'sid'          => env('TWILIO_SID'),
+        'token'        => env('TWILIO_TOKEN'),
+        'from'         => env('TWILIO_FROM'),
+        'voice_langue' => env('TWILIO_VOICE_LANGUE', 'fr-FR'),
+        'voice_nom'    => env('TWILIO_VOICE_NOM', 'alice'),
     ],
 
     'firebase' => [

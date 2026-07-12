@@ -120,6 +120,13 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->timezone('Africa/Algiers')
                  ->withoutOverlapping()
                  ->runInBackground();
+
+        $schedule->command('edugest:appel-vocal-absence')
+                 ->weekdays()
+                 ->at('09:00')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ── Sentry : reporter les exceptions en production ────────────
