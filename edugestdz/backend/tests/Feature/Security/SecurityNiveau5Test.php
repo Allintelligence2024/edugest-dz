@@ -148,7 +148,7 @@ class SecurityNiveau5Test extends TestCase
 
     public function test_sql_injection_detector_ne_bloque_pas_health(): void
     {
-        $response = $this->getJson('/api/health?q=SELECT');
+        $response = $this->getJson('/api/v1/health?q=SELECT');
 
         $response->assertStatus(200);
     }

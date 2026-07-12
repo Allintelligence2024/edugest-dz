@@ -22,7 +22,7 @@ class SecurityTest extends TestCase
 
     public function test_health_check_retourne_200(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'status', 'timestamp', 'version', 'environment', 'response_time',
@@ -39,7 +39,7 @@ class SecurityTest extends TestCase
 
     public function test_health_check_postgresql_ok(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $response->assertStatus(200);
         $this->assertEquals('ok', $response->json('checks.database.status'));
         $this->assertEquals('postgresql', $response->json('checks.database.driver'));
@@ -47,7 +47,7 @@ class SecurityTest extends TestCase
 
     public function test_api_retourne_security_headers(): void
     {
-        $this->getJson('/api/health')
+        $this->getJson('/api/v1/health')
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'DENY')
             ->assertHeader('X-XSS-Protection', '1; mode=block');

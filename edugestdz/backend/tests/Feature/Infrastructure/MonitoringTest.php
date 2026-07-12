@@ -8,7 +8,7 @@ class MonitoringTest extends TestCase
 {
     public function test_health_check_retourne_200_quand_ok(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -30,7 +30,7 @@ class MonitoringTest extends TestCase
 
     public function test_health_check_database_est_postgresql(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $data     = $response->json();
 
         $this->assertEquals('ok', $data['checks']['database']['status'] ?? 'error');
@@ -39,7 +39,7 @@ class MonitoringTest extends TestCase
 
     public function test_health_check_redis_est_ok(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $data     = $response->json();
 
         $this->assertEquals('ok', $data['checks']['redis']['status'] ?? 'error');
@@ -47,12 +47,12 @@ class MonitoringTest extends TestCase
 
     public function test_health_check_accessible_sans_authentification(): void
     {
-        $this->getJson('/api/health')->assertStatus(200);
+        $this->getJson('/api/v1/health')->assertStatus(200);
     }
 
     public function test_health_check_contient_le_temps_de_reponse(): void
     {
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $data     = $response->json();
 
         $this->assertArrayHasKey('response_time', $data);
@@ -63,7 +63,7 @@ class MonitoringTest extends TestCase
     {
         \Cache::forget('kill_switch_active');
 
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $data     = $response->json();
 
         $this->assertEquals('inactive', $data['checks']['kill_switch']['status'] ?? 'ACTIVE');

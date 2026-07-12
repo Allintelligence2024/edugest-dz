@@ -25,7 +25,7 @@ class ChargeApiTest extends TestCase
     public function test_health_ping_reponse_rapide(): void
     {
         $start = microtime(true);
-        $response = $this->getJson('/api/health/ping');
+        $response = $this->getJson('/api/v1/health/ping');
         $elapsed = (microtime(true) - $start) * 1000;
 
         $response->assertOk();
@@ -65,7 +65,7 @@ class ChargeApiTest extends TestCase
     public function test_health_check_reponse_rapide(): void
     {
         $start = microtime(true);
-        $response = $this->getJson('/api/health');
+        $response = $this->getJson('/api/v1/health');
         $elapsed = (microtime(true) - $start) * 1000;
 
         $this->assertContains($response->status(), [200, 503]);
