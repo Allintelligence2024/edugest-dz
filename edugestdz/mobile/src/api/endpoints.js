@@ -53,6 +53,12 @@ export const enseignantApi = {
     depart:  (id, data)       => api.post(`/pointage/enseignants/${id}/depart`, data),
     aujourdhui: ()            => api.get('/pointage/enseignants/aujourd-hui'),
   },
+  qrCode: {
+    demarrerSession: (seanceId) => api.post('/qr-code/session/demarrer', { seance_id: seanceId }),
+    fermerSession:   (seanceId) => api.post('/qr-code/session/fermer', { seance_id: seanceId }),
+    scanner:         (data)     => api.post('/qr-code/scanner', data),
+    statutSession:   (seanceId) => api.get(`/qr-code/session/${seanceId}/statut`),
+  },
   statistiques: (id)          => api.get(`/enseignants/${id}/statistiques`),
 };
 

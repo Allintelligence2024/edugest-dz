@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\{
     EvaluationController,
     NoteController,
     BulletinController,
+    QrCodeController,
 };
 
 $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
@@ -108,5 +109,13 @@ Route::middleware($protected)->group(function () {
         Route::get('/',                    [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'index']);
         Route::post('/',                   [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'store']);
         Route::get('/resume/{ensId}',      [\App\Http\Controllers\Api\V1\FeedbackPedagogiqueController::class, 'resume']);
+    });
+
+    // ── QR Code Présence ──
+    Route::prefix('qr-code')->group(function () {
+        Route::post('session/demarrer',    [QrCodeController::class, 'demarrerSession']);
+        Route::post('session/fermer',      [QrCodeController::class, 'fermerSession']);
+        Route::post('scanner',             [QrCodeController::class, 'scanner']);
+        Route::get('session/{seanceId}/statut', [QrCodeController::class, 'statutSession']);
     });
 });
