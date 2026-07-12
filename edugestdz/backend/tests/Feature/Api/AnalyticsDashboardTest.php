@@ -38,8 +38,11 @@ class AnalyticsDashboardTest extends TestCase
                 'success',
                 'data' => [
                     'kpis' => [
-                        'total_eleves', 'ca_mois', 'taux_recouvrement',
-                        'impayes_montant', 'seances_aujourd_hui',
+                        'total_eleves', 'evolution_eleves',
+                        'ca_mois', 'ca_mois_precedent', 'evolution_ca_pct',
+                        'impayes_montant', 'impayes_nb', 'impayes_critiques_nb',
+                        'taux_recouvrement',
+                        'seances_aujourd_hui', 'absences_aujourd_hui',
                     ],
                     'graphiques' => ['ca_six_mois', 'top_matieres', 'assiduite'],
                     'alertes',
@@ -103,5 +106,41 @@ class AnalyticsDashboardTest extends TestCase
             ->assertStatus(200)
             ->assertJsonPath('data.periode.mois', 1)
             ->assertJsonPath('data.periode.annee', 2026);
+    }
+
+    public function test_dashboard_retourne_impayes_critiques_nb(): void
+    {
+        $response = $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+            ->getJson('/api/v1/analytics/dashboard')
+            ->assertStatus(200);
+
+        $kpis = $response->json('data.kpis');
+        $this->assertArrayHasKey('impayes_critiques_nb', $kpis);
+        $this->assertIsInt($kpis['impayes_critiques_nb']);
+        $this->assertArrayHasKey('impayes_nb', $kpis);
+        $this->assertIsInt($kpis['impayes_nb']);
+    }
+
+    public function test_dashboard_evolution_eleves_est_un_pourcentage(): void
+    {
+        $response = $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+            ->getJson('/api/v1/analytics/dashboard')
+            ->assertStatus(200);
+
+        $kpis = $response->json('data.kpis');
+        $this->assertArrayHasKey('evolution_eleves', $kpis);
+        $this->assertIsNumeric($kpis['evolution_eleves']);
+        $this->assertArrayHasKey('evolution_ca_pct', $kpis);
+        $this->assertIsNumeric($kpis['evolution_ca_pct']);
+    }
+
+    public function test_dashboard_retourne_top_matieres(): void
+    {
+        $response = $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+            ->getJson('/api/v1/analytics/dashboard')
+            ->assertStatus(200);
+
+        $topMatieres = $response->json('data.graphiques.top_matieres');
+        $this->assertIsArray($topMatieres);
     }
 }
