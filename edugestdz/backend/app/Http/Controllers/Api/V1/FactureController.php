@@ -12,7 +12,7 @@ class FactureController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $factures = Facture::with(['eleve'])
+        $factures = Facture::with(['eleve.parents', 'lignes', 'paiements'])
             ->when($request->statut,   fn($q) => $q->where('statut', $request->statut))
             ->when($request->eleve_id, fn($q) => $q->where('eleve_id', $request->eleve_id))
             ->when($request->mois,     fn($q) => $q->where('mois', $request->mois)

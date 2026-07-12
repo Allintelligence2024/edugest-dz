@@ -124,6 +124,11 @@ class Eleve extends BaseModel
         return $this->hasMany(Bulletin::class);
     }
 
+    public function diagnosticEleve(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(DiagnosticEleve::class)->latest();
+    }
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCOPES
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━

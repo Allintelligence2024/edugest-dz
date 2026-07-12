@@ -55,6 +55,8 @@ class EleveController extends BaseApiController
             ->with([
                 'wilaya:id,nom_fr',
                 'commune:id,nom_fr',
+                'parents:id,nom,prenom,telephone_1,email',
+                'diagnosticEleve:niveau_global,score_risque,moyenne_generale',
                 'inscriptions' => fn($q) => $q->where('statut', 'validée')
                     ->with('groupe:id,nom,matiere_id')
                     ->select('id', 'eleve_id', 'groupe_id', 'statut'),

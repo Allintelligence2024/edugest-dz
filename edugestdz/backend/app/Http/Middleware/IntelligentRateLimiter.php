@@ -5,28 +5,46 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\Response;
 
 class IntelligentRateLimiter
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-
-        if (!method_exists($response, 'headers')) {
-            return $response;
-        }
-
-        $limit = 100;
+        $limit  = 100;
         $window = 60;
 
         $key = 'ratelimit:' . ($request->user()?->id ?? $request->ip());
 
-        $current = (int) Cache::get($key, 0);
+        $current   = (int) Cache::get($key, 0);
         $remaining = max(0, $limit - $current);
+        $resetAt   = time() + $window;
 
-        $response->headers->set('X-RateLimit-Limit', (string) $limit);
-        $response->headers->set('X-RateLimit-Remaining', (string) $remaining);
-        $response->headers->set('X-RateLimit-Reset', (string) (time() + $window));
+        if ($current >= $limit) {
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'RATE_LIMIT_EXCEEDED',
+                    'message' => 'Trop de requêtes. Réessayez dans quelques secondes.',
+                ],
+            ], 429)->withHeaders([
+                'X-RateLimit-Limit'     => (string) $limit,
+                'X-RateLimit-Remaining' => '0',
+                'X-RateLimit-Reset'     => (string) $resetAt,
+                'Retry-After'           => (string) $window,
+            ]);
+        }
+
+        Cache::put($key, $current + 1, $window);
+
+        /** @var Response $response */
+        $response = $next($request);
+
+        if (method_exists($response, 'headers')) {
+            $response->headers->set('X-RateLimit-Limit', (string) $limit);
+            $response->headers->set('X-RateLimit-Remaining', (string) ($remaining - 1));
+            $response->headers->set('X-RateLimit-Reset', (string) $resetAt);
+        }
 
         return $response;
     }
