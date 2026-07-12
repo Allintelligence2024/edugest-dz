@@ -180,6 +180,9 @@ Route::middleware($protected)->group(function () {
         Route::get('/surveillants/{id}/convocation',     [ExamenController::class, 'pdfConvocationSurveillant']);
         Route::get('/salles/{salleId}/feuille-presence', [ExamenController::class, 'pdfFeuillePresence']);
         Route::get('/salles/{salleId}/plan',             [ExamenController::class, 'pdfPlanSalle']);
+
+        // ── Export ONDEC ──
+        Route::get('/{sessionId}/export-onec',          [ExamenController::class, 'exportOnec']);
     });
 
     // ── Signalements graves (élève → directeur — confidentiel) ──
