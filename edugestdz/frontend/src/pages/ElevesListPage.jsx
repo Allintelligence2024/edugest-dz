@@ -8,6 +8,7 @@ import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 import EleveModal from '@components/eleves/EleveModal';
 import EleveDetailDrawer from '@components/eleves/EleveDetailDrawer';
+import EmptyState from '@components/ui/EmptyState';
 
 const FILTERS = [
   { key: 'niveau_scolaire', label: 'Niveau', options: ['1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2AS','3AS','universitaire','autre'] },
@@ -90,23 +91,37 @@ export default function ElevesListPage() {
           <FilterBar filters={FILTERS} values={filters} onChange={setFilters} />
         </div>
 
-        <DataTable
-          columns={COLUMNS}
-          data={data?.data || []}
-          isLoading={isLoading}
-          sortKey={sort.key}
-          sortDir={sort.dir}
-          onSort={handleSort}
-          onRowClick={(row) => setSelectedEleve(row)}
-          actions={actions}
-          emptyMessage="Aucun élève trouvé" />
-
-        <Pagination
-          currentPage={page}
-          lastPage={data?.meta?.last_page || 1}
-          total={data?.meta?.total || 0}
-          perPage={perPage}
-          onPageChange={setPage} />
+        {!isLoading && (!data?.data || data.data.length === 0) && !search && Object.keys(filters).length === 0 ? (
+          <EmptyState
+            icon="👨‍🎓"
+            title="Aucun élève inscrit"
+            description="Commencez par ajouter votre premier élève pour gérer son suivi."
+            action={
+              <button onClick={() => { setEditingEleve(null); setShowModal(true); }} className="btn btn-primary gap-2">
+                ➕ Ajouter un élève
+              </button>
+            }
+          />
+        ) : (
+          <>
+            <DataTable
+              columns={COLUMNS}
+              data={data?.data || []}
+              isLoading={isLoading}
+              sortKey={sort.key}
+              sortDir={sort.dir}
+              onSort={handleSort}
+              onRowClick={(row) => setSelectedEleve(row)}
+              actions={actions}
+              emptyMessage="Aucun élève trouvé" />
+            <Pagination
+              currentPage={page}
+              lastPage={data?.meta?.last_page || 1}
+              total={data?.meta?.total || 0}
+              perPage={perPage}
+              onPageChange={setPage} />
+          </>
+        )}
       </div>
 
       <EleveDetailDrawer

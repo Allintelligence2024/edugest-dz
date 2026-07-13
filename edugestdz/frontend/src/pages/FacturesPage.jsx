@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 import FactureModal from '@components/finance/FactureModal';
 import PaiementModal from '@components/finance/PaiementModal';
+import EmptyState from '@components/ui/EmptyState';
 
 const STATUT_BADGE = {
   émise:          { bg: '#EEF4FF', text: '#1E5EBC' },
@@ -85,7 +86,18 @@ export default function FacturesPage() {
             {isLoading ? (
               <tr><td colSpan={7} className="text-center p-8 text-neutral-400">Chargement...</td></tr>
             ) : factures.length === 0 ? (
-              <tr><td colSpan={7} className="text-center p-8 text-neutral-400">Aucune facture</td></tr>
+              <tr><td colSpan={7}>
+                <EmptyState
+                  icon="💰"
+                  title="Aucune facture"
+                  description="Créez votre première facture pour gérer la facturation de vos élèves."
+                  action={
+                    <button onClick={() => setShowFactureModal(true)} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
+                      ➕ Nouvelle facture
+                    </button>
+                  }
+                />
+              </td></tr>
             ) : factures.map(f => (
               <tr key={f.id} className="hover:bg-neutral-50 transition-colors">
                 <td className="p-4 font-mono text-xs font-bold text-neutral-700">{f.numero_facture}</td>

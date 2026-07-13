@@ -129,6 +129,58 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // ── Renderers d'erreur personnalisés (AVANT Sentry) ─────────
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $model = class_basename($e->getModel());
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'NOT_FOUND',
+                    'message' => "Ressource introuvable : {$model}",
+                ],
+            ], 404);
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'NOT_FOUND',
+                    'message' => 'La ressource demandée est introuvable.',
+                ],
+            ], 404);
+        });
+
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'METHOD_NOT_ALLOWED',
+                    'message' => 'Cette méthode HTTP n\'est pas autorisée pour cette URL.',
+                ],
+            ], 405);
+        });
+
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'TOKEN_MISMATCH',
+                    'message' => 'Session expirée. Veuillez rafraîchir la page et réessayer.',
+                ],
+            ], 419);
+        });
+
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => [
+                    'code'    => 'THROTTLED',
+                    'message' => 'Trop de requêtes. Veuillez réessayer dans quelques instants.',
+                ],
+            ], 429);
+        });
+
         // ── Sentry : reporter les exceptions en production ────────────
         if (!empty(config('sentry.dsn')) && app()->environment('production', 'staging')) {
             $exceptions->report(function (\Throwable $e) {
