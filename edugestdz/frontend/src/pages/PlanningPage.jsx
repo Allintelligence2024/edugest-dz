@@ -3,6 +3,7 @@ import api from '@api/axiosInstance';
 import SeanceCard from '@components/planning/SeanceCard';
 import CoursModal from '@components/planning/CoursModal';
 import PlanningFilters from '@components/planning/PlanningFilters';
+import EmptyState from '@components/ui/EmptyState';
 
 const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const HEURES = Array.from({ length: 14 }, (_, i) => {
@@ -76,11 +77,25 @@ export default function PlanningPage() {
       <PlanningFilters filtres={filtres} onChange={setFiltres} />
 
       <div className="bg-surface rounded-2xl border border-border overflow-hidden">
-        <div className="flex items-center justify-between p-3 border-b border-border">
-          <button onClick={handlePrevWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">← Semaine précédente</button>
-          <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm font-medium rounded-lg" style={{ color: 'var(--accent)', background: 'var(--accent)12' }}>Aujourd'hui</button>
-          <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">Semaine suivante →</button>
-        </div>
+        {semaine.length === 0 && Object.keys(filtres).length === 0 ? (
+          <EmptyState
+            icon="📅"
+            title="Aucun cours planifié"
+            description="Aucun cours n'est prévu pour cette semaine. Créez un cours pour commencer."
+            action={
+              <button onClick={() => { setEditingCours(null); setCoursModalOpen(true); }} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
+                ➕ Nouveau cours
+              </button>
+            }
+          />
+        ) : (
+          <div className="flex items-center justify-between p-3 border-b border-border">
+            <button onClick={handlePrevWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">← Semaine précédente</button>
+            <button onClick={() => window.location.reload()} className="px-4 py-2 text-sm font-medium rounded-lg" style={{ color: 'var(--accent)', background: 'var(--accent)12' }}>Aujourd'hui</button>
+            <button onClick={handleNextWeek} className="px-4 py-2 text-sm font-medium text-text2 hover:bg-surface2 rounded-lg">Semaine suivante →</button>
+          </div>
+        )}
+        {semaine.length > 0 || Object.keys(filtres).length > 0 ? (
         <div className="overflow-x-auto">
           <div className="grid grid-cols-8 min-w-[800px]">
             <div className="border-r border-border p-2" style={{ background: 'var(--surface2)' }}>
@@ -112,6 +127,7 @@ export default function PlanningPage() {
             ))}
           </div>
         </div>
+        ) : null}
       </div>
 
       <CoursModal isOpen={coursModalOpen} onClose={() => { setCoursModalOpen(false); setEditingCours(null); }} cours={editingCours} onSuccess={() => { setCoursModalOpen(false); setEditingCours(null); loadSemaine(); }} />
