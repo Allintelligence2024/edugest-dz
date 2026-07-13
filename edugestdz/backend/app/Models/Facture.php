@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 class Facture extends BaseModel
@@ -22,6 +23,8 @@ class Facture extends BaseModel
         'total_ttc'     => 'decimal:2',
     ];
 
+    // ── Relations ──
+
     public function eleve(): BelongsTo
     {
         return $this->belongsTo(Eleve::class);
@@ -35,5 +38,43 @@ class Facture extends BaseModel
     public function paiements(): HasMany
     {
         return $this->hasMany(Paiement::class);
+    }
+
+    // ── Scopes ──
+
+    public function scopeParEleve(Builder $query, string $eleveId): Builder
+    {
+        return $query->where('eleve_id', $eleveId);
+    }
+
+    public function scopeParAnnee(Builder $query, int $annee): Builder
+    {
+        return $query->where('annee', $annee);
+    }
+
+    public function scopeParMois(Builder $query, int $mois): Builder
+    {
+        return $query->where('mois', $mois);
+    }
+
+    public function scopeEnCours(Builder $query): Builder
+    {
+        return $query->whereIn('statut', ['émise', 'envoyée']);
+    }
+
+    public function scopePayees(Builder $query): Builder
+    {
+        return $query->where('statut', 'payée');
+    }
+
+    public function scopeImpayees(Builder $query): Builder
+    {
+        return $query->where('statut', 'impayée');
+    }
+
+    public function scopeEcheanceProche(Builder $query, int $jours = 7): Builder
+    {
+        return $query->where('date_echeance', '<=', now()->addDays($jours))
+                     ->where('statut', '!=', 'payée');
     }
 }

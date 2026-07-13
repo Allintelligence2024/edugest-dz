@@ -45,10 +45,35 @@ class BulletinTest extends TestCase
             ->assertJsonPath('success', true);
     }
 
-    public function test_pdf_bulletin(): void
+    public function test_pdf_bulletin_dispatch_job_when_not_generated(): void
     {
-        $bulletin = Bulletin::factory()->create(['tenant_id' => $this->tenant->id]);
-        $this->withToken($this->token)->getJson("/api/v1/bulletins/{$bulletin->id}/pdf")->assertStatus(200);
+        $bulletin = Bulletin::factory()->create([
+            'tenant_id'   => $this->tenant->id,
+            'statut_pdf'  => 'en_attente',
+            'fichier_url' => null,
+        ]);
+        $this->withToken($this->token)
+            ->getJson("/api/v1/bulletins/{$bulletin->id}/pdf")
+            ->assertStatus(202);
+    }
+
+    public function test_pdf_bulletin_return_file_when_ready(): void
+    {
+        $storagePath = storage_path('app/public');
+        @mkdir($storagePath, 0755, true);
+        $relativePath = 'bulletins/test_bulletin.pdf';
+        file_put_contents($storagePath . '/' . $relativePath, '%PDF-1.4 fake');
+
+        $bulletin = Bulletin::factory()->create([
+            'tenant_id'   => $this->tenant->id,
+            'statut_pdf'  => 'termine',
+            'fichier_url' => $relativePath,
+        ]);
+        $this->withToken($this->token)
+            ->getJson("/api/v1/bulletins/{$bulletin->id}/pdf")
+            ->assertStatus(200);
+
+        @unlink($storagePath . '/' . $relativePath);
     }
 
     public function test_envoyer_bulletin(): void

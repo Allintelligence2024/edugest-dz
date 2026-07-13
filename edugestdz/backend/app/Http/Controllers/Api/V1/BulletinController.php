@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Bulletin;
 use App\Services\BulletinService;
+use App\Jobs\GenerateBulletinPdfJob;
 use Illuminate\Http\{Request, JsonResponse};
 
 class BulletinController extends Controller
@@ -56,12 +57,34 @@ class BulletinController extends Controller
     public function pdf(string $id)
     {
         $bulletin = Bulletin::findOrFail($id);
+
         if ($bulletin->fichier_url && \Storage::disk('public')->exists($bulletin->fichier_url)) {
             return response()->download(storage_path('app/public/' . $bulletin->fichier_url));
         }
 
-        $path = $this->service->genererPDF($bulletin->fresh()->load('eleve', 'groupe.matiere'));
-        return response()->download(storage_path('app/public/' . $path));
+        if (in_array($bulletin->statut_pdf ?? '', ['en_attente', 'en_cours', null])) {
+            GenerateBulletinPdfJob::dispatch($bulletin);
+            $bulletin->update(['statut_pdf' => 'en_attente']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Génération du PDF en cours. Réessayez dans quelques instants.',
+                'statut_pdf' => 'en_attente',
+            ], 202);
+        }
+
+        if ($bulletin->statut_pdf === 'erreur') {
+            GenerateBulletinPdfJob::dispatch($bulletin);
+            $bulletin->update(['statut_pdf' => 'en_attente']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nouvelle tentative de génération lancée.',
+                'statut_pdf' => 'en_attente',
+            ], 202);
+        }
+
+        return response()->download(storage_path('app/public/' . $bulletin->fichier_url));
     }
 
     public function envoyer(string $id): JsonResponse
