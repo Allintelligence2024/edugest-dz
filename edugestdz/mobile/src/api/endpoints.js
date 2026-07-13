@@ -34,6 +34,16 @@ export const bulletinsApi = {
   pdf: (id) => api.get(`/bulletins/${id}/pdf`),
 };
 
+// ── Bibliothèque ──
+export const bibliothequeApi = {
+  list:        (params)     => api.get('/bibliotheque', { params }),
+  show:        (id)         => api.get(`/bibliotheque/${id}`),
+  scan:        (base64Image)=> api.post('/bibliotheque/scan', { image: base64Image }),
+  emprunter:   (data)       => api.post('/bibliotheque/emprunter', data),
+  retourner:   (empruntId)  => api.post(`/bibliotheque/retourner/${empruntId}`),
+  mesEmprunts: ()           => api.get('/bibliotheque/mes-emprunts'),
+};
+
 // ── API Enseignant ──
 export const enseignantApi = {
   planning: (params)          => api.get('/planning', { params }),

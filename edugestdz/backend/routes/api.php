@@ -37,6 +37,9 @@ Route::prefix('v1')->group(function () {
     // ── Notifications — In-App, Push, Messages, Device Tokens, Campagnes ──
     require __DIR__ . '/api/notifications.php';
 
+    // ── Bibliothèque — Catalogue, Emprunts, Scan Photo ──
+    require __DIR__ . '/api/bibliotheque.php';
+
     // ── Extended — Transport, Cantine, Stock, Entretien, Pointage, Surveillance, etc. ──
     require __DIR__ . '/api/extended.php';
 
