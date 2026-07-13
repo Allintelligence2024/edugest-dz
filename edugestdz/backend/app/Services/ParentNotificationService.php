@@ -85,6 +85,7 @@ class ParentNotificationService
                         'signalement'  => 'emails.absence-eleve',
                         'facture'      => 'emails.facture-relance',
                         'bienvenue'    => 'emails.bienvenue',
+                        'resume_hebdo' => 'emails.resume-hebdo',
                     ];
 
                     $template = $templateMap[$type] ?? null;

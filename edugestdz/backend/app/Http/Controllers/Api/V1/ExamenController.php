@@ -9,8 +9,10 @@ use App\Models\SalleExamen;
 use App\Models\CandidatExamen;
 use App\Models\SurveiillantExamen;
 use App\Services\ExamenService;
+use App\Exports\RapportOnecExport;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExamenController extends Controller
 {
@@ -241,5 +243,16 @@ class ExamenController extends Controller
     {
         $pdf = $this->service->genererPlanSalle($salleId);
         return $pdf->download("plan-salle-{$salleId}.pdf");
+    }
+
+    /**
+     * Export Excel du rapport ONDEC (candidats + statistiques).
+     */
+    public function exportOnec(string $sessionId): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $session = SessionExamen::findOrFail($sessionId);
+        $nomFichier = "rapport-ondec-{$session->type}-{$session->annee_scolaire}.xlsx";
+
+        return Excel::download(new RapportOnecExport($sessionId), $nomFichier);
     }
 }

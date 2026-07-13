@@ -34,6 +34,16 @@ export const bulletinsApi = {
   pdf: (id) => api.get(`/bulletins/${id}/pdf`),
 };
 
+// ── Bibliothèque ──
+export const bibliothequeApi = {
+  list:        (params)     => api.get('/bibliotheque', { params }),
+  show:        (id)         => api.get(`/bibliotheque/${id}`),
+  scan:        (base64Image)=> api.post('/bibliotheque/scan', { image: base64Image }),
+  emprunter:   (data)       => api.post('/bibliotheque/emprunter', data),
+  retourner:   (empruntId)  => api.post(`/bibliotheque/retourner/${empruntId}`),
+  mesEmprunts: ()           => api.get('/bibliotheque/mes-emprunts'),
+};
+
 // ── API Enseignant ──
 export const enseignantApi = {
   planning: (params)          => api.get('/planning', { params }),
@@ -52,6 +62,12 @@ export const enseignantApi = {
     arrivee: (id, data)       => api.post(`/pointage/enseignants/${id}/arrivee`, data),
     depart:  (id, data)       => api.post(`/pointage/enseignants/${id}/depart`, data),
     aujourdhui: ()            => api.get('/pointage/enseignants/aujourd-hui'),
+  },
+  qrCode: {
+    demarrerSession: (seanceId) => api.post('/qr-code/session/demarrer', { seance_id: seanceId }),
+    fermerSession:   (seanceId) => api.post('/qr-code/session/fermer', { seance_id: seanceId }),
+    scanner:         (data)     => api.post('/qr-code/scanner', data),
+    statutSession:   (seanceId) => api.get(`/qr-code/session/${seanceId}/statut`),
   },
   statistiques: (id)          => api.get(`/enseignants/${id}/statistiques`),
 };

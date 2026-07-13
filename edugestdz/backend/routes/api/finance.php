@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\{
     FactureController,
     PaiementController,
     FinanceController,
+    PlanFractionnementController,
 };
 
 $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
@@ -78,5 +79,14 @@ Route::middleware($protected)->group(function () {
         Route::get('online/dashboard',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'dashboard']);
         Route::get('online/{id}/statut',     [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'verifierStatut']);
         Route::post('online/{id}/rembourser',[\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'rembourser']);
+    });
+
+    // ── Plans de fractionnement ──
+    Route::prefix('plans-fractionnement')->group(function () {
+        Route::get('/',                     [PlanFractionnementController::class, 'index']);
+        Route::post('/',                    [PlanFractionnementController::class, 'store']);
+        Route::get('/{id}',                 [PlanFractionnementController::class, 'show']);
+        Route::post('/affecter',            [PlanFractionnementController::class, 'affecter']);
+        Route::post('/{id}/annuler',        [PlanFractionnementController::class, 'annuler']);
     });
 });

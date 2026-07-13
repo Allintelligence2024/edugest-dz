@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 
-use App\Models\{Facture, LigneFacture, Paiement, Eleve, Inscription};
+use App\Models\{Facture, LigneFacture, Paiement, Eleve, Inscription, PlanFractionnement, TrancheFractionnement};
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -354,5 +354,82 @@ class FacturationService
 
         $seq = $last ? (int) substr($last, -4) + 1 : 1;
         return sprintf("FAC-%s%s-%04d", $annee, $mois, $seq);
+    }
+
+    /**
+     * Crée un plan de fractionnement pour une facture.
+     */
+    public function creerPlanFractionnement(array $data): PlanFractionnement
+    {
+        return DB::transaction(function () use ($data) {
+            $facture = Facture::findOrFail($data['facture_id']);
+            $montantTotal = $facture->total_ttc;
+            $nbTranches = $data['nb_tranches'] ?? 2;
+
+            $plan = PlanFractionnement::create([
+                'tenant_id' => config('tenant.current_id'),
+                'facture_id' => $facture->id,
+                'eleve_id' => $facture->eleve_id,
+                'nb_tranches' => $nbTranches,
+                'montant_total' => $montantTotal,
+                'statut' => 'actif',
+                'notes' => $data['notes'] ?? null,
+            ]);
+
+            $montantTranche = round($montantTotal / $nbTranches, 2);
+            $echeances = $data['echeances'] ?? [];
+
+            for ($i = 1; $i <= $nbTranches; $i++) {
+                $montant = ($i === $nbTranches)
+                    ? round($montantTotal - $montantTranche * ($nbTranches - 1), 2)
+                    : $montantTranche;
+
+                $dateEcheance = $echeances[$i - 1] ?? now()->addMonths($i)->toDateString();
+
+                TrancheFractionnement::create([
+                    'tenant_id' => config('tenant.current_id'),
+                    'plan_id' => $plan->id,
+                    'numero' => $i,
+                    'montant' => $montant,
+                    'date_echeance' => $dateEcheance,
+                    'statut' => 'en_attente',
+                ]);
+            }
+
+            return $plan->load('tranches');
+        });
+    }
+
+    /**
+     * Affecte un plan de fractionnement existant à un élève (copie le plan).
+     */
+    public function affecterPlanAEleve(string $planId, string $eleveId): PlanFractionnement
+    {
+        return DB::transaction(function () use ($planId, $eleveId) {
+            $planOriginal = PlanFractionnement::with('tranches')->findOrFail($planId);
+
+            $nouveauPlan = PlanFractionnement::create([
+                'tenant_id' => config('tenant.current_id'),
+                'facture_id' => $planOriginal->facture_id,
+                'eleve_id' => $eleveId,
+                'nb_tranches' => $planOriginal->nb_tranches,
+                'montant_total' => $planOriginal->montant_total,
+                'statut' => 'actif',
+                'notes' => "Copie du plan " . $planOriginal->id,
+            ]);
+
+            foreach ($planOriginal->tranches as $tranche) {
+                TrancheFractionnement::create([
+                    'tenant_id' => config('tenant.current_id'),
+                    'plan_id' => $nouveauPlan->id,
+                    'numero' => $tranche->numero,
+                    'montant' => $tranche->montant,
+                    'date_echeance' => $tranche->date_echeance,
+                    'statut' => 'en_attente',
+                ]);
+            }
+
+            return $nouveauPlan->load('tranches');
+        });
     }
 }

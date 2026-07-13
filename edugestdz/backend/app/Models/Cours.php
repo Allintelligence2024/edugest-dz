@@ -23,6 +23,11 @@ class Cours extends BaseModel
         return $this->belongsTo(Enseignant::class);
     }
 
+    public function matiere(): BelongsTo
+    {
+        return $this->belongsTo(Matiere::class);
+    }
+
     public function groupe(): BelongsTo
     {
         return $this->belongsTo(Groupe::class);

@@ -44,9 +44,11 @@ return [
     ],
 
     'twilio' => [
-        'sid'   => env('TWILIO_SID'),
-        'token' => env('TWILIO_TOKEN'),
-        'from'  => env('TWILIO_FROM'),
+        'sid'          => env('TWILIO_SID'),
+        'token'        => env('TWILIO_TOKEN'),
+        'from'         => env('TWILIO_FROM'),
+        'voice_langue' => env('TWILIO_VOICE_LANGUE', 'fr-FR'),
+        'voice_nom'    => env('TWILIO_VOICE_NOM', 'alice'),
     ],
 
     'firebase' => [
@@ -69,9 +71,10 @@ return [
     ],
 
     'google' => [
-        'client_id'     => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect_uri'  => env('GOOGLE_REDIRECT_URI'),
+        'client_id'      => env('GOOGLE_CLIENT_ID'),
+        'client_secret'  => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri'   => env('GOOGLE_REDIRECT_URI'),
+        'vision_api_key' => env('GOOGLE_VISION_API_KEY'),
     ],
 
 ];

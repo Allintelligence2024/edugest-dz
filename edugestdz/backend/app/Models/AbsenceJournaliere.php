@@ -16,12 +16,15 @@ class AbsenceJournaliere extends BaseModel
         'tenant_id','eleve_id','date_absence','statut',
         'heure_arrivee','signale_par','sms_parent_envoye',
         'sms_envoye_at','motif',
+        'appel_vocal_envoye','appel_vocal_envoye_at',
     ];
 
     protected $casts = [
-        'date_absence'      => 'date',
-        'sms_parent_envoye' => 'boolean',
-        'sms_envoye_at'     => 'datetime',
+        'date_absence'         => 'date',
+        'sms_parent_envoye'    => 'boolean',
+        'sms_envoye_at'        => 'datetime',
+        'appel_vocal_envoye'   => 'boolean',
+        'appel_vocal_envoye_at'=> 'datetime',
     ];
 
     public function eleve(): BelongsTo
