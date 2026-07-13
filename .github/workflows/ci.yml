@@ -3,10 +3,8 @@ name: CI — EduGest DZ
 on:
   push:
     branches: [main, develop]
-    paths: ['edugestdz/backend/**', '.github/workflows/ci.yml']
   pull_request:
     branches: [main]
-    paths: ['edugestdz/backend/**']
 
 permissions:
   contents: read
