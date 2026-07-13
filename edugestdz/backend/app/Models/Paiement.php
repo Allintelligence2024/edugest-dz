@@ -2,12 +2,10 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Paiement extends BaseModel
 {
-    use BelongsToTenant;
 
     protected $table = 'paiements';
 

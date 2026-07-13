@@ -47,6 +47,14 @@ class HealthController extends Controller
         $services['queue'] = ['status' => 'ok', 'driver' => config('queue.default')];
 
         try {
+            $migrationCount = DB::table('migrations')->count();
+            $services['migrations'] = ['status' => 'ok', 'count' => $migrationCount];
+        } catch (\Throwable $e) {
+            $services['migrations'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $allOk = false;
+        }
+
+        try {
             $client = app(\Laravel\Scout\Engines\MeilisearchEngine::class);
             $services['meilisearch'] = ['status' => 'ok'];
         } catch (\Throwable) {
