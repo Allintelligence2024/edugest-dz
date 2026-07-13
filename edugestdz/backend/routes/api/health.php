@@ -75,6 +75,14 @@ Route::get('/health', function () {
     $checks['kill_switch'] = ['status' => $killActive ? 'ACTIVE' : 'inactive'];
     if ($killActive) $allOk = false;
 
+    // 7. Migrations status
+    try {
+        $migrationCount = \DB::table('migrations')->count();
+        $checks['migrations'] = ['status' => 'ok', 'count' => $migrationCount];
+    } catch (\Throwable) {
+        $checks['migrations'] = ['status' => 'degraded'];
+    }
+
     $responseTime = round((microtime(true) - $startTs) * 1000, 2);
 
     return response()->json([
