@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\Seance;
 use App\Models\Enseignant;
+use App\Services\SuggestionRemplacantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,23 +28,10 @@ class RemplacementController extends BaseApiController
 
     public function suggestions(Request $request, string $seanceId): JsonResponse
     {
-        $seance = Seance::with('cours.enseignant')->findOrFail($seanceId);
+        $service = app(SuggestionRemplacantService::class);
+        $limit   = min((int) $request->query('limit', 5), 20);
 
-        $enseignants = Enseignant::where('tenant_id', config('tenant.current_id'))
-            ->where('statut', 'actif')
-            ->where('id', '!=', $seance->cours->enseignant_id)
-            ->get()
-            ->map(fn($ens) => [
-                'id' => $ens->id,
-                'nom' => $ens->nom,
-                'prenom' => $ens->prenom,
-                'specialite' => $ens->specialite,
-            ]);
-
-        return $this->success([
-            'seance' => $seance->load('cours.groupe.matiere', 'cours.enseignant'),
-            'suggestions' => $enseignants,
-        ]);
+        return $this->success($service->suggestions($seanceId, $limit));
     }
 
     public function confirmer(Request $request, string $seanceId): JsonResponse
