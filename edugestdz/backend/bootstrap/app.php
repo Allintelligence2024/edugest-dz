@@ -130,17 +130,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // ── Renderers d'erreur personnalisés (AVANT Sentry) ─────────
-        $exceptions->render(function (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error'   => [
-                    'code'    => 'VALIDATION_ERROR',
-                    'message' => 'Données invalides',
-                    'details' => $e->errors(),
-                ],
-            ], 422);
-        });
-
         $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             $model = class_basename($e->getModel());
             return response()->json([
