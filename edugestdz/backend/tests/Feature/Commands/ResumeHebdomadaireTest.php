@@ -11,6 +11,7 @@ use App\Models\Seance;
 use App\Models\Groupe;
 use App\Models\Matiere;
 use App\Models\Tenant;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
@@ -39,7 +40,7 @@ class ResumeHebdomadaireTest extends TestCase
         $groupe = Groupe::factory()->create(['matiere_id' => $matiere->id]);
         $evaluation = Evaluation::factory()->create([
             'groupe_id' => $groupe->id,
-            'date_evaluation' => now()->subDay(),
+            'date_evaluation' => Carbon::now()->subHours(6),
             'note_sur' => 20,
         ]);
         Note::factory()->create([
@@ -81,7 +82,7 @@ class ResumeHebdomadaireTest extends TestCase
         $groupe = Groupe::factory()->create(['matiere_id' => $matiere->id]);
         $evaluation = Evaluation::factory()->create([
             'groupe_id' => $groupe->id,
-            'date_evaluation' => now()->subDay(),
+            'date_evaluation' => Carbon::now()->subHours(6),
             'note_sur' => 20,
         ]);
         Note::factory()->create([
@@ -128,7 +129,7 @@ class ResumeHebdomadaireTest extends TestCase
         $parent = ParentEleve::factory()->create();
         $eleve->parents()->attach($parent->id);
 
-        $seance = Seance::factory()->create(['date_seance' => now()->subDay()]);
+        $seance = Seance::factory()->create(['date_seance' => Carbon::now()->subHours(6)]);
         Presence::factory()->create([
             'eleve_id' => $eleve->id,
             'seance_id' => $seance->id,
