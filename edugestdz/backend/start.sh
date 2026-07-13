@@ -110,15 +110,21 @@ echo "   ✅ Optimisé"
 # ── ÉTAPE 6 : Démarrer PHP-FPM ──────────────────────────────────────────
 echo ""
 echo "🚀 [6/7] Démarrage PHP-FPM..."
-php-fpm -D 2>&1
+
+# Render nginx config template with PORT
+envsubst '$PORT' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
+
+# Démarrer PHP-FPM en arrière-plan (pas -D pour rester visible)
+php-fpm --nodaemonize &
+FPM_PID=$!
 sleep 2
 
 # Vérifier que PHP-FPM est bien lancé
-if ! pgrep php-fpm > /dev/null 2>&1; then
+if ! kill -0 $FPM_PID 2>/dev/null; then
     echo "❌ PHP-FPM n'a pas démarré — vérifiez les logs"
     exit 1
 fi
-echo "   ✅ PHP-FPM actif sur 127.0.0.1:9000"
+echo "   ✅ PHP-FPM actif sur 127.0.0.1:9000 (PID: $FPM_PID)"
 
 # ── ÉTAPE 7 : Démarrer Nginx ─────────────────────────────────────────────
 echo ""
@@ -126,11 +132,24 @@ echo "🌐 [7/7] Démarrage Nginx..."
 echo "═══════════════════════════════════════"
 echo "   EduGest DZ opérationnel"
 echo "   Port : ${PORT:-80}"
-echo "   Health : /api/health"
+echo "   Health : /api/v1/health"
 echo "   Swagger : /api/documentation"
 echo "═══════════════════════════════════════"
 
-# Render nginx config template with PORT (only replace $PORT, keep nginx vars intact)
-envsubst '$PORT' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
+# Piège : si PHP-FPM meurt, redémarrer automatiquement
+(
+    while true; do
+        sleep 10
+        if ! kill -0 $FPM_PID 2>/dev/null; then
+            echo "[$(date)] PHP-FPM crashed, restarting..."
+            php-fpm --nodaemonize &
+            FPM_PID=$!
+            echo "[$(date)] PHP-FPM restarted (PID: $FPM_PID)"
+        fi
+    done
+) &
+WATCHDOG_PID=$!
 
+# Démarrer nginx en foreground (PID 1 après exec)
+# Si nginx meurt, le container redémarre (restartPolicy: ALWAYS)
 exec nginx -g 'daemon off;'
