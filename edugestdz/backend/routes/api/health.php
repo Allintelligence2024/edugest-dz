@@ -61,7 +61,7 @@ Route::get('/health', function () {
 
     // 5. Audit Chain intégrité (vérification rapide — dernier bloc seulement)
     try {
-        $dernierBloc = \DB::table('audit_chain')->orderByDesc('bloc_numero')->first(['bloc_numero', 'hash_merkle']);
+        $dernierBloc = \DB::table('audit_chain')->orderByDesc('bloc_numero')->first(['bloc_numero']);
         $checks['audit_chain'] = [
             'status'      => 'ok',
             'total_blocs' => $dernierBloc?->bloc_numero ?? 0,
