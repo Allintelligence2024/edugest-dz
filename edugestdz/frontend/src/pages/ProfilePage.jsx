@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Lock, Bell, Eye, EyeOff, Save } from 'lucide-react';
 
 const api = (path, opts) => fetch(`/api/v1${path}`, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type':'application/json' },
+  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}`, 'Content-Type':'application/json' },
   ...opts,
 }).then(r => r.json());
 

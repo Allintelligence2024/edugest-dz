@@ -3,7 +3,7 @@ import { Cpu, RefreshCw, TrendingDown, AlertTriangle, Users, Activity, Brain, Ch
 
 const api = (path, opts) => fetch(`/api/v1${path}`, {
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     'X-Tenant-ID': localStorage.getItem('tenantId') ?? '',
     ...opts?.headers,
   },

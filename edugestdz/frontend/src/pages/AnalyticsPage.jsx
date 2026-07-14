@@ -7,7 +7,7 @@ import BarChart from '@components/ui/BarChart';
 
 const api = (path) =>
   fetch(`/api/v1${path}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
   }).then((r) => r.json());
 
 const fmt = (n) => new Intl.NumberFormat('fr-DZ').format(n ?? 0);
@@ -42,7 +42,7 @@ export default function AnalyticsPage() {
     setPdfLoading(true);
     try {
       const res = await fetch('/api/v1/analytics/rapport-pdf', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
       });
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(blob);

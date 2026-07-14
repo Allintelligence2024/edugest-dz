@@ -3,7 +3,7 @@ import { AlertTriangle, Camera, CheckCircle, Clock, Shield, RefreshCw } from 'lu
 
 const api = (path, opts) => fetch(`/api/v1${path}`, {
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     'Content-Type': 'application/json',
     'X-Tenant-ID': localStorage.getItem('tenantId') ?? '',
   },

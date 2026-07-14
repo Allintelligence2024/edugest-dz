@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const api = (path, opts) => fetch(`/api/v1${path}`, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}`, 'Content-Type':'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
+  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}`, 'Content-Type':'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
   ...opts,
 }).then(r => r.json());
 

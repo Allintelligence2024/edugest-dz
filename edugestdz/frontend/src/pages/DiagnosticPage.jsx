@@ -3,7 +3,7 @@ import { AlertTriangle, Star, TrendingDown, TrendingUp, Users, RefreshCw, BookOp
 
 const api = (path) => fetch(`/api/v1${path}`, {
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     'X-Tenant-ID': localStorage.getItem('tenantId') ?? '',
   },
 }).then(r => r.json());
@@ -11,7 +11,7 @@ const api = (path) => fetch(`/api/v1${path}`, {
 const post = (path, body) => fetch(`/api/v1${path}`, {
   method: 'POST',
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     'Content-Type': 'application/json',
     'X-Tenant-ID': localStorage.getItem('tenantId') ?? '',
   },
