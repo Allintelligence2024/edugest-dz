@@ -2,8 +2,9 @@ import axios from 'axios';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
+const _rawBase = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/api\/v1\/?$/, '');
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
+  baseURL: _rawBase ? `${_rawBase}/api/v1` : '/api/v1',
   headers: {
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -34,7 +35,7 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token');
 
         const res = await axios.post(
-          `${import.meta.env.VITE_API_URL || '/api/v1'}/auth/refresh`,
+          `${_rawBase}/api/v1/auth/refresh`,
           { refresh_token: refreshToken },
         );
 
