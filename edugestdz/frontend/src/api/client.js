@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? '';
+const _raw = import.meta.env.VITE_API_URL ?? '';
+const BASE_URL = _raw.replace(/\/api\/v1\/?$/, '');
 
 let _onSessionExpired = null;
 
@@ -44,5 +45,7 @@ export async function api(path, options = {}) {
 export function getApiUrl(path) {
   return `${BASE_URL}/api/v1${path}`;
 }
+
+export { BASE_URL };
 
 export default api;
