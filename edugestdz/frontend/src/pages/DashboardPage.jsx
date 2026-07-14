@@ -9,7 +9,8 @@ import Alert from '@components/ui/Alert';
 import DonutChart from '@components/ui/DonutChart';
 import BarChart from '@components/ui/BarChart';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '';
+let BASE_URL = import.meta.env.VITE_API_URL ?? '';
+if (BASE_URL.endsWith('/api/v1')) BASE_URL = BASE_URL.slice(0, -'/api/v1'.length);
 
 const headers = {
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
