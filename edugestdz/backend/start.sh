@@ -126,7 +126,7 @@ if ! kill -0 $FPM_PID 2>/dev/null; then
 fi
 echo "   ✅ PHP-FPM actif sur 127.0.0.1:9000 (PID: $FPM_PID)"
 
-# ── ÉTAPE 7 : Démarrer Nginx ─────────────────────────────────────────────
+# ── ÉTAPE 7 : Démarrer Nginx + Watchdog ────────────────────────────────────
 echo ""
 echo "🌐 [7/7] Démarrage Nginx..."
 echo "═══════════════════════════════════════"
@@ -136,7 +136,7 @@ echo "   Health : /api/v1/health"
 echo "   Swagger : /api/documentation"
 echo "═══════════════════════════════════════"
 
-# Piège : si PHP-FPM meurt, redémarrer automatiquement
+# Watchdog : si PHP-FPM meurt, le redémarrer automatiquement
 (
     while true; do
         sleep 10
@@ -150,6 +150,14 @@ echo "════════════════════════�
 ) &
 WATCHDOG_PID=$!
 
-# Démarrer nginx en foreground (PID 1 après exec)
-# Si nginx meurt, le container redémarre (restartPolicy: ALWAYS)
-exec nginx -g 'daemon off;'
+# IMPORTANT : PAS de exec ici — garder le shell comme PID 1
+# pour que le watchdog reste vivant et puisse redémarrer PHP-FPM.
+# Si nginx meurt, le shell sort et le container redémarre (restartPolicy: ALWAYS)
+trap 'kill $WATCHDOG_PID $FPM_PID 2>/dev/null; nginx -s quit 2>/dev/null; exit 0' SIGTERM SIGINT
+
+# Démarrer nginx en foreground (pas exec — le shell reste PID 1)
+nginx -g 'daemon off;'
+
+# Nettoyage si nginx sort
+kill $WATCHDOG_PID 2>/dev/null
+kill $FPM_PID 2>/dev/null
