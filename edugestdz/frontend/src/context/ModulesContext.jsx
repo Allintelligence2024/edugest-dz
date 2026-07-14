@@ -9,7 +9,7 @@ export function ModulesProvider({ children }) {
   const [error, setError]       = useState(null);
 
   const loadModules = useCallback(async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) { setLoading(false); return; }
 
     try {
@@ -45,7 +45,7 @@ export function ModulesProvider({ children }) {
   }, [actifs, loading, error]);
 
   const activerModule = useCallback(async (moduleKey) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const BASE  = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     const res   = await fetch(`${BASE}/modules/${moduleKey}/activer`, {
       method: 'POST',
@@ -60,7 +60,7 @@ export function ModulesProvider({ children }) {
   }, []);
 
   const desactiverModule = useCallback(async (moduleKey, raison = '') => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const BASE  = import.meta.env.VITE_API_BASE_URL || '/api/v1';
     const res   = await fetch(`${BASE}/modules/${moduleKey}/desactiver`, {
       method: 'POST',

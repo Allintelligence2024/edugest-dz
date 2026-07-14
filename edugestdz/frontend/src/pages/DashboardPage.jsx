@@ -13,7 +13,7 @@ let BASE_URL = import.meta.env.VITE_API_URL ?? '';
 if (BASE_URL.endsWith('/api/v1')) BASE_URL = BASE_URL.slice(0, -'/api/v1'.length);
 
 const headers = {
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
 };
 
 const ALERT_MAP = { danger: 'error', critical: 'error' };

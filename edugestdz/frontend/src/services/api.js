@@ -12,7 +12,7 @@ const BASE_URL = (() => {
 
 const apiClient = {
   getHeaders() {
-    const token    = localStorage.getItem('token');
+    const token    = localStorage.getItem('access_token');
     const tenantId = localStorage.getItem('tenantId');
     return {
       'Content-Type': 'application/json',

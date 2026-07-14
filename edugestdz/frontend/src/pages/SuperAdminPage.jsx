@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shield, Users, Building2, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 
 const api = (path) => fetch(`/api/v1${path}`, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
 }).then(r => r.json());
 
 export default function SuperAdminPage() {
@@ -25,7 +25,7 @@ export default function SuperAdminPage() {
     if (!confirm('Suspendre ce tenant ?')) return;
     await fetch(`/api/v1/super-admin/tenants/${id}/suspendre`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
     });
     setTenants(t => t.map(x => x.id === id ? { ...x, actif: false } : x));
   };
@@ -33,7 +33,7 @@ export default function SuperAdminPage() {
   const verifierMarketplace = async (tenantId) => {
     await fetch(`/api/v1/super-admin/marketplace/${tenantId}/verifier`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
     });
     alert('Tenant vérifié sur la marketplace');
   };

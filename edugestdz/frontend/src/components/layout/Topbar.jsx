@@ -49,7 +49,7 @@ export default function Topbar({ user }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) return;
     const BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || '';
     fetch(`${BASE}/api/v1/notifications/parent?lu=false&per_page=1`, {

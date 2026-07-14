@@ -73,7 +73,7 @@ export default function Sidebar() {
   const activeColor = MODULE_ICONS[location.pathname]?.color || '#2563EB';
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) return;
     const BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || '';
     Promise.allSettled([
