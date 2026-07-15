@@ -36,8 +36,10 @@ export default function MarketplaceSearchPage() {
           api('/matieres?per_page=200'),
           api('/parametres/wilayas'),
         ]);
-        setMatieres(matRes.data || []);
-        setWilayas(wilRes.data || []);
+        const matRaw = matRes.data;
+        const wilRaw = wilRes.data;
+        setMatieres(Array.isArray(matRaw) ? matRaw : Array.isArray(matRaw?.data) ? matRaw.data : []);
+        setWilayas(Array.isArray(wilRaw) ? wilRaw : Array.isArray(wilRaw?.data) ? wilRaw.data : []);
       } catch { /* ignore */ }
     };
     loadRefs();
@@ -49,7 +51,8 @@ export default function MarketplaceSearchPage() {
       const params = new URLSearchParams({ page: String(page), per_page: '12' });
       Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
       const res = await api(`/marketplace/offres?${params.toString()}`);
-      setOffres(res.data || []);
+      const raw = res.data;
+      setOffres(Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : []);
       setMeta(res.meta || { total: 0, last_page: 1 });
     } catch { setOffres([]); }
     finally { setIsLoading(false); }

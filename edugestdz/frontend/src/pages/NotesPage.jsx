@@ -15,11 +15,9 @@ export default function NotesPage() {
   const [showDetail, setShowDetail] = useState(null);
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [matieres, setMatieres] = useState([]);
 
-  const query = new URLSearchParams({ search, page, per_page: perPage, matiere: selectedMatiere }).toString();
-  const { data, isLoading } = useList('/notes', query, 'notes', refreshKey);
+  const { items: notes, isLoading, meta, changePage, changeFilter, load } = useList('/notes', { page, per_page: perPage, search, matiere: selectedMatiere });
 
   const loadMatieres = useCallback(async () => {
     try { const res = await api.get('/matieres'); setMatieres(res.data || []); }
@@ -29,13 +27,13 @@ export default function NotesPage() {
   React.useEffect(() => { loadMatieres(); }, [loadMatieres]);
 
   const handleAddNote = async (noteData) => {
-    try { await api.post('/notes', noteData); toast.success('Note enregistrée 🎉'); setRefreshKey(k => k + 1); }
+    try { await api.post('/notes', noteData); toast.success('Note enregistrée 🎉'); load(); }
     catch (err) { toast.error(err?.error?.message || 'Erreur'); }
   };
 
   const handleDeleteNote = async (id) => {
     if (!window.confirm('Supprimer cette note ?')) return;
-    try { await api.delete(`/notes/${id}`); toast.success('Note supprimée'); setRefreshKey(k => k + 1); }
+    try { await api.delete(`/notes/${id}`); toast.success('Note supprimée'); load(); }
     catch (err) { toast.error(err?.error?.message || 'Erreur'); }
   };
 
@@ -80,8 +78,8 @@ export default function NotesPage() {
           </select>
         </div>
 
-        <DataTable columns={COLUMNS} data={data?.data || []} isLoading={isLoading} emptyMessage="Aucune note trouvée" />
-        <Pagination currentPage={page} lastPage={data?.meta?.last_page || 1} total={data?.meta?.total || 0} perPage={perPage} onPageChange={setPage} />
+        <DataTable columns={COLUMNS} data={notes || []} isLoading={isLoading} emptyMessage="Aucune note trouvée" />
+        <Pagination currentPage={page} lastPage={meta?.last_page || 1} total={meta?.total || 0} perPage={perPage} onPageChange={setPage} />
       </div>
 
       {showDetail && <NoteModal eleve={eleveDetail} matieres={matieres} onClose={() => setShowDetail(null)} onSuccess={() => { setShowDetail(null); setRefreshKey(k => k + 1); }} />}

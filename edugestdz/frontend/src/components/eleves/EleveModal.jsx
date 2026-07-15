@@ -34,12 +34,12 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
   const [photoPreview, setPhotoPreview] = useState(null);
   const isEdit = !!eleve;
 
-  const { register, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, reset, setValue, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: { parents: [{ lien: 'père' }] },
   });
 
-  const { fields: parentFields, append: addParent, remove: removeParent } = useFieldArray({ name: 'parents' });
+  const { fields: parentFields, append: addParent, remove: removeParent } = useFieldArray({ control, name: 'parents' });
 
   const watchedWilaya = watch('wilaya_id');
 

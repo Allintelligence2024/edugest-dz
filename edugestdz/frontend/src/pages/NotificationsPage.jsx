@@ -18,7 +18,8 @@ export default function NotificationsPage() {
     try {
       setLoading(true);
       const res = await api.get('/notifications', { params: { per_page: 50 } });
-      setNotifications(res.data || []);
+      const raw = res.data;
+      setNotifications(Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : []);
     } catch {
       setEndpointError(true);
       setNotifications([]);
