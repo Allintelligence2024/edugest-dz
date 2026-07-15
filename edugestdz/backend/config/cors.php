@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'paths'                    => ['api/*', 'sanctum/csrf-cookie'],
+    'paths'                    => ['api/*', 'modules/*', 'sanctum/csrf-cookie'],
     'allowed_methods'          => ['*'],
     'allowed_origins'          => array_filter([
         'http://localhost:5173',
