@@ -55,6 +55,7 @@ import DevoirsPage from '@pages/DevoirsPage';
 import FeedbackEnseignantPage from '@pages/FeedbackEnseignantPage';
 import PredictionIAPage from '@pages/PredictionIAPage';
 import RgpdPage from '@pages/RgpdPage';
+import ModuleProtectedRoute from '@components/ModuleProtectedRoute';
 import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
@@ -149,8 +150,8 @@ function AppInner() {
               <Route path="campagnes" element={<CampagnesPage />} />
               <Route path="super-admin" element={<SuperAdminPage />} />
               <Route path="parametres/securite" element={<TwoFactorSetupPage />} />
-            <Route path="marketplace/reservation/:id" element={<MarketplaceReservationPage />} />
-            <Route path="mes-reservations" element={<MesReservationsPage />} />
+            <Route path="marketplace/reservation/:id" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplaceReservationPage /></ModuleProtectedRoute>} />
+            <Route path="mes-reservations" element={<ModuleProtectedRoute moduleKey="marketplace"><MesReservationsPage /></ModuleProtectedRoute>} />
             <Route path="transport" element={<TransportPage />} />
             <Route path="cantine" element={<CantinePage />} />
             <Route path="stock" element={<StockInventairePage />} />
@@ -159,7 +160,7 @@ function AppInner() {
             <Route path="entretien" element={<EntretienPage />} />
             <Route path="absences" element={<AbsencesPage />} />
             <Route path="billets" element={<BilletsPage />} />
-            <Route path="centres" element={<MarketplacePageCentres />} />
+            <Route path="centres" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplacePageCentres /></ModuleProtectedRoute>} />
             <Route path="pointage" element={<PointagePage />} />
             <Route path="profil" element={<ProfilePage />} />
             <Route path="surveillance" element={<SurveillancePage />} />
@@ -172,9 +173,9 @@ function AppInner() {
             <Route path="feedback-enseignant" element={<FeedbackEnseignantPage />} />
             <Route path="prediction-ia" element={<PredictionIAPage />} />
             <Route path="rgpd" element={<RgpdPage />} />
+            <Route path="marketplace" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplaceSearchPage /></ModuleProtectedRoute>} />
+            <Route path="marketplace/offres/:id" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplaceOffreDetailPage /></ModuleProtectedRoute>} />
           </Route>
-            <Route path="marketplace" element={<MarketplaceSearchPage />} />
-            <Route path="marketplace/offres/:id" element={<MarketplaceOffreDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ModulesProvider>
