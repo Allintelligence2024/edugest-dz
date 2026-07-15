@@ -465,6 +465,7 @@ class EcoleDemoSeeder extends Seeder
         $statuts = ['brouillon', 'émise', 'payée'];
         $modes = ['espèces', 'cib', 'dahabia'];
 
+        $paiementCount = 0;
         foreach ($eleves->take(10) as $e) {
             $num = 'FAC-' . now()->year . '-' . strtoupper(Str::random(6));
 
@@ -478,7 +479,8 @@ class EcoleDemoSeeder extends Seeder
                 $f = $existing;
             } else {
                 $total = rand(3000, 15000);
-                $statut = $statuts[array_rand($statuts)];
+                // First 3 factures guaranteed 'payée' to ensure paiements exist
+                $statut = $paiementCount < 3 ? 'payée' : $statuts[array_rand($statuts)];
 
                 $f = Facture::create([
                     'tenant_id' => $this->tenant->id,
@@ -508,6 +510,7 @@ class EcoleDemoSeeder extends Seeder
                     'date_paiement' => now(),
                     'statut' => 'confirmé',
                 ]);
+                $paiementCount++;
             }
         }
     }
