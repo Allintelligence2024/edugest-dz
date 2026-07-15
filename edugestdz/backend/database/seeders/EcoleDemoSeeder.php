@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\{
     Tenant, User, Role, Eleve, Enseignant, Groupe, Matiere, Cours,
     Seance, Salle, Facture, Paiement, Note, Evaluation, Paie,
-    ParentEleve, DiagnosticEleve, Inscription
+    ParentEleve, DiagnosticEleve, Inscription, Presence
 };
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\{DB, Hash};
@@ -61,6 +61,7 @@ class EcoleDemoSeeder extends Seeder
         $coursList = $this->cours($groupes, $enseignants);
         $this->seances($coursList);
         $this->notes($groupes);
+        $this->presences();
         $this->facturesPaiements($eleves);
         $this->paies($enseignants);
         $this->diagnostics($eleves);
@@ -416,6 +417,45 @@ class EcoleDemoSeeder extends Seeder
                         'appreciation' => 'Bien',
                     ]
                 );
+            }
+        }
+    }
+
+    private function presences(): void
+    {
+        $pastSeances = Seance::where('tenant_id', $this->tenant->id)
+            ->where('date_seance', '<', now()->toDateString())
+            ->where('statut', 'terminée')
+            ->get();
+
+        $statuts = ['présent', 'présent', 'présent', 'absent', 'absent', 'retard'];
+
+        foreach ($pastSeances as $seance) {
+            $cours = $seance->cours;
+            if (!$cours) continue;
+
+            $inscrits = Inscription::where('tenant_id', $this->tenant->id)
+                ->where('groupe_id', $cours->groupe_id)
+                ->where('statut', 'validée')
+                ->pluck('eleve_id');
+
+            foreach ($inscrits as $eid) {
+                $exists = Presence::where('tenant_id', $this->tenant->id)
+                    ->where('seance_id', $seance->id)
+                    ->where('eleve_id', $eid)
+                    ->exists();
+
+                if (!$exists) {
+                    $statut = $statuts[array_rand($statuts)];
+                    Presence::create([
+                        'tenant_id'    => $this->tenant->id,
+                        'seance_id'    => $seance->id,
+                        'eleve_id'     => $eid,
+                        'statut'       => $statut,
+                        'heure_arrivee' => $statut === 'retard' ? sprintf('%02d:%02d', rand(8, 10), rand(5, 55)) : null,
+                        'motif'        => $statut === 'absent' ? 'Absence non justifiée' : null,
+                    ]);
+                }
             }
         }
     }
