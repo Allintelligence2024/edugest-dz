@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from '@context/AuthContext';
 import { setSessionExpiredHandler } from '@api/client';
@@ -58,7 +58,8 @@ import RgpdPage from '@pages/RgpdPage';
 import OfflineBanner from '@components/ui/OfflineBanner';
 
 function ProtectedLayout() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, role, onboardingComplete } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -77,6 +78,10 @@ function ProtectedLayout() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (role === 'admin' && !onboardingComplete && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return (

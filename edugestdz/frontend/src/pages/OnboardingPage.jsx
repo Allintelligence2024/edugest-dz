@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@api/client';
+import { useAuth } from '@context/AuthContext';
 
 const ETAPES = [
   {
@@ -57,6 +58,7 @@ const ETAPES = [
 
 export default function OnboardingPage() {
   const navigate   = useNavigate();
+  const { marquerOnboardingComplete } = useAuth();
   const [statut,   setStatut]   = useState(null);
   const [etapeIdx, setEtapeIdx] = useState(0);
   const [form,     setForm]     = useState({});
@@ -81,6 +83,7 @@ export default function OnboardingPage() {
     try {
       if (etape.id === 5) {
         await api('/onboarding/tester-notification', { method:'POST' });
+        marquerOnboardingComplete();
         setSuccess('🎉 Notification envoyée ! Votre installation est terminée.');
         setTimeout(() => navigate('/dashboard'), 2000);
       } else {
@@ -99,6 +102,7 @@ export default function OnboardingPage() {
 
   const skip = async () => {
     await api('/onboarding/ignorer', { method:'POST' }).catch(() => {});
+    marquerOnboardingComplete();
     navigate('/dashboard');
   };
 

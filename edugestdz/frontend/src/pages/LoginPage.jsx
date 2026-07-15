@@ -20,16 +20,17 @@ export default function LoginPage() {
     setError(''); setLoading(true);
     try {
       const user = await login(email, password);
+      const effectiveRole = typeof user?.role === 'object' ? user?.role?.nom : user?.role;
 
       let dest = '/';
-      if (user?.role === 'admin') {
+      if (effectiveRole === 'admin') {
         const onboardingRes = await api('/onboarding').catch(() => null);
         dest = onboardingRes?.complete === false && onboardingRes?.etape < 5
           ? '/onboarding'
           : '/';
-      } else if (user?.role === 'eleve') {
+      } else if (effectiveRole === 'eleve') {
         dest = '/devoirs';
-      } else if (user?.role === 'enseignant') {
+      } else if (effectiveRole === 'enseignant') {
         dest = '/planning';
       }
       navigate(dest, { replace: true });
