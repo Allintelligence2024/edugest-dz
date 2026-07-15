@@ -34,7 +34,7 @@ const apiClient = {
       const response = await fetch(`${BASE_URL}${path}`, config);
 
       if (response.status === 401) {
-        localStorage.removeItem('token');
+        localStorage.removeItem('access_token');
         localStorage.removeItem('tenantId');
         window.location.href = '/login';
         return null;
