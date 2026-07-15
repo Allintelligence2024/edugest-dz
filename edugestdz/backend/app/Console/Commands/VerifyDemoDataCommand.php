@@ -23,6 +23,9 @@ class VerifyDemoDataCommand extends Command
             return 1;
         }
 
+        // Set tenant context for BelongsToTenant global scope
+        config(['tenant.current_id' => $tenant->id]);
+
         $this->info("🏫 Vérification des données démo — Tenant: {$tenant->nom_etablissement}");
         $this->newLine();
 
