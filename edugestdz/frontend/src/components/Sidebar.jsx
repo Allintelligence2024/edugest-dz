@@ -75,12 +75,12 @@ export default function Sidebar() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
-    const BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || '';
+    const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     Promise.allSettled([
       fetch(`${BASE}/api/v1/absences?per_page=1&statut=non_justifiée`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
       fetch(`${BASE}/api/v1/diagnostic/dashboard`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
       fetch(`${BASE}/api/v1/surveillance/alertes?traite=false&per_page=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
-      fetch(`${BASE}/api/v1/finance/factures?statut=en_retard&per_page=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
+      fetch(`${BASE}/api/v1/factures?statut=en_retard&per_page=1`, { headers: { Authorization: `Bearer ${token}` } }).then(r => r.json()),
     ]).then(([a, d, s, f]) => {
       setBadges({
         absences: a.status === 'fulfilled' ? (a.value?.meta?.total || 0) : 0,

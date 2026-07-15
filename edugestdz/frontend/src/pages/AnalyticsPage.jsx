@@ -5,8 +5,9 @@ import Card from '@components/ui/Card';
 import Badge from '@components/ui/Badge';
 import BarChart from '@components/ui/BarChart';
 
+const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
 const api = (path) =>
-  fetch(`/api/v1${path}`, {
+  fetch(`${BASE_URL}/api/v1${path}`, {
     headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
   }).then((r) => r.json());
 
@@ -41,7 +42,7 @@ export default function AnalyticsPage() {
   const telechargerPdf = async () => {
     setPdfLoading(true);
     try {
-      const res = await fetch('/api/v1/analytics/rapport-pdf', {
+      const res = await fetch(`${BASE_URL}/api/v1/analytics/rapport-pdf`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
       });
       const blob = await res.blob();

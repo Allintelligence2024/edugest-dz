@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, Star, TrendingDown, TrendingUp, Users, RefreshCw, BookOpen, Phone } from 'lucide-react';
 
-const api = (path) => fetch(`/api/v1${path}`, {
+const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
+const api = (path) => fetch(`${BASE_URL}/api/v1${path}`, {
   headers: {
     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
     'X-Tenant-ID': localStorage.getItem('tenantId') ?? '',
   },
 }).then(r => r.json());
 
-const post = (path, body) => fetch(`/api/v1${path}`, {
+const post = (path, body) => fetch(`${BASE_URL}/api/v1${path}`, {
   method: 'POST',
   headers: {
     Authorization: `Bearer ${localStorage.getItem('access_token')}`,

@@ -51,7 +51,7 @@ export default function Header({ user }) {
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    const BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || '';
+    const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     fetch(`${BASE}/api/v1/notifications/parent?lu=false&per_page=5`, {
       headers: { Authorization: `Bearer ${token}` },
     })
