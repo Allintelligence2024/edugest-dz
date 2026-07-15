@@ -1,13 +1,14 @@
 const BASE_URL = (() => {
-  const url = import.meta.env.VITE_API_BASE_URL;
-  if (!url || url.includes('TON_SERVICE') || url === '/api/v1') {
+  const raw = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? '';
+  const base = raw.replace(/\/api\/v1\/?$/, '');
+  if (!base || base.includes('TON_SERVICE')) {
     console.warn(
-      '[EduGest] VITE_API_BASE_URL non configuré.\n' +
+      '[EduGest] VITE_API_URL non configuré.\n' +
       'Configurer dans Vercel : Settings → Environment Variables\n' +
-      'VITE_API_BASE_URL = https://[votre-backend].up.railway.app/api/v1'
+      'VITE_API_URL = https://[votre-backend].up.railway.app/api/v1'
     );
   }
-  return url || '/api/v1';
+  return base ? `${base}/api/v1` : '/api/v1';
 })();
 
 const apiClient = {
@@ -79,7 +80,7 @@ export const elevesApi = {
 
 export const financeApi = {
   dashboard:      ()          => apiClient.get('/finance/tableau-bord'),
-  factures:       (params='') => apiClient.get(`/finance/factures?${params}`),
+  factures:       (params='') => apiClient.get(`/factures?${params}`),
   payer:          (factureId) => apiClient.post('/paiements/cib/initier', { facture_id: factureId }),
 };
 

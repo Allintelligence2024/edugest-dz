@@ -29,7 +29,7 @@ export default function MesReservationsPage() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await api('/marketplace/reservations');
+      const res = await api('/marketplace/mes-reservations');
       const raw = res.data;
       if (Array.isArray(raw)) {
         setReservations(raw);

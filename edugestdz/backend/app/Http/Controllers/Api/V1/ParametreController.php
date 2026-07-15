@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Wilaya;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{DB, Storage, Log};
 use Illuminate\Support\Str;
@@ -169,5 +170,48 @@ class ParametreController extends Controller
                 'message' => 'Erreur SMTP : ' . $msg,
             ], 422);
         }
+    }
+
+    public function wilayas(): JsonResponse
+    {
+        $wilayas = Wilaya::orderBy('id')->get(['id', 'code', 'nom_fr', 'nom_ar']);
+
+        return response()->json(['success' => true, 'data' => $wilayas]);
+    }
+
+    public function communes(string $wilayaId): JsonResponse
+    {
+        $wilaya = Wilaya::with('communes')->find($wilayaId);
+
+        if (!$wilaya) {
+            return response()->json(['success' => false, 'message' => 'Wilaya introuvable'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $wilaya->communes->sortBy('nom_fr')->values(),
+        ]);
+    }
+
+    public function calendrier(): JsonResponse
+    {
+        $tenantId = config('tenant.current_id');
+
+        $hasTable = DB::getSchemaBuilder()->hasTable('annees_scolaires');
+        $evenements = [];
+
+        if ($hasTable) {
+            $annee = DB::table('annees_scolaires')->where('tenant_id', $tenantId)->where('est_active', true)->first();
+            if ($annee) {
+                $evenements[] = [
+                    'date_debut' => $annee->date_debut,
+                    'date_fin'   => $annee->date_fin,
+                    'titre'      => 'Année scolaire ' . ($annee->libelle ?? ''),
+                    'type'       => 'annee',
+                ];
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => $evenements]);
     }
 }

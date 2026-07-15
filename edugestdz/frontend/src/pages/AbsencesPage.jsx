@@ -18,7 +18,7 @@ export default function AbsencesPage() {
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    api.get('/absences/jour', { params: { date: today } })
+    api.get('/absences', { params: { date: today } })
       .then(res => setData(res.data ?? DEMO_DATA))
       .catch(() => setData(DEMO_DATA))
       .finally(() => setLoading(false));
