@@ -77,4 +77,50 @@ class Facture extends BaseModel
         return $query->where('date_echeance', '<=', now()->addDays($jours))
                      ->where('statut', '!=', 'payée');
     }
+
+    public function scopeImpayes(Builder $query): Builder
+    {
+        return $query->whereIn('statut', ['émise', 'en_retard', 'partiellement_payée']);
+    }
+
+    public function scopeEnRetard(Builder $query): Builder
+    {
+        return $query->where('statut', 'en_retard');
+    }
+
+    public function scopeDuMois(Builder $query, int $mois, int $annee): Builder
+    {
+        return $query->where('mois', $mois)->where('annee', $annee);
+    }
+
+    public function scopeEcheanceDepassee(Builder $query): Builder
+    {
+        return $query->where('date_echeance', '<', today())
+                     ->where('statut', '!=', 'payée');
+    }
+
+    // ── Accessors / Méthodes métier ──
+
+    public function estImpayee(): bool
+    {
+        return in_array($this->statut, ['émise', 'en_retard', 'partiellement_payée']);
+    }
+
+    public function soldeDu(): float
+    {
+        $totalPaye = $this->paiements()
+            ->where('statut', 'confirmé')
+            ->sum('montant');
+
+        return (float) $this->total_ttc - (float) $totalPaye;
+    }
+
+    public function joursRetard(): int
+    {
+        if (!$this->date_echeance || $this->statut === 'payée') {
+            return 0;
+        }
+
+        return max(0, today()->diffInDays($this->date_echeance));
+    }
 }

@@ -75,6 +75,12 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->withoutOverlapping()
                  ->runInBackground();
 
+        $schedule->command('edugest:relances-echeance')
+                 ->dailyAt('08:30')
+                 ->timezone('Africa/Algiers')
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
         $schedule->command('edugest:alertes-stock')
                  ->dailyAt('07:00')
                  ->timezone('Africa/Algiers')
