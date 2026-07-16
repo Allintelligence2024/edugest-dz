@@ -349,6 +349,7 @@ class EcoleDemoSeeder extends Seeder
     {
         foreach ($coursList as $c) {
             $dates = [
+                now()->toDateString(),
                 now()->addDays(2)->toDateString(),
                 now()->addDays(9)->toDateString(),
                 now()->subDays(5)->toDateString(),
