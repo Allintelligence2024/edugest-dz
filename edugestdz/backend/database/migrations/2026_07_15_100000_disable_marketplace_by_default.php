@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\TenantModule;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +11,7 @@ return new class extends Migration
         $tenants = DB::table('tenants')->pluck('id');
 
         foreach ($tenants as $tenantId) {
-            DB::table('tenant_modules')->updateOrCreate(
+            TenantModule::updateOrCreate(
                 ['tenant_id' => $tenantId, 'module_key' => 'marketplace'],
                 [
                     'actif'        => false,
