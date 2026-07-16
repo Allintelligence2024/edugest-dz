@@ -12,10 +12,6 @@ import BarChart from '@components/ui/BarChart';
 let BASE_URL = import.meta.env.VITE_API_URL ?? '';
 if (BASE_URL.endsWith('/api/v1')) BASE_URL = BASE_URL.slice(0, -'/api/v1'.length);
 
-const headers = {
-  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-};
-
 const ALERT_MAP = { danger: 'error', critical: 'error' };
 
 export default function DashboardPage() {
@@ -25,9 +21,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const authHeaders = { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     Promise.all([
-      fetch(`${BASE_URL}/api/v1/analytics/dashboard`, headers).then(r => r.json()),
-      fetch(`${BASE_URL}/api/v1/eleves?per_page=5`, headers).then(r => r.json()),
+      fetch(`${BASE_URL}/api/v1/analytics/dashboard`, authHeaders).then(r => r.json()),
+      fetch(`${BASE_URL}/api/v1/eleves?per_page=5`, authHeaders).then(r => r.json()),
     ])
       .then(([dashRes, elevesRes]) => {
         const d = dashRes?.data;
