@@ -6,69 +6,80 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 
 class HealthController extends Controller
 {
     public function check(): JsonResponse
     {
-        $services = [];
+        $checks = [];
         $allOk    = true;
 
+        // ── PostgreSQL ──
         try {
-            DB::select('SELECT 1');
-            $services['postgresql'] = ['status' => 'ok', 'latency_ms' => $this->measureLatency(fn() => DB::select('SELECT 1'))];
+            $latency = $this->measureLatency(fn() => DB::select('SELECT 1'));
+            $checks['postgresql'] = ['status' => 'ok', 'latency_ms' => $latency];
         } catch (\Throwable $e) {
-            $services['postgresql'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $checks['postgresql'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
         }
 
+        // ── Redis ──
         try {
-            $key = 'health_check_' . uniqid();
-            Cache::put($key, 'ok', 5);
-            $val = Cache::get($key);
-            Cache::forget($key);
-            $services['redis'] = ['status' => $val === 'ok' ? 'ok' : 'degraded'];
+            $pong = Redis::ping();
+            $checks['redis'] = ['status' => 'ok', 'pong' => $pong];
         } catch (\Throwable $e) {
-            $services['redis'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $checks['redis'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
         }
 
+        // ── Storage ──
         try {
             $path = storage_path('app/health_test.tmp');
             file_put_contents($path, 'ok');
             $ok = file_get_contents($path) === 'ok';
             unlink($path);
-            $services['storage'] = ['status' => $ok ? 'ok' : 'degraded'];
+            $checks['storage'] = ['status' => $ok ? 'ok' : 'degraded'];
         } catch (\Throwable $e) {
-            $services['storage'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $checks['storage'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
         }
 
-        $services['queue'] = ['status' => 'ok', 'driver' => config('queue.default')];
+        // ── Queue ──
+        $checks['queue'] = ['status' => 'ok', 'driver' => config('queue.default')];
 
+        // ── Migrations ──
         try {
             $migrationCount = DB::table('migrations')->count();
-            $services['migrations'] = ['status' => 'ok', 'count' => $migrationCount];
+            $checks['migrations'] = ['status' => 'ok', 'count' => $migrationCount];
         } catch (\Throwable $e) {
-            $services['migrations'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $checks['migrations'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
         }
 
+        // ── Meilisearch (HTTP health check) ──
         try {
-            $client = app(\Laravel\Scout\Engines\MeilisearchEngine::class);
-            $services['meilisearch'] = ['status' => 'ok'];
-        } catch (\Throwable) {
-            $services['meilisearch'] = ['status' => 'unavailable'];
+            $meiliUrl = config('scout.meilisearch.host', config('services.meilisearch.host', 'http://localhost:7700'));
+            $response = Http::timeout(3)->get($meiliUrl . '/health');
+            $checks['meilisearch'] = $response->successful()
+                ? ['status' => 'ok']
+                : ['status' => 'degraded', 'code' => $response->status()];
+        } catch (\Throwable $e) {
+            $checks['meilisearch'] = ['status' => 'unavailable'];
         }
 
         $httpStatus = $allOk ? 200 : 503;
 
         return response()->json([
+            'success'     => $allOk,
+            'pong'        => true,
             'status'      => $allOk ? 'ok' : 'degraded',
+            'statut'      => $allOk ? 'ok' : 'degraded',
             'version'     => config('app.version', '1.0.0'),
             'environment' => app()->environment(),
             'timestamp'   => now()->toIso8601String(),
-            'services'    => $services,
+            'checks'      => $checks,
         ], $httpStatus);
     }
 
@@ -82,6 +93,8 @@ class HealthController extends Controller
     public function ping(): JsonResponse
     {
         return response()->json([
+            'success'   => true,
+            'pong'      => true,
             'status'    => 'ok',
             'timestamp' => now()->toIso8601String(),
         ]);
