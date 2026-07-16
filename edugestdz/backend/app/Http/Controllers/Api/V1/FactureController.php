@@ -27,11 +27,16 @@ class FactureController extends Controller
             ->orderByDesc('date_emission')
             ->paginate($request->per_page ?? 15);
 
+        $tenantId = auth('api')->user()->tenant_id;
+
         $stats = [
-            'total_emises'    => Facture::where('statut', 'émise')->sum('total_ttc'),
-            'total_payees'    => Facture::where('statut', 'payée')
-                                       ->whereMonth('created_at', now()->month)->sum('total_ttc'),
-            'total_en_retard' => Facture::where('statut', 'en_retard')->count(),
+            'total_emises'    => Facture::where('tenant_id', $tenantId)
+                                        ->where('statut', 'émise')->sum('total_ttc'),
+            'total_payees'    => Facture::where('tenant_id', $tenantId)
+                                        ->where('statut', 'payée')
+                                        ->whereMonth('created_at', now()->month)->sum('total_ttc'),
+            'total_en_retard' => Facture::where('tenant_id', $tenantId)
+                                        ->where('statut', 'en_retard')->count(),
         ];
 
         return response()->json([

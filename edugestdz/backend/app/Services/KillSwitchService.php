@@ -227,4 +227,40 @@ class KillSwitchService
 
         Log::warning('KillSwitch: désactivé', ['admin' => $adminId]);
     }
+
+    /**
+     * Désactiver le KillSwitch en urgence (DB + Redis, try/catch sur chacun).
+     * Utilisable via la commande artisan edugest:killswitch-off.
+     */
+    public function desactiverUrgence(): void
+    {
+        $redisOk = false;
+        $dbOk    = false;
+
+        try {
+            Cache::forget('kill_switch:active');
+            $redisOk = true;
+        } catch (\Throwable $e) {
+            Log::warning('KillSwitch: échec désactivation Redis', ['error' => $e->getMessage()]);
+        }
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('kill_switch_state')) {
+                \DB::table('kill_switch_state')
+                    ->update([
+                        'is_active'      => false,
+                        'deactivated_at' => now(),
+                        'updated_at'     => now(),
+                    ]);
+                $dbOk = true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('KillSwitch: échec désactivation BDD', ['error' => $e->getMessage()]);
+        }
+
+        Log::critical('KillSwitch: désactivation urgence', [
+            'redis_ok' => $redisOk,
+            'db_ok'    => $dbOk,
+        ]);
+    }
 }

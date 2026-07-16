@@ -59,7 +59,7 @@ class EleveController extends BaseApiController
                 'wilaya:id,nom_fr',
                 'commune:id,nom_fr',
                 'parents:id,nom,prenom,telephone_1,email',
-                'diagnosticEleve:niveau_global,score_risque,moyenne_generale',
+                'diagnosticEleve:id,eleve_id,score_risque,niveau_global',
                 'inscriptions' => fn($q) => $q->where('statut', 'validée')
                     ->with('groupe:id,nom,matiere_id')
                     ->select('id', 'eleve_id', 'groupe_id', 'statut'),
@@ -164,14 +164,18 @@ class EleveController extends BaseApiController
     public function show(string $id): JsonResponse
     {
         $eleve = Eleve::with([
-            'wilaya:id,nom_fr,nom_ar',
+            'wilaya:id,nom_fr',
             'commune:id,nom_fr',
-            'parents:id,nom,prenom,telephone_1,telephone_2,email',
-            'inscriptions' => fn($q) => $q
-                ->where('statut', 'validée')
-                ->with('groupe:id,nom,matiere_id,enseignant_id')
-                ->with('groupe.matiere:id,nom_fr,coefficient')
-                ->with('groupe.enseignant:id,nom,prenom'),
+            'inscriptions' => fn($q) => $q->where('statut', 'validée')
+                ->with('groupe:id,nom,matiere_id'),
+            'parents:id,nom,prenom,telephone_1,email,lien',
+            'notes' => fn($q) => $q->whereNotNull('note')
+                ->latest()->limit(50)
+                ->with('evaluation:id,type_eval,trimestre,note_sur,coefficient,date_evaluation'),
+            'absencesJournalieres' => fn($q) => $q->latest()->limit(20),
+            'diagnosticEleve:id,eleve_id,score_risque,niveau_global,matieres_en_danger',
+            'factures' => fn($q) => $q->whereIn('statut', ['émise', 'en_retard', 'partiellement_payée'])
+                ->with('paiements'),
         ])
         ->withCount([
             'presences',
@@ -179,6 +183,13 @@ class EleveController extends BaseApiController
             'factures as factures_impayees'    => fn($q) => $q->whereNotIn('statut', ['payée', 'annulée']),
         ])
         ->findOrFail($id);
+
+        if ($eleve->tenant_id !== auth('api')->user()->tenant_id) {
+            return response()->json([
+                'success' => false,
+                'error'   => ['code' => 'FORBIDDEN', 'message' => 'Accès non autorisé'],
+            ], 403);
+        }
 
         $stats = $this->eleveService->getStatsAcademiques($eleve);
 
