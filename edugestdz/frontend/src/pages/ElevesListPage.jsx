@@ -9,6 +9,7 @@ import Pagination from '@components/common/Pagination';
 import EleveModal from '@components/eleves/EleveModal';
 import EleveDetailDrawer from '@components/eleves/EleveDetailDrawer';
 import EmptyState from '@components/ui/EmptyState';
+import Avatar from '@components/ui/Avatar';
 
 const FILTERS = [
   { key: 'niveau_scolaire', label: 'Niveau', options: ['1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2AS','3AS','universitaire','autre'] },
@@ -17,9 +18,9 @@ const FILTERS = [
 ];
 
 const COLUMNS = [
-  { key: 'photo_url', label: '', render: (v, r) => v
-    ? <img src={v} className="w-9 h-9 rounded-lg object-cover" alt="" />
-    : <div className="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 font-bold">{r.prenom?.[0]}{r.nom?.[0]}</div> },
+  { key: 'photo_url', label: '', render: (v, r) => (
+    <Avatar name={`${r.prenom || ''} ${r.nom || ''}`} src={v} size={36} shape="circle" />
+  )},
   { key: 'numero_inscription', label: 'N° Insc.', render: v => <span className="font-mono text-xs text-primary-600">{v}</span> },
   { key: 'nom', label: 'Nom', sortable: true, render: (v, r) => <span className="font-semibold">{v} {r.prenom}</span> },
   { key: 'niveau_scolaire', label: 'Niveau', render: v => <span className="badge badge-primary">{v}</span> },

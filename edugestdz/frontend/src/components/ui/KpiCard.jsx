@@ -1,25 +1,94 @@
-export default function KpiCard({ label, value, sub, icon: Icon, color = '#2563EB', trend, trendUp, loading }) {
+export default function KpiCard({ label, value, sub, icon: Icon, color, variant = 'blue', trend, trendUp, loading }) {
+  const VARIANT_COLORS = {
+    blue:   'var(--accent)',
+    green:  'var(--green)',
+    red:    'var(--red)',
+    yellow: 'var(--orange)',
+    purple: 'var(--accent2)',
+    orange: 'var(--orange)',
+  };
+  const c = color || VARIANT_COLORS[variant] || 'var(--accent)';
+
   return (
-    <div className="bg-surface border border-border rounded-xl p-5 flex items-center gap-4 transition-all duration-200 hover:shadow-eg hover:-translate-y-px">
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-        style={{ background: color + '22' }}
-      >
-        <Icon size={22} color={color} />
-      </div>
-      <div className="min-w-0">
-        <div className="text-[11px] font-semibold text-muted uppercase tracking-wider">{label}</div>
-        <div className="text-2xl font-black text-text mt-0.5 truncate">
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '0.75rem',
+        padding: '1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        transition: 'all 0.2s',
+      }}
+    >
+      {Icon && (
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            background: `${c}22`,
+          }}
+        >
+          <Icon size={22} color={c} />
+        </div>
+      )}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            color: 'var(--muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 900,
+            color: 'var(--text)',
+            marginTop: '2px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {loading ? (
-            <span className="inline-block w-16 h-5 rounded bg-surface3 animate-pulse" />
+            <span
+              style={{
+                display: 'inline-block',
+                width: '64px',
+                height: '20px',
+                borderRadius: '4px',
+                background: 'var(--surface3)',
+                animation: 'pulse 2s ease-in-out infinite',
+              }}
+            />
           ) : value}
         </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {sub && <div className="text-[10px] text-muted2">{sub}</div>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+          {sub && <div style={{ fontSize: '10px', color: 'var(--muted2)' }}>{sub}</div>}
           {trend !== undefined && (
-            <div className={`flex items-center gap-0.5 text-[10px] font-bold ${trendUp ? 'text-green' : 'text-red'}`}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                fontSize: '10px',
+                fontWeight: 700,
+                color: trendUp ? 'var(--green)' : 'var(--red)',
+              }}
+            >
               <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                <path d={trendUp ? "M4 0L8 6H0Z" : "M4 8L0 2H8Z"} fill="currentColor" />
+                <path d={trendUp ? 'M4 0L8 6H0Z' : 'M4 8L0 2H8Z'} fill="currentColor" />
               </svg>
               {Math.abs(trend)}%
             </div>

@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
 import { useI18n } from '@context/I18nContext';
 import { useModules } from '@context/ModulesContext';
+import SchoolBadge from '@components/ui/SchoolBadge';
 
 const MODULE_ICONS = {
   '/':              { icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', color: '#2563EB' },
@@ -127,16 +128,8 @@ export default function Sidebar() {
 
       {/* Tenant badge */}
       {!collapsed && (
-        <div className="mx-3 my-2.5 rounded-xl px-3 py-2"
-          style={{ background: 'linear-gradient(135deg, #1e3a5f22, #7c3aed22)', border: '1px solid #2563eb33' }}>
-          <div className="text-[11px] font-bold text-text truncate flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-            {tenantName}
-          </div>
-          <div className="text-[9px] text-muted mt-0.5 flex items-center gap-1">
-            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {tenantWilaya}
-          </div>
+        <div style={{ margin: '10px 12px 0' }}>
+          <SchoolBadge name={tenantName} wilaya={tenantWilaya} compact />
         </div>
       )}
 
@@ -182,7 +175,7 @@ export default function Sidebar() {
                     className={({ isActive: navActive }) => {
                       const active = navActive || isActiveRoute;
                       return [
-                        'flex items-center mx-2 my-[1px] rounded-lg text-xs font-medium no-underline transition-all duration-100 relative',
+                        'flex items-center mx-2 my-[1px] rounded-lg text-xs no-underline transition-all duration-100 relative',
                         collapsed ? 'justify-center px-0 py-[9px]' : 'px-3.5 py-2 gap-[9px]',
                         active ? 'font-bold' : 'font-medium',
                       ].join(' ');
@@ -192,7 +185,8 @@ export default function Sidebar() {
                       return {
                         color: active ? color : 'var(--muted)',
                         background: active ? `${color}18` : 'transparent',
-                        borderLeft: active ? `2px solid ${color}` : '2px solid transparent',
+                        borderLeft: active ? `3px solid ${color}` : '3px solid transparent',
+                        borderRadius: active ? '8px' : '8px',
                       };
                     }}
                     title={collapsed ? t(`nav_${path.replace('/', '') || 'dashboard'}`) : undefined}
