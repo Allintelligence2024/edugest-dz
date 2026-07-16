@@ -174,8 +174,11 @@ class BulletinService
             Log::error('[BulletinPdf] Erreur génération PDF', [
                 'bulletin_id' => $bulletin->id,
                 'erreur'      => $e->getMessage(),
+                'trace'       => $e->getTraceAsString(),
             ]);
-            return '';
+            throw new \RuntimeException(
+                "Échec génération PDF bulletin {$bulletin->id}: {$e->getMessage()}", 0, $e
+            );
         }
 
         $path = "bulletins/{$bulletin->tenant_id}/{$bulletin->annee_scolaire}/"

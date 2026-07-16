@@ -9,10 +9,22 @@ use Symfony\Component\HttpFoundation\Response;
 
 class IntelligentRateLimiter
 {
+    private const ROLE_LIMITS = [
+        'super_admin' => 1000,
+        'admin'       => 200,
+        'enseignant'  => 100,
+        'user'        => 60,
+        'anonymous'   => 30,
+    ];
+
+    private const DEFAULT_LIMIT = 60;
+    private const WINDOW = 60;
+
     public function handle(Request $request, Closure $next): Response
     {
-        $limit  = 100;
-        $window = 60;
+        $role  = $this->resolveRole($request);
+        $limit = self::ROLE_LIMITS[$role] ?? self::DEFAULT_LIMIT;
+        $window = self::WINDOW;
 
         $key = 'ratelimit:' . ($request->user()?->id ?? $request->ip());
 
@@ -47,5 +59,14 @@ class IntelligentRateLimiter
         }
 
         return $response;
+    }
+
+    private function resolveRole(Request $request): string
+    {
+        $user = $request->user();
+        if (!$user) return 'anonymous';
+
+        $role = $user->role;
+        return is_object($role) ? ($role->nom ?? 'user') : ($role ?? 'user');
     }
 }
