@@ -65,7 +65,7 @@ describe('LoginScreen', () => {
   it('renders login form with all elements', () => {
     const { getByText, getByPlaceholderText } = renderWithNavigation(<LoginScreen />)
 
-    expect(getByText('Connexion EduGest')).toBeTruthy()
+    expect(getByText('EduGest DZ')).toBeTruthy()
     expect(getByPlaceholderText('admin@edugestdz.local')).toBeTruthy()
     expect(getByPlaceholderText('••••••••')).toBeTruthy()
     expect(getByText('Se connecter')).toBeTruthy()
@@ -86,15 +86,19 @@ describe('LoginScreen', () => {
   })
 
   it('shows error message on login failure', async () => {
+    const Alert = require('react-native').Alert
+    jest.spyOn(Alert, 'alert')
     mockLogin.mockRejectedValueOnce(new Error('Email ou mot de passe incorrect'))
 
-    const { getByPlaceholderText, getByText, findByText } = renderWithNavigation(<LoginScreen />)
+    const { getByPlaceholderText, getByText } = renderWithNavigation(<LoginScreen />)
 
     fireEvent.changeText(getByPlaceholderText('admin@edugestdz.local'), 'admin@test.com')
     fireEvent.changeText(getByPlaceholderText('••••••••'), 'wrongpassword')
     fireEvent.press(getByText('Se connecter'))
 
-    expect(await findByText('Email ou mot de passe incorrect')).toBeTruthy()
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith('error', 'Email ou mot de passe incorrect')
+    })
   })
 
   it('does not call login when fields are empty', () => {

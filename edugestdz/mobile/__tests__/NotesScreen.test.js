@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import NotesScreen from '../../src/screens/enseignant/NotesScreen';
+import NotesScreen from '../src/screens/enseignant/NotesScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 jest.mock('@react-native-async-storage/async-storage', () =>

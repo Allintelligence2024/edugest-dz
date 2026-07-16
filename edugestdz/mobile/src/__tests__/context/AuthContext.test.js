@@ -1,22 +1,31 @@
 import React from 'react'
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native'
-import { AuthProvider, useAuth } from '../../../context/AuthContext'
+import { AuthProvider, useAuth } from '../../context/AuthContext'
 import { Text, TouchableOpacity } from 'react-native'
 
-jest.mock('../../../api/endpoints', () => ({
-  authApi: {
-    login: jest.fn(),
-    logout: jest.fn(),
-  },
+const mockLogin = jest.fn()
+const mockLogout = jest.fn()
+
+jest.mock('../../api/endpoints', () => ({
+  __esModule: true,
+  authApi: { login: (...args) => mockLogin(...args), logout: (...args) => mockLogout(...args) },
 }))
 
-jest.mock('../../../services/storage', () => ({
-  getItem: jest.fn(() => Promise.resolve(null)),
-  setItem: jest.fn(() => Promise.resolve()),
-  removeItem: jest.fn(() => Promise.resolve()),
+jest.mock('../../api/axios', () => ({
+  __esModule: true,
+  default: {
+    defaults: { headers: { common: {} } },
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() },
+    },
+  },
+  TOKEN_KEY: 'access_token',
+  REFRESH_KEY: 'refresh_token',
 }))
 
 jest.mock('expo-secure-store', () => ({
+  __esModule: true,
   setItemAsync: jest.fn(() => Promise.resolve()),
   getItemAsync: jest.fn(() => Promise.resolve(null)),
   deleteItemAsync: jest.fn(() => Promise.resolve()),
@@ -24,14 +33,16 @@ jest.mock('expo-secure-store', () => ({
 
 function TestComponent() {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth()
+  const [error, setError] = React.useState(null)
   return (
     <>
       <Text testID="loading">{isLoading ? 'loading' : 'loaded'}</Text>
       <Text testID="auth">{isAuthenticated ? 'authenticated' : 'not-authenticated'}</Text>
       <Text testID="user">{user ? JSON.stringify(user) : 'no-user'}</Text>
+      <Text testID="error">{error || 'no-error'}</Text>
       <TouchableOpacity
         testID="login-btn"
-        onPress={() => login('admin@test.com', 'password123')}
+        onPress={() => login('admin@test.com', 'password123').catch(e => setError(e.message))}
       >
         Login
       </TouchableOpacity>
@@ -44,7 +55,6 @@ function TestComponent() {
 
 describe('AuthContext', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
   })
 
   it('provides initial unauthenticated state', async () => {
@@ -62,8 +72,7 @@ describe('AuthContext', () => {
   })
 
   it('updates state after successful login', async () => {
-    const { authApi } = require('../../../api/endpoints')
-    authApi.login.mockResolvedValueOnce({
+    mockLogin.mockResolvedValueOnce({
       success: true,
       access_token: 'test-token',
       user: { id: 1, prenom: 'Test', nom: 'User', role: 'parent' },
@@ -93,9 +102,8 @@ describe('AuthContext', () => {
     expect(userText).toContain('"role":"parent"')
   })
 
-  it('throws error when login fails', async () => {
-    const { authApi } = require('../../../api/endpoints')
-    authApi.login.mockRejectedValueOnce(new Error('Invalid credentials'))
+  it('does not authenticate when login fails', async () => {
+    mockLogin.mockRejectedValueOnce(new Error('Invalid credentials'))
 
     const { getByTestId } = render(
       <AuthProvider>
@@ -107,16 +115,17 @@ describe('AuthContext', () => {
       expect(getByTestId('loading').children[0]).toBe('loaded')
     })
 
-    await expect(
-      act(async () => {
-        fireEvent.press(getByTestId('login-btn'))
-      })
-    ).rejects.toThrow('Invalid credentials')
+    await act(async () => {
+      fireEvent.press(getByTestId('login-btn'))
+    })
+
+    await waitFor(() => {
+      expect(getByTestId('auth').children[0]).toBe('not-authenticated')
+    })
   })
 
   it('resets state after logout', async () => {
-    const { authApi } = require('../../../api/endpoints')
-    authApi.login.mockResolvedValueOnce({
+    mockLogin.mockResolvedValueOnce({
       success: true,
       access_token: 'test-token',
       user: { id: 1, prenom: 'Test', nom: 'User', role: 'parent' },

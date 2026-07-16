@@ -43,6 +43,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      meilisearch:
+        image: getmeili/meilisearch:v1.8
+        ports:
+          - 7700:7700
+        env:
+          MEILI_MASTER_KEY: test_master_key_ci_2026
+          MEILI_ENV: development
+        options: >-
+          --health-cmd "curl -f http://localhost:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: edugestdz/backend
@@ -110,6 +123,9 @@ jobs:
           DB_USERNAME:   edugest_user
           DB_PASSWORD:   ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
           REDIS_HOST:    127.0.0.1
+          MEILISEARCH_HOST: http://localhost:7700
+          MEILISEARCH_KEY:  test_master_key_ci_2026
+          SCOUT_DRIVER:     meilisearch
 
       - name: Run tests with coverage
         continue-on-error: true
