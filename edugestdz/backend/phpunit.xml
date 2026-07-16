@@ -51,13 +51,13 @@
         <!-- VALEURS EXACTES DU CI GITHUB ACTIONS :                     -->
         <!--   POSTGRES_DB: edugestdz_test                              -->
         <!--   POSTGRES_USER: edugest_user                              -->
-        <!--   POSTGRES_PASSWORD: EduGest@2026!                         -->
+        <!--   POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}       -->
         <env name="DB_CONNECTION" value="pgsql"/>
         <env name="DB_HOST"       value="127.0.0.1"/>
         <env name="DB_PORT"       value="5432"/>
         <env name="DB_DATABASE"   value="edugestdz_test"/>
         <env name="DB_USERNAME"   value="edugest_user"/>
-        <env name="DB_PASSWORD"   value="EduGest@2026!"/>
+        <env name="DB_PASSWORD"   value="EduGest_CI_2026"/>
 
         <!-- ── Redis ────────────────────────────────────────────────── -->
         <env name="REDIS_CLIENT"   value="predis"/>

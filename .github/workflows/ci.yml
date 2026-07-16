@@ -127,19 +127,6 @@ jobs:
           MEILISEARCH_KEY:  test_master_key_ci_2026
           SCOUT_DRIVER:     meilisearch
 
-      - name: Run tests with coverage
-        continue-on-error: true
-        run: php -d memory_limit=512M artisan test --coverage --min=30
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST:       127.0.0.1
-          DB_PORT:       5432
-          DB_DATABASE:   edugestdz_test
-          DB_USERNAME:   edugest_user
-          DB_PASSWORD:   ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
-          REDIS_HOST:    127.0.0.1
-          XDEBUG_MODE:   coverage
-
   mobile-tests:
     name: "CI — EduGest DZ / mobile"
     runs-on: ubuntu-latest
@@ -161,4 +148,4 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run tests
-        run: npm test -- --passWithNoTests
+        run: npm test -- --passWithNoTests --forceExit
