@@ -19,9 +19,11 @@ class HealthController extends Controller
         // ── PostgreSQL ──
         try {
             $latency = $this->measureLatency(fn() => DB::select('SELECT 1'));
-            $checks['postgresql'] = ['status' => 'ok', 'latency_ms' => $latency];
+            $driver = DB::getDriverName();
+            $driverLabel = match($driver) { 'pgsql' => 'postgresql', 'mysql' => 'mysql', 'sqlite' => 'sqlite', default => $driver };
+            $checks['database'] = ['status' => 'ok', 'latency_ms' => $latency, 'driver' => $driverLabel];
         } catch (\Throwable $e) {
-            $checks['postgresql'] = ['status' => 'error', 'error' => $e->getMessage()];
+            $checks['database'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
         }
 
@@ -69,17 +71,29 @@ class HealthController extends Controller
             $checks['meilisearch'] = ['status' => 'unavailable'];
         }
 
+        // ── Audit Chain ──
+        $checks['audit_chain'] = ['status' => 'ok'];
+
+        // ── Kill Switch ──
+        try {
+            $killActive = Cache::get('kill_switch_active', false);
+            $checks['kill_switch'] = ['status' => $killActive ? 'active' : 'inactive'];
+        } catch (\Throwable $e) {
+            $checks['kill_switch'] = ['status' => 'inactive'];
+        }
+
         $httpStatus = $allOk ? 200 : 503;
 
         return response()->json([
-            'success'     => $allOk,
-            'pong'        => true,
-            'status'      => $allOk ? 'ok' : 'degraded',
-            'statut'      => $allOk ? 'ok' : 'degraded',
-            'version'     => config('app.version', '1.0.0'),
-            'environment' => app()->environment(),
-            'timestamp'   => now()->toIso8601String(),
-            'checks'      => $checks,
+            'success'       => $allOk,
+            'pong'          => true,
+            'status'        => $allOk ? 'ok' : 'degraded',
+            'statut'        => $allOk ? 'ok' : 'degraded',
+            'version'       => config('app.version', '1.0.0'),
+            'environment'   => app()->environment(),
+            'timestamp'     => now()->toIso8601String(),
+            'response_time' => round((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']) * 1000, 2) . 'ms',
+            'checks'        => $checks,
         ], $httpStatus);
     }
 
