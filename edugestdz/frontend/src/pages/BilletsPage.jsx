@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = [
-  { id: '1', type: 'retard', type_label: 'Billet de Retard', date_billet: '2026-07-01', heure: '08:45:00', eleve: { nom: 'BENALI', prenom: 'Amine', niveau_scolaire: '3AS' }, motif: 'Embouteillages', parent_prevenu: true },
-  { id: '2', type: 'sortie_autorisee', type_label: 'Autorisation de Sortie', date_billet: '2026-07-01', heure: '14:00:00', eleve: { nom: 'MEKKI', prenom: 'Sara', niveau_scolaire: '2AS' }, motif: 'Rendez-vous médical', parent_prevenu: true },
-  { id: '3', type: 'convocation', type_label: 'Convocation Parent', date_billet: '2026-06-30', heure: null, eleve: { nom: 'REZGUI', prenom: 'Karim', niveau_scolaire: '1AS' }, motif: 'Comportement en classe', parent_prevenu: false },
-];
-
 const TYPE_COLORS = {
   retard: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   sortie_autorisee: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -24,8 +18,8 @@ export default function BilletsPage() {
 
   useEffect(() => {
     api.get('/billets')
-      .then(res => setBillets(res.data?.data || DEMO_DATA))
-      .catch(() => setBillets(DEMO_DATA))
+      .then(res => setBillets(res.data?.data || []))
+      .catch(() => setBillets([]))
       .finally(() => setLoading(false));
   }, []);
 

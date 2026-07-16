@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  stats: { nb_circuits: 4, nb_eleves_total: 67, alertes_maintenance: 1 },
-  circuits: [
-    { id: '1', nom: 'Circuit Nord', nb_eleves: 18, capacite: 25, taux_remplissage: 72, chauffeur: { nom: 'BELKACEM', prenom: 'Hocine' }, vehicule_immat: '16-ABC-12', actif: true },
-    { id: '2', nom: 'Circuit Sud', nb_eleves: 22, capacite: 30, taux_remplissage: 73, chauffeur: { nom: 'MANSOURI', prenom: 'Salim' }, vehicule_immat: '16-DEF-34', actif: true },
-    { id: '3', nom: 'Circuit Est',  nb_eleves: 15, capacite: 20, taux_remplissage: 75, chauffeur: null, vehicule_immat: '16-GHI-56', actif: true },
-    { id: '4', nom: 'Circuit Ouest',nb_eleves: 12, capacite: 20, taux_remplissage: 60, chauffeur: { nom: 'DJEBLI', prenom: 'Karim' }, vehicule_immat: '16-JKL-78', actif: false },
-  ],
-};
-
 export default function TransportPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get('/transport/dashboard')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">🚌 Transport Scolaire</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée de transport disponible.</p>
+        <p className="text-xs text-muted2">Configurez vos circuits de ramassage pour commencer.</p>
+      </div>
+    </div>
+  );
 
   const { stats, circuits } = data;
 

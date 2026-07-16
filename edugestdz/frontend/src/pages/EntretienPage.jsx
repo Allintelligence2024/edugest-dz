@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  stats: { tickets_ouverts: 5, tickets_urgents: 2, resolus_ce_mois: 8, cout_mois: 45000, locaux_critique: 1, preventifs_retard: 1, preventifs_30j: 3 },
-  derniers_tickets: [
-    { id: '1', titre: 'Fuite robinet WC Nord', priorite: 'urgente', statut: 'en_cours', local: { nom: 'Sanitaires Nord' }, prestataire: { nom: 'Plomberie Alger' } },
-    { id: '2', titre: 'Climatisation classe 102 HS', priorite: 'haute', statut: 'signale', local: { nom: 'Salle 102' }, prestataire: null },
-    { id: '3', titre: 'Vitre cassée couloir', priorite: 'normale', statut: 'signale', local: { nom: 'Couloir 1er étage' }, prestataire: null },
-    { id: '4', titre: 'Tableau blanc à remplacer', priorite: 'basse', statut: 'en_attente', local: { nom: 'Salle 201' }, prestataire: null },
-  ],
-};
-
 const PRIORITE_COLORS = { urgente: 'bg-red-100 text-red-800', haute: 'bg-orange-100 text-orange-800', normale: 'bg-blue-100 text-blue-800', basse: 'bg-gray-100 text-gray-600' };
 const STATUT_COLORS = { signale: 'bg-yellow-100 text-yellow-800', en_cours: 'bg-blue-100 text-blue-800', en_attente: 'bg-gray-100 text-gray-600', resolu: 'bg-green-100 text-green-800' };
 
@@ -20,12 +10,22 @@ export default function EntretienPage() {
 
   useEffect(() => {
     api.get('/entretien/dashboard')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">🔧 Entretien Bâtiment</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée d&apos;entretien disponible.</p>
+        <p className="text-xs text-muted2">Créez vos premiers tickets d&apos;intervention.</p>
+      </div>
+    </div>
+  );
 
   const { stats, derniers_tickets } = data;
 

@@ -122,12 +122,14 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <KpiCard
           icon={Users}
           label="Élèves actifs"
           value={loading ? '...' : fmt(kpis.total_eleves)}
-          trend={kpis.evolution_eleves}
+          trend={kpis.evolution_eleves != null
+            ? `${kpis.evolution_eleves >= 0 ? '+' : ''}${kpis.evolution_eleves} ce mois`
+            : null}
           trendUp={(kpis.evolution_eleves ?? 0) >= 0}
           color="#10B981"
         />
@@ -135,7 +137,9 @@ export default function AnalyticsPage() {
           icon={TrendingUp}
           label="CA ce mois"
           value={loading ? '...' : `${fmt(kpis.ca_mois)} DA`}
-          trend={kpis.evolution_ca_pct}
+          trend={kpis.evolution_ca_pct != null
+            ? `${kpis.evolution_ca_pct >= 0 ? '+' : ''}${kpis.evolution_ca_pct}%`
+            : null}
           trendUp={(kpis.evolution_ca_pct ?? 0) >= 0}
           sub="vs mois précédent"
           color="#2563EB"
@@ -148,8 +152,19 @@ export default function AnalyticsPage() {
         />
         <KpiCard
           label="Impayés critiques"
-          value={loading ? '...' : fmt(kpis.impayes_critiques_nb)}
+          value={loading ? '...' : fmt(kpis.impayes_critiques ?? kpis.impayes_critiques_nb)}
           sub={`${fmt(kpis.impayes_montant)} DA total`}
+          color="#EF4444"
+        />
+        <KpiCard
+          label="Séances aujourd'hui"
+          value={loading ? '...' : fmt(kpis.seances_aujourd_hui)}
+          sub={`${kpis.absences_aujourd_hui ?? 0} absence(s)`}
+          color="#F59E0B"
+        />
+        <KpiCard
+          label="Absences aujourd'hui"
+          value={loading ? '...' : fmt(kpis.absences_aujourd_hui)}
           color="#EF4444"
         />
       </div>
