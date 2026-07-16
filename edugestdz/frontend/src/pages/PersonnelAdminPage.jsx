@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  date: new Date().toLocaleDateString('fr-DZ'),
-  stats: { total: 12, actifs: 10, presents: 8, absents: 2, par_poste: { femme_menage: 3, surveillant: 4, chauffeur: 2, secretaire: 2, autre: 1 } },
-  par_poste: [
-    { agent: { nom: 'KACI', prenom: 'Fatima', poste: 'femme_menage' }, statut: 'present', heure_arrivee: '07:30', pointe: true },
-    { agent: { nom: 'RAIS', prenom: 'Ahmed', poste: 'surveillant' }, statut: 'present', heure_arrivee: '08:00', pointe: true },
-    { agent: { nom: 'BELAID', prenom: 'Omar', poste: 'chauffeur' }, statut: 'absent', heure_arrivee: null, pointe: false },
-    { agent: { nom: 'HAMDI', prenom: 'Samira', poste: 'secretaire' }, statut: 'present', heure_arrivee: '08:15', pointe: true },
-  ],
-};
-
 const POSTE_LABELS = { femme_menage: 'Femme de ménage', surveillant: 'Surveillant(e)', chauffeur: 'Chauffeur', secretaire: 'Secrétaire', technicien: 'Technicien', agent_securite: 'Agent sécurité', autre: 'Autre' };
 
 export default function PersonnelAdminPage() {
@@ -20,12 +9,22 @@ export default function PersonnelAdminPage() {
 
   useEffect(() => {
     api.get('/personnel/tableau-bord')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">👷 Personnel Non-Enseignant</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée de personnel disponible.</p>
+        <p className="text-xs text-muted2">Ajoutez vos agents pour commencer le suivi des présences.</p>
+      </div>
+    </div>
+  );
 
   const { stats, par_poste } = data;
   const agents = Array.isArray(par_poste) ? par_poste : Object.values(par_poste || {}).flat();

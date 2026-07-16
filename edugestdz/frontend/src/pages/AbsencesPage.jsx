@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  date: new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' }),
-  stats: { total: 24, absents: 5, presents: 16, retards: 3 },
-  data: [
-    { id: '1', statut: 'absent', eleve: { nom: 'BENALI', prenom: 'Amine', niveau_scolaire: '3AS' }, sms_parent_envoye: true },
-    { id: '2', statut: 'absent', eleve: { nom: 'MEKKI', prenom: 'Sara', niveau_scolaire: '2AS' }, sms_parent_envoye: false },
-    { id: '3', statut: 'retard', eleve: { nom: 'REZGUI', prenom: 'Karim', niveau_scolaire: '1AS' }, heure_arrivee: '08:47', sms_parent_envoye: false },
-    { id: '4', statut: 'absent', eleve: { nom: 'BOUZID', prenom: 'Lina', niveau_scolaire: '4AM' }, sms_parent_envoye: true },
-  ],
-};
-
 export default function AbsencesPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,8 +8,8 @@ export default function AbsencesPage() {
 
   useEffect(() => {
     api.get('/absences', { params: { date: today } })
-      .then(res => setData(res.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 

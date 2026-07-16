@@ -1,41 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  periode: { mois: new Date().getMonth() + 1, annee: new Date().getFullYear() },
-  recettes: 485000,
-  depenses: 312000,
-  resultat_net: 173000,
-  impayes: 62000,
-  evolution: [
-    { label: 'Fév', recettes: 420000, depenses: 290000, resultat: 130000 },
-    { label: 'Mar', recettes: 455000, depenses: 305000, resultat: 150000 },
-    { label: 'Avr', recettes: 390000, depenses: 280000, resultat: 110000 },
-    { label: 'Mai', recettes: 510000, depenses: 320000, resultat: 190000 },
-    { label: 'Jun', recettes: 480000, depenses: 310000, resultat: 170000 },
-    { label: 'Jul', recettes: 485000, depenses: 312000, resultat: 173000 },
-  ],
-  par_categorie: [
-    { categorie: 'salaires_enseignants', libelle: 'Salaires enseignants', total: 180000, prevu: 200000 },
-    { categorie: 'loyer', libelle: 'Loyer', total: 80000, prevu: 80000 },
-    { categorie: 'salaires_personnel', libelle: 'Salaires personnel', total: 32000, prevu: 35000 },
-    { categorie: 'electricite_gaz', libelle: 'Électricité & Gaz', total: 12000, prevu: 15000 },
-    { categorie: 'fournitures_pedagogiques', libelle: 'Fournitures péda.', total: 8000, prevu: 10000 },
-  ],
-};
-
 export default function BudgetPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get('/budget/dashboard')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">📊 Budget Annuel</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée budget disponible.</p>
+        <p className="text-xs text-muted2">Saisissez vos recettes et dépenses pour commencer.</p>
+      </div>
+    </div>
+  );
 
   const fmt = (n) => Number(n ?? 0).toLocaleString('fr-DZ');
 

@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  stats: { total_articles: 234, articles_en_alerte: 8, valeur_totale_da: 4250000, prets_en_retard: 2, bons_pendants: 1 },
-  par_categorie: [
-    { categorie: 'mobilier', nb: 120, qte: 850 },
-    { categorie: 'fourniture_bureau', nb: 45, qte: 1200 },
-    { categorie: 'equipement_pedagogique', nb: 35, qte: 68 },
-    { categorie: 'equipement_informatique', nb: 20, qte: 24 },
-    { categorie: 'materiel_entretien', nb: 14, qte: 340 },
-  ],
-  derniers_mouvements: [
-    { article: { nom: 'Chaises élèves' }, type: 'entree', quantite: 20, date_mouvement: '2026-07-01' },
-    { article: { nom: 'Marqueurs effaçables' }, type: 'sortie', quantite: 10, date_mouvement: '2026-06-30' },
-    { article: { nom: 'Papier A4 (rame)' }, type: 'sortie', quantite: 5, date_mouvement: '2026-06-30' },
-  ],
-};
-
 const CAT_LABELS = {
   mobilier: 'Mobilier', fourniture_bureau: 'Fournitures bureau',
   equipement_pedagogique: 'Équip. pédagogique', equipement_informatique: 'Informatique',
@@ -29,12 +13,22 @@ export default function StockInventairePage() {
 
   useEffect(() => {
     api.get('/stock/dashboard')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">📦 Stock & Inventaire</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée de stock disponible.</p>
+        <p className="text-xs text-muted2">Ajoutez vos articles pour commencer l&apos;inventaire.</p>
+      </div>
+    </div>
+  );
 
   const { stats, par_categorie, derniers_mouvements } = data;
 

@@ -1,23 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
-const DEMO_DATA = {
-  date: new Date().toLocaleDateString('fr-DZ', { weekday: 'long', day: 'numeric', month: 'long' }),
-  menu_du_jour: { plat_principal: 'Couscous au poulet', accompagnement: 'Légumes vapeur', dessert: 'Fruit de saison', prix_unitaire: 250 },
-  inscrits_actifs: 89,
-  presents_aujourdhui: 74,
-  taux_presence: 83,
-  alertes_stock: 2,
-  ca_mois: 178500,
-  menus_semaine: [
-    { date_repas: 'Lun 01/07', plat_principal: 'Couscous au poulet' },
-    { date_repas: 'Mar 02/07', plat_principal: 'Lentilles & Viande' },
-    { date_repas: 'Mer 03/07', plat_principal: 'Sardines grillées' },
-    { date_repas: 'Jeu 04/07', plat_principal: 'Tajine de bœuf' },
-    { date_repas: 'Dim 07/07', plat_principal: 'Poulet rôti' },
-  ],
-};
-
 export default function CantinePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,12 +8,22 @@ export default function CantinePage() {
 
   useEffect(() => {
     api.get('/cantine/dashboard')
-      .then(res => setData(res.data?.data ?? DEMO_DATA))
-      .catch(() => setData(DEMO_DATA))
+      .then(res => setData(res.data?.data ?? null))
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"/></div>;
+
+  if (!data) return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-text">🍽️ Cantine / Restauration</h1>
+      <div className="text-center py-16">
+        <p className="text-sm text-muted mb-4">Aucune donnée cantine disponible.</p>
+        <p className="text-xs text-muted2">Configurez vos menus et inscriptions pour commencer.</p>
+      </div>
+    </div>
+  );
 
   const tabs = [
     { id: 'dashboard', label: 'Vue d\'ensemble' },
