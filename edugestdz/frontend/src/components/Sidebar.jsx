@@ -58,6 +58,7 @@ const MODULE_MAP = {
   '/transport': 'transport', '/cantine': 'cantine', '/stock': 'stock',
   '/personnel-admin': 'personnel', '/entretien': 'entretien',
   '/surveillance': 'surveillance', '/modules': 'modules',
+  '/marketplace': 'marketplace', '/centres': 'marketplace', '/mes-reservations': 'marketplace',
 };
 
 const ROLE_MAP = { '/super-admin': 'super_admin', '/rgpd': 'admin' };
