@@ -193,12 +193,9 @@ class CompletionTest extends TestCase
         $this->assertDatabaseHas('notifications_inapp', ['id' => $notifId, 'lu' => false]);
     }
 
-    public function test_notifications_sans_auth_retourne_vide(): void
+    public function test_notifications_sans_auth_retourne_401(): void
     {
-        $response = $this->getJson('/api/v1/notifications/in-app');
-        $content = $response->getData(true);
-        $this->assertTrue($content['success'] ?? false);
-        $this->assertEmpty($content['data'] ?? []);
+        $this->getJson('/api/v1/notifications/in-app')->assertStatus(401);
     }
 
     // ── Policies ──────────────────────────────────────────────────

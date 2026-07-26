@@ -7,7 +7,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Redis;
 
 class HealthController extends Controller
 {
@@ -27,10 +26,14 @@ class HealthController extends Controller
             $allOk = false;
         }
 
-        // ── Redis ──
+        // ── Redis (via Cache pour supporter CACHE_STORE=array en test) ──
         try {
-            $pong = Redis::ping();
-            $checks['redis'] = ['status' => 'ok', 'pong' => $pong];
+            $redisKey = 'health_check_' . now()->timestamp;
+            Cache::put($redisKey, 'ok', 5);
+            $val = Cache::get($redisKey);
+            Cache::forget($redisKey);
+            $checks['redis'] = ['status' => $val === 'ok' ? 'ok' : 'error'];
+            if ($val !== 'ok') $allOk = false;
         } catch (\Throwable $e) {
             $checks['redis'] = ['status' => 'error', 'error' => $e->getMessage()];
             $allOk = false;
