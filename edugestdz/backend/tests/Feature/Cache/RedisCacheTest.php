@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class RedisCacheTest extends TestCase
 {
-    public function test_redis_is_available(): void
+    private function skipIfNoRedis(): void
     {
         if (! extension_loaded('redis')) {
             $this->markTestSkipped('PHP redis extension not installed');
@@ -20,21 +20,17 @@ class RedisCacheTest extends TestCase
         } catch (\Exception $e) {
             $this->markTestSkipped('Redis server not available: ' . $e->getMessage());
         }
+    }
 
+    public function test_redis_is_available(): void
+    {
+        $this->skipIfNoRedis();
         $this->assertTrue(true, 'Redis is reachable');
     }
 
     public function test_cache_set_and_get(): void
     {
-        if (! extension_loaded('redis')) {
-            $this->markTestSkipped('PHP redis extension not installed');
-        }
-
-        try {
-            Redis::ping();
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Redis server not available');
-        }
+        $this->skipIfNoRedis();
 
         config(['cache.default' => 'redis']);
         Cache::flush();
@@ -43,19 +39,12 @@ class RedisCacheTest extends TestCase
         $this->assertEquals('test_value', Cache::get('test_key'));
 
         Cache::flush();
+        config(['cache.default' => 'array']);
     }
 
     public function test_cache_tags_work(): void
     {
-        if (! extension_loaded('redis')) {
-            $this->markTestSkipped('PHP redis extension not installed');
-        }
-
-        try {
-            Redis::ping();
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Redis server not available');
-        }
+        $this->skipIfNoRedis();
 
         config(['cache.default' => 'redis']);
         Cache::flush();
@@ -64,5 +53,6 @@ class RedisCacheTest extends TestCase
         $this->assertEquals('Alice', Cache::tags(['users'])->get('user_1'));
 
         Cache::flush();
+        config(['cache.default' => 'array']);
     }
 }

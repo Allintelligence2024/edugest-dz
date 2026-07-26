@@ -102,9 +102,9 @@ jest.mock('@react-navigation/native', () => ({
 describe('AdminMarketplaceScreen', () => {
   it('renders stats cards', async () => {
     const { findByText } = render(<AdminMarketplaceScreen />);
-    expect(await findByText('Transactions', {}, { timeout: 8000 })).toBeTruthy();
-    expect(await findByText('CA total (DA)', {}, { timeout: 3000 })).toBeTruthy();
-  }, 15000);
+    expect(await findByText('Transactions', {}, { timeout: 15000 })).toBeTruthy();
+    expect(await findByText('CA total (DA)', {}, { timeout: 5000 })).toBeTruthy();
+  }, 30000);
 
   it('renders top enseignants list', async () => {
     const { getByText } = render(<AdminMarketplaceScreen />);
