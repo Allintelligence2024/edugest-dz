@@ -57,12 +57,9 @@ describe('NotesScreen', () => {
       }),
     });
 
-    let getByText;
-    await act(async () => {
-      ({ getByText } = render(<NotesScreen />));
-      await waitFor(() => {
-        expect(getByText('Groupe A')).toBeTruthy();
-      });
+    const { getByText } = render(<NotesScreen />);
+    await waitFor(() => {
+      expect(getByText('Groupe A')).toBeTruthy();
     });
   });
 });
