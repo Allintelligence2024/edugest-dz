@@ -114,7 +114,7 @@ jobs:
           REDIS_HOST:    127.0.0.1
 
       - name: Run tests
-        run: php -d memory_limit=512M artisan test
+        run: php -d memory_limit=512M vendor/bin/phpunit --log-junit=test-results.xml --testdox=test-results.txt
         env:
           DB_CONNECTION: pgsql
           DB_HOST:       127.0.0.1
@@ -126,6 +126,16 @@ jobs:
           MEILISEARCH_HOST: http://localhost:7700
           MEILISEARCH_KEY:  test_master_key_ci_2026
           SCOUT_DRIVER:     meilisearch
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: |
+            edugestdz/backend/test-results.xml
+            edugestdz/backend/test-results.txt
+          retention-days: 5
 
   mobile-tests:
     name: "CI — EduGest DZ / mobile"
@@ -148,4 +158,15 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run tests
-        run: npm test -- --passWithNoTests --forceExit
+        run: npm test -- --passWithNoTests --forceExit --ci
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-test-results
+          path: |
+            edugestdz/mobile/junit.xml
+            edugestdz/mobile/coverage/
+          retention-days: 5
+          if-no-files-found: ignore
