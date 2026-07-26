@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import NotesScreen from '../src/screens/enseignant/NotesScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -26,12 +26,17 @@ const mockFetch = jest.fn(() =>
     json: () => Promise.resolve({ success: true, data: [] }),
   })
 );
-global.fetch = mockFetch;
+const originalFetch = global.fetch;
 
 describe('NotesScreen', () => {
   beforeEach(() => {
     AsyncStorage.clear();
     mockFetch.mockClear();
+    global.fetch = mockFetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   it('renders without crashing', () => {
@@ -52,9 +57,12 @@ describe('NotesScreen', () => {
       }),
     });
 
-    const { getByText } = render(<NotesScreen />);
-    await waitFor(() => {
-      expect(getByText('Groupe A')).toBeTruthy();
+    let getByText;
+    await act(async () => {
+      ({ getByText } = render(<NotesScreen />));
+      await waitFor(() => {
+        expect(getByText('Groupe A')).toBeTruthy();
+      });
     });
   });
 });

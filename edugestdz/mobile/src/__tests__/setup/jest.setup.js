@@ -1,7 +1,11 @@
 try {
-  require('@testing-library/jest-native/extend-expect');
+  require('@testing-library/react-native/extend-expect');
 } catch (e) {
-  // ignore - expect may not be defined yet in jest 29 setup phase
+  try {
+    require('@testing-library/jest-native/extend-expect');
+  } catch (e2) {
+    // ignore
+  }
 }
 
 jest.mock('@react-native-async-storage/async-storage', () =>

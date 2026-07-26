@@ -16,6 +16,7 @@ jest.mock('../../../context/AuthContext', () => ({
 }))
 
 jest.mock('../../../context/I18nContext', () => ({
+  __esModule: true,
   useI18n: () => ({
     t: (key) => {
       const translations = {
