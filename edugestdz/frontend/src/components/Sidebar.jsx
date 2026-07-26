@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
 import { useI18n } from '@context/I18nContext';
 import { useModules } from '@context/ModulesContext';
@@ -67,12 +67,8 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   const { t } = useI18n();
   const { isActive } = useModules();
-  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [badges, setBadges] = useState({});
-  const [sectionsOpen, setSectionsOpen] = useState({});
-
-  const activeColor = MODULE_ICONS[location.pathname]?.color || '#2563EB';
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
