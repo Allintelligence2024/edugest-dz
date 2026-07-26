@@ -48,7 +48,7 @@ abstract class TestCase extends BaseTestCase
         config(['tenant.current_id' => null]);
 
         // ── Nettoyer le cache KillSwitch (évite pollution parallèle) ──
-        Cache::forget('kill_switch:active');
+        Cache::forget('kill_switch_active');
 
         // ── Nettoyer aussi la BDD KillSwitch (fallback Redis) ────────
         if (Schema::hasTable('kill_switch_state')) {

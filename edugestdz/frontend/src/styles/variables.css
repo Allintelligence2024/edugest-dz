@@ -31,6 +31,17 @@
   --input-border: #1E2D40;
   --toggle-bg: #0D1117;
   --toggle-btn:#2563EB;
+
+  /* Rétrocompatibilité --eg-* alias */
+  --eg-bg:       var(--bg);
+  --eg-surface:  var(--surface);
+  --eg-border:   var(--border);
+  --eg-text:     var(--text);
+  --eg-accent:   var(--accent);
+  --eg-green:    var(--green);
+  --eg-red:      var(--red);
+  --eg-orange:   var(--orange);
+  --eg-muted:    var(--muted);
 }
 
 [data-theme="light"] {

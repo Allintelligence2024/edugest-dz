@@ -58,7 +58,7 @@ return new class extends Migration
         });
 
         // Seed wilayas
-        if (\App::environment('testing') || !Wilaya::count()) {
+        if (app()->environment('testing') || !Wilaya::count()) {
             Wilaya::insert([
                 ['id' => 1,  'code' => '01', 'nom_fr' => 'Adrar',       'nom_ar' => 'أدرار'],
                 ['id' => 2,  'code' => '02', 'nom_fr' => 'Chlef',       'nom_ar' => 'الشلف'],

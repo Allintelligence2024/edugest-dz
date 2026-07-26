@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Alert, ScrollView,
+  StyleSheet, ActivityIndicator, Alert, Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE = 'https://app.edugest.dz/api/v1';
 
 const apiHeaders = async () => {
-  const token    = await AsyncStorage.getItem('token');
+  const token    = await AsyncStorage.getItem('access_token');
   const tenantId = await AsyncStorage.getItem('tenantId');
   return {
     'Content-Type': 'application/json',
@@ -16,6 +16,16 @@ const apiHeaders = async () => {
     'X-Tenant-ID': tenantId ?? '',
   };
 };
+
+function getNoteColor(noteVal, max) {
+  if (!noteVal || noteVal === '') return '#475569';
+  const v = parseFloat(noteVal);
+  if (isNaN(v)) return '#475569';
+  const pct = (v / max) * 100;
+  if (pct >= 75) return '#10B981';
+  if (pct >= 50) return '#F59E0B';
+  return '#EF4444';
+}
 
 export default function NotesScreen() {
   const [groupes, setGroupes]         = useState([]);
@@ -27,6 +37,8 @@ export default function NotesScreen() {
   const [loading, setLoading]         = useState(false);
   const [saving, setSaving]           = useState(false);
   const [mode, setMode]               = useState('liste');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalEleve, setModalEleve]   = useState(null);
 
   useEffect(() => { loadGroupes(); }, []);
 
@@ -92,6 +104,16 @@ export default function NotesScreen() {
 
   const updateNote = (eleveId, field, value) => {
     setNotes(n => ({ ...n, [eleveId]: { ...n[eleveId], [field]: value } }));
+  };
+
+  const openModal = (eleve) => {
+    setModalEleve(eleve);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setModalEleve(null);
   };
 
   if (mode === 'liste') {
@@ -167,6 +189,7 @@ export default function NotesScreen() {
             contentContainerStyle={{ paddingBottom: 100 }}
             renderItem={({ item }) => {
               const note = notes[item.eleve_id] ?? {};
+              const noteColor = getNoteColor(note.note, selectedEval?.note_sur || 20);
               return (
                 <View style={s.eleveRow}>
                   <View style={{ flex: 1 }}>
@@ -183,14 +206,16 @@ export default function NotesScreen() {
                   </TouchableOpacity>
 
                   {!note.absent && (
-                    <TextInput
-                      value={note.note?.toString() ?? ''}
-                      onChangeText={v => updateNote(item.eleve_id, 'note', v)}
-                      placeholder={`0-${selectedEval?.note_sur}`}
-                      keyboardType="decimal-pad"
-                      style={s.noteInput}
-                      placeholderTextColor="#475569"
-                    />
+                    <TouchableOpacity onPress={() => openModal(item)}>
+                      <TextInput
+                        value={note.note?.toString() ?? ''}
+                        onChangeText={v => updateNote(item.eleve_id, 'note', v)}
+                        placeholder={`0-${selectedEval?.note_sur}`}
+                        keyboardType="decimal-pad"
+                        style={[s.noteInput, { borderColor: noteColor, color: noteColor }]}
+                        placeholderTextColor="#475569"
+                      />
+                    </TouchableOpacity>
                   )}
                 </View>
               );
@@ -205,6 +230,45 @@ export default function NotesScreen() {
           </TouchableOpacity>
         </>
       )}
+
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={s.modalOverlay}>
+          <View style={s.modalContent}>
+            <Text style={s.modalTitle}>{modalEleve?.nom_complet}</Text>
+            <Text style={s.sub}>Note / {selectedEval?.note_sur}</Text>
+
+            {modalEleve && (
+              <>
+                <TextInput
+                  value={notes[modalEleve.eleve_id]?.note?.toString() ?? ''}
+                  onChangeText={v => updateNote(modalEleve.eleve_id, 'note', v)}
+                  keyboardType="decimal-pad"
+                  placeholder={`0-${selectedEval?.note_sur}`}
+                  style={[s.modalInput, {
+                    borderColor: getNoteColor(notes[modalEleve.eleve_id]?.note, selectedEval?.note_sur || 20),
+                    color: getNoteColor(notes[modalEleve.eleve_id]?.note, selectedEval?.note_sur || 20),
+                  }]}
+                  placeholderTextColor="#475569"
+                  autoFocus
+                />
+
+                <TextInput
+                  value={notes[modalEleve.eleve_id]?.commentaire ?? ''}
+                  onChangeText={v => updateNote(modalEleve.eleve_id, 'commentaire', v)}
+                  placeholder="Commentaire (optionnel)"
+                  style={s.modalCommentInput}
+                  placeholderTextColor="#475569"
+                  multiline
+                />
+
+                <TouchableOpacity style={s.modalSaveBtn} onPress={closeModal}>
+                  <Text style={s.modalSaveBtnText}>Valider</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -216,7 +280,7 @@ const s = StyleSheet.create({
   back:      { fontSize: 12, color: '#60a5fa', marginBottom: 12, fontWeight: '700' },
   header:    { marginBottom: 16 },
   empty:     { color: '#475569', textAlign: 'center', marginTop: 40 },
-  groupeCard:{ background: undefined, backgroundColor: '#111318', borderRadius: 10,
+  groupeCard:{ backgroundColor: '#111318', borderRadius: 10,
                padding: 14, marginBottom: 8, borderWidth: 1, borderColor: '#1e293b' },
   groupeName:{ fontSize: 13, fontWeight: '800', color: '#f1f5f9' },
   groupeSub: { fontSize: 10, color: '#64748b', marginTop: 2 },
@@ -235,10 +299,21 @@ const s = StyleSheet.create({
   absentBtn: { backgroundColor: '#1e293b', borderRadius: 6, padding: 6,
                minWidth: 36, alignItems: 'center' },
   absentBtnActive: { backgroundColor: '#b91c1c' },
-  noteInput: { backgroundColor: '#1e293b', borderRadius: 6, color: '#e2e8f0',
-               padding: 8, width: 70, textAlign: 'center', fontSize: 14, fontWeight: '800' },
+  noteInput: { backgroundColor: '#1e293b', borderRadius: 6,
+               padding: 8, width: 70, textAlign: 'center', fontSize: 14, fontWeight: '800',
+               borderWidth: 1.5 },
   saveBtn:   { position: 'absolute', bottom: 16, left: 16, right: 16,
                backgroundColor: '#1d4ed8', borderRadius: 10, padding: 16,
                alignItems: 'center' },
   saveBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#111318', borderRadius: 16, padding: 24, width: '85%', borderWidth: 1, borderColor: '#1e293b' },
+  modalTitle: { fontSize: 16, fontWeight: '900', color: '#fff', marginBottom: 4 },
+  modalInput: { backgroundColor: '#1e293b', borderRadius: 10, padding: 16, fontSize: 28,
+                fontWeight: '900', textAlign: 'center', marginTop: 12, borderWidth: 2 },
+  modalCommentInput: { backgroundColor: '#1e293b', borderRadius: 10, padding: 12, fontSize: 13,
+                       color: '#e2e8f0', marginTop: 12, borderWidth: 1, borderColor: '#334155',
+                       minHeight: 60, textAlignVertical: 'top' },
+  modalSaveBtn: { backgroundColor: '#1d4ed8', borderRadius: 10, padding: 14, alignItems: 'center', marginTop: 16 },
+  modalSaveBtnText: { color: '#fff', fontWeight: '800', fontSize: 14 },
 });

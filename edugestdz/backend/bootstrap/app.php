@@ -188,7 +188,12 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // ── Sentry : reporter les exceptions en production ────────────
-        if (!empty(config('sentry.dsn')) && app()->environment('production', 'staging')) {
+        // Guard : class_exists + env('SENTRY_DSN') non vide + environnement prod/staging
+        if (
+            class_exists(\Sentry\State\Hub::class) &&
+            !empty(env('SENTRY_DSN')) &&
+            app()->environment('production', 'staging')
+        ) {
             $exceptions->report(function (\Throwable $e) {
                 if (app()->bound('sentry')) {
                     app('sentry')->captureException($e);

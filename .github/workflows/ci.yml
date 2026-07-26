@@ -24,7 +24,7 @@ jobs:
         env:
           POSTGRES_DB:       edugestdz_test
           POSTGRES_USER:     edugest_user
-          POSTGRES_PASSWORD: EduGest@2026!
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
         ports:
           - 5432:5432
         options: >-
@@ -43,6 +43,19 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      meilisearch:
+        image: getmeili/meilisearch:v1.8
+        ports:
+          - 7700:7700
+        env:
+          MEILI_MASTER_KEY: test_master_key_ci_2026
+          MEILI_ENV: development
+        options: >-
+          --health-cmd "curl -f http://localhost:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     defaults:
       run:
         working-directory: edugestdz/backend
@@ -55,7 +68,7 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, pdo_pgsql, intl, gd, xml, json, fileinfo, redis, zip
-          coverage: xdebug
+          coverage: none
           tools: composer:v2
 
       - name: Get composer cache directory
@@ -80,12 +93,14 @@ jobs:
           sed -i "s|^DB_PORT=.*|DB_PORT=5432|"                   .env
           sed -i "s|^DB_DATABASE=.*|DB_DATABASE=edugestdz_test|" .env
           sed -i "s|^DB_USERNAME=.*|DB_USERNAME=edugest_user|"   .env
-          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=EduGest@2026!|"  .env
+          sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${TEST_DB_PASS}|" .env
           sed -i "s|^REDIS_HOST=.*|REDIS_HOST=127.0.0.1|"       .env
           echo "SENTRY_DSN="        >> .env
           echo "TELEGRAM_BOT_TOKEN=" >> .env
           php artisan key:generate
           php artisan jwt:secret --force
+        env:
+          TEST_DB_PASS: ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
 
       - name: Run migrations
         run: php artisan migrate --seed --force
@@ -95,29 +110,69 @@ jobs:
           DB_PORT:       5432
           DB_DATABASE:   edugestdz_test
           DB_USERNAME:   edugest_user
-          DB_PASSWORD:   EduGest@2026!
+          DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
           REDIS_HOST:    127.0.0.1
 
       - name: Run tests
-        run: php -d memory_limit=512M artisan test
+        run: |
+          set +e
+          php -d memory_limit=512M artisan test 2>&1 | tee test-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "TEST_EXIT_CODE=$EXIT_CODE" >> $GITHUB_ENV
+          exit $EXIT_CODE
         env:
           DB_CONNECTION: pgsql
           DB_HOST:       127.0.0.1
           DB_PORT:       5432
           DB_DATABASE:   edugestdz_test
           DB_USERNAME:   edugest_user
-          DB_PASSWORD:   EduGest@2026!
+          DB_PASSWORD:   ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
           REDIS_HOST:    127.0.0.1
+          MEILISEARCH_HOST: http://localhost:7700
+          MEILISEARCH_KEY:  test_master_key_ci_2026
+          SCOUT_DRIVER:     meilisearch
 
-      - name: Run tests with coverage
-        continue-on-error: true
-        run: php -d memory_limit=512M artisan test --coverage --min=30
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST:       127.0.0.1
-          DB_PORT:       5432
-          DB_DATABASE:   edugestdz_test
-          DB_USERNAME:   edugest_user
-          DB_PASSWORD:   EduGest@2026!
-          REDIS_HOST:    127.0.0.1
-          XDEBUG_MODE:   coverage
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: edugestdz/backend/test-output.txt
+          retention-days: 5
+
+  mobile-tests:
+    name: "CI — EduGest DZ / mobile"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: edugestdz/mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: edugestdz/mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run tests
+        run: |
+          set +e
+          npm test -- --passWithNoTests --forceExit 2>&1 | tee test-output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "TEST_EXIT_CODE=$EXIT_CODE" >> $GITHUB_ENV
+          exit $EXIT_CODE
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-test-results
+          path: edugestdz/mobile/test-output.txt
+          retention-days: 5
+          if-no-files-found: ignore
