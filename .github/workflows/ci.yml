@@ -113,15 +113,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'EduGest_CI_2026' }}
           REDIS_HOST:    127.0.0.1
 
-      - name: Debug info
-        run: |
-          php -v
-          php -m | grep -i "pdo\|pgsql\|redis\|mbstring\|curl"
-          echo "--- .env relevant vars ---"
-          grep -E "^(DB_|REDIS_|CACHE_|SCOUT_|JWT_)" .env || true
-
       - name: Run tests
-        run: php -d memory_limit=512M artisan test --verbose
+        run: php -d memory_limit=512M artisan test
         env:
           DB_CONNECTION: pgsql
           DB_HOST:       127.0.0.1
