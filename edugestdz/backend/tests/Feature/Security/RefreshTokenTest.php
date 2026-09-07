@@ -9,6 +9,7 @@ use App\Services\RefreshTokenService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 /**
@@ -41,6 +42,13 @@ class RefreshTokenTest extends TestCase
         ]);
 
         config(['tenant.current_id' => $this->tenant->id]);
+
+        // throttle:auth limite à 10 requêtes / 15 min par IP. Ces tests
+        // enchaînent des dizaines d'appels depuis la même IP fictive : sans
+        // remise à zéro, les derniers recevraient un 429 sans rapport avec
+        // ce qu'on cherche à vérifier.
+        RateLimiter::clear('auth');
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
     }
 
     private function seConnecter()
