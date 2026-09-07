@@ -164,3 +164,24 @@ Ce sont des contraintes **structurelles** de Vercel, pas des bugs :
 
 `docker-compose.prod.yml` et le VPS restent disponibles comme solution de repli
 (voir `deploy.sh`), notamment si les limitations du §5 s'avèrent bloquantes.
+
+---
+
+## 8. Action manuelle requise — désactivation de `deploy.yml`
+
+Le token GitHub de cette session n'a pas le scope `workflows`, il ne peut donc
+pas modifier `.github/workflows/`. La version désactivée du workflow est fournie
+dans **`edugestdz/docs/deploy.yml.desactive.patch`**.
+
+Pour l'appliquer :
+
+```bash
+cp edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+git add .github/workflows/deploy.yml
+git commit -m "ci: désactiver le déploiement VPS automatique (cible = Vercel)"
+git push
+```
+
+Le changement : `on: push` devient `on: workflow_dispatch` avec une saisie de
+confirmation, pour que le déploiement VPS ne parte plus à chaque merge sur
+`main` maintenant que la cible est Vercel.
