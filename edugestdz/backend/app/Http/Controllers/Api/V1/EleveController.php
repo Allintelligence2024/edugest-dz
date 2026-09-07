@@ -21,6 +21,9 @@ class EleveController extends BaseApiController
     protected array  $sortable   = ['nom', 'prenom', 'created_at', 'niveau_scolaire'];
     protected int    $perPage    = 20;
 
+    /** Un parent/enseignant ne liste que les élèves de son périmètre. */
+    protected ?string $colonnePerimetreEleve = 'id';
+
     public function __construct(
         private EleveService $eleveService
     ) {}
@@ -77,7 +80,12 @@ class EleveController extends BaseApiController
         $cursor = $query->cursorPaginate($perPage);
         $total  = $query->toBase()->count();
 
-        $stats = cache()->remember(
+        // Les statistiques globales n'ont de sens que pour les rôles ayant
+        // une vision complète du tenant ; sinon elles fuiteraient des
+        // effectifs hors périmètre.
+        $perimetre = app(\App\Services\PerimetreAccesService::class);
+
+        $stats = !$perimetre->aVisionGlobale(auth('api')->user()) ? null : cache()->remember(
             "eleves_stats_" . config('tenant.current_id'),
             300,
             fn() => [
@@ -184,11 +192,11 @@ class EleveController extends BaseApiController
         ])
         ->findOrFail($id);
 
-        if ($eleve->tenant_id !== auth('api')->user()->tenant_id) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'FORBIDDEN', 'message' => 'Accès non autorisé'],
-            ], 403);
+        // Le scope tenant garantit déjà l'isolation inter-établissements ;
+        // ici on vérifie le périmètre INTRA-tenant (parent -> ses enfants,
+        // enseignant -> ses groupes).
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
         }
 
         $stats = $this->eleveService->getStatsAcademiques($eleve);
@@ -278,6 +286,10 @@ class EleveController extends BaseApiController
     {
         $eleve = Eleve::findOrFail($id);
 
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
+        }
+
         $notes = $eleve->notes()
             ->with(['evaluation' => fn($q) => $q->with('groupe.matiere:id,nom_fr,couleur,coefficient')])
             ->when($request->trimestre, fn($q) => $q->whereHas('evaluation', fn($eq) => $eq->where('trimestre', $request->trimestre)))
@@ -312,6 +324,10 @@ class EleveController extends BaseApiController
     {
         $eleve = Eleve::findOrFail($id);
 
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
+        }
+
         $presences = $eleve->presences()
             ->with(['seance' => fn($q) => $q->with([
                 'cours.groupe.matiere:id,nom_fr,couleur',
@@ -336,6 +352,10 @@ class EleveController extends BaseApiController
     {
         $eleve = Eleve::findOrFail($id);
 
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
+        }
+
         $totalPaye  = $eleve->paiements()
             ->where('statut', 'confirmé')->sum('montant');
         $totalDette = max(0, $eleve->factures()
@@ -359,6 +379,10 @@ class EleveController extends BaseApiController
     public function bulletins(string $id): JsonResponse
     {
         $eleve = Eleve::findOrFail($id);
+
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
+        }
         return $this->success(
             $eleve->bulletins()->with('groupe')->orderByDesc('created_at')->get()
         );
@@ -370,6 +394,10 @@ class EleveController extends BaseApiController
             'inscriptions',
             'presences as total_presences' => fn($q) => $q->whereIn('statut', ['présent', 'retard']),
         ])->findOrFail($id);
+
+        if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
+            return $reponse;
+        }
 
         return $this->success($eleve);
     }

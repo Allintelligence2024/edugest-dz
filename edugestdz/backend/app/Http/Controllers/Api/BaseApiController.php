@@ -15,6 +15,16 @@ abstract class BaseApiController extends Controller
     protected array  $sortable    = ['created_at'];
     protected int    $perPage     = 15;
 
+    /**
+     * Colonne portant l'identifiant élève, utilisée pour restreindre
+     * automatiquement les listes au périmètre de l'utilisateur (Sprint 2).
+     *
+     * - 'id'        pour le modèle Eleve lui-même
+     * - 'eleve_id'  pour les modèles rattachés (bulletins, notes, factures…)
+     * - null        pour désactiver la restriction (référentiels, RH…)
+     */
+    protected ?string $colonnePerimetreEleve = null;
+
     protected function indexQuery(Request $request): Builder
     {
         $query = $this->model::query()->with($this->with);
@@ -41,7 +51,43 @@ abstract class BaseApiController extends Controller
             $query->orderBy($sort, $order);
         }
 
-        return $query;
+        return $this->appliquerPerimetre($query);
+    }
+
+    /**
+     * Restreint la requête au périmètre de l'utilisateur courant.
+     *
+     * Le scope tenant garantit déjà qu'on ne sort pas de l'établissement ;
+     * ici on va plus loin : un parent ne voit que SES enfants, un enseignant
+     * que les élèves de SES groupes. Neutre pour les rôles administratifs.
+     */
+    protected function appliquerPerimetre(Builder $query): Builder
+    {
+        if ($this->colonnePerimetreEleve === null) {
+            return $query;
+        }
+
+        return app(\App\Services\PerimetreAccesService::class)
+            ->restreindreParEleve($query, auth('api')->user(), $this->colonnePerimetreEleve);
+    }
+
+    /**
+     * Refuse l'accès à un dossier élève hors périmètre.
+     * Retourne null si l'accès est permis, sinon une réponse 403.
+     */
+    protected function verifierPerimetreEleve(?string $eleveId): ?JsonResponse
+    {
+        $perimetre = app(\App\Services\PerimetreAccesService::class);
+
+        if ($perimetre->peutVoirEleve(auth('api')->user(), $eleveId)) {
+            return null;
+        }
+
+        return $this->error(
+            'Ce dossier élève est hors de votre périmètre',
+            'FORBIDDEN',
+            403
+        );
     }
 
     protected function success(mixed $data = null, string $message = 'Succès', int $status = 200, array $meta = []): JsonResponse

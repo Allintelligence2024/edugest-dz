@@ -153,15 +153,59 @@ comportement réel : un `parent` reçoit bien 403 sur `/paies`, `/finance`,
 
 ---
 
-## 6. Limites connues (à traiter au Sprint 3)
+## 6. Périmètre d'accès intra-tenant (Sprint 2 — suite)
 
-- **Filtrage par filiation non vérifié** : un parent atteint `/bulletins` — le
-  contrôleur doit garantir qu'il ne voit que SES enfants. Les Policies
-  couvrent partiellement ; un audit endpoint par endpoint reste à faire.
-- **`enseignant` voit tous les élèves du tenant**, pas seulement ses classes.
-  Restriction par affectation à prévoir.
+Le RBAC par route répond à « ce **rôle** peut-il appeler cet endpoint ? ».
+`PerimetreAccesService` répond à la question suivante :
+
+> « **Cet utilisateur** peut-il voir **cette ligne** ? »
+
+### Règles
+
+| Rôle | Périmètre élèves |
+|---|---|
+| `super_admin`, `admin`, `gestionnaire`, `secretariat`, `comptable` | tout le tenant |
+| `parent` | uniquement ses enfants (`parents.user_id` → `eleve_parent`) |
+| `enseignant` | uniquement les élèves inscrits dans ses groupes (titulaire **ou** via un cours) |
+| tout autre / sans rôle | **aucun élève** |
+
+### Points d'application
+
+- `BaseApiController::$colonnePerimetreEleve` — définir `'id'` ou `'eleve_id'`
+  suffit à restreindre automatiquement `index()` pour tout contrôleur héritant
+  de la classe de base.
+- `BaseApiController::verifierPerimetreEleve($id)` — garde à placer après un
+  `findOrFail` ; retourne une réponse 403 ou `null`.
+- `EleveController` : liste + `show` + `notes` + `presences` + `paiements` +
+  `bulletins` + `statistiques` (6 sous-ressources).
+- `BulletinController` : `index`, `show`, `pdf`.
+
+### Détails d'implémentation
+
+- **Fail-closed** : un périmètre vide filtre sur un UUID impossible ; jamais de
+  dégénérescence en « tous les résultats ».
+- **Statistiques masquées** : `GET /eleves` ne renvoie `meta.stats` qu'aux
+  rôles à vision globale — sinon les effectifs totaux fuiteraient.
+- **Cache 5 min** par utilisateur, invalidé par `PerimetreCacheObserver` sur
+  `ParentEleve`, `Enseignant`, `Inscription` et `Groupe` : un retrait de
+  filiation prend effet immédiatement.
+- Le check tenant redondant de `EleveController::show` (signalé à l'audit) est
+  remplacé par le contrôle de périmètre, qui lui apporte une vraie valeur.
+
+Couverture : `tests/Feature/Security/PerimetreAccesTest.php` (17 tests).
+
+---
+
+## 7. Limites connues restantes
+
 - **3 Policies seulement** (`Eleve`, `Facture`, `FluxInfo`) pour 106 modèles.
-  Le middleware de route couvre le gros du risque ; les Policies restent à
-  étendre pour la granularité par instance.
-- `GET /api/v1/enseignants/{id}/planning` reste ouvert à tous les rôles
-  authentifiés : le filtrage par identité doit être fait dans le contrôleur.
+  Les deux couches route + périmètre couvrent l'essentiel du risque, mais la
+  granularité par instance mérite d'être étendue.
+- **Contrôleurs hors `BaseApiController`** : ceux qui n'en héritent pas
+  (Transport, Cantine, Stock…) ne bénéficient pas du filtrage automatique.
+  Ils sont pour l'instant fermés aux parents/enseignants par le RBAC de route,
+  ce qui suffit — mais toute ouverture future devra ajouter le périmètre.
+- `GET /enseignants/{id}/planning` reste ouvert à tous les rôles authentifiés :
+  le filtrage par identité doit être fait dans le contrôleur.
+- **Tests non exécutés dans l'environnement de développement** (PHP absent du
+  sandbox) : la CI est le juge de référence.
