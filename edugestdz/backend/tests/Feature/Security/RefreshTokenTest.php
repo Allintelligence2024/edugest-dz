@@ -201,13 +201,31 @@ class RefreshTokenTest extends TestCase
         // Nouveau jeton pour l'appel HTTP (le précédent vient d'être consommé).
         [$clair2] = $service->emettre($this->user, request());
 
+        // Sonde : capturer ce que le serveur reçoit réellement. Le 401 est
+        // TOKEN_EXPIRED, ce qui signifie que le contrôleur est tombé dans le
+        // repli JWT — donc que $presente était vide côté serveur alors que le
+        // test envoie bien un cookie.
+        $vu = [];
+        \Illuminate\Support\Facades\Route::post('/api/v1/_sonde_cookie', function (\Illuminate\Http\Request $r) use (&$vu) {
+            $vu = [
+                'cookie_helper' => $r->cookie(RefreshTokenService::COOKIE),
+                'cookie_bag'    => $r->cookies->get(RefreshTokenService::COOKIE),
+                'tous'          => array_keys($r->cookies->all()),
+                'header'        => $r->header('Cookie'),
+            ];
+            return response()->json(['ok' => true]);
+        });
+
+        $this->withCookie(RefreshTokenService::COOKIE, $clair2)
+            ->postJson('/api/v1/_sonde_cookie');
+
         $reponse = $this->withCookie(RefreshTokenService::COOKIE, $clair2)
             ->postJson('/api/v1/auth/refresh');
 
         $this->assertSame(
             200,
             $reponse->status(),
-            'Réponse: ' . $reponse->getContent()
+            "Réponse: {$reponse->getContent()}\nCe que le serveur voit: " . json_encode($vu)
         );
     }
 
