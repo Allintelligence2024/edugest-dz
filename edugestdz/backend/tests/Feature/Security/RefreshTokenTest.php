@@ -44,11 +44,27 @@ class RefreshTokenTest extends TestCase
         config(['tenant.current_id' => $this->tenant->id]);
 
         // throttle:auth limite à 10 requêtes / 15 min par IP. Ces tests
-        // enchaînent des dizaines d'appels depuis la même IP fictive : sans
-        // remise à zéro, les derniers recevraient un 429 sans rapport avec
-        // ce qu'on cherche à vérifier.
+        // enchaînent des appels d'authentification depuis la même IP : sans
+        // remise à zéro, les derniers recevraient un 429 sans rapport avec la
+        // propriété testée.
+        //
+        // NB : ne PAS utiliser withoutMiddleware() ici. Il réinitialise l'état
+        // de la requête de test et purge les cookies posés par withCookie() —
+        // le serveur ne recevait alors AUCUN cookie ("tous":[]), et le
+        // contrôleur retombait sur le repli JWT (TOKEN_EXPIRED).
         RateLimiter::clear('auth');
-        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+    }
+
+    /**
+     * Envoie une requête porteuse du cookie de refresh.
+     *
+     * On passe par l'en-tête `Cookie` brut : c'est exactement ce qu'un
+     * navigateur émet, et cela ne dépend pas de la gestion des cookies par le
+     * client de test.
+     */
+    private function avecCookieRefresh(string $valeur): self
+    {
+        return $this->withUnencryptedCookie(RefreshTokenService::COOKIE, $valeur);
     }
 
     private function seConnecter()
@@ -99,7 +115,7 @@ class RefreshTokenTest extends TestCase
         $service = app(RefreshTokenService::class);
         [$clair] = $service->emettre($this->user, request());
 
-        $reponse = $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $reponse = $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh');
 
         $reponse->assertOk();
@@ -128,12 +144,12 @@ class RefreshTokenTest extends TestCase
         [$clair] = $service->emettre($this->user, request());
 
         // Usage légitime.
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh')
             ->assertOk();
 
         // L'attaquant rejoue le jeton volé.
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh')
             ->assertStatus(401);
 
@@ -147,7 +163,7 @@ class RefreshTokenTest extends TestCase
 
     public function test_un_jeton_inconnu_est_rejete(): void
     {
-        $this->withCookie(RefreshTokenService::COOKIE, str_repeat('z', 64))
+        $this->avecCookieRefresh(str_repeat('z', 64))
             ->postJson('/api/v1/auth/refresh')
             ->assertStatus(401);
     }
@@ -161,7 +177,7 @@ class RefreshTokenTest extends TestCase
             ->where('token_hash', hash('sha256', $clair))
             ->update(['expires_at' => now()->subDay()]);
 
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh')
             ->assertStatus(401);
     }
@@ -173,7 +189,7 @@ class RefreshTokenTest extends TestCase
 
         $this->user->update(['statut' => 'suspendu']);
 
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh')
             ->assertStatus(401);
     }
@@ -201,31 +217,13 @@ class RefreshTokenTest extends TestCase
         // Nouveau jeton pour l'appel HTTP (le précédent vient d'être consommé).
         [$clair2] = $service->emettre($this->user, request());
 
-        // Sonde : capturer ce que le serveur reçoit réellement. Le 401 est
-        // TOKEN_EXPIRED, ce qui signifie que le contrôleur est tombé dans le
-        // repli JWT — donc que $presente était vide côté serveur alors que le
-        // test envoie bien un cookie.
-        $vu = [];
-        \Illuminate\Support\Facades\Route::post('/api/v1/_sonde_cookie', function (\Illuminate\Http\Request $r) use (&$vu) {
-            $vu = [
-                'cookie_helper' => $r->cookie(RefreshTokenService::COOKIE),
-                'cookie_bag'    => $r->cookies->get(RefreshTokenService::COOKIE),
-                'tous'          => array_keys($r->cookies->all()),
-                'header'        => $r->header('Cookie'),
-            ];
-            return response()->json(['ok' => true]);
-        });
-
-        $this->withCookie(RefreshTokenService::COOKIE, $clair2)
-            ->postJson('/api/v1/_sonde_cookie');
-
-        $reponse = $this->withCookie(RefreshTokenService::COOKIE, $clair2)
+        $reponse = $this->avecCookieRefresh($clair2)
             ->postJson('/api/v1/auth/refresh');
 
         $this->assertSame(
             200,
             $reponse->status(),
-            "Réponse: {$reponse->getContent()}\nCe que le serveur voit: " . json_encode($vu)
+            "Réponse: {$reponse->getContent()}"
         );
     }
 
@@ -239,7 +237,7 @@ class RefreshTokenTest extends TestCase
         [$clair] = $service->emettre($this->user, request());
 
         $this->actingAs($this->user, 'api')
-            ->withCookie(RefreshTokenService::COOKIE, $clair)
+            ->withUnencryptedCookie(RefreshTokenService::COOKIE, $clair)
             ->postJson('/api/v1/auth/logout')
             ->assertOk();
 
@@ -249,7 +247,7 @@ class RefreshTokenTest extends TestCase
         );
 
         // Le jeton révoqué ne doit plus rien ouvrir.
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
+        $this->avecCookieRefresh($clair)
             ->postJson('/api/v1/auth/refresh')
             ->assertStatus(401);
     }
