@@ -42,7 +42,43 @@ class AuditChainRotationTest extends TestCase
 
         $this->assertNotEmpty($bloc->signature);
         $this->assertSame(1, $bloc->key_version);
-        $this->assertTrue($this->service->signatureValide($bloc));
+
+        // Diagnostic explicite : en cas d'écart, afficher les deux
+        // représentations plutôt qu'un simple « false n'est pas true ».
+        $relu = \App\Models\AuditChain::find($bloc->id);
+
+        $encodeEcriture = $this->service->encoderPayload($bloc->payload);
+        $encodeRelecture = $this->service->encoderPayload($relu->payload);
+
+        $this->assertSame(
+            $encodeEcriture,
+            $encodeRelecture,
+            "L'encodage diffère entre écriture et relecture"
+        );
+
+        $this->assertSame(
+            $relu->data_hash,
+            hash('sha256', $encodeRelecture),
+            sprintf(
+                "data_hash incohérent.\n stocké   : %s\n recalculé: %s\n payload  : %s\n type     : %s",
+                $relu->data_hash,
+                hash('sha256', $encodeRelecture),
+                $encodeRelecture,
+                get_debug_type($relu->payload)
+            )
+        );
+
+        $this->assertTrue(
+            $this->service->signatureValide($relu),
+            sprintf(
+                "Signature invalide.\n bloc=%d version=%s\n prev=%s\n data=%s\n sig =%s",
+                $relu->bloc_numero,
+                var_export($relu->key_version, true),
+                $relu->previous_hash,
+                $relu->data_hash,
+                $relu->signature
+            )
+        );
     }
 
     public function test_la_chaine_complete_est_valide(): void

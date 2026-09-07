@@ -79,10 +79,22 @@ class RefreshTokenService
             return null;
         }
 
-        $user = User::find($ligne->user_id);
+        // /auth/refresh est une route PUBLIQUE : aucun middleware n'y résout
+        // de tenant. Le scope global fail-closed de BelongsToTenant filtrerait
+        // donc `1 = 0` et User::find() renverrait null pour un utilisateur
+        // parfaitement valide. Le refresh token porte lui-même l'identité et
+        // le tenant : on court-circuite le scope, puis on rétablit le contexte
+        // à partir de la ligne en base.
+        $user = User::withoutGlobalScope('tenant')->find($ligne->user_id);
 
         if (!$user || $user->statut !== 'actif') {
             return null;
+        }
+
+        // Rétablir le contexte tenant pour la suite de la requête : sans lui,
+        // le JWT serait émis hors périmètre.
+        if ($user->tenant_id) {
+            config(['tenant.current_id' => $user->tenant_id]);
         }
 
         // Consommation du jeton présenté.
