@@ -226,7 +226,7 @@ class AuthController extends Controller
             $service->revoquerUtilisateur($userId, 'logout');
         }
 
-        auth()->logout();
+        auth('api')->logout();
 
         return response()
             ->json(['success' => true, 'message' => 'Déconnexion réussie'])
@@ -271,7 +271,7 @@ class AuthController extends Controller
                 'success'      => true,
                 'access_token' => JWTAuth::fromUser($user),
                 'token_type'   => 'bearer',
-                'expires_in'   => auth()->factory()->getTTL() * 60,
+                'expires_in'   => auth('api')->factory()->getTTL() * 60,
             ];
 
             // Les clients non navigateur ont besoin du jeton en clair ;
@@ -284,9 +284,14 @@ class AuthController extends Controller
         }
 
         // Repli : rafraîchissement à partir du JWT encore valide.
+        //
+        // Cette route étant devenue publique, il faut viser explicitement le
+        // guard `api` : sans utilisateur résolu par un middleware, auth() sans
+        // argument ne rattacherait aucun jeton et le refresh échouerait pour
+        // les clients qui n'ont pas encore de cookie (mobile, tests).
         try {
-            $token = auth()->refresh();
-        } catch (\Exception) {
+            $token = auth('api')->refresh();
+        } catch (\Throwable) {
             return response()->json(['success' => false, 'error' => ['code' => 'TOKEN_EXPIRED', 'message' => 'Token expiré, veuillez vous reconnecter']], 401);
         }
 
@@ -294,7 +299,7 @@ class AuthController extends Controller
             'success'      => true,
             'access_token' => $token,
             'token_type'   => 'bearer',
-            'expires_in'   => auth()->factory()->getTTL() * 60,
+            'expires_in'   => auth('api')->factory()->getTTL() * 60,
         ]);
     }
 
