@@ -89,7 +89,12 @@ class RbacCoverageTest extends TestCase
                 continue;
             }
 
+            // `gatherMiddleware()` renvoie l'alias tel qu'écrit sur la route
+            // (« super_admin »), pas la classe résolue : chercher uniquement
+            // « SuperAdmin » ne matchait jamais et signalait les routes
+            // super-admin comme non protégées.
             if (Str::startsWith($m, ['role:', 'permission:'])
+                || $m === 'super_admin'
                 || Str::contains($m, ['RoleCheck', 'PermissionCheck', 'SuperAdmin'])) {
                 return true;
             }

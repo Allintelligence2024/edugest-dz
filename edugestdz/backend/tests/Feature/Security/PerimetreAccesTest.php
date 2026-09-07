@@ -286,14 +286,15 @@ class PerimetreAccesTest extends TestCase
         // Amorce le cache.
         $this->assertCount(1, $this->perimetre->elevesAutorises($this->parent));
 
-        $autre = ParentEleve::factory()->create([
-            'tenant_id' => $this->tenant->id,
-            'user_id'   => $this->parent->id,
-        ]);
+        // `parents.user_id` porte une contrainte UNIQUE : un utilisateur ne
+        // peut avoir qu'une seule fiche parent. La nouvelle filiation passe
+        // donc par un rattachement supplémentaire sur la fiche existante,
+        // pas par la création d'une seconde fiche.
+        $fiche = ParentEleve::where('user_id', $this->parent->id)->firstOrFail();
 
         DB::table('eleve_parent')->insert([
             'eleve_id'      => $this->eleveEtranger->id,
-            'parent_id'     => $autre->id,
+            'parent_id'     => $fiche->id,
             'est_principal' => false,
         ]);
 

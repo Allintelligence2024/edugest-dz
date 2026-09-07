@@ -37,7 +37,13 @@ Route::middleware($protected)->group(function () use ($financeRoles, $paieRoles)
 
     // ── Tarifs : lecture large (un parent doit voir la grille tarifaire),
     //    écriture réservée à la direction. ──
-    Route::apiResource('tarifs', TarifController::class)->only(['index', 'show']);
+    // La lecture reste ouverte à tous les rôles internes, mais elle porte
+    // désormais un contrôle explicite : sans lui, la route échappait au
+    // filet de RbacCoverageTest et une extension future du contrôleur
+    // (méthode d'écriture ajoutée à `only()`) serait passée inaperçue.
+    Route::apiResource('tarifs', TarifController::class)
+        ->only(['index', 'show'])
+        ->middleware('role:admin,gestionnaire,comptable,secretariat,enseignant,parent,eleve');
     Route::apiResource('tarifs', TarifController::class)
         ->except(['index', 'show'])
         ->middleware($financeRoles);

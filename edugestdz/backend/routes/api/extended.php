@@ -195,10 +195,19 @@ Route::middleware($protected)->group(function () use ($exploitation, $exploitLec
 
     // ── Signalements graves (élève → directeur — confidentiel) ──
     // Signalements graves : données très sensibles sur les élèves.
-    Route::prefix('signalements-graves')->middleware($viePedago)->group(function () {
-        Route::get('/',                    [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index']);
-        Route::post('/',                   [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store']);
-        Route::patch('/{id}/traiter',      [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter']);
+    Route::prefix('signalements-graves')->group(function () use ($viePedago) {
+        // Lecture et traitement : personnel encadrant uniquement.
+        Route::get('/',               [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index'])
+            ->middleware($viePedago);
+        Route::patch('/{id}/traiter', [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter'])
+            ->middleware($viePedago);
+
+        // Dépôt : un élève DOIT pouvoir signaler (harcèlement, violence).
+        // C'est la finalité même du dispositif ; le réserver au personnel,
+        // comme le faisait la première version du correctif Sprint 2, le
+        // vidait de son sens.
+        Route::post('/',              [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store'])
+            ->middleware('role:admin,gestionnaire,secretariat,enseignant,eleve');
     });
 });
 

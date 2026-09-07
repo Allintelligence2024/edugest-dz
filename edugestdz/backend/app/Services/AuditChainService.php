@@ -118,9 +118,30 @@ class AuditChainService
      */
     public function encoderPayload(mixed $payload): string
     {
+        // Le payload peut arriver sous trois formes : tableau PHP (écriture),
+        // tableau décodé par le cast Eloquent, ou chaîne JSON brute (bloc
+        // genesis inséré par la migration). On ramène tout à une structure
+        // PHP avant normalisation.
+        if (is_string($payload)) {
+            $decode  = json_decode($payload, true);
+            $payload = json_last_error() === JSON_ERROR_NONE ? $decode : $payload;
+        }
+
+        // Aller-retour JSON avant tri : garantit que le hachage calculé à
+        // l'écriture est identique à celui recalculé après relecture depuis
+        // PostgreSQL. Sans cette normalisation, la moindre différence de
+        // représentation introduite par le stockage (entiers, flottants,
+        // échappement unicode) produirait un « payload modifié » fantôme sur
+        // des blocs pourtant intacts.
+        $aplati  = json_decode(json_encode($payload), true);
+        $payload = $aplati ?? $payload;
+
         $normalise = $this->trierRecursivement($payload);
 
-        return json_encode($normalise, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return json_encode(
+            $normalise,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION
+        );
     }
 
     private function trierRecursivement(mixed $valeur): mixed
