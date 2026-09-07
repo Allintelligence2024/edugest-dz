@@ -24,6 +24,14 @@ class RbacCoverageTest extends TestCase
      * Préfixes d'URI dont TOUTE route doit porter un contrôle de rôle
      * (`role:`, `permission:` ou `super_admin`).
      */
+    /**
+     * Routes sensibles publiques par conception : webhooks de prestataires,
+     * dont l'authenticité est vérifiée par signature dans le contrôleur.
+     */
+    private const WEBHOOKS_SIGNES = [
+        'api/v1/surveillance/webhook',
+    ];
+
     private const PREFIXES_SENSIBLES = [
         'api/v1/paies',
         'api/v1/factures',
@@ -58,6 +66,36 @@ class RbacCoverageTest extends TestCase
         'api/v1/surveillance/webhook',
         'api/v1/paiements/online/callback',
         'api/v1/paiements/online/retour',
+
+        // Leurres : ils DOIVENT être publics pour piéger les scanners. Le
+        // contrôleur ne fait que journaliser et bannir l'IP appelante.
+        'api/v1/phpinfo',
+        'api/v1/server-status',
+        'api/v1/actuator',
+        'api/v1/.env',
+        'api/v1/wp-admin',
+        'api/v1/admin.php',
+        'api/v1/config',
+        'api/v1/backup',
+        'api/v1/.git',
+
+        // Documentation OpenAPI et callback OAuth de Swagger UI.
+        'api/documentation',
+        'api/oauth2-callback',
+    ];
+
+    /**
+     * Routes authentifiées qui, par conception, ne résolvent pas de tenant :
+     * elles opèrent au-dessus du périmètre d'un établissement.
+     */
+    private const SANS_TENANT_ATTENDUES = [
+        // Réponse à incident : doit rester joignable même quand le tenant est
+        // verrouillé — c'est précisément son rôle. Protégée par ip.allowlist.
+        'api/v1/security/breach',
+
+        // Sert un fichier depuis une URL signée ; le chemin encode déjà le
+        // tenant et la signature est vérifiée dans le contrôleur.
+        'api/fichier',
     ];
 
     /** @return list<array{uri:string,methods:string,middleware:list<string>}> */
@@ -133,6 +171,12 @@ class RbacCoverageTest extends TestCase
         foreach ($this->routesApi() as $route) {
             $sensible = Str::startsWith($route['uri'], self::PREFIXES_SENSIBLES);
 
+            // Les webhooks signés n'ont pas d'utilisateur : leur contrôle
+            // d'accès est la vérification de signature, pas un rôle.
+            if (in_array($route['uri'], self::WEBHOOKS_SIGNES, true)) {
+                continue;
+            }
+
             if ($sensible && !$this->aControleDeRole($route['middleware'])) {
                 $manquantes[] = "{$route['methods']} /{$route['uri']}";
             }
@@ -179,12 +223,12 @@ class RbacCoverageTest extends TestCase
     {
         $sansTenant = [];
 
-        $exemptes = [
+        $exemptes = array_merge([
             'api/v1/auth',        // logout / me / refresh
             'api/v1/modules',     // catalogue des modules
             'api/v1/super-admin', // plateforme, hors tenant
             'api/v1/2fa',
-        ];
+        ], self::SANS_TENANT_ATTENDUES);
 
         foreach ($this->routesApi() as $route) {
             if (!$this->estAuthentifiee($route['middleware'])) {

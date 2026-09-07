@@ -184,9 +184,31 @@ class RefreshTokenTest extends TestCase
         $service = app(RefreshTokenService::class);
         [$clair] = $service->emettre($this->user, request());
 
-        $this->withCookie(RefreshTokenService::COOKIE, $clair)
-            ->postJson('/api/v1/auth/refresh')
-            ->assertOk();
+        // Diagnostic : distinguer « le cookie n'arrive pas » de « la rotation
+        // refuse ». Un 401 seul ne permet pas de trancher.
+        $ligne = \Illuminate\Support\Facades\DB::table('refresh_tokens')
+            ->where('token_hash', hash('sha256', $clair))->first();
+
+        $this->assertNotNull($ligne, 'Le jeton devrait être en base');
+        $this->assertNull($ligne->revoked_at, 'Le jeton ne devrait pas être révoqué');
+
+        // La rotation appelée directement doit réussir : si elle échoue ici,
+        // le problème est dans le service ; si elle réussit mais que la
+        // requête HTTP renvoie 401, le problème est le transport du cookie.
+        $rotation = $service->faireTourner($clair, request());
+        $this->assertNotNull($rotation, 'faireTourner() a refusé un jeton valide');
+
+        // Nouveau jeton pour l'appel HTTP (le précédent vient d'être consommé).
+        [$clair2] = $service->emettre($this->user, request());
+
+        $reponse = $this->withCookie(RefreshTokenService::COOKIE, $clair2)
+            ->postJson('/api/v1/auth/refresh');
+
+        $this->assertSame(
+            200,
+            $reponse->status(),
+            'Réponse: ' . $reponse->getContent()
+        );
     }
 
     // ══════════════════════════════════════════════════
