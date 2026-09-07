@@ -14,6 +14,15 @@
         </testsuite>
     </testsuites>
 
+    <!--
+      Remonte les échecs dans le résumé de job GitHub Actions.
+      Les logs Actions sont parfois indisponibles au téléchargement ; cette
+      extension rend le diagnostic lisible via l'API. Inactive hors CI.
+    -->
+    <extensions>
+        <bootstrap class="Tests\Support\CiDiagnosticExtension"/>
+    </extensions>
+
     <source>
         <include>
             <directory>app</directory>
