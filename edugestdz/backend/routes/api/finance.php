@@ -15,10 +15,19 @@ use App\Http\Controllers\Api\V1\{
 };
 
 $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
-Route::middleware($protected)->group(function () {
 
-    // ── Paies ──
-    Route::prefix('paies')->group(function () {
+// ── RBAC (Sprint 2) ────────────────────────────────────────────────────────
+// Le module finance manipule salaires, factures et encaissements : il est
+// réservé à la direction et à la comptabilité. Avant ce garde-fou, tout
+// utilisateur authentifié — y compris un compte « parent » — pouvait lire
+// les paies du personnel et le bilan de l'établissement.
+$financeRoles = 'role:admin,gestionnaire,comptable';
+$paieRoles    = 'role:admin,comptable';   // la paie est encore plus restreinte
+
+Route::middleware($protected)->group(function () use ($financeRoles, $paieRoles) {
+
+    // ── Paies (données salariales : accès le plus restreint) ──
+    Route::prefix('paies')->middleware($paieRoles)->group(function () {
         Route::get('/',                     [PaieController::class, 'index']);
         Route::post('calculer',             [PaieController::class, 'calculer']);
         Route::post('{id}/valider',         [PaieController::class, 'valider']);
@@ -26,12 +35,16 @@ Route::middleware($protected)->group(function () {
         Route::get('{id}/bulletin',         [PaieController::class, 'bulletin']);
     });
 
-    // ── Tarifs ──
-    Route::apiResource('tarifs', TarifController::class);
+    // ── Tarifs : lecture large (un parent doit voir la grille tarifaire),
+    //    écriture réservée à la direction. ──
+    Route::apiResource('tarifs', TarifController::class)->only(['index', 'show']);
+    Route::apiResource('tarifs', TarifController::class)
+        ->except(['index', 'show'])
+        ->middleware($financeRoles);
 
     // ── Factures ──
-    Route::apiResource('factures', FactureController::class);
-    Route::prefix('factures')->group(function () {
+    Route::apiResource('factures', FactureController::class)->middleware($financeRoles);
+    Route::prefix('factures')->middleware($financeRoles)->group(function () {
         Route::get('{id}/pdf',               [FactureController::class, 'pdf']);
         Route::post('{id}/envoyer',          [FactureController::class, 'envoyer']);
         Route::post('generer-mensuelle',      [FactureController::class, 'genererMensuelle']);
@@ -39,16 +52,16 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Paiements ──
-    Route::prefix('paiements')->group(function () {
+    Route::prefix('paiements')->middleware($financeRoles)->group(function () {
         Route::get('caisse-jour',            [PaiementController::class, 'caisseJour']);
     });
-    Route::apiResource('paiements', PaiementController::class);
-    Route::prefix('paiements')->group(function () {
+    Route::apiResource('paiements', PaiementController::class)->middleware($financeRoles);
+    Route::prefix('paiements')->middleware($financeRoles)->group(function () {
         Route::get('{id}/recu',              [PaiementController::class, 'recu']);
     });
 
-    // ── Finance ──
-    Route::prefix('finance')->group(function () {
+    // ── Finance (tableaux de bord, impayés, bilans) ──
+    Route::prefix('finance')->middleware($financeRoles)->group(function () {
         Route::get('tableau-bord',           [FinanceController::class, 'tableauBord']);
         Route::get('impayes',                [FinanceController::class, 'impayes']);
         Route::post('relances',              [FinanceController::class, 'envoyerRelances']);
@@ -57,7 +70,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Budget Annuel & Comptabilité (M13) ──
-    Route::prefix('budget')->middleware('module:budget')->group(function () {
+    Route::prefix('budget')->middleware(['module:budget', $financeRoles])->group(function () {
         Route::get('dashboard',                   [\App\Http\Controllers\Api\V1\BudgetController::class, 'dashboard']);
         Route::get('categories',                  [\App\Http\Controllers\Api\V1\BudgetController::class, 'categories']);
         Route::get('bilan-mensuel',               [\App\Http\Controllers\Api\V1\BudgetController::class, 'bilanMensuel']);
@@ -72,17 +85,22 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Paiement en ligne (Satim / CIB / Dahabia / BaridiMob) ──
-    Route::prefix('paiements')->group(function () {
+    Route::prefix('paiements')->group(function () use ($financeRoles) {
+        // Accessible aux parents : régler la scolarité de son enfant.
         Route::post('online/initier',        [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'initier']);
         Route::get('online/retour',          [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'retour']);
         Route::post('online/callback',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'callback']);
-        Route::get('online/dashboard',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'dashboard']);
         Route::get('online/{id}/statut',     [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'verifierStatut']);
-        Route::post('online/{id}/rembourser',[\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'rembourser']);
+
+        // Réservé à la finance : vue globale et remboursements.
+        Route::get('online/dashboard',       [\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'dashboard'])
+            ->middleware($financeRoles);
+        Route::post('online/{id}/rembourser',[\App\Http\Controllers\Api\V1\PaiementEnLigneController::class, 'rembourser'])
+            ->middleware($financeRoles);
     });
 
-    // ── Plans de fractionnement ──
-    Route::prefix('plans-fractionnement')->group(function () {
+    // ── Plans de fractionnement (échéanciers de paiement) ──
+    Route::prefix('plans-fractionnement')->middleware($financeRoles)->group(function () {
         Route::get('/',                     [PlanFractionnementController::class, 'index']);
         Route::post('/',                    [PlanFractionnementController::class, 'store']);
         Route::get('/{id}',                 [PlanFractionnementController::class, 'show']);

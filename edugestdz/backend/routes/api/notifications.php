@@ -57,8 +57,13 @@ Route::middleware($protected)->group(function () {
     });
 });
 
-// ── Absences enseignants (no auth middleware) ──
-Route::prefix('absences-enseignants')->group(function () {
+// ── Absences enseignants ──
+// FAILLE CORRIGÉE (Sprint 2) : ce groupe n'avait AUCUN middleware — ni
+// authentification, ni résolution de tenant. N'importe qui sur Internet
+// pouvait lister les absences des enseignants et assigner des remplaçants.
+Route::prefix('absences-enseignants')
+    ->middleware([...$protected, 'role:admin,gestionnaire,secretariat'])
+    ->group(function () {
     Route::get('/',                    [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'index']);
     Route::post('/',                   [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'signaler']);
     Route::post('/{id}/remplacer',     [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'assigner']);

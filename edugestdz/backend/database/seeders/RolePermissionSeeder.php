@@ -104,6 +104,26 @@ class RolePermissionSeeder extends Seeder
                 'is_system'=> true,
                 'permissions' => [55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78],
             ],
+            [
+                // Rôle référencé par ElevePolicy/FacturePolicy mais qui n'avait
+                // jamais été créé : toute vérification 'secretariat' échouait.
+                'id'       => 7,
+                'tenant_id'=> null,
+                'nom'      => 'secretariat',
+                'label_fr' => 'Secrétariat',
+                'label_ar' => 'الأمانة',
+                'is_system'=> true,
+                // Gestion administrative des élèves/parents/inscriptions,
+                // consultation du planning — sans accès finance ni paie.
+                'permissions' => array_values(array_filter(
+                    range(1, $permissionId),
+                    fn ($id) => in_array(
+                        $permissions[$id - 1]['module'],
+                        ['eleves', 'parents', 'inscriptions', 'groupes', 'planning', 'messages', 'notifications'],
+                        true
+                    )
+                )),
+            ],
         ];
 
         foreach ($roles as $r) {
