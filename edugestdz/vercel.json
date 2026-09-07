@@ -1,0 +1,50 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "cd frontend && npm ci && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "echo 'install géré par buildCommand'",
+
+  "functions": {
+    "backend/api/index.php": {
+      "runtime": "vercel-php@0.7.3",
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+
+  "rewrites": [
+    { "source": "/api/(.*)",     "destination": "/backend/api/index.php" },
+    { "source": "/modules/(.*)", "destination": "/backend/api/index.php" },
+    { "source": "/((?!api|modules|assets|.*\\..*).*)", "destination": "/index.html" }
+  ],
+
+  "crons": [
+    { "path": "/api/v1/cron/sms-absents",           "schedule": "30 8 * * *" },
+    { "path": "/api/v1/cron/generer-seances",       "schedule": "0 1 * * *" },
+    { "path": "/api/v1/cron/relances-impayes",      "schedule": "0 9 * * *" },
+    { "path": "/api/v1/cron/alertes-stock",         "schedule": "0 7 * * *" },
+    { "path": "/api/v1/cron/alertes-preventif",     "schedule": "0 7 * * *" },
+    { "path": "/api/v1/cron/diagnostic-hebdomadaire", "schedule": "0 6 * * 1" },
+    { "path": "/api/v1/cron/prune",                 "schedule": "0 3 * * *" }
+  ],
+
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options",   "value": "nosniff" },
+        { "key": "X-Frame-Options",          "value": "DENY" },
+        { "key": "Referrer-Policy",          "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",       "value": "camera=(), microphone=(), geolocation=(self)" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+      ]
+    }
+  ]
+}

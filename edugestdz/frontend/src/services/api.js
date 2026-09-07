@@ -5,7 +5,7 @@ const BASE_URL = (() => {
     console.warn(
       '[EduGest] VITE_API_URL non configuré.\n' +
       'Configurer dans Vercel : Settings → Environment Variables\n' +
-      'VITE_API_URL = https://[votre-backend].up.railway.app/api/v1'
+      'VITE_API_URL = https://<votre-backend>/api/v1'
     );
   }
   return base ? `${base}/api/v1` : '/api/v1';

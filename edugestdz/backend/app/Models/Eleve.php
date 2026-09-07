@@ -20,10 +20,16 @@ class Eleve extends BaseModel
         'niveau_scolaire', 'statut', 'notes_internes', 'qr_code'
     ];
 
-    protected $hidden  = ['deleted_at'];
+    // NB : qr_token_hash / qr_version / qr_generated_at sont volontairement
+    // ABSENTS de $fillable — ils ne sont modifiables que via EleveService
+    // (forceFill), jamais par assignation de masse depuis une requête.
+
+    protected $hidden  = ['deleted_at', 'qr_token_hash'];
 
     protected $casts   = [
-        'date_naissance' => 'date',
+        'date_naissance'  => 'date',
+        'qr_generated_at' => 'datetime',
+        'qr_version'      => 'integer',
     ];
 
     // ── Appender les attributs calculés ──

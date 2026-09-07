@@ -10,10 +10,9 @@ return [
         env('FRONTEND_URL', ''),
     ]),
     'allowed_origins_patterns' => [
+        // Déploiement : Vercel uniquement (Railway abandonné — 2026-09).
         '#^https://.*\.vercel\.app$#',
         '#^https://edugest.*\.vercel\.app$#',
-        '#^https://.*\.up\.railway\.app$#',
-        '#^https://.*\.railway\.app$#',
     ],
     'allowed_headers'          => ['*'],
     'exposed_headers'          => ['X-Query-Count', 'X-Response-Time'],

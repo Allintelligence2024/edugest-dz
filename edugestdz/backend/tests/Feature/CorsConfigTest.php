@@ -33,12 +33,16 @@ class CorsConfigTest extends TestCase
         $this->assertTrue($hasVercel, 'Pattern Vercel manquant dans CORS');
     }
 
-    public function test_cors_patterns_inclut_railway(): void
+    /**
+     * Railway a été abandonné au profit d'un déploiement 100 % Vercel.
+     * Ce test garantit qu'aucune origine Railway ne réapparaît dans le CORS.
+     */
+    public function test_cors_patterns_exclut_railway(): void
     {
         $patterns = config('cors.allowed_origins_patterns', []);
 
         $hasRailway = collect($patterns)->contains(fn($p) => str_contains($p, 'railway'));
-        $this->assertTrue($hasRailway, 'Pattern Railway manquant dans CORS');
+        $this->assertFalse($hasRailway, 'Origine Railway obsolète encore autorisée dans CORS');
     }
 
     public function test_cors_methods_inclut_wildcard(): void
