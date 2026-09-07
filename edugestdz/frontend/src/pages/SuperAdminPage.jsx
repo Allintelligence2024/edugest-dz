@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Shield, Users, Building2, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
+import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
 const api = (path) => fetch(`${BASE_URL}/api/v1${path}`, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+  headers: { Authorization: `Bearer ${getAccessToken()}` }
 }).then(r => r.json());
 
 export default function SuperAdminPage() {
@@ -26,7 +27,7 @@ export default function SuperAdminPage() {
     if (!confirm('Suspendre ce tenant ?')) return;
     await fetch(`${BASE_URL}/api/v1/super-admin/tenants/${id}/suspendre`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      headers: { Authorization: `Bearer ${getAccessToken()}` },
     });
     setTenants(t => t.map(x => x.id === id ? { ...x, actif: false } : x));
   };
@@ -34,7 +35,7 @@ export default function SuperAdminPage() {
   const verifierMarketplace = async (tenantId) => {
     await fetch(`${BASE_URL}/api/v1/super-admin/marketplace/${tenantId}/verifier`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      headers: { Authorization: `Bearer ${getAccessToken()}` },
     });
     alert('Tenant vérifié sur la marketplace');
   };

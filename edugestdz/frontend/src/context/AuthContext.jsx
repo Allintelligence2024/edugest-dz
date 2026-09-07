@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '@api/client';
+import api, { rafraichirJeton } from '@api/client';
+import { setAccessToken, clearAccessToken, purgerAncienStockage } from '@api/tokenStore';
 
 const AuthContext = createContext(null);
 
@@ -26,22 +27,35 @@ export function AuthProvider({ children }) {
   }, [getRole]);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) { setIsLoading(false); return; }
+    // Le jeton d'accès vit en mémoire : après un rechargement de page il est
+    // perdu. On le reconstitue à partir du cookie httpOnly de refresh, ce qui
+    // préserve la session sans jamais exposer de secret au JavaScript.
+    let annule = false;
 
-    api('/auth/me')
-      .then(data => {
+    (async () => {
+      try {
+        await rafraichirJeton();
+      } catch {
+        // Pas de cookie valide : visiteur non connecté, cas normal.
+        if (!annule) setIsLoading(false);
+        return;
+      }
+
+      try {
+        const data = await api('/auth/me');
         const userData = data?.data ?? data?.user ?? null;
-        if (userData) {
+        if (!annule && userData) {
           setUser(userData);
-          return checkOnboarding(userData);
+          await checkOnboarding(userData);
         }
-      })
-      .catch(() => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-      })
-      .finally(() => setIsLoading(false));
+      } catch {
+        if (!annule) clearAccessToken();
+      } finally {
+        if (!annule) setIsLoading(false);
+      }
+    })();
+
+    return () => { annule = true; };
   }, [checkOnboarding]);
 
   const login = useCallback(async (email, password) => {
@@ -53,7 +67,9 @@ export function AuthProvider({ children }) {
     const token = data?.access_token ?? data?.token;
     if (!token) throw new Error(data?.message ?? 'Identifiants incorrects');
 
-    localStorage.setItem('access_token', token);
+    // En mémoire uniquement — le refresh token est déjà posé par le serveur
+    // sous forme de cookie httpOnly.
+    setAccessToken(token, data?.expires_in);
     const userData = data?.user ?? null;
     setUser(userData);
     setSessionExpired(false);
@@ -62,18 +78,21 @@ export function AuthProvider({ children }) {
   }, [checkOnboarding]);
 
   const logout = useCallback(async () => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      api('/auth/logout', { method: 'POST' }).catch(() => {});
+    // L'appel serveur révoque le refresh token et efface le cookie ; sans
+    // lui, la session resterait rejouable depuis le cookie.
+    try {
+      await api('/auth/logout', { method: 'POST' });
+    } catch {
+      /* déconnexion locale même si le réseau échoue */
     }
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    clearAccessToken();
+    purgerAncienStockage();
     setUser(null);
   }, []);
 
   const onSessionExpired = useCallback(() => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    clearAccessToken();
+    purgerAncienStockage();
     setUser(null);
     setSessionExpired(true);
   }, []);

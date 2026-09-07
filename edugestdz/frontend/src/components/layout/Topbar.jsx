@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import LanguageThemeSelector from '@components/LanguageThemeSelector';
 import { useTheme } from '@context/ThemeContext';
 import SearchModal from '@components/SearchModal';
+import { getAccessToken } from '../../api/tokenStore';
 
 const PAGE_META = {
   '/':                 { title: 'Tableau de bord',     crumb: [] },
@@ -49,7 +50,7 @@ export default function Topbar({ user }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) return;
     const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     fetch(`${BASE}/api/v1/notifications/parent?lu=false&per_page=1`, {

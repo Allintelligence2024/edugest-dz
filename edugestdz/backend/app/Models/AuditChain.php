@@ -16,6 +16,7 @@ class AuditChain extends Model
         'previous_hash',
         'data_hash',
         'signature',
+        'key_version',
         'payload',
         'causer_id',
         'causer_type',
@@ -26,6 +27,7 @@ class AuditChain extends Model
     {
         return [
             'bloc_numero' => 'integer',
+            'key_version' => 'integer',
             'payload' => 'array',
             'logged_at' => 'datetime',
         ];

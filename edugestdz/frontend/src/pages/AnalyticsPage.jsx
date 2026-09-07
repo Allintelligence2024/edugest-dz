@@ -4,11 +4,12 @@ import KpiCard from '@components/ui/KpiCard';
 import Card from '@components/ui/Card';
 import Badge from '@components/ui/Badge';
 import BarChart from '@components/ui/BarChart';
+import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
 const api = (path) =>
   fetch(`${BASE_URL}/api/v1${path}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+    headers: { Authorization: `Bearer ${getAccessToken()}` },
   }).then((r) => r.json());
 
 const fmt = (n) => new Intl.NumberFormat('fr-DZ').format(n ?? 0);
@@ -43,7 +44,7 @@ export default function AnalyticsPage() {
     setPdfLoading(true);
     try {
       const res = await fetch(`${BASE_URL}/api/v1/analytics/rapport-pdf`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+        headers: { Authorization: `Bearer ${getAccessToken()}` },
       });
       const blob = await res.blob();
       const url  = window.URL.createObjectURL(blob);

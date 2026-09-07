@@ -87,7 +87,13 @@
         <env name="WHATSAPP_TOKEN"       value="test_token"/>
 
         <!-- ── JWT ──────────────────────────────────────────────────── -->
-        <env name="JWT_SECRET" value="test-secret-minimum-32-characters-long-for-jwt-edugest"/>
+        <!-- Secrets de TEST uniquement, jamais utilises hors PHPUnit.
+             Les valeurs de production viennent de l'environnement
+             (voir scripts/generer-secrets.sh). -->
+        <env name="JWT_SECRET" value="phpunit-only-jwt-secret-do-not-use-in-any-real-environment"/>
+        <env name="QR_SIGNING_KEY" value="phpunit-only-qr-signing-key-do-not-use-in-real-env"/>
+        <env name="AUDIT_CHAIN_KEY" value="phpunit-only-audit-chain-key-do-not-use-in-real-env"/>
+        <env name="CRON_SECRET" value="phpunit-only-cron-secret"/>
         <env name="JWT_TTL"    value="60"/>
 
         <!-- ── Meilisearch (désactivé — trop lent en test) ───────────── -->

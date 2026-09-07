@@ -17,5 +17,14 @@ return [
     'allowed_headers'          => ['*'],
     'exposed_headers'          => ['X-Query-Count', 'X-Response-Time'],
     'max_age'                  => 86400,
-    'supports_credentials'     => false,
+    /*
+    | Obligatoire depuis le Sprint 3 : le refresh token voyage dans un cookie
+    | httpOnly, que le navigateur ne transmet que si les credentials sont
+    | autorisés. Sur Vercel, frontend et API partagent la même origine, donc
+    | le CORS n'intervient qu'en développement local.
+    |
+    | NB : avec credentials, le navigateur REFUSE le joker '*' en
+    | Access-Control-Allow-Origin — d'où la liste explicite ci-dessus.
+    */
+    'supports_credentials'     => true,
 ];

@@ -4,6 +4,7 @@ import { useAuth } from '@context/AuthContext';
 import { useI18n } from '@context/I18nContext';
 import { useModules } from '@context/ModulesContext';
 import SchoolBadge from '@components/ui/SchoolBadge';
+import { getAccessToken } from '../api/tokenStore';
 
 const MODULE_ICONS = {
   '/':              { icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', color: '#2563EB' },
@@ -75,7 +76,7 @@ export default function Sidebar() {
   const activeColor = MODULE_ICONS[location.pathname]?.color || '#2563EB';
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) return;
     const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     Promise.allSettled([

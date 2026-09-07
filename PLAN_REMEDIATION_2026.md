@@ -115,7 +115,18 @@
 
 ---
 
-### **Sprint 3 — Durcissement sécurité (P0-5, P0-6, P1-1..P1-4, P2-1, P2-7, P2-8)**
+### **Sprint 3 — Durcissement sécurité (P0-5, P0-6, P1-1..P1-4, P2-1, P2-7, P2-8)** ✅ **FAIT**
+
+> **Livré.** Détail d'exécution, écarts au plan et points restants : voir
+> `docs/SPRINT3_SECURITE.md`.
+>
+> Deux écarts assumés par rapport au texte ci-dessous :
+> - **3.3** : le scope `BelongsToTenant` était *déjà* fail-closed (`whereRaw('1 = 0')`).
+>   Lever une exception aurait cassé les jobs de queue légitimes ; on a gardé le
+>   filtre vide et ajouté un `Log::warning` pour rendre l'anomalie visible.
+> - **3.5** : la CI (`.github/workflows/ci.yml`) n'a **pas** pu être modifiée —
+>   le jeton GitHub de cette session n'a pas le scope `workflows`. Le correctif
+>   est livré en patch dans `docs/`.
 
 **3.1 Auth frontend**
 - Migrer vers **cookies `httpOnly` + `SameSite=Strict` + `Secure`** pour le refresh token ; access token en mémoire (Redux, jamais persisté).

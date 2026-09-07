@@ -8,6 +8,7 @@ import Badge from '@components/ui/Badge';
 import Alert from '@components/ui/Alert';
 import DonutChart from '@components/ui/DonutChart';
 import BarChart from '@components/ui/BarChart';
+import { getAccessToken } from '../api/tokenStore';
 
 let BASE_URL = import.meta.env.VITE_API_URL ?? '';
 if (BASE_URL.endsWith('/api/v1')) BASE_URL = BASE_URL.slice(0, -'/api/v1'.length);
@@ -21,7 +22,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const authHeaders = { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+    const authHeaders = { headers: { Authorization: `Bearer ${getAccessToken()}` } };
     Promise.all([
       fetch(`${BASE_URL}/api/v1/analytics/dashboard`, authHeaders).then(r => r.json()),
       fetch(`${BASE_URL}/api/v1/eleves?per_page=5`, authHeaders).then(r => r.json()),
