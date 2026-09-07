@@ -32,14 +32,19 @@
 
 ## 1. Classification des problèmes
 
+> **Avancement** — Sprint 1 ✅ terminé · Sprint 2 ✅ terminé (voir
+> `edugestdz/docs/RBAC_MATRIX.md` et `edugestdz/DEPLOIEMENT_VERCEL.md`).
+> P0-1, P0-2, P0-3, P0-4 résolus. Restent P0-5 (localStorage) et P0-6 (clé
+> HMAC audit), traités au Sprint 3.
+
 ### 🔴 P0 — Bloquants (correctness + sécurité exploitable)
 
 | # | Problème | Localisation | Impact |
 |---|---|---|---|
-| P0-1 | **Feature QR présence non fonctionnelle** | `backend/app/Services/EleveService.php:41-78` | Fonctionnalité annoncée qui ne marche pas |
-| P0-2 | **Autorisation RBAC quasi absente** | 72/75 contrôleurs | Escalade de privilèges intra-tenant |
-| P0-3 | **`TenantIsolationTest.php` orphelin à la racine** | `/TenantIsolationTest.php` | Le test de sécurité n°1 n'est jamais exécuté |
-| P0-4 | **Binaires 61 MB trackés par git** | racine | Clone lent, surface d'attaque, `.gitignore` incomplet |
+| ~~P0-1~~ ✅ | ~~Feature QR présence non fonctionnelle~~ | `EleveService` | **Corrigé Sprint 1** — HMAC déterministe, lookup O(1) |
+| ~~P0-2~~ ✅ | ~~Autorisation RBAC quasi absente~~ | 72/75 contrôleurs | **Corrigé Sprint 2** — `role:`/`permission:` + 2 tests de garde |
+| ~~P0-3~~ ⚠️ | ~~TenantIsolationTest orphelin~~ | — | **Faux positif** : doublon périmé, la vraie version tournait déjà en CI. Doublon supprimé. |
+| ~~P0-4~~ ✅ | ~~Binaires 61 MB trackés~~ | racine | **Corrigé Sprint 1** — détrackés + `.gitignore` |
 | P0-5 | **Token JWT en `localStorage`** | `frontend/src/api/client.js:10` | Vol de session via XSS |
 | P0-6 | **HMAC audit chain = `config('app.key')`** | `AuditChainService.php:26` | Rotation APP_KEY ⇒ toute la chaîne d'audit invalide |
 
