@@ -214,7 +214,15 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         $service = app(RefreshTokenService::class);
-        $userId  = auth('api')->id();
+
+        // Un logout ne doit jamais renvoyer 500 : si le JWT est absent ou
+        // illisible, on révoque quand même ce qu'on peut et on efface le
+        // cookie. Se déconnecter doit toujours aboutir.
+        try {
+            $userId = auth('api')->id();
+        } catch (\Throwable) {
+            $userId = null;
+        }
 
         // Révoquer le refresh token présenté, et par sécurité toutes les
         // sessions de l'utilisateur : un logout doit être sans ambiguïté.
@@ -226,7 +234,11 @@ class AuthController extends Controller
             $service->revoquerUtilisateur($userId, 'logout');
         }
 
-        auth('api')->logout();
+        try {
+            auth('api')->logout();
+        } catch (\Throwable) {
+            // Jeton déjà invalide : la déconnexion est de fait effective.
+        }
 
         return response()
             ->json(['success' => true, 'message' => 'Déconnexion réussie'])
@@ -250,7 +262,12 @@ class AuthController extends Controller
         // Le refresh token vient du cookie httpOnly. On accepte encore le
         // corps de requête pour les clients mobiles, qui utilisent un
         // stockage sécurisé natif (Expo SecureStore) et non un navigateur.
+        // Lecture défensive : selon la pile de middlewares traversée, un
+        // cookie non chiffré peut n'être visible que dans le sac Symfony et
+        // pas via $request->cookie(), qui suppose un cookie géré par Laravel.
+        // On tente les trois sources plutôt que d'échouer silencieusement.
         $presente = $request->cookie(RefreshTokenService::COOKIE)
+            ?: $request->cookies->get(RefreshTokenService::COOKIE)
             ?: $request->input('refresh_token');
 
         if ($presente) {

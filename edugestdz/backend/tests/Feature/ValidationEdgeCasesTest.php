@@ -105,7 +105,13 @@ class ValidationEdgeCasesTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function test_supprimer_eleve_existant(): void
+    /**
+     * Mis à jour au Sprint 2 : ce test attendait un 200, c'est-à-dire qu'un
+     * PARENT pouvait supprimer n'importe quel élève de l'établissement. Le
+     * comportement attendu est désormais l'inverse — la suppression est
+     * réservée à l'administration.
+     */
+    public function test_un_parent_ne_peut_pas_supprimer_un_eleve(): void
     {
         $roleParent = Role::factory()->create(['nom' => 'parent']);
         $parent = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $roleParent->id]);
@@ -114,17 +120,31 @@ class ValidationEdgeCasesTest extends TestCase
 
         $this->withToken($tokenParent)
             ->deleteJson("/api/v1/eleves/{$eleve->id}")
-            ->assertStatus(200);
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('eleves', ['id' => $eleve->id, 'deleted_at' => null]);
     }
 
-    public function test_budget_dashboard_accessible(): void
+    /**
+     * Mis à jour au Sprint 2 : le budget prévisionnel de l'établissement
+     * n'est pas une donnée pédagogique. Ce test vérifiait qu'un ENSEIGNANT y
+     * accédait ; il vérifie maintenant qu'il en est écarté, et qu'un rôle
+     * financier y accède bien.
+     */
+    public function test_le_budget_est_reserve_aux_roles_financiers(): void
     {
         $roleEns = Role::factory()->create(['nom' => 'enseignant']);
         $enseignant = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $roleEns->id]);
-        $tokenEns = auth('api')->login($enseignant);
 
-        $this->withToken($tokenEns)
+        $this->withToken(auth('api')->login($enseignant))
             ->getJson('/api/v1/budget/dashboard')
-            ->assertStatus(200);
+            ->assertStatus(403);
+
+        $roleGestion = Role::factory()->create(['nom' => 'gestionnaire']);
+        $gestionnaire = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $roleGestion->id]);
+
+        $this->withToken(auth('api')->login($gestionnaire))
+            ->getJson('/api/v1/budget/dashboard')
+            ->assertSuccessful();
     }
 }

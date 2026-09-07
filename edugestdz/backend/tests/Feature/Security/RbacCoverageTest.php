@@ -67,17 +67,9 @@ class RbacCoverageTest extends TestCase
         'api/v1/paiements/online/callback',
         'api/v1/paiements/online/retour',
 
-        // Leurres : ils DOIVENT être publics pour piéger les scanners. Le
-        // contrôleur ne fait que journaliser et bannir l'IP appelante.
-        'api/v1/phpinfo',
-        'api/v1/server-status',
-        'api/v1/actuator',
-        'api/v1/.env',
-        'api/v1/wp-admin',
-        'api/v1/admin.php',
-        'api/v1/config',
-        'api/v1/backup',
-        'api/v1/.git',
+        // NB : les leurres (honeypots) ne sont pas listés ici — ils sont
+        // reconnus par leur nom de route `honeypot.*`, ce qui reste correct
+        // si on en ajoute d'autres.
 
         // Documentation OpenAPI et callback OAuth de Swagger UI.
         'api/documentation',
@@ -112,6 +104,7 @@ class RbacCoverageTest extends TestCase
 
             $resultat[] = [
                 'uri'        => $uri,
+                'nom'        => (string) $route->getName(),
                 'methods'    => implode('|', array_diff($route->methods(), ['HEAD'])),
                 'middleware' => $route->gatherMiddleware(),
             ];
@@ -203,8 +196,12 @@ class RbacCoverageTest extends TestCase
                 continue;
             }
 
-            // Les honeypots sont volontairement exposés (pièges à scanners).
-            if (Str::contains(implode(',', array_filter($route['middleware'], 'is_string')), 'Honeypot')) {
+            // Les leurres sont volontairement exposés : ils piègent les
+            // scanners, journalisent et bannissent l'IP appelante. Ils sont
+            // identifiés par leur nom de route, pas par un middleware — la
+            // version initiale cherchait un middleware « Honeypot » qui
+            // n'existe pas, d'où 16 faux positifs.
+            if (Str::startsWith($route['nom'], 'honeypot.')) {
                 continue;
             }
 
