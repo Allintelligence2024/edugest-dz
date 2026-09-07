@@ -169,19 +169,24 @@ Ce sont des contraintes **structurelles** de Vercel, pas des bugs :
 
 ## 8. Action manuelle requise — désactivation de `deploy.yml`
 
-Le token GitHub de cette session n'a pas le scope `workflows`, il ne peut donc
-pas modifier `.github/workflows/`. La version désactivée du workflow est fournie
-dans **`edugestdz/docs/deploy.yml.desactive.patch`**.
+> ⚠️ **Non appliqué** : les workflows ne sont pas poussables depuis
+> l'environnement de travail (voir `docs/SPRINT3_SECURITE.md` §1).
+> Fichier de remplacement prêt : `edugestdz/docs/deploy.yml.desactive.patch`.
+>
+> ```bash
+> cp edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+> git add .github/workflows/deploy.yml && git commit -m "ci: désactiver le déploiement VPS" && git push
+> ```
 
-Pour l'appliquer :
+Le changement : `.github/workflows/deploy.yml` passe de `on: push` (branche `main`) à
+`on: workflow_dispatch` avec une saisie de confirmation obligatoire : il faut
+taper littéralement `deployer` pour lancer un déploiement VPS.
 
-```bash
-cp edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-git add .github/workflows/deploy.yml
-git commit -m "ci: désactiver le déploiement VPS automatique (cible = Vercel)"
-git push
-```
+Le workflow est **conservé, pas supprimé** : il reste le filet de secours tant
+que la cible serverless Vercel n'est pas validée en production.
 
-Le changement : `on: push` devient `on: workflow_dispatch` avec une saisie de
-confirmation, pour que le déploiement VPS ne parte plus à chaque merge sur
-`main` maintenant que la cible est Vercel.
+Pour un déploiement VPS manuel : onglet *Actions* → *CD — Deploy Production
+(VPS · DÉSACTIVÉ)* → *Run workflow* → saisir `deployer`.
+
+Pour restaurer le déclenchement automatique, remettre le bloc `push:` documenté
+en tête du fichier.

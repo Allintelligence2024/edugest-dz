@@ -184,21 +184,45 @@ aucune régression (18 erreurs préexistantes contre 20 en baseline).
 
 ## Action manuelle requise
 
-### 1. Correctif CI non poussable
+### 1. Correctifs des workflows — à appliquer depuis un poste local
 
-Le jeton GitHub de cette session **n'a pas le scope `workflows`** : impossible de
-committer une modification de `.github/workflows/**`. Le fichier contient encore
-le mot de passe littéral `EduGest@2026!` (4 occurrences).
+**Les workflows ne peuvent pas être poussés depuis cet environnement.** Le
+sandbox achemine tout le trafic GitHub via son propre identifiant d'application,
+qui n'a pas la permission `workflows` ; un jeton personnel fourni à la main est
+ignoré (même un appel non authentifié répond `Resource not accessible by
+integration`). Les correctifs sont donc livrés en patch.
 
 ```bash
 cd /chemin/vers/edugest-dz
 git apply edugestdz/docs/ci-secrets.patch
-git add .github/workflows/ci.yml && git commit -m "ci: retirer les mots de passe en dur"
+git apply edugestdz/docs/pre-deploy-secrets.patch
+cp    edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+rm    edugestdz/docs/*.patch
+git add -A && git commit -m "ci: secrets hors du code + gardes sécurité" && git push
 ```
 
-Le patch remplace les littéraux par `${{ secrets.CI_DB_PASSWORD }}` (avec repli
-sur une valeur éphémère de CI, la base étant jetable) et génère
-`QR_SIGNING_KEY` / `AUDIT_CHAIN_KEY` / `CRON_SECRET` via `openssl rand`.
+Les trois patches ont été **appliqués et vérifiés à blanc** ici avant d'être
+extraits : `git apply --check` passe, les trois fichiers YAML se parsent, et les
+deux greps de garde ont été exécutés sur l'arbre courant.
+
+**`ci-secrets.patch`** — retire les 4 mots de passe littéraux, génère
+`QR_SIGNING_KEY` / `AUDIT_CHAIN_KEY` / `CRON_SECRET` via `openssl rand`, et
+ajoute quatre étapes de garde bloquantes :
+
+| Garde | Empêche |
+|---|---|
+| `rls:status --strict` | une table qui perdrait son RLS |
+| `audit:verify` | une chaîne d'audit rompue |
+| grep `localStorage` | la réintroduction d'un jeton persisté côté navigateur |
+| grep secrets | la réintroduction d'un mot de passe littéral |
+
+**`pre-deploy-secrets.patch`** — un **second workflow**, `pre-deploy-check.yml`,
+portait les 5 mêmes secrets en dur. Il n'avait pas été repéré au premier audit :
+c'est le dry-run de la garde anti-secrets qui l'a fait apparaître. C'est
+précisément l'intérêt d'une garde automatisée par rapport à une revue manuelle.
+
+**`deploy.yml.desactive.patch`** — fichier de remplacement complet (pas un diff) :
+`on: push` devient `on: workflow_dispatch` avec confirmation obligatoire.
 
 ### 2. Génération des secrets et migrations
 

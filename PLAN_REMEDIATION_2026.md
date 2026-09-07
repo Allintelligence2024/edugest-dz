@@ -124,9 +124,11 @@
 > - **3.3** : le scope `BelongsToTenant` était *déjà* fail-closed (`whereRaw('1 = 0')`).
 >   Lever une exception aurait cassé les jobs de queue légitimes ; on a gardé le
 >   filtre vide et ajouté un `Log::warning` pour rendre l'anomalie visible.
-> - **3.5** : la CI (`.github/workflows/ci.yml`) n'a **pas** pu être modifiée —
->   le jeton GitHub de cette session n'a pas le scope `workflows`. Le correctif
->   est livré en patch dans `docs/`.
+>   - **3.5** : correctifs écrits et vérifiés, mais **non poussables** — le
+>     sandbox achemine tout le trafic GitHub via une application sans permission
+>     `workflows`. Livrés en patch dans `docs/`, à appliquer localement.
+>     Un second workflow (`pre-deploy-check.yml`) portait les mêmes secrets en
+>     dur ; c'est la garde anti-secrets qui l'a révélé.
 
 **3.1 Auth frontend**
 - Migrer vers **cookies `httpOnly` + `SameSite=Strict` + `Secure`** pour le refresh token ; access token en mémoire (Redux, jamais persisté).
