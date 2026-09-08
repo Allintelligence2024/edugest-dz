@@ -314,10 +314,10 @@ jobs:
             echo "PHPStan absent — installe d'abord (step analyse non bloquant)."
             exit 0
           fi
-          CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
+          CONFIG="$(mktemp phpstan-XXXXXX.neon)"
           trap 'rm -f "${CONFIG}"' EXIT
           {
-            printf 'includes:\n    - %s/vendor/larastan/larastan/extension.neon\n\n' "$(pwd)"
+            printf 'includes:\n    - vendor/larastan/larastan/extension.neon\n\n'
             cat phpstan.neon
           } > "${CONFIG}"
           php -d memory_limit=1G vendor/bin/phpstan analyse \

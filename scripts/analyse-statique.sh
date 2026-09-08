@@ -42,7 +42,10 @@ fi
 
 # Larastan s'ajoute par un `includes:` ; on le compose ici pour que
 # phpstan.neon reste valide même sans la dépendance installée.
-CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
+# Le fichier temporaire est créé DANS le backend (pas /tmp) : phpstan.neon
+# contient des `paths:` relatifs résolus depuis le répertoire de la config.
+# Le placer en /tmp résoudrait app/config/database/routes en /tmp/… → introuvables.
+CONFIG="$(mktemp "${BACKEND}/phpstan-XXXXXX.neon")"
 trap 'rm -f "${CONFIG}"' EXIT
 
 EXTENSION="${BACKEND}/vendor/larastan/larastan/extension.neon"
