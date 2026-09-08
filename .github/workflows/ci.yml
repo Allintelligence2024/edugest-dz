@@ -168,7 +168,8 @@ jobs:
       - name: Run tests with coverage
         continue-on-error: true
         run: |
-          php -d memory_limit=512M artisan test --coverage --min=45 2>&1 \
+          php -d memory_limit=512M artisan test \
+            --coverage --min=45 --coverage-clover=coverage-clover.xml 2>&1 \
             | tee coverage-out.txt
         env:
           DB_CONNECTION: pgsql
@@ -193,23 +194,37 @@ jobs:
 
           echo "## Couverture du backend" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ -f coverage-out.txt ]; then
-            LIGNE=$(grep -iE "^\s*Lines?\s*[:>]?\s*[0-9]" coverage-out.txt | tail -1 || true)
-            if [ -n "$LIGNE" ]; then
-              POURCENT=$(echo "$LIGNE" | grep -oE "[0-9]+\.[0-9]+" | tail -1 || true)
-              if [ -n "$POURCENT" ]; then
-                echo "Lignes couvertes : ${POURCENT} % (objectif Sprint 4 : 45 %)." >> "$GITHUB_STEP_SUMMARY"
-                echo "::notice::Couverture backend ${POURCENT}% (objectif Sprint 4 : 45%)"
-                exit 0
-              fi
-            fi
-            # Format de sortie non reconnu : publier la collecte brute, morceau
-            # par morceau, plutôt que d'inventer un pourcentage.
-            echo "Couverture : NON MESURÉE (format de sortie non reconnu). Détail :" >> "$GITHUB_STEP_SUMMARY"
-            publier "$(tail -40 coverage-out.txt)"
+          COUV=""
+          if [ -f coverage-clover.xml ] && command -v php >/dev/null 2>&1; then
+            COUV=$(php -r '
+              $n = simplexml_load_file("coverage-clover.xml");
+              $totaux = $n->project->metrics
+                ? $n->project->metrics
+                : (isset($n->metrics) ? $n->metrics : $n->xpath("//metrics")[0]);
+              $couv = (float) $totaux["coveredstatements"];
+              $all  = (float) $totaux["statements"];
+              $all > 0
+                ? printf("%.2f", $couv * 100 / $all)
+                : print "0.00";
+            ')
+          fi
+
+          if [ -n "$COUV" ] && [ "$COUV" != "0.00" ] && [ -f coverage-out.txt ]; then
+            LIGNE=$(grep -oiE "^(lines|line coverage)[^%]*[0-9]+\.[0-9]+ ?%" coverage-out.txt | tail -1 || true)
+            echo "Lignes couvertes : ${COUV} % (obj. Sprint 4 : 45 %, rapport texte : ${LIGNE:-inconnue})." \
+              >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::couverture_clover :: ${COUV}% (objectif Sprint 4 : 45%)"
+            echo "::error::couverture_texte :: $(echo "${LIGNE:-rapport non reconnu}" | tr ':' ' ')"
+            exit 0
+          fi
+
+          # Aucun pourcentage agrégé exploitable : publier la collecte brute,
+          # morceau par morceau, plutôt que d'inventer un chiffre.
+          echo "Couverture : NON MESURÉE (format non reconnu). Détail :" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coverage-clover.xml ]; then
+            publier "$(head -c 1500 coverage-clover.xml)"
           else
-            echo "Couverture : NON MESURÉE — coverage-out.txt absent." >> "$GITHUB_STEP_SUMMARY"
-            publier "coverage-out.txt absent — artefact issu du step de mesure."
+            publier "$(tail -40 coverage-out.txt 2>/dev/null | head -c 1500)"
           fi
 
   frontend:
