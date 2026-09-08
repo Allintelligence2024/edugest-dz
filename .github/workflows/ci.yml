@@ -317,7 +317,7 @@ jobs:
           CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
           trap 'rm -f "${CONFIG}"' EXIT
           {
-            printf 'includes:\n    - vendor/larastan/larastan/extension.neon\n\n'
+            printf 'includes:\n    - %s/vendor/larastan/larastan/extension.neon\n\n' "$(pwd)"
             cat phpstan.neon
           } > "${CONFIG}"
           php -d memory_limit=1G vendor/bin/phpstan analyse \

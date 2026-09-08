@@ -45,8 +45,8 @@ fi
 CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
 trap 'rm -f "${CONFIG}"' EXIT
 
-EXTENSION="vendor/larastan/larastan/extension.neon"
-BASELINE="phpstan-baseline.neon"
+EXTENSION="${BACKEND}/vendor/larastan/larastan/extension.neon"
+BASELINE="${BACKEND}/phpstan-baseline.neon"
 
 {
   if [ -f "${EXTENSION}" ] || [ -f "${BASELINE}" ]; then
