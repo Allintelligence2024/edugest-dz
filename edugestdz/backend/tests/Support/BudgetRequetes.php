@@ -120,6 +120,15 @@ trait BudgetRequetes
         // Montée en volume.
         $creer($volume - 1);
 
+        // Seconde chauffe, indispensable et non évidente : créer des
+        // enregistrements invalide les caches qui en dépendent. Sur
+        // /api/v1/eleves, `EleveObserver` purge `eleves_stats_{tenant}` à
+        // chaque création ; sans cette chauffe, la mesure sous charge payait
+        // la reconstitution du cache (trois agrégats) et l'écart était
+        // imputé à tort à un N+1. On compare deux états stables, pas un état
+        // chaud contre un état froid.
+        $appel();
+
         $charge = $this->mesurerRequetes($appel);
 
         $croissance = $charge['nb'] - $reference['nb'];

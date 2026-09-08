@@ -1,0 +1,161 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index d22644e..fbff0e9 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -165,9 +165,24 @@ jobs:
+           echo "OK — aucun secret littéral"
+         working-directory: .
+ 
+-      - name: Run tests with coverage
++      # ── Couverture (Sprint 4 : palier 30 % → 45 %) ────────────────
++      #
++      # La mesure et le verdict sont séparés volontairement. Les logs Actions
++      # ne sont pas toujours téléchargeables depuis l'environnement de
++      # travail ; sans publication explicite, un échec de couverture se
++      # résume à « exit 1 » sans le pourcentage, donc sans savoir s'il manque
++      # un point ou vingt. L'étape de verdict republie le chiffre mesuré en
++      # annotation et dans le résumé de job.
++      #
++      # Si le palier s'avère trop haut au premier passage, le chiffre réel
++      # est lisible immédiatement et `--min` s'ajuste sur une ligne.
++
++      - name: "Couverture backend — mesure"
++        id: couverture
+         continue-on-error: true
+-        run: php -d memory_limit=512M artisan test --coverage --min=30
++        run: |
++          set -o pipefail
++          php -d memory_limit=512M artisan test --coverage --min=45 2>&1 | tee couverture.txt
+         env:
+           DB_CONNECTION: pgsql
+           DB_HOST:       127.0.0.1
+@@ -177,3 +192,129 @@ jobs:
+           DB_PASSWORD:   ${{ secrets.CI_DB_PASSWORD || 'ci-ephemeral-postgres-pwd' }}
+           REDIS_HOST:    127.0.0.1
+           XDEBUG_MODE:   coverage
++
++      - name: "Couverture backend — palier 45 %"
++        run: |
++          MESURE=$(grep -oE 'Total:[[:space:]]*[0-9.]+[[:space:]]*%' couverture.txt | tail -1 || true)
++          POURCENT=$(echo "${MESURE}" | grep -oE '[0-9.]+' || echo "inconnu")
++
++          {
++            echo "### Couverture backend"
++            echo
++            echo "- mesurée : **${POURCENT} %**"
++            echo "- palier requis : **45 %**"
++          } >> "$GITHUB_STEP_SUMMARY"
++
++          if [ "${{ steps.couverture.outcome }}" = "success" ]; then
++            echo "::notice title=Couverture backend::${POURCENT} % (palier 45 %) — OK"
++            exit 0
++          fi
++
++          echo "::error title=Couverture backend insuffisante::${POURCENT} % mesurés pour un palier de 45 %"
++          exit 1
++
++  # ══════════════════════════════════════════════════════════════════════
++  # Frontend (Sprint 4 — P1-8 : unification de la CI)
++  #
++  # Les tests Vitest existaient mais n'étaient rattachés à aucun workflow
++  # actif : `edugestdz/.github/workflows/frontend-ci.yml` n'est pas lu par
++  # GitHub, qui ne considère que `.github/workflows/` à la racine. Le
++  # frontend n'était donc pas testé en intégration continue.
++  # ══════════════════════════════════════════════════════════════════════
++
++  frontend:
++    name: "CI — EduGest DZ / frontend"
++    runs-on: ubuntu-latest
++
++    defaults:
++      run:
++        working-directory: edugestdz/frontend
++
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Setup Node 22
++        uses: actions/setup-node@v4
++        with:
++          node-version: '22'
++          cache: npm
++          cache-dependency-path: edugestdz/frontend/package-lock.json
++
++      - name: Install dependencies
++        run: npm ci
++
++      - name: Lint
++        continue-on-error: true
++        run: npm run lint
++
++      - name: Tests unitaires (Vitest)
++        run: npm run test
++
++      - name: Build de production
++        run: npm run build
++
++  # ══════════════════════════════════════════════════════════════════════
++  # Qualité & sécurité (Sprint 4)
++  # ══════════════════════════════════════════════════════════════════════
++
++  qualite:
++    name: "CI — EduGest DZ / qualité & sécurité"
++    runs-on: ubuntu-latest
++
++    steps:
++      - uses: actions/checkout@v4
++
++      - name: Setup PHP 8.2
++        uses: shivammathur/setup-php@v2
++        with:
++          php-version: '8.2'
++          extensions: mbstring, pdo_pgsql, intl, gd, xml, json, fileinfo, redis, zip
++          tools: composer:v2
++
++      - name: Install dependencies
++        working-directory: edugestdz/backend
++        run: composer install --no-progress --no-interaction --prefer-dist
++
++      - name: "composer audit — vulnérabilités PHP"
++        working-directory: edugestdz/backend
++        run: composer audit --no-interaction --format=plain
++
++      - name: Setup Node 22
++        uses: actions/setup-node@v4
++        with:
++          node-version: '22'
++
++      - name: "npm audit — frontend (bloquant : high et au-delà)"
++        working-directory: edugestdz/frontend
++        run: npm audit --audit-level=high
++
++      # Le toolchain Expo traîne un long historique de dépendances
++      # transitives vulnérables dont la correction impose des ruptures de
++      # version. Le contrôle reste exécuté et visible, mais ne bloque pas
++      # tant que la remontée d'Expo n'est pas planifiée.
++      - name: "npm audit — mobile (rapport seul)"
++        continue-on-error: true
++        working-directory: edugestdz/mobile
++        run: npm audit --audit-level=high
++
++      - name: "Gitleaks — secrets commités"
++        run: |
++          VERSION=8.21.2
++          curl -sSL -o gitleaks.tar.gz \
++            "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz"
++          tar -xzf gitleaks.tar.gz gitleaks
++          # --no-git : on analyse l'arbre de travail, pas l'historique.
++          # L'historique contient les mots de passe littéraux retirés par
++          # les correctifs du Sprint 3 ; les scanner en boucle signalerait
++          # éternellement des secrets déjà révoqués et rendrait la garde
++          # inutilisable. La réécriture d'historique est un chantier à part
++          # (voir PLAN_REMEDIATION_2026.md, § 5).
++          ./gitleaks detect --no-git --source . --config .gitleaks.toml --no-banner --redact --exit-code 1
++
++      # Non bloquant tant que la baseline PHPStan n'est pas générée : le
++      # niveau 6 sur une base existante remonte des défauts hérités, qui
++      # relèvent d'un chantier propre et non d'un blocage de la branche.
++      # Voir edugestdz/backend/phpstan.neon.
++      - name: "PHPStan niveau 6 (Larastan)"
++        continue-on-error: true
++        run: ./scripts/analyse-statique.sh
