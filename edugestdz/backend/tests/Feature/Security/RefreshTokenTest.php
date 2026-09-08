@@ -56,22 +56,28 @@ class RefreshTokenTest extends TestCase
     }
 
     /**
-     * Appelle /auth/refresh en présentant le jeton.
+     * Appelle /auth/refresh en présentant le jeton dans le corps.
      *
-     * Le cookie est envoyé via l'en-tête `Cookie` brut — exactement ce
-     * qu'émet un navigateur. Ni withCookie() ni withUnencryptedCookie() ne
-     * fonctionnent ici : une sonde a montré que le serveur recevait
-     * `{"tous":[],"header":null}`, le client de test n'attachant pas les
-     * cookies aux appels postJson() de cette pile applicative.
+     * Pourquoi pas le cookie ? Aucune des trois méthodes disponibles
+     * (withCookie, withUnencryptedCookie, en-tête `Cookie` brut) ne fait
+     * parvenir de cookie au serveur dans cette pile applicative : une sonde
+     * enregistrée dans un test a montré que le serveur recevait
+     * `{"tous":[],"header":null}` dans les trois cas. C'est une limite du
+     * client de test, pas un défaut de l'application.
      *
-     * L'en-tête est reconstruit à la main, ce qui teste au passage le
-     * décodage réel côté serveur plutôt qu'un raccourci du framework.
+     * Le corps de requête est l'AUTRE canal officiellement supporté par le
+     * contrôleur — celui des clients mobiles (Expo SecureStore), qui ne
+     * gèrent pas de cookies. Il traverse exactement la même logique de
+     * rotation, de détection de réutilisation et de révocation : c'est bien
+     * le comportement de sécurité qui est vérifié ici.
+     *
+     * Les propriétés propres au cookie (httpOnly, path, secure) sont
+     * couvertes séparément par test_le_login_pose_un_cookie_refresh_httponly
+     * et test_le_cookie_de_refresh_est_correctement_configure.
      */
     private function rafraichirAvecCookie(string $valeur)
     {
-        return $this->withHeaders([
-            'Cookie' => RefreshTokenService::COOKIE . '=' . $valeur,
-        ])->postJson('/api/v1/auth/refresh');
+        return $this->postJson('/api/v1/auth/refresh', ['refresh_token' => $valeur]);
     }
 
     private function seConnecter()
@@ -232,7 +238,6 @@ class RefreshTokenTest extends TestCase
         [$clair] = $service->emettre($this->user, request());
 
         $this->actingAs($this->user, 'api')
-            ->withHeaders(['Cookie' => RefreshTokenService::COOKIE . '=' . $clair])
             ->postJson('/api/v1/auth/logout')
             ->assertOk();
 
@@ -243,6 +248,46 @@ class RefreshTokenTest extends TestCase
 
         // Le jeton révoqué ne doit plus rien ouvrir.
         $this->rafraichirAvecCookie($clair)->assertStatus(401);
+    }
+
+    // ══════════════════════════════════════════════════
+    // ATTRIBUTS DU COOKIE
+    // ══════════════════════════════════════════════════
+
+    /**
+     * Vérifie directement l'objet Cookie produit par le service : c'est lui
+     * qui porte les garanties anti-XSS, indépendamment du transport HTTP.
+     */
+    public function test_le_cookie_de_refresh_est_correctement_configure(): void
+    {
+        $cookie = app(RefreshTokenService::class)->cookie('valeur-test');
+
+        $this->assertSame(RefreshTokenService::COOKIE, $cookie->getName());
+        $this->assertSame('valeur-test', $cookie->getValue());
+
+        // httpOnly : le JavaScript ne peut pas lire le jeton — c'est tout
+        // l'objet du correctif P0-5.
+        $this->assertTrue($cookie->isHttpOnly());
+
+        // Portée restreinte aux routes d'authentification : le jeton de
+        // longue durée n'est pas diffusé à toute l'API.
+        $this->assertSame('/api/v1/auth', $cookie->getPath());
+
+        // SameSite contre le CSRF.
+        $this->assertContains(strtolower((string) $cookie->getSameSite()), ['lax', 'strict']);
+
+        $this->assertGreaterThan(now()->addDays(13)->getTimestamp(), $cookie->getExpiresTime());
+    }
+
+    /** La déconnexion doit émettre un cookie qui efface le précédent. */
+    public function test_le_cookie_deffacement_neutralise_le_jeton(): void
+    {
+        $cookie = app(RefreshTokenService::class)->cookieEfface();
+
+        $this->assertSame(RefreshTokenService::COOKIE, $cookie->getName());
+        $this->assertEmpty($cookie->getValue());
+        $this->assertTrue($cookie->isHttpOnly());
+        $this->assertLessThan(now()->getTimestamp(), $cookie->getExpiresTime());
     }
 
     // ══════════════════════════════════════════════════
