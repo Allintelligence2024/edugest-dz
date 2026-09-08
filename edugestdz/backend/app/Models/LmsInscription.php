@@ -1,11 +1,13 @@
 <?php
 namespace App\Models;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class LmsInscription extends Model
 {
     use HasUuids;
+    use BelongsToTenant;
     protected $table = 'lms_inscriptions';
     protected $fillable = [
         'cours_id', 'eleve_id', 'tenant_id', 'statut',
