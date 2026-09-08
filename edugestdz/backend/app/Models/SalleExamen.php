@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class SalleExamen extends Model
 {
+    use BelongsToTenant;
     use HasUuids;
 
     protected $table = 'salles_examen';

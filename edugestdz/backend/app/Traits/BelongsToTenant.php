@@ -35,6 +35,10 @@ trait BelongsToTenant
                 return;
             }
 
+            // Colonne construite dynamiquement (préfixe de table + tenant_id).
+            // Larastan ne peut pas en déduire une « model property » à la
+            // compilation : le préfixe de table est ajouté à l'exécution.
+            /** @phpstan-ignore argument.type */
             $query->where($query->getModel()->getTable() . '.tenant_id', $tenantId);
         });
 
@@ -57,18 +61,31 @@ trait BelongsToTenant
     }
 
     // ── Désactiver le scope (Super-Admin uniquement) ──
+    /**
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<TModel> $query
+     * @return Builder<TModel>
+     */
     public function scopeWithoutTenantScope(Builder $query): Builder
     {
         return $query->withoutGlobalScope('tenant');
     }
 
     // ── Relation vers le tenant ──
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Tenant, $this>
+     */
     public function tenant()
     {
         return $this->belongsTo(\App\Models\Tenant::class);
     }
 
     // ── Scope manuel (si besoin) ──
+    /**
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     * @param Builder<TModel> $query
+     * @return Builder<TModel>
+     */
     public function scopeForTenant(Builder $query, string $tenantId): Builder
     {
         return $query->where('tenant_id', $tenantId);

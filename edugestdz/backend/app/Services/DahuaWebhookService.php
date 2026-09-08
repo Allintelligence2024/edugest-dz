@@ -25,7 +25,12 @@ class DahuaWebhookService
             return null;
         }
 
-        $camera = CameraConfig::where('serial_no', $normalise['serial_no'])
+        // Webhook public : la route ne passe par aucun middleware tenant ni
+        // authentification. La caméra est identifiée par son serial_no, pas par
+        // un tenant — il faut donc lever le scope tenant pour la retrouver ;
+        // son tenant_id est ensuite utilisé pour rattacher l'alerte.
+        $camera = CameraConfig::withoutGlobalScope('tenant')
+            ->where('serial_no', $normalise['serial_no'])
             ->where('actif', true)
             ->first();
 

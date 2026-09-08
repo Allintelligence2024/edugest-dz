@@ -75,15 +75,12 @@ class PorteeTenantModelesTest extends TestCase
      * le comportement à la création (injection du tenant, exception si aucun
      * n'est résolu) et peut casser des chemins d'appel hors requête HTTP —
      * commandes, jobs, seeders. Cela se traite par lots vérifiables.
+     *
+     * À ce jour (Sprint 4, Lot B) : les six modèles examens/surveillance ont
+     * été rapportés sous scope ; la liste est vide. Elle reviendra si un
+     * nouveau modèle scopé nécessaire est ajouté sans trait.
      */
-    private const DETTE = [
-        'AlerteSurveillance',
-        'CameraConfig',
-        'CandidatExamen',
-        'SalleExamen',
-        'SessionExamen',
-        'SurveiillantExamen',
-    ];
+    private const DETTE = [];
 
     public function test_tout_modele_portant_tenant_id_est_scope(): void
     {
