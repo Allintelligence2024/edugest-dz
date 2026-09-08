@@ -31,6 +31,11 @@ fi
 
 if [ ! -f vendor/bin/phpstan ]; then
   echo "→ Installation de Larastan (non déclaré dans composer.json, voir en-tête)…"
+  # Les advisories PKSA sur laravel/framework (verrouillé en 11.31) font
+  # échouer le résolveur Composer alors que composer install passe. On
+  # désactive ce blocage en config globale (jamais dans composer.json) : le
+  # job CI "qualité" porte un composer audit EXPRÈS, c'est lui qui alerte.
+  composer config --global policy.advisories.block false 2>/dev/null || true
   composer require --dev --no-progress --no-interaction --with-all-dependencies \
     "larastan/larastan:^3.0"
 fi
