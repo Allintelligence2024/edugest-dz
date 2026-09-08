@@ -7,14 +7,26 @@
 ## Où en est le travail
 
 Branche : **`arena/01a080e0-edugest-dz`**.
-Pull request : **[#82](https://github.com/Allintelligence2024/edugest-dz/pull/82)** — Sprint 4, ouverte.
+Pull request : **[#82](https://github.com/Allintelligence2024/edugest-dz/pull/82)** — Sprints 4 et 5, ouverte.
 
 **La PR #81 (sprints 1 à 3) a été mergée** dans `main` le 2026-09-08, commit
 `addd705`. La CI backend qui restait à relever au moment de la passation
 précédente est **verte** sur `main`. Il n'y a plus rien à vérifier de ce côté.
 
-Sprints 1, 2, 3 livrés. Sprint 4 largement avancé — voir
-`edugestdz/docs/SPRINT4_QUALITE.md`.
+Sprints 1, 2, 3 livrés. Sprint 4 terminé — voir
+`edugestdz/docs/SPRINT4_QUALITE.md`. **Sprint 5 entamé** : P1-6 (reporté du
+Sprint 4), 5.1 hygiène racine, 5.4 honeypot en configuration, 5.5 versioning
+de l'API — voir `edugestdz/docs/SPRINT5_ARCHITECTURE.md`.
+
+Deux enseignements de ce sprint méritent d'être lus avant de continuer :
+
+1. **La prémisse d'un point d'audit peut être fausse.** P1-6 demandait de
+   supprimer des « checks tenant redondants » ; ils n'étaient pas redondants,
+   ils étaient la seule isolation de quatre modèles non scopés. Les supprimer
+   aurait créé la fuite que le point prétendait prévenir.
+2. **Un test peut mesurer l'intention au lieu du réel.** Un test vert
+   affirmait « 22 routes leurres » en comptant un tableau PHP, pendant que le
+   routeur n'en servait que 16.
 
 ### État de la CI
 
@@ -45,8 +57,15 @@ le tableau de bord ; l'application des patches le fait disparaître.
    republié en annotation, précisément pour rester lisible.
 3. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
-4. Poursuivre : couverture frontend vers 40 %, tests mobile, P1-6 (checks
-   tenant redondants), CSRF.
+4. Poursuivre le Sprint 5 : **5.2** fusion de `edugestdz/` à la racine (sur
+   un commit dédié, aucune PR en vol), **5.3** découpe des contrôleurs de
+   plus de 350 lignes, **5.6** i18next et icônes lucide.
+5. Poursuivre : couverture frontend vers 40 %, tests mobile, CSRF.
+6. **Trancher la question de la licence** — décision du propriétaire, pas de
+   l'outillage : le README annonce « Propriétaire » et pointe vers un fichier
+   `LICENSE` absent, tandis que `composer.json` déclare `MIT`.
+7. Résorber la liste `DETTE` de `PorteeTenantModelesTest` : six modèles de
+   surveillance et d'examens portent `tenant_id` sans scope.
 
 ---
 
@@ -211,6 +230,11 @@ Dossier intermédiaire `edugestdz/` : `edugestdz/backend`, `edugestdz/frontend`,
 `edugestdz/mobile`. **Les seuls workflows actifs sont ceux de `.github/` à la
 racine** — ceux de `edugestdz/.github/` sont inertes (P1-8).
 
+Depuis le Sprint 5, la racine ne contient plus que 5 fichiers ; les 114 autres
+sont classés sous `docs/` (voir `docs/README.md`). La documentation **de
+référence** reste sous `edugestdz/docs/` ; `docs/` racine contient l'archive,
+les maquettes et les études. La fusion des deux est le point 5.2.
+
 ### Conventions établies
 
 - `role:a,b,c` et `permission:module.action` fonctionnent en **OU** ;
@@ -232,6 +256,9 @@ racine** — ceux de `edugestdz/.github/` sont inertes (P1-8).
 | `backend/app/Http/Middleware/QueryMonitor.php` | Compteur de requêtes, budgets issus de `config/performance.php`. |
 | `backend/tests/Support/BudgetRequetes.php` | Assertions de budget et de non-croissance (détection N+1). |
 | `backend/tests/Support/CiDiagnosticExtension.php` | Remontée des échecs en annotations découpées. |
+| `backend/app/Traits/BelongsToTenant.php` | Scope global `tenant`, fail-closed. Le hook `creating` **lève** sans tenant résolu — attention aux seeders et commandes. |
+| `backend/tests/Feature/Security/PorteeTenantModelesTest.php` | Inventaire de la portée tenant : `HORS_PERIMETRE` (décision) vs `DETTE` (à traiter). |
+| `backend/config/security.php` | Source unique des leurres honeypot, clés d'audit, QR, TTL du refresh. |
 | `frontend/src/api/tokenStore.js` | Jeton d'accès en mémoire seule. |
 | `frontend/src/api/client.js`, `axiosInstance.js` | Rafraîchissement **sérialisé**. |
 
@@ -240,6 +267,9 @@ racine** — ceux de `edugestdz/.github/` sont inertes (P1-8).
 - `PLAN_REMEDIATION_2026.md` — plan en 6 sprints, état d'avancement.
 - `edugestdz/docs/SPRINT3_SECURITE.md` — détail du Sprint 3.
 - `edugestdz/docs/SPRINT4_QUALITE.md` — détail du Sprint 4, écarts assumés.
+- `edugestdz/docs/SPRINT5_ARCHITECTURE.md` — détail du Sprint 5, écarts assumés.
+- `edugestdz/docs/VERSIONING_API.md` — politique de versioning de l'API.
+- `docs/README.md` — index des archives (missions, audits, maquettes, études).
 - `edugestdz/docs/RBAC_MATRIX.md` — matrice rôles × contrôleurs.
 - `edugestdz/DEPLOIEMENT_VERCEL.md` — architecture Vercel.
 
@@ -254,8 +284,14 @@ racine** — ceux de `edugestdz/.github/` sont inertes (P1-8).
   18.85 %), cible 40 % au Sprint 5 — environ 30 pages à couvrir.
 - **Mobile** : aucun test en CI, 38 vulnérabilités transitives Expo,
   `mobile/src/api/axios.js` non aligné sur la rotation des jetons.
-- **P1-6** : 16 checks tenant redondants repérés dans les contrôleurs. Ne les
-  retirer qu'avec un test attestant que chaque modèle visé utilise bien
-  `BelongsToTenant` — sinon la « redondance » est la seule protection.
+- **P1-6** : **traité, et le constat de l'audit était inversé.** Sur 63
+  filtres tenant recensés dans les contrôleurs, **un seul** est réellement
+  redondant (`AbsenceJournaliere`) — conservé en défense en profondeur. Les
+  autres sont porteurs : 21 modèles portent `tenant_id` sans aucun scope.
+  Huit ont été corrigés ; `PorteeTenantModelesTest` verrouille l'invariant et
+  garde la liste `DETTE` des six modèles restants (surveillance, examens).
+  **Ne jamais retirer un filtre tenant sans vérifier à l'exécution que le
+  modèle est scopé** : `User` *importait* le trait sans l'appliquer, ce qui
+  suffisait à tromper la relecture comme l'analyse statique.
 - **CSRF** (point 3.1) : non traité. Le cookie de refresh est `SameSite` et
   scopé `/api/v1/auth` ; un double-submit token reste souhaitable.
