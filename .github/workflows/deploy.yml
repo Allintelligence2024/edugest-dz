@@ -1,13 +1,26 @@
-name: CD — Deploy Production
+name: CD — Deploy Production (VPS · DÉSACTIVÉ)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DÉSACTIVÉ le 2026-09-07.
+#
+# Le déploiement cible est désormais Vercel (frontend + backend serverless PHP),
+# géré par l'intégration Git de Vercel — pas par GitHub Actions.
+# Railway a été abandonné.
+#
+# Ce workflow (déploiement SSH vers un VPS Docker) est conservé en
+# déclenchement MANUEL uniquement, comme filet de secours tant que la cible
+# serverless n'est pas validée en production. Il ne se déclenche plus sur push.
+#
+# Pour le réactiver automatiquement : restaurer le bloc `push:` ci-dessous.
+# ─────────────────────────────────────────────────────────────────────────────
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'edugestdz/backend/**'
-      - 'edugestdz/frontend/**'
-      - 'edugestdz/docker-compose.prod.yml'
-      - 'edugestdz/nginx/**'
+  workflow_dispatch:
+    inputs:
+      confirmer:
+        description: "Taper 'deployer' pour confirmer le déploiement VPS"
+        required: true
+        default: ''
 
 jobs:
   deploy:
@@ -15,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     # ⚠️ Ne déploie QUE si le CI backend passe
     needs: []
+
+    if: github.event.inputs.confirmer == 'deployer'
 
     steps:
       - name: Checkout

@@ -31,21 +31,35 @@ fi
 
 if [ ! -f vendor/bin/phpstan ]; then
   echo "→ Installation de Larastan (non déclaré dans composer.json, voir en-tête)…"
+  # Les advisories PKSA sur laravel/framework (verrouillé en 11.31) font
+  # échouer le résolveur Composer alors que composer install passe. On
+  # désactive ce blocage en config globale (jamais dans composer.json) : le
+  # job CI "qualité" porte un composer audit EXPRÈS, c'est lui qui alerte.
+  composer config --global policy.advisories.block false 2>/dev/null || true
   composer require --dev --no-progress --no-interaction --with-all-dependencies \
     "larastan/larastan:^3.0"
 fi
 
 # Larastan s'ajoute par un `includes:` ; on le compose ici pour que
 # phpstan.neon reste valide même sans la dépendance installée.
-CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
+# Le fichier temporaire est créé DANS le backend (pas /tmp) : phpstan.neon
+# contient des `paths:` relatifs résolus depuis le répertoire de la config.
+# Le placer en /tmp résoudrait app/config/database/routes en /tmp/… → introuvables.
+CONFIG="$(mktemp "${BACKEND}/phpstan-XXXXXX.neon")"
 trap 'rm -f "${CONFIG}"' EXIT
 
-EXTENSION="vendor/larastan/larastan/extension.neon"
+EXTENSION="${BACKEND}/vendor/larastan/larastan/extension.neon"
+BASELINE="${BACKEND}/phpstan-baseline.neon"
 
 {
-  if [ -f "${EXTENSION}" ]; then
+  if [ -f "${EXTENSION}" ] || [ -f "${BASELINE}" ]; then
     echo "includes:"
-    echo "    - ${EXTENSION}"
+    if [ -f "${EXTENSION}" ]; then
+      echo "    - ${EXTENSION}"
+    fi
+    if [ -f "${BASELINE}" ]; then
+      echo "    - ${BASELINE}"
+    fi
     echo
   fi
   cat phpstan.neon
