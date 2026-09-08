@@ -301,3 +301,37 @@ jobs:
         working-directory: edugestdz/backend
         continue-on-error: true
         run: ../../scripts/analyse-statique.sh --no-progress
+
+      - name: Génération de la baseline PHPStan (une fois, hors baseline)
+        if: ${{ hashFiles('edugestdz/backend/phpstan-baseline.neon') == '' }}
+        working-directory: edugestdz/backend
+        run: |
+          if [ -f phpstan-baseline.neon ]; then
+            echo "La baseline existe déjà — rien à faire."
+            exit 0
+          fi
+          if [ ! -f vendor/bin/phpstan ]; then
+            echo "PHPStan absent — installe d'abord (step analyse non bloquant)."
+            exit 0
+          fi
+          CONFIG="$(mktemp -t phpstan-XXXXXX.neon)"
+          trap 'rm -f "${CONFIG}"' EXIT
+          {
+            printf 'includes:\n    - vendor/larastan/larastan/extension.neon\n\n'
+            cat phpstan.neon
+          } > "${CONFIG}"
+          php -d memory_limit=1G vendor/bin/phpstan analyse \
+            --configuration="${CONFIG}" \
+            --no-progress \
+            --generate-baseline || true
+          if [ ! -f phpstan-baseline.neon ]; then
+            echo "Aucune baseline générée (peu probable à PHPStan niveau 6)."
+          fi
+
+      - name: Upload de la baseline PHPStan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpstan-baseline
+          path: edugestdz/backend/phpstan-baseline.neon
+          if-no-files-found: warn
