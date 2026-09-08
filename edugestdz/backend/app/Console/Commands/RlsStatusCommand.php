@@ -22,22 +22,47 @@ class RlsStatusCommand extends Command
 
     protected $description = 'Affiche l\'état du Row Level Security PostgreSQL table par table';
 
-    /** Tables devant impérativement être protégées par RLS. */
+    /**
+     * Tables devant impérativement être protégées par RLS.
+     *
+     * Inventaire exhaustif des tables portant réellement une colonne
+     * `tenant_id` dans les migrations (101 tables). Généré par analyse des
+     * migrations — toute nouvelle table multi-tenant doit y être ajoutée.
+     */
     public const TABLES_ATTENDUES = [
-        'eleves', 'users', 'groupes', 'cours', 'seances',
-        'presences', 'evaluations', 'notes', 'bulletins',
-        'factures', 'paiements', 'absences_journalieres', 'billets',
-        'enseignants', 'contrats', 'personnel_non_enseignant', 'paies',
-        'circuits_transport', 'transport_eleves', 'pointage_bus',
-        'menus_cantine', 'inscriptions_cantine', 'repas_journaliers',
-        'articles_stock', 'mouvements_stock', 'prets_materiel',
-        'bons_commande', 'depenses', 'budget_previsionnel',
-        'locaux_batiment', 'interventions_entretien', 'entretiens_preventifs',
-        'cameras_config', 'alertes_surveillance',
-        'lms_cours', 'lms_inscriptions',
-        'tenant_modules', 'whatsapp_messages',
-        'diagnostics_eleves', 'plans_rattrapage', 'convocations_parents',
-        'signalements_comportement', 'notifications_parent',
+        'absences_enseignants', 'absences_journalieres', 'alertes_surveillance',
+        'arrets_bus', 'articles_stock', 'audit_log_exports', 'audit_logs',
+        'avis', 'avis_marketplace', 'badges', 'billets', 'bons_commande',
+        'breach_declarations', 'budget_previsionnel', 'bulletins',
+        'cameras_config', 'campagnes', 'candidats_examen',
+        'circuits_transport', 'conges_personnel', 'consentements_rgpd',
+        'contrats', 'conversations', 'convocations_parents', 'cours',
+        'demandes_rgpd', 'depenses', 'device_tokens', 'devoirs',
+        'diagnostics_eleves', 'eleves', 'emprunts_bibliotheque',
+        'enseignants', 'entretiens_preventifs', 'evaluations', 'factures',
+        'favoris_marketplace', 'feedbacks_pedagogiques', 'field_permissions',
+        'google_classroom_connexions', 'google_course_liaisons',
+        'google_sync_logs', 'groupes', 'historique_diagnostics',
+        'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
+        'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
+        'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
+        'locaux_batiment', 'marketplace_commissions', 'matieres',
+        'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',
+        'notes', 'notifications', 'notifications_inapp',
+        'notifications_parent', 'offres_cours', 'offres_publiques',
+        'paiements', 'paies', 'paies_personnel', 'parametres', 'parents',
+        'personnel_non_enseignant', 'plans_fractionnement',
+        'plans_rattrapage', 'pointage_bus', 'pointage_enseignants',
+        'pointage_personnel', 'predictions_echec', 'presences',
+        'prestataires_entretien', 'prets_materiel',
+        'profils_apprentissage', 'profils_marketplace', 'refresh_tokens',
+        'repas_journaliers', 'reservations', 'reservations_marketplace',
+        'roles', 'salles', 'salles_examen', 'seances', 'security_events',
+        'sessions_examen', 'signalements_comportement',
+        'signalements_graves_eleves', 'stock_cuisine',
+        'super_admin_actions', 'surveillants_examen', 'tenant_modules',
+        'tranches_fractionnement', 'transport_eleves', 'users',
+        'whatsapp_messages',
     ];
 
     public function handle(): int
@@ -76,6 +101,13 @@ class RlsStatusCommand extends Command
         foreach (self::TABLES_ATTENDUES as $table) {
             if (!Schema::hasTable($table)) {
                 $absentes[] = $table;
+                continue;
+            }
+
+            // Une table inscrite à l'inventaire SANS colonne tenant_id n'a
+            // rien à isoler : elle est ignorée (aligné sur le test de
+            // couverture qui filtre hasColumn).
+            if (!Schema::hasColumn($table, 'tenant_id')) {
                 continue;
             }
 
