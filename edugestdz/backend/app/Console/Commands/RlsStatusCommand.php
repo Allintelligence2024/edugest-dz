@@ -44,7 +44,7 @@ class RlsStatusCommand extends Command
         'google_classroom_connexions', 'google_course_liaisons',
         'google_sync_logs', 'groupes', 'historique_diagnostics',
         'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
-        'justificatifs_absence', 'lignes_bon_commande',
+        'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
         'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
         'locaux_batiment', 'marketplace_commissions', 'matieres',
         'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',

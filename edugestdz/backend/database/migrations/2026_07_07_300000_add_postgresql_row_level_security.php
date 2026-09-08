@@ -38,7 +38,7 @@ return new class extends Migration
             'google_classroom_connexions', 'google_course_liaisons',
             'google_sync_logs', 'groupes', 'historique_diagnostics',
             'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
-            'justificatifs_absence', 'lignes_bon_commande',
+            'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
             'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
             'locaux_batiment', 'marketplace_commissions', 'matieres',
             'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',
@@ -77,12 +77,17 @@ return new class extends Migration
                 DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
 
                 DB::statement("DROP POLICY IF EXISTS tenant_isolation_policy ON {$table}");
+
+                // La colonne tenant_id peut être uuid OU varchar(36) selon les
+                // tables (field_permissions est une chaîne). L'opérateur
+                // varchar = uuid n'existe pas et ferait échouer CREATE POLICY :
+                // on compare donc les deux valeurs en leur type texte.
                 DB::statement("
                     CREATE POLICY tenant_isolation_policy ON {$table}
                     USING (
                         current_setting('app.current_tenant_id', true) IS NULL
                         OR current_setting('app.current_tenant_id', true) = ''
-                        OR tenant_id = current_setting('app.current_tenant_id', true)::uuid
+                        OR tenant_id::text = current_setting('app.current_tenant_id', true)
                     )
                 ");
 
@@ -120,7 +125,7 @@ return new class extends Migration
             'google_classroom_connexions', 'google_course_liaisons',
             'google_sync_logs', 'groupes', 'historique_diagnostics',
             'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
-            'justificatifs_absence', 'lignes_bon_commande',
+            'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
             'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
             'locaux_batiment', 'marketplace_commissions', 'matieres',
             'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',
