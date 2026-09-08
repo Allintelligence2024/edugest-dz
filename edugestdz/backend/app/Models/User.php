@@ -6,8 +6,28 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
-use App\Traits\BelongsToTenant;
 
+/**
+ * Compte utilisateur.
+ *
+ * ── Pourquoi ce modèle n'utilise PAS BelongsToTenant ──────────────────────
+ *
+ * L'authentification cherche un utilisateur par e-mail AVANT qu'un tenant
+ * soit résolu : à la connexion, c'est justement le compte trouvé qui
+ * détermine le tenant. Un scope global fail-closed viderait cette requête
+ * et rendrait toute connexion impossible. La console super-admin, qui
+ * agit par définition en travers des établissements, a la même contrainte.
+ *
+ * Conséquence à ne pas perdre de vue : l'isolation des utilisateurs repose
+ * entièrement sur les `where('tenant_id', …)` explicites des contrôleurs,
+ * services et commandes. Ce ne sont pas des redondances défensives — ce
+ * sont les seuls filtres. Les supprimer exposerait les comptes d'un
+ * établissement à un autre.
+ *
+ * Le trait était auparavant importé ici sans jamais être appliqué dans le
+ * corps de la classe. L'import a été retiré : il laissait croire, à la
+ * lecture comme à l'analyse statique, que le modèle était scopé.
+ */
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;

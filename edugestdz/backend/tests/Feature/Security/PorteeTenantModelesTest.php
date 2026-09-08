@@ -58,6 +58,13 @@ class PorteeTenantModelesTest extends TestCase
         // Table de jonction tenant ↔ module, manipulée par la console
         // super-admin, donc précisément hors d'un tenant donné.
         'TenantModule'           => 'administration inter-tenant (super-admin)',
+
+        // L'authentification cherche un compte par e-mail avant qu'un tenant
+        // soit résolu — c'est le compte trouvé qui détermine le tenant. Un
+        // scope fail-closed rendrait toute connexion impossible. L'isolation
+        // des comptes repose donc sur les filtres explicites des contrôleurs
+        // et services : ce sont les seuls, ils ne doivent pas être retirés.
+        'User'                   => 'recherché par e-mail avant résolution du tenant (connexion)',
     ];
 
     /**
