@@ -7,41 +7,113 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Compte les requêtes SQL d'un cycle HTTP et signale les dépassements.
+ *
+ * Deux changements par rapport à la version d'origine (Sprint 4) :
+ *
+ *  1. Les seuils viennent de `config/performance.php` au lieu d'être codés
+ *     en dur. La suite de tests de performance lit la même configuration :
+ *     le budget d'un endpoint est déclaré à un seul endroit, et un
+ *     dépassement fait échouer la CI au lieu de produire un log ignoré.
+ *
+ *  2. L'écouteur `DB::listen` n'est enregistré qu'UNE fois par processus.
+ *     L'ancienne version en ajoutait un par requête : sans effet visible en
+ *     production (un process = une requête), mais dans une suite de tests
+ *     qui enchaîne des centaines d'appels HTTP dans le même process, les
+ *     closures s'accumulaient et chaque requête SQL était notifiée à toutes
+ *     — coût quadratique et mémoire qui grimpe.
+ */
 class QueryMonitor
 {
+    /** Écouteur global enregistré ? (une seule fois par processus) */
+    private static bool $ecouteEnregistree = false;
+
+    /** Requêtes du cycle HTTP courant. */
+    private static array $requetes = [];
+
     public function handle(Request $request, Closure $next)
     {
-        if (app()->environment('production')) {
+        if (app()->environment('production') || !config('performance.monitor.active', true)) {
             return $next($request);
         }
 
-        $queries   = [];
-        $startTime = microtime(true);
+        $this->demarrerEcoute();
 
-        DB::listen(function ($query) use (&$queries) {
-            $queries[] = [
+        self::$requetes = [];
+        $debut = microtime(true);
+
+        $response = $next($request);
+
+        $requetes    = self::$requetes;
+        $dureeTotale = round((microtime(true) - $debut) * 1000, 1);
+        $nbRequetes  = count($requetes);
+
+        $seuilLente  = (int) config('performance.monitor.seuil_requete_lente_ms', 100);
+        $nbLentes    = count(array_filter($requetes, fn ($q) => $q['time'] > $seuilLente));
+
+        $budget   = $this->budgetPour($request);
+        $seuilMs  = (int) config('performance.monitor.seuil_ms', 500);
+
+        if ($nbRequetes > $budget || $dureeTotale > $seuilMs) {
+            Log::warning('[QueryMonitor] Budget de performance dépassé', [
+                'route'           => $request->path(),
+                'nb_requetes'     => $nbRequetes,
+                'budget_requetes' => $budget,
+                'total_ms'        => $dureeTotale,
+                'seuil_ms'        => $seuilMs,
+                'requetes_lentes' => $nbLentes,
+            ]);
+        }
+
+        $response->headers->set('X-Query-Count', (string) $nbRequetes);
+        $response->headers->set('X-Query-Budget', (string) $budget);
+        $response->headers->set('X-Response-Time', $dureeTotale . 'ms');
+
+        return $response;
+    }
+
+    /**
+     * Budget applicable à la route courante : valeur dédiée si déclarée,
+     * budget global sinon.
+     */
+    private function budgetPour(Request $request): int
+    {
+        $budgets = (array) config('performance.budgets', []);
+
+        return (int) ($budgets[$request->path()] ?? config('performance.monitor.budget_requetes', 20));
+    }
+
+    /**
+     * Nombre de requêtes SQL du dernier cycle HTTP observé.
+     *
+     * Utilisé par les tests de performance pour recouper la valeur de
+     * l'en-tête `X-Query-Count`.
+     */
+    public static function nbRequetesDernierCycle(): int
+    {
+        return count(self::$requetes);
+    }
+
+    /** @return list<array{sql: string, time: float}> */
+    public static function requetesDernierCycle(): array
+    {
+        return self::$requetes;
+    }
+
+    private function demarrerEcoute(): void
+    {
+        if (self::$ecouteEnregistree) {
+            return;
+        }
+
+        self::$ecouteEnregistree = true;
+
+        DB::listen(function ($query) {
+            self::$requetes[] = [
                 'sql'  => $query->sql,
                 'time' => $query->time,
             ];
         });
-
-        $response  = $next($request);
-        $totalTime = round((microtime(true) - $startTime) * 1000, 1);
-        $nbQueries = count($queries);
-        $slowQueries = collect($queries)->filter(fn($q) => $q['time'] > 100);
-
-        if ($nbQueries > 20 || $totalTime > 500) {
-            Log::warning('[QueryMonitor] Performance alert', [
-                'route'       => $request->path(),
-                'nb_queries'  => $nbQueries,
-                'total_ms'    => $totalTime,
-                'slow_queries'=> $slowQueries->count(),
-            ]);
-        }
-
-        $response->headers->set('X-Query-Count', $nbQueries);
-        $response->headers->set('X-Response-Time', $totalTime . 'ms');
-
-        return $response;
     }
 }
