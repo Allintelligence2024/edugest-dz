@@ -157,7 +157,36 @@
 
 ---
 
-### **Sprint 4 — Qualité & tests (P1-5, P1-6, P1-8)**
+### **Sprint 4 — Qualité & tests (P1-5, P1-6, P1-8)** 🔵 **EN GRANDE PARTIE FAIT**
+
+> **Livré.** Détail d'exécution, écarts assumés et points restants : voir
+> `edugestdz/docs/SPRINT4_QUALITE.md`.
+>
+> - ✅ **Tests N+1** — `QueryMonitor` branché sur `config/performance.php`,
+>   détection par mesure différentielle (1 vs N enregistrements) plutôt que
+>   par seuil arbitraire. Bloquant en CI.
+> - ✅ **Unification CI** — jobs `frontend` et `qualite` ajoutés. Le frontend
+>   n'était **pas testé du tout** en CI : `edugestdz/.github/workflows/` n'est
+>   pas lu par GitHub. Livré en patch (`docs/ci-qualite.patch`), les workflows
+>   restant non poussables depuis le bac à sable.
+> - ✅ **Job sécurité** — `composer audit`, `npm audit`, Gitleaks, PHPStan 6.
+>   `npm audit` a fait tomber 7 failles hautes sur `react-router-dom`.
+> - ✅ **Tests frontend** — 79 → 122 tests, 11 pages critiques. Ils ont révélé
+>   deux défauts réels : `SearchBar` (recherche morte sur 6 pages) et
+>   `FilterBar` (barre de filtres vide sur 4 pages).
+> - ⚠️ **Coverage backend 45 %** — palier posé dans le patch CI, **non
+>   mesurable** depuis l'environnement de travail. À valider au premier
+>   passage ; le pourcentage réel est republié en annotation.
+> - ⚠️ **Coverage frontend** — cliquet posé à hauteur du réel (18 % de lignes,
+>   mesuré 18.85 %) et non à 40 %. Écart assumé : les 70 % affichés jusqu'ici
+>   n'étaient opposés à personne. Cible 40 % reportée au Sprint 5.
+> - ❌ **P1-6, checks tenant redondants** — **le constat de l'audit est
+>   inversé.** Vérification faite : sur les sept modèles visés par ces
+>   filtres, quatre n'ont aucun scope tenant. Le `where('tenant_id', …)`
+>   n'était pas une redondance mais la seule barrière ; le supprimer aurait
+>   ouvert une fuite inter-établissements. Traité au Sprint 5 en inversant
+>   l'ordre : rendre l'invariant vrai, le prouver, puis parler de retrait.
+> - ❌ **Tests mobile** — non traités.
 
 - Supprimer les checks tenant redondants (P1-6) **après** que les tests d'isolation soient verts — ils deviennent le filet de sécurité.
 - **Unifier la CI** : un seul `.github/workflows/` à la racine, jobs `backend`, `frontend`, `mobile`, `security`.
@@ -169,9 +198,33 @@
 
 ---
 
-### **Sprint 5 — Architecture & maintenabilité (P2-3, P2-4, P2-9, P2-10)**
+### **Sprint 5 — Architecture & maintenabilité (P2-3, P2-4, P2-9, P2-10)** 🔵 **EN COURS**
 
-**5.1 Hygiène racine**
+> **Bilan au 8 septembre 2026 — voir `edugestdz/docs/SPRINT5_ARCHITECTURE.md`**
+>
+> - ✅ **P1-6 (report du Sprint 4)** — invariant tenant rendu vrai puis
+>   verrouillé. 8 modèles reçoivent `BelongsToTenant` ;
+>   `PorteeTenantModelesTest` échoue désormais si un modèle portant
+>   `tenant_id` n'est pas scopé, sauf entrée justifiée. Le test a
+>   immédiatement trouvé `User`, qui *importait* le trait sans jamais
+>   l'appliquer — assez pour tromper la lecture et l'analyse statique.
+>   Un seul filtre s'est révélé réellement redondant (`AbsenceJournaliere`) :
+>   il est **conservé** en défense en profondeur. Les 62 autres sont
+>   porteurs.
+> - ✅ **5.1 Hygiène racine** — 114 fichiers déplacés, racine de 119 → 5.
+>   Index dans `docs/README.md`.
+> - ✅ **5.4 Honeypot en configuration** — et découverte au passage : les
+>   chemins étaient dupliqués en dur à deux endroits, avec **6 entrées
+>   d'écart**. `.env`, `admin`, `debug`, `backup`, `config`, `dump` étaient
+>   déclarés comme leurres sans qu'aucune route ne les serve, pendant qu'un
+>   test affirmait « 22 leurres » en comptant le tableau du service.
+> - ✅ **5.5 Versioning API** — `edugestdz/docs/VERSIONING_API.md`.
+> - ⏳ **5.2, 5.3, 5.6** — non entamés. La fusion `edugestdz/` (5.2) attend
+>   un commit dédié sans PR en vol.
+> - ⏳ **Coverage backend 45 → 60 %** — le palier de 45 % n'a pas encore été
+>   mesuré une seule fois.
+
+**5.1 Hygiène racine** ✅
 ```
 docs/
   archive/missions/     ← les 94 MISSION_*.md, PHASE*.md, FLUX_*.md
@@ -181,13 +234,21 @@ docs/
 ```
 Racine finale : `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`, `.gitignore`, `edugestdz/`, `scripts/`.
 
+*Fait.* Racine ramenée de 119 fichiers à 5 : `README.md`, `CHANGELOG.md`,
+`CONTRIBUTING.md`, plus les deux documents de travail en cours
+(`PLAN_REMEDIATION_2026.md`, `REPRISE_SESSION.md`), qui partiront en archive
+à la fin de la remédiation. `LICENSE` et `SECURITY.md` **n'existent pas** :
+le README affiche un badge « Licence Propriétaire » pointant vers un fichier
+absent, alors que `composer.json` déclare `"license": "MIT"`. Contradiction
+juridique, à trancher par le propriétaire du projet.
+
 **5.2 Fusionner `edugestdz/` dans la racine** (ou l'inverse) — le double niveau + double `.github` est une source constante de confusion.
 
 **5.3 Découper les contrôleurs > 350 lignes** en Actions/sous-contrôleurs REST (Stock, Entretien, Transport, Budget, Eleve, PaiementEnLigne, Cantine).
 
-**5.4** Honeypot : routes déplacées en config (`config/security.php`), extensibles sans redéploiement de code.
+**5.4** Honeypot : routes déplacées en config (`config/security.php`), extensibles sans redéploiement de code. ✅
 
-**5.5** Politique de versioning API : `docs/API_VERSIONING.md` (deprecation headers, fenêtre de support, `/v2` en parallèle).
+**5.5** Politique de versioning API ✅ — livrée sous `edugestdz/docs/VERSIONING_API.md` : critères de rupture, en-têtes `Deprecation` (RFC 9745) et `Sunset` (RFC 8594), `410 Gone` après retrait, fenêtre de six mois **subordonnée** à une mesure d'adoption du parc mobile qui reste à instrumenter (Sprint 6).
 
 **5.6** i18n : migrer vers `i18next` (ICU, pluriels, dates/nombres, RTL robuste). Remplacer les emoji JSX par des icônes `lucide-react` avec `aria-label`.
 

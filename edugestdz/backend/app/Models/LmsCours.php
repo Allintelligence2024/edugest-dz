@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -7,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class LmsCours extends Model
 {
     use HasUuids, SoftDeletes;
+    use BelongsToTenant;
     protected $table = 'lms_cours';
     protected $fillable = [
         'tenant_id', 'enseignant_id', 'titre', 'description', 'matiere',

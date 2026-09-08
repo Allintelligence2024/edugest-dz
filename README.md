@@ -12,8 +12,8 @@
 [![Laravel](https://img.shields.io/badge/Laravel-11-red)](https://laravel.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)](https://postgresql.org)
 [![License](https://img.shields.io/badge/Licence-Propriétaire-orange)](LICENSE)
-[![Sécurité](https://img.shields.io/badge/Sécurité-6%20niveaux-darkred)](docs/SECURITE.md)
-[![ANPDP](https://img.shields.io/badge/Loi%2018--07-Conforme-green)](ANPDP_DECLARATION.md)
+[![Sécurité](https://img.shields.io/badge/Sécurité-6%20niveaux-darkred)](edugestdz/docs/SECURITE.md)
+[![ANPDP](https://img.shields.io/badge/Loi%2018--07-Conforme-green)](edugestdz/ANPDP_DECLARATION.md)
 
 </div>
 
@@ -99,7 +99,7 @@ EduGest DZ implémente une sécurité de **niveau bancaire** :
 | 5 | Honeypots + Canary Tokens + SSRF Protection + Vault Secrets |
 | 6 | Audit Chain Merkle SHA3 + SIEM + Post-Quantum + Kill Switch MPC |
 
-→ [Documentation sécurité complète](docs/SECURITE.md)
+→ [Documentation sécurité complète](edugestdz/docs/SECURITE.md)
 
 ---
 
@@ -136,7 +136,7 @@ docker compose exec app php artisan migrate --seed
 # → pgAdmin : http://localhost:5050 (admin@edugestdz.local / PgAdmin@2026)
 ```
 
-→ [Guide d'installation complet](docs/DEPLOIEMENT.md)
+→ [Guide d'installation complet](edugestdz/docs/DEPLOIEMENT.md)
 
 ---
 
@@ -165,7 +165,9 @@ edugest-dz/
 │   │   └── database/migrations/           # 60+ migrations
 │   ├── frontend/         # React 18 + Vite
 │   ├── mobile/           # React Native + Expo 52
-│   └── docs/             # Documentation complète
+│   └── docs/             # Documentation de référence
+├── docs/                 # Archives, maquettes, études (voir docs/README.md)
+├── scripts/              # Outillage : secrets, audit sécurité, analyse statique
 ├── docker-compose.yml    # Développement (9 services)
 ├── docker-compose.prod.yml
 └── install.sh            # Installation self-hosted 1 commande
@@ -177,18 +179,19 @@ edugest-dz/
 
 | Document | Description |
 |----------|-------------|
-| [Guide Déploiement](docs/DEPLOIEMENT.md) | 3 niveaux : Cloud DZ, Hybride, Self-hosted |
-| [Guide Directeur](docs/GUIDE_UTILISATEUR_DIRECTEUR.md) | Manuel complet directeur d'école |
-| [Guide Enseignant](docs/GUIDE_UTILISATEUR_ENSEIGNANT.md) | Manuel enseignant |
-| [Guide Parent](docs/GUIDE_UTILISATEUR_PARENT.md) | Manuel application mobile parent |
-| [Architecture](docs/ARCHITECTURE.md) | Architecture technique détaillée |
-| [Sécurité](docs/SECURITE.md) | Documentation sécurité 6 niveaux |
-| [Base de données](docs/BASE_DE_DONNEES.md) | Schéma et structure BDD |
-| [API Guide](docs/API_GUIDE.md) | Guide API pour développeurs |
-| [Conformité ANPDP](ANPDP_DECLARATION.md) | Loi 18-07 — Guide déclaration |
-| [Réponse incidents](INCIDENT_RESPONSE_PLAN.md) | Procédure en cas d'incident |
+| [Guide Déploiement](edugestdz/docs/DEPLOIEMENT.md) | 3 niveaux : Cloud DZ, Hybride, Self-hosted |
+| [Guide Directeur](edugestdz/docs/GUIDE_UTILISATEUR_DIRECTEUR.md) | Manuel complet directeur d'école |
+| [Guide Enseignant](edugestdz/docs/GUIDE_UTILISATEUR_ENSEIGNANT.md) | Manuel enseignant |
+| [Guide Parent](edugestdz/docs/GUIDE_UTILISATEUR_PARENT.md) | Manuel application mobile parent |
+| [Architecture](edugestdz/docs/ARCHITECTURE.md) | Architecture technique détaillée |
+| [Sécurité](edugestdz/docs/SECURITE.md) | Documentation sécurité 6 niveaux |
+| [Base de données](edugestdz/docs/BASE_DE_DONNEES.md) | Schéma et structure BDD |
+| [API Guide](edugestdz/docs/API_GUIDE.md) | Guide API pour développeurs |
+| [Conformité ANPDP](edugestdz/ANPDP_DECLARATION.md) | Loi 18-07 — Guide déclaration |
+| [Réponse incidents](docs/guides/INCIDENT_RESPONSE_PLAN.md) | Procédure en cas d'incident |
 | [Contribuer](CONTRIBUTING.md) | Guide de contribution |
 | [Changelog](CHANGELOG.md) | Historique des versions |
+| [Index des archives](docs/README.md) | Missions, audits, maquettes et études — historique projet |
 
 ---
 

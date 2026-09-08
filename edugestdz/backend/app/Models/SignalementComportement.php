@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class SignalementComportement extends Model
 {
     use HasUuids;
+    use BelongsToTenant;
 
     protected $table = 'signalements_comportement';
 

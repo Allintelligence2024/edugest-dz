@@ -89,8 +89,34 @@ final class CiDiagnosticExtension implements Extension
 
         @file_put_contents($resume, $bloc, FILE_APPEND);
 
-        // Annotation : visible via l'API check-runs même sans accès aux logs.
-        $court = str_replace(["\r", "\n"], ' ', mb_substr(trim($message), 0, 300));
-        fwrite(STDOUT, sprintf("::error title=%s::%s — %s\n", $type, $test, $court));
+        // ── Annotations ───────────────────────────────────────────────────
+        // Seul canal de diagnostic réellement lisible depuis l'environnement
+        // de travail (les logs Actions renvoient EOF au téléchargement).
+        //
+        // GitHub tronque le texte d'une annotation aux alentours de 255
+        // caractères : un message un peu détaillé — compteurs, valeurs
+        // attendues, requêtes fautives — arrivait coupé en plein mot. On le
+        // découpe donc en plusieurs annotations numérotées, ce qui permet de
+        // transporter un diagnostic complet sans dépendre des logs.
+        $court     = trim(preg_replace('/\s+/', ' ', $message));
+        $tailleMax = 220;
+        $morceaux  = mb_str_split($court, $tailleMax);
+
+        // Plafond : GitHub limite le nombre d'annotations remontées par
+        // étape ; inutile de le saturer avec un seul test.
+        $morceaux = array_slice($morceaux, 0, 4);
+        $total    = count($morceaux);
+
+        foreach ($morceaux as $i => $morceau) {
+            $numero = $total > 1 ? sprintf(' %d/%d', $i + 1, $total) : '';
+
+            fwrite(STDOUT, sprintf(
+                "::error title=%s%s::%s — %s\n",
+                $type,
+                $numero,
+                $test,
+                $morceau,
+            ));
+        }
     }
 }

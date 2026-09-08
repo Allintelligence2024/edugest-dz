@@ -1,0 +1,63 @@
+# Configuration Gitleaks — EduGest DZ
+#
+# Détection de secrets commités. Complète (sans remplacer) la garde
+# « aucun secret en dur » du workflow CI, qui ne cherche qu'un motif précis
+# de mot de passe historique.
+#
+# Usage local :
+#   ./scripts/audit-securite.sh
+# ou :
+#   gitleaks detect --config .gitleaks.toml --no-banner --redact
+
+title = "EduGest DZ — règles de détection de secrets"
+
+[extend]
+useDefault = true
+
+# ── Règles maison ─────────────────────────────────────────────────────────
+
+[[rules]]
+id          = "edugest-mot-de-passe-historique"
+description = "Mot de passe historique du dépôt (EduGest@AAAA)"
+regex       = '''EduGest@[0-9]{4}[!]?'''
+tags        = ["password", "edugest"]
+
+[[rules]]
+id          = "edugest-cle-hmac"
+description = "Clé HMAC applicative renseignée en dur"
+regex       = '''(QR_SIGNING_KEY|AUDIT_CHAIN_KEY|CRON_SECRET|JWT_SECRET)\s*[:=]\s*["']?[A-Za-z0-9+/=_-]{16,}'''
+tags        = ["key", "edugest"]
+
+[[rules]]
+id          = "edugest-dsn-postgres"
+description = "URL PostgreSQL contenant un mot de passe"
+regex       = '''postgres(ql)?:\/\/[^:\s]+:[^@\s]+@'''
+tags        = ["database", "edugest"]
+
+# ── Exclusions ────────────────────────────────────────────────────────────
+#
+# Les valeurs de test sont volontairement présentes dans le dépôt : elles
+# ne protègent rien et leur retrait rendrait la suite non reproductible.
+# Elles restent listées ici explicitement plutôt qu'ignorées globalement,
+# pour qu'un ajout ultérieur soit un choix conscient.
+
+[allowlist]
+description = "Chemins et valeurs sans portée de sécurité"
+
+paths = [
+    '''(^|/)vendor/''',
+    '''(^|/)node_modules/''',
+    '''(^|/)storage/''',
+    '''(^|/)dist/''',
+    '''(^|/)coverage/''',
+    '''\.lock$''',
+    '''(^|/)edugestdz/docs/.*\.patch$''',
+    '''(^|/)\.gitleaks\.toml$''',
+]
+
+regexes = [
+    # Clé d'application factice utilisée par phpunit.xml.
+    '''base64:U/ZYtuLMkSoBx3tJTmCXQJ4a8Ku1sFHneFDXEUdWC\+c=''',
+    # Mot de passe éphémère généré pour les services CI.
+    '''ci-ephemeral-postgres-pwd''',
+]

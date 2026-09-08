@@ -65,4 +65,70 @@ return [
         'ttl_days' => env('QR_TTL_DAYS', 400),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Honeypot — routes leurres
+    |--------------------------------------------------------------------------
+    |
+    | Chemins qui n'existent pas dans l'application mais que les scanners
+    | automatisés interrogent systématiquement. Les atteindre ne prouve pas
+    | une intrusion, mais signale une reconnaissance en cours : la requête
+    | est journalisée en warning puis répond 404, à l'identique d'un chemin
+    | inconnu, pour ne pas révéler que le leurre en est un.
+    |
+    | Cette liste est la SOURCE UNIQUE. Elle alimente à la fois
+    | l'enregistrement des routes (routes/api/honeypot.php) et
+    | HoneypotService::getRoutesLeurres().
+    |
+    | Elle existe parce que l'information était auparavant dupliquée à deux
+    | endroits, et que les deux copies avaient divergé : le service déclarait
+    | 22 leurres, le fichier de routes n'en enregistrait que 16. Les six
+    | absents — .env, admin, debug, backup, config, dump — sont précisément
+    | les cibles les plus courantes des scanners. Un test comptait bien
+    | « 22 » : il interrogeait l'inventaire, pas les routes réellement
+    | servies. Les six manquants sont désormais enregistrés, et
+    | HoneypotRoutesTest vérifie que chaque entrée résout vers un leurre.
+    |
+    | Format : nom court => chemin, relatif à /api. Le nom devient le nom de
+    | route, préfixé `honeypot.` — RbacCoverageTest s'appuie sur ce préfixe
+    | pour distinguer un leurre d'une route métier non protégée.
+    |
+    | Avant d'ajouter un chemin, vérifier qu'aucune route réelle ne l'occupe :
+    | les leurres sont enregistrés en dernier, une collision rendrait donc le
+    | leurre inatteignable plutôt que de casser la route métier — silencieux,
+    | et faussement rassurant.
+    |
+    */
+    'honeypot' => [
+
+        // Permet de couper les leurres sur un environnement où ils feraient
+        // du bruit (tests de charge, recette). Actifs par défaut.
+        'actif' => (bool) env('HONEYPOT_ACTIF', true),
+
+        'routes' => [
+            'phpinfo'       => '/v1/phpinfo',
+            'server-status' => '/v1/server-status',
+            'actuator'      => '/v1/actuator',
+            'metrics'       => '/v1/metrics',
+            'env'           => '/v1/.env',
+            'admin'         => '/v1/admin',
+            'debug'         => '/v1/debug',
+            'backup'        => '/v1/backup',
+            'config'        => '/v1/config',
+            'dump'          => '/v1/dump',
+            'git-config'    => '/v1/.git/config',
+            'swagger'       => '/v1/swagger.json',
+            'graphql'       => '/v1/graphql',
+            'health-check'  => '/v1/health/check',
+            'ping'          => '/v1/ping',
+            'test'          => '/v1/test',
+            'api-docs'      => '/v1/api-docs',
+            'robots'        => '/v1/robots.txt',
+            'sitemap'       => '/v1/sitemap.xml',
+            'cron'          => '/v1/cron',
+            'deploy'        => '/v1/deploy',
+            'websocket'     => '/v1/websocket',
+        ],
+    ],
+
 ];
