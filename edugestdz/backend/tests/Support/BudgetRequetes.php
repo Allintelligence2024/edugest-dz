@@ -60,11 +60,36 @@ trait BudgetRequetes
         $this->assertLessThanOrEqual(
             $budget,
             $mesure['nb'],
-            "Budget de requêtes dépassé pour {$contexte} : {$mesure['nb']} requêtes pour un budget de {$budget}.\n"
-            . $this->formaterRequetes($mesure['sql'])
+            "Budget dépassé pour {$contexte} : {$mesure['nb']} requêtes pour un budget de {$budget}. "
+            . 'Répartition : ' . $this->repartitionParTable($mesure['sql'])
         );
 
         return $mesure;
+    }
+
+    /**
+     * Répartition compacte des requêtes par table, la plus fréquente d'abord.
+     *
+     * @param list<string> $sql
+     */
+    private function repartitionParTable(array $sql): string
+    {
+        $compteur = [];
+        foreach ($sql as $requete) {
+            if (preg_match('/(?:from|into|update|join)\s+"?([a-z0-9_]+)"?/i', $requete, $m)) {
+                $compteur[$m[1]] = ($compteur[$m[1]] ?? 0) + 1;
+            }
+        }
+
+        arsort($compteur);
+        $extrait = array_slice($compteur, 0, 8, true);
+
+        $morceaux = [];
+        foreach ($extrait as $table => $nb) {
+            $morceaux[] = "{$table}×{$nb}";
+        }
+
+        return implode(', ', $morceaux);
     }
 
     /**
@@ -102,13 +127,51 @@ trait BudgetRequetes
         $this->assertLessThanOrEqual(
             $tolerance,
             $croissance,
-            "N+1 détecté sur {$contexte} : le nombre de requêtes croît avec le volume.\n"
-            . "  1 enregistrement  → {$reference['nb']} requêtes\n"
-            . "  {$volume} enregistrements → {$charge['nb']} requêtes\n"
-            . "  croissance {$croissance} (tolérance {$tolerance})\n"
-            . "Requêtes apparues ou multipliées :\n"
-            . $this->formaterRequetes($this->requetesEnTrop($reference['sql'], $charge['sql']))
+            // Message volontairement compact et hiérarchisé : les annotations
+            // GitHub sont découpées en tranches de ~220 caractères, donc
+            // l'information la plus discriminante doit venir en premier.
+            "N+1 sur {$contexte} : {$reference['nb']} → {$charge['nb']} requêtes "
+            . "quand les lignes passent de 1 à {$volume} (tolérance {$tolerance}). "
+            . 'Tables en cause : ' . $this->deltasParTable($reference['sql'], $charge['sql']) . '. '
+            . 'Détail : ' . implode(' | ', array_slice($this->requetesEnTrop($reference['sql'], $charge['sql']), 0, 3))
         );
+    }
+
+    /**
+     * Compare le nombre de requêtes par table entre les deux mesures.
+     *
+     * Bien plus lisible qu'un dump de SQL : le nom de la table qui passe de
+     * 1 à 5 requêtes désigne immédiatement la relation non chargée.
+     *
+     * @param list<string> $reference
+     * @param list<string> $charge
+     */
+    private function deltasParTable(array $reference, array $charge): string
+    {
+        $parTable = static function (array $sql): array {
+            $compteur = [];
+            foreach ($sql as $requete) {
+                if (preg_match('/(?:from|into|update|join)\s+"?([a-z0-9_]+)"?/i', $requete, $m)) {
+                    $table = $m[1];
+                    $compteur[$table] = ($compteur[$table] ?? 0) + 1;
+                }
+            }
+
+            return $compteur;
+        };
+
+        $avant = $parTable($reference);
+        $apres = $parTable($charge);
+
+        $deltas = [];
+        foreach ($apres as $table => $nb) {
+            $ancien = $avant[$table] ?? 0;
+            if ($nb > $ancien) {
+                $deltas[] = "{$table} {$ancien}→{$nb}";
+            }
+        }
+
+        return $deltas === [] ? 'aucune (croissance hors requêtes identifiables)' : implode(', ', $deltas);
     }
 
     /**
@@ -137,31 +200,13 @@ trait BudgetRequetes
         foreach ($apres as $requete => $nb) {
             $delta = $nb - ($avant[$requete] ?? 0);
             if ($delta > 0) {
-                $enTrop[] = "×{$delta}  {$requete}";
+                // Empreinte courte : le début d'une requête suffit à
+                // l'identifier, et les annotations CI sont tronquées.
+                $enTrop[] = "×{$delta} " . mb_substr($requete, 0, 70);
             }
         }
 
         return $enTrop;
     }
 
-    /** @param list<string> $requetes */
-    private function formaterRequetes(array $requetes, int $max = 15): string
-    {
-        if ($requetes === []) {
-            return "  (aucune requête à signaler)\n";
-        }
-
-        $extrait = array_slice($requetes, 0, $max);
-        $lignes  = array_map(
-            fn ($sql) => '  - ' . mb_substr(preg_replace('/\s+/', ' ', trim($sql)), 0, 220),
-            $extrait
-        );
-
-        $reste = count($requetes) - count($extrait);
-        if ($reste > 0) {
-            $lignes[] = "  … et {$reste} autre(s)";
-        }
-
-        return implode("\n", $lignes) . "\n";
-    }
 }

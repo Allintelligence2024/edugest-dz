@@ -26,8 +26,17 @@ use Illuminate\Support\Facades\Log;
  */
 class QueryMonitor
 {
-    /** Écouteur global enregistré ? (une seule fois par processus) */
-    private static bool $ecouteEnregistree = false;
+    /**
+     * Application pour laquelle l'écouteur est enregistré.
+     *
+     * Un simple booléen ne suffit pas : chaque test PHPUnit reconstruit une
+     * application — donc un nouveau dispatcher d'événements — et l'écouteur
+     * posé lors du test précédent disparaît avec l'ancien conteneur. Le
+     * drapeau restant à `true`, plus aucune requête n'était comptée à partir
+     * du deuxième test du processus (`X-Query-Count: 0`). On mémorise donc
+     * l'instance, en référence faible pour ne pas la maintenir en vie.
+     */
+    private static ?\WeakReference $appEcoutee = null;
 
     /** Requêtes du cycle HTTP courant. */
     private static array $requetes = [];
@@ -103,11 +112,13 @@ class QueryMonitor
 
     private function demarrerEcoute(): void
     {
-        if (self::$ecouteEnregistree) {
+        $app = app();
+
+        if (self::$appEcoutee?->get() === $app) {
             return;
         }
 
-        self::$ecouteEnregistree = true;
+        self::$appEcoutee = \WeakReference::create($app);
 
         DB::listen(function ($query) {
             self::$requetes[] = [
