@@ -157,7 +157,33 @@
 
 ---
 
-### **Sprint 4 — Qualité & tests (P1-5, P1-6, P1-8)**
+### **Sprint 4 — Qualité & tests (P1-5, P1-6, P1-8)** 🔵 **EN GRANDE PARTIE FAIT**
+
+> **Livré.** Détail d'exécution, écarts assumés et points restants : voir
+> `edugestdz/docs/SPRINT4_QUALITE.md`.
+>
+> - ✅ **Tests N+1** — `QueryMonitor` branché sur `config/performance.php`,
+>   détection par mesure différentielle (1 vs N enregistrements) plutôt que
+>   par seuil arbitraire. Bloquant en CI.
+> - ✅ **Unification CI** — jobs `frontend` et `qualite` ajoutés. Le frontend
+>   n'était **pas testé du tout** en CI : `edugestdz/.github/workflows/` n'est
+>   pas lu par GitHub. Livré en patch (`docs/ci-qualite.patch`), les workflows
+>   restant non poussables depuis le bac à sable.
+> - ✅ **Job sécurité** — `composer audit`, `npm audit`, Gitleaks, PHPStan 6.
+>   `npm audit` a fait tomber 7 failles hautes sur `react-router-dom`.
+> - ✅ **Tests frontend** — 79 → 122 tests, 11 pages critiques. Ils ont révélé
+>   deux défauts réels : `SearchBar` (recherche morte sur 6 pages) et
+>   `FilterBar` (barre de filtres vide sur 4 pages).
+> - ⚠️ **Coverage backend 45 %** — palier posé dans le patch CI, **non
+>   mesurable** depuis l'environnement de travail. À valider au premier
+>   passage ; le pourcentage réel est republié en annotation.
+> - ⚠️ **Coverage frontend** — cliquet posé à hauteur du réel (18 % de lignes,
+>   mesuré 18.85 %) et non à 40 %. Écart assumé : les 70 % affichés jusqu'ici
+>   n'étaient opposés à personne. Cible 40 % reportée au Sprint 5.
+> - ❌ **P1-6, checks tenant redondants** — non traité. La suppression n'est
+>   sûre que si le modèle visé utilise `BelongsToTenant` ; à faire avec un
+>   test de garde qui l'atteste.
+> - ❌ **Tests mobile** — non traités.
 
 - Supprimer les checks tenant redondants (P1-6) **après** que les tests d'isolation soient verts — ils deviennent le filet de sécurité.
 - **Unifier la CI** : un seul `.github/workflows/` à la racine, jobs `backend`, `frontend`, `mobile`, `security`.
