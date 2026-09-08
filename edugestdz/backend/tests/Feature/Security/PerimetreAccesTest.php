@@ -6,6 +6,7 @@ use App\Models\Bulletin;
 use App\Models\Eleve;
 use App\Models\Enseignant;
 use App\Models\Groupe;
+use App\Models\Matiere;
 use App\Models\ParentEleve;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -77,9 +78,12 @@ class PerimetreAccesTest extends TestCase
             'user_id'   => $this->enseignant->id,
         ]);
 
+        $matiere = Matiere::factory()->create(['tenant_id' => $this->tenant->id]);
+
         $groupe = Groupe::factory()->create([
             'tenant_id'     => $this->tenant->id,
             'enseignant_id' => $ficheEns->id,
+            'matiere_id'    => $matiere->id,
         ]);
 
         DB::table('inscriptions')->insert([

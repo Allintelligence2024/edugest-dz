@@ -148,7 +148,11 @@ class RbacCoverageTest extends TestCase
     /** Les alias `role` et `permission` doivent être enregistrés. */
     public function test_les_middlewares_rbac_sont_enregistres(): void
     {
-        $aliases = app(\Illuminate\Foundation\Http\Kernel::class)->getRouteMiddleware();
+        $kernel = app(\Illuminate\Foundation\Http\Kernel::class);
+
+        $aliases = method_exists($kernel, 'getRouteMiddleware')
+            ? $kernel->getRouteMiddleware()
+            : app(\Illuminate\Routing\Router::class)->getMiddleware();
 
         $this->assertArrayHasKey('role', $aliases);
         $this->assertArrayHasKey('permission', $aliases);
