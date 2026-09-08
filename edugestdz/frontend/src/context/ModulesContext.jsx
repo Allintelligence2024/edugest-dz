@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getAccessToken } from '../api/tokenStore';
 
 const ModulesContext = createContext(null);
 
@@ -9,7 +10,7 @@ export function ModulesProvider({ children }) {
   const [error, setError]       = useState(null);
 
   const loadModules = useCallback(async () => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) { setLoading(false); return; }
 
     try {
@@ -45,7 +46,7 @@ export function ModulesProvider({ children }) {
   }, [actifs, loading, error]);
 
   const activerModule = useCallback(async (moduleKey) => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     const res   = await fetch(`${BASE_URL}/api/v1/modules/${moduleKey}/activer`, {
       method: 'POST',
@@ -60,7 +61,7 @@ export function ModulesProvider({ children }) {
   }, []);
 
   const desactiverModule = useCallback(async (moduleKey, raison = '') => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
     const res   = await fetch(`${BASE_URL}/api/v1/modules/${moduleKey}/desactiver`, {
       method: 'POST',

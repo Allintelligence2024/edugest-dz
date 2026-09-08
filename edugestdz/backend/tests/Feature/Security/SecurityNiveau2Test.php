@@ -97,8 +97,13 @@ class SecurityNiveau2Test extends TestCase
         ]);
         $token  = auth('api')->login($parent);
 
+        // Ce test porte sur le MFA, pas sur le RBAC : il faut donc une route
+        // que le rôle parent est légitimement autorisé à appeler. /eleves ne
+        // convient plus depuis le Sprint 2 (un parent n'a plus accès à la
+        // liste complète des élèves de l'établissement) et renverrait 403
+        // pour une raison sans rapport avec le MFA.
         $this->withHeaders(['Authorization' => "Bearer {$token}"])
-            ->getJson('/api/v1/eleves')
+            ->getJson('/api/v1/auth/me')
             ->assertStatus(200);
     }
 

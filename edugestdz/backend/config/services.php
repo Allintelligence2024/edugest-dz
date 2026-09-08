@@ -77,4 +77,16 @@ return [
         'vision_api_key' => env('GOOGLE_VISION_API_KEY'),
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cron serverless
+    |--------------------------------------------------------------------------
+    | Secret partagé avec Vercel Cron (en-tête Authorization: Bearer ...).
+    | Sans cette valeur, les routes /api/v1/cron/* refusent de s'exécuter.
+    */
+    'cron' => [
+        'secret' => env('CRON_SECRET'),
+    ],
+
 ];

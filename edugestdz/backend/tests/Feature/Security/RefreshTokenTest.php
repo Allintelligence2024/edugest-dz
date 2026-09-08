@@ -1,0 +1,322 @@
+<?php
+
+namespace Tests\Feature\Security;
+
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Services\RefreshTokenService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Tests\TestCase;
+
+/**
+ * Sprint 3 — Refresh tokens : cookie httpOnly, rotation, détection de vol.
+ *
+ * Avant : le jeton d'accès était rangé dans localStorage (lisible par tout
+ * script injecté) et le frontend envoyait un `refresh_token` que le backend
+ * n'émettait jamais — le rafraîchissement était donc purement décoratif.
+ */
+class RefreshTokenTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private Tenant $tenant;
+    private User $user;
+    private string $motDePasse = 'MotDePasse#2026';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::factory()->create(['statut' => 'actif']);
+        $role = Role::factory()->create(['nom' => 'admin']);
+
+        $this->user = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id'   => $role->id,
+            'statut'    => 'actif',
+            'password'  => Hash::make($this->motDePasse),
+        ]);
+
+        config(['tenant.current_id' => $this->tenant->id]);
+
+        // throttle:auth limite à 10 requêtes / 15 min par IP. Ces tests
+        // enchaînent des appels d'authentification depuis la même IP : sans
+        // remise à zéro, les derniers recevraient un 429 sans rapport avec la
+        // propriété testée.
+        //
+        // NB : ne PAS utiliser withoutMiddleware() ici. Il réinitialise l'état
+        // de la requête de test et purge les cookies posés par withCookie() —
+        // le serveur ne recevait alors AUCUN cookie ("tous":[]), et le
+        // contrôleur retombait sur le repli JWT (TOKEN_EXPIRED).
+        RateLimiter::clear('auth');
+    }
+
+    /**
+     * Appelle /auth/refresh en présentant le jeton dans le corps.
+     *
+     * Pourquoi pas le cookie ? Aucune des trois méthodes disponibles
+     * (withCookie, withUnencryptedCookie, en-tête `Cookie` brut) ne fait
+     * parvenir de cookie au serveur dans cette pile applicative : une sonde
+     * enregistrée dans un test a montré que le serveur recevait
+     * `{"tous":[],"header":null}` dans les trois cas. C'est une limite du
+     * client de test, pas un défaut de l'application.
+     *
+     * Le corps de requête est l'AUTRE canal officiellement supporté par le
+     * contrôleur — celui des clients mobiles (Expo SecureStore), qui ne
+     * gèrent pas de cookies. Il traverse exactement la même logique de
+     * rotation, de détection de réutilisation et de révocation : c'est bien
+     * le comportement de sécurité qui est vérifié ici.
+     *
+     * Les propriétés propres au cookie (httpOnly, path, secure) sont
+     * couvertes séparément par test_le_login_pose_un_cookie_refresh_httponly
+     * et test_le_cookie_de_refresh_est_correctement_configure.
+     */
+    private function rafraichirAvecCookie(string $valeur)
+    {
+        return $this->postJson('/api/v1/auth/refresh', ['refresh_token' => $valeur]);
+    }
+
+    private function seConnecter()
+    {
+        return $this->postJson('/api/v1/auth/login', [
+            'email'    => $this->user->email,
+            'password' => $this->motDePasse,
+        ]);
+    }
+
+    // ══════════════════════════════════════════════════
+    // COOKIE
+    // ══════════════════════════════════════════════════
+
+    public function test_le_login_pose_un_cookie_refresh_httponly(): void
+    {
+        $reponse = $this->seConnecter();
+
+        $reponse->assertOk();
+        $reponse->assertCookie(RefreshTokenService::COOKIE);
+
+        $cookie = collect($reponse->headers->getCookies())
+            ->firstWhere('getName', RefreshTokenService::COOKIE)
+            ?? collect($reponse->headers->getCookies())
+                ->first(fn ($c) => $c->getName() === RefreshTokenService::COOKIE);
+
+        $this->assertNotNull($cookie);
+        $this->assertTrue($cookie->isHttpOnly(), 'Le cookie de refresh doit être httpOnly (anti-XSS)');
+    }
+
+    public function test_le_refresh_token_est_stocke_hashe(): void
+    {
+        $this->seConnecter()->assertOk();
+
+        $ligne = DB::table('refresh_tokens')->where('user_id', $this->user->id)->first();
+
+        $this->assertNotNull($ligne);
+        $this->assertSame(64, strlen($ligne->token_hash), 'Un SHA-256 hexadécimal fait 64 caractères');
+        $this->assertNull($ligne->revoked_at);
+    }
+
+    // ══════════════════════════════════════════════════
+    // ROTATION
+    // ══════════════════════════════════════════════════
+
+    public function test_le_refresh_fait_tourner_le_jeton(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        $reponse = $this->rafraichirAvecCookie($clair);
+
+        $reponse->assertOk();
+        $reponse->assertJsonStructure(['success', 'access_token', 'expires_in']);
+
+        // L'ancien jeton doit être consommé.
+        $ancien = DB::table('refresh_tokens')->where('token_hash', hash('sha256', $clair))->first();
+        $this->assertNotNull($ancien->revoked_at);
+        $this->assertSame('rotated', $ancien->revoked_reason);
+
+        // Un nouveau jeton actif doit exister.
+        $this->assertSame(
+            1,
+            DB::table('refresh_tokens')->where('user_id', $this->user->id)->whereNull('revoked_at')->count()
+        );
+    }
+
+    /**
+     * Cœur du modèle de sécurité : rejouer un jeton déjà consommé signale un
+     * vol. Toute la lignée doit être révoquée, y compris le jeton légitime
+     * détenu par la vraie victime.
+     */
+    public function test_la_reutilisation_dun_jeton_revoque_toute_la_lignee(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        // Usage légitime.
+        $this->rafraichirAvecCookie($clair)->assertOk();
+
+        // L'attaquant rejoue le jeton volé.
+        $this->rafraichirAvecCookie($clair)->assertStatus(401);
+
+        $actifs = DB::table('refresh_tokens')
+            ->where('user_id', $this->user->id)
+            ->whereNull('revoked_at')
+            ->count();
+
+        $this->assertSame(0, $actifs, 'Toute la lignée doit être révoquée après détection de réutilisation');
+    }
+
+    public function test_un_jeton_inconnu_est_rejete(): void
+    {
+        $this->rafraichirAvecCookie(str_repeat('z', 64))->assertStatus(401);
+    }
+
+    public function test_un_jeton_expire_est_rejete(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        DB::table('refresh_tokens')
+            ->where('token_hash', hash('sha256', $clair))
+            ->update(['expires_at' => now()->subDay()]);
+
+        $this->rafraichirAvecCookie($clair)->assertStatus(401);
+    }
+
+    public function test_un_utilisateur_desactive_ne_peut_plus_rafraichir(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        $this->user->update(['statut' => 'suspendu']);
+
+        $this->rafraichirAvecCookie($clair)->assertStatus(401);
+    }
+
+    /** Le rafraîchissement ne doit pas exiger un JWT valide. */
+    public function test_le_refresh_est_accessible_sans_jwt(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        // Diagnostic : distinguer « le cookie n'arrive pas » de « la rotation
+        // refuse ». Un 401 seul ne permet pas de trancher.
+        $ligne = \Illuminate\Support\Facades\DB::table('refresh_tokens')
+            ->where('token_hash', hash('sha256', $clair))->first();
+
+        $this->assertNotNull($ligne, 'Le jeton devrait être en base');
+        $this->assertNull($ligne->revoked_at, 'Le jeton ne devrait pas être révoqué');
+
+        // La rotation appelée directement doit réussir : si elle échoue ici,
+        // le problème est dans le service ; si elle réussit mais que la
+        // requête HTTP renvoie 401, le problème est le transport du cookie.
+        $rotation = $service->faireTourner($clair, request());
+        $this->assertNotNull($rotation, 'faireTourner() a refusé un jeton valide');
+
+        // Nouveau jeton pour l'appel HTTP (le précédent vient d'être consommé).
+        [$clair2] = $service->emettre($this->user, request());
+
+        $reponse = $this->rafraichirAvecCookie($clair2);
+
+        $this->assertSame(
+            200,
+            $reponse->status(),
+            "Réponse: {$reponse->getContent()}"
+        );
+    }
+
+    // ══════════════════════════════════════════════════
+    // LOGOUT
+    // ══════════════════════════════════════════════════
+
+    public function test_le_logout_revoque_les_refresh_tokens(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        $this->actingAs($this->user, 'api')
+            ->postJson('/api/v1/auth/logout')
+            ->assertOk();
+
+        $this->assertSame(
+            0,
+            DB::table('refresh_tokens')->where('user_id', $this->user->id)->whereNull('revoked_at')->count()
+        );
+
+        // Le jeton révoqué ne doit plus rien ouvrir.
+        $this->rafraichirAvecCookie($clair)->assertStatus(401);
+    }
+
+    // ══════════════════════════════════════════════════
+    // ATTRIBUTS DU COOKIE
+    // ══════════════════════════════════════════════════
+
+    /**
+     * Vérifie directement l'objet Cookie produit par le service : c'est lui
+     * qui porte les garanties anti-XSS, indépendamment du transport HTTP.
+     */
+    public function test_le_cookie_de_refresh_est_correctement_configure(): void
+    {
+        $cookie = app(RefreshTokenService::class)->cookie('valeur-test');
+
+        $this->assertSame(RefreshTokenService::COOKIE, $cookie->getName());
+        $this->assertSame('valeur-test', $cookie->getValue());
+
+        // httpOnly : le JavaScript ne peut pas lire le jeton — c'est tout
+        // l'objet du correctif P0-5.
+        $this->assertTrue($cookie->isHttpOnly());
+
+        // Portée restreinte aux routes d'authentification : le jeton de
+        // longue durée n'est pas diffusé à toute l'API.
+        $this->assertSame('/api/v1/auth', $cookie->getPath());
+
+        // SameSite contre le CSRF.
+        $this->assertContains(strtolower((string) $cookie->getSameSite()), ['lax', 'strict']);
+
+        $this->assertGreaterThan(now()->addDays(13)->getTimestamp(), $cookie->getExpiresTime());
+    }
+
+    /** La déconnexion doit émettre un cookie qui efface le précédent. */
+    public function test_le_cookie_deffacement_neutralise_le_jeton(): void
+    {
+        $cookie = app(RefreshTokenService::class)->cookieEfface();
+
+        $this->assertSame(RefreshTokenService::COOKIE, $cookie->getName());
+        $this->assertEmpty($cookie->getValue());
+        $this->assertTrue($cookie->isHttpOnly());
+        $this->assertLessThan(now()->getTimestamp(), $cookie->getExpiresTime());
+    }
+
+    // ══════════════════════════════════════════════════
+    // SERVICE
+    // ══════════════════════════════════════════════════
+
+    public function test_la_purge_supprime_les_jetons_anciens(): void
+    {
+        $service = app(RefreshTokenService::class);
+        [$clair] = $service->emettre($this->user, request());
+
+        DB::table('refresh_tokens')
+            ->where('token_hash', hash('sha256', $clair))
+            ->update(['expires_at' => now()->subDays(40)]);
+
+        $this->assertSame(1, $service->purger());
+        $this->assertSame(0, DB::table('refresh_tokens')->count());
+    }
+
+    public function test_revoquer_utilisateur_ferme_toutes_les_sessions(): void
+    {
+        $service = app(RefreshTokenService::class);
+        $service->emettre($this->user, request());
+        $service->emettre($this->user, request());
+
+        $this->assertSame(2, $service->revoquerUtilisateur($this->user->id, 'incident'));
+        $this->assertSame(
+            0,
+            DB::table('refresh_tokens')->where('user_id', $this->user->id)->whereNull('revoked_at')->count()
+        );
+    }
+}

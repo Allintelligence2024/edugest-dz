@@ -29,3 +29,27 @@ auth.json
 *.sln
 *.sw?
 .DS_Store
+
+# ── Binaires & installeurs (jamais dans git) ──
+*.exe
+*.msi
+*.msix
+*.dmg
+*.pkg
+*.appimage
+*.phar
+composer-setup.php
+
+# ── Artefacts de test / debug ──
+temp_junit.xml
+junit.xml
+test_output.txt
+dbtest_check*.php
+coverage/
+.coverage
+*.bak
+
+# ── Archives ──
+*.zip
+*.tar.gz
+*.7z

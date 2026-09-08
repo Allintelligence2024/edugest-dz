@@ -17,7 +17,7 @@ services:
     environment:
       POSTGRES_DB:       ${DB_DATABASE:-edugestdz}
       POSTGRES_USER:     ${DB_USERNAME:-edugest_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-EduGest@2026!}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD requis — lancer ./scripts/generer-secrets.sh}
       PGDATA:            /data/postgres
       TZ:                Africa/Algiers
     volumes:
@@ -43,15 +43,16 @@ services:
     command: >
       redis-server
       --appendonly yes
-      --requirepass ${REDIS_PASSWORD:-EduGestRedis@2026}
+      --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD requis — lancer ./scripts/generer-secrets.sh}
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      # Bind loopback uniquement : pas d'exposition réseau du cache.
+      - "127.0.0.1:6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD:-EduGestRedis@2026}", "ping"]
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -193,10 +194,13 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: edugestdz_pgadmin
+    # Outil d'administration : jamais démarré par défaut.
+    # Usage explicite : docker compose --profile debug up
+    profiles: ["debug"]
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL:    admin@edugestdz.local
-      PGADMIN_DEFAULT_PASSWORD: PgAdmin@2026
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?PGADMIN_PASSWORD requis}
       PGADMIN_CONFIG_SERVER_MODE: "False"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
@@ -213,11 +217,12 @@ services:
   redis_commander:
     image: rediscommander/redis-commander:latest
     container_name: edugestdz_redis_ui
+    profiles: ["debug"]
     restart: unless-stopped
     environment:
-      REDIS_HOSTS:    "local:redis:6379:0:${REDIS_PASSWORD:-EduGestRedis@2026}"
+      REDIS_HOSTS:    "local:redis:6379:0:${REDIS_PASSWORD}"
       HTTP_USER:      admin
-      HTTP_PASSWORD:  RedisAdmin@2026
+      HTTP_PASSWORD:  ${REDIS_UI_PASSWORD:?REDIS_UI_PASSWORD requis}
     ports:
       - "8081:8081"
     depends_on:

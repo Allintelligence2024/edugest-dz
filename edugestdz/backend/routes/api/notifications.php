@@ -57,9 +57,23 @@ Route::middleware($protected)->group(function () {
     });
 });
 
-// ── Absences enseignants (no auth middleware) ──
-Route::prefix('absences-enseignants')->group(function () {
-    Route::get('/',                    [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'index']);
-    Route::post('/',                   [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'signaler']);
-    Route::post('/{id}/remplacer',     [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'assigner']);
+// ── Absences enseignants ──
+// FAILLE CORRIGÉE (Sprint 2) : ce groupe n'avait AUCUN middleware — ni
+// authentification, ni résolution de tenant. N'importe qui sur Internet
+// pouvait lister les absences des enseignants et assigner des remplaçants.
+Route::prefix('absences-enseignants')->middleware($protected)->group(function () {
+    // Consultation et assignation d'un remplaçant : administration seule.
+    Route::get('/',  [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'index'])
+        ->middleware('role:admin,gestionnaire,secretariat');
+
+    Route::post('/{id}/remplacer', [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'assigner'])
+        ->middleware('role:admin,gestionnaire,secretariat');
+
+    // Signaler SA PROPRE absence est l'acte de base d'un enseignant : le
+    // restreindre à l'administration (première version du correctif Sprint 2)
+    // cassait le flux métier. Le contrôleur rattache le signalement à
+    // l'utilisateur authentifié, un enseignant ne peut donc pas déclarer
+    // l'absence d'un collègue.
+    Route::post('/', [\App\Http\Controllers\Api\V1\AbsenceEnseignantController::class, 'signaler'])
+        ->middleware('role:admin,gestionnaire,secretariat,enseignant');
 });

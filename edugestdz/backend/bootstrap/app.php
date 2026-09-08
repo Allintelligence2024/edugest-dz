@@ -5,7 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Console\Scheduling\Schedule;
 
-return Application::configure(basePath: dirname(__DIR__))
+$app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant'            => \App\Http\Middleware\ResolveTenant::class,
             'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
             'super_admin'       => \App\Http\Middleware\SuperAdmin::class,
+            'role'              => \App\Http\Middleware\RoleCheck::class,
+            'permission'        => \App\Http\Middleware\PermissionCheck::class,
             'module'            => \App\Http\Middleware\ModuleCheck::class,
             'mfa'               => \App\Http\Middleware\MfaRequired::class,
             'ip.allowlist'      => \App\Http\Middleware\SuperAdminIpAllowlist::class,
@@ -216,3 +218,17 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
     })->create();
+
+/*
+|--------------------------------------------------------------------------
+| Stockage inscriptible en environnement serverless (Vercel)
+|--------------------------------------------------------------------------
+| Sur Vercel le filesystem est en lecture seule, sauf /tmp. api/index.php
+| positionne LARAVEL_STORAGE_PATH ; on l'applique ici pour que les logs, les
+| vues compilées et le cache de fichiers ne fassent pas planter le boot.
+*/
+if ($storagePath = env('LARAVEL_STORAGE_PATH')) {
+    $app->useStoragePath($storagePath);
+}
+
+return $app;

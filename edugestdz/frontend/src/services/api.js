@@ -1,3 +1,5 @@
+import { getAccessToken } from '../api/tokenStore';
+
 const BASE_URL = (() => {
   const raw = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? '';
   const base = raw.replace(/\/api\/v1\/?$/, '');
@@ -5,7 +7,7 @@ const BASE_URL = (() => {
     console.warn(
       '[EduGest] VITE_API_URL non configuré.\n' +
       'Configurer dans Vercel : Settings → Environment Variables\n' +
-      'VITE_API_URL = https://[votre-backend].up.railway.app/api/v1'
+      'VITE_API_URL = https://<votre-backend>/api/v1'
     );
   }
   return base ? `${base}/api/v1` : '/api/v1';
@@ -13,7 +15,7 @@ const BASE_URL = (() => {
 
 const apiClient = {
   getHeaders() {
-    const token    = localStorage.getItem('access_token');
+    const token    = getAccessToken();
     const tenantId = localStorage.getItem('tenantId');
     return {
       'Content-Type': 'application/json',

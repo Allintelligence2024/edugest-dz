@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import LanguageThemeSelector from '@components/LanguageThemeSelector';
+import { getAccessToken } from '../api/tokenStore';
 
 const PAGE_TITLES = {
   '/':                 { title: 'Tableau de bord',     crumb: [] },
@@ -48,7 +49,7 @@ export default function Header({ user }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (!token) return;
 
     const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
