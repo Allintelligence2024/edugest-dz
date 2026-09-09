@@ -301,4 +301,4 @@ jobs:
         run: ../../scripts/analyse-statique.sh --no-progress
 
       - name: "Garde-fou — contrôleurs ≤350 lignes (baseline Lot C)"
-        run: scripts/verifier-controleurs.sh
+        run: bash scripts/verifier-controleurs.sh
