@@ -6,7 +6,6 @@
 #   - un contrôleur présent doit rester <= sa taille maximale ici (jamais
 #     d'aggravation : les 9 gros contrôleurs seront refactorisés en dessous
 #     du seuil, ce qui fera diminuer puis disparaître ces lignes).
-edugestdz/backend/app/Http/Controllers/Api/V1/StockInventaireController.php|569
 edugestdz/backend/app/Http/Controllers/Api/V1/EntretienController.php|464
 edugestdz/backend/app/Http/Controllers/Api/V1/EleveController.php|463
 edugestdz/backend/app/Http/Controllers/Api/V1/TransportController.php|459
