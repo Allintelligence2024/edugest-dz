@@ -39,10 +39,21 @@ class BudgetPrevisionnelService
     }
 
     /**
-     * @return array{annee: int, mois: int|null, lignes: Collection<int, array{
-     *               categorie: string, libelle: string, prevu: float,
-     *               realise: float, ecart: float, pct_realise: float|null}>,
-     *               total_prevu: float, total_realise: float, ecart_total: float}
+     * @return array{
+     *   annee: int,
+     *   mois: int|null,
+     *   lignes: Collection<int, array{
+     *     categorie: string,
+     *     libelle: string,
+     *     prevu: float,
+     *     realise: float,
+     *     ecart: float,
+     *     pct_realise: float|null
+     *   }>,
+     *   total_prevu: float,
+     *   total_realise: float,
+     *   ecart_total: float
+     * }
      */
     public function previsionnel(int $annee, ?int $mois): array
     {
@@ -66,6 +77,7 @@ class BudgetPrevisionnelService
         /** @var Collection<string, object{categorie: string, total_realise: string}> $realises */
         $realises = $requeteRealises->get()->keyBy('categorie');
 
+        /** @var Collection<int, array{categorie: string, libelle: string, prevu: float, realise: float, ecart: float, pct_realise: float|null}> $lignes */
         $lignes = collect(self::CATEGORIES)->map(function (string $categorie) use ($previsions, $realises): array {
             $prevu   = (float) ($previsions[$categorie]->montant_prevu ?? 0);
             $realise = (float) ($realises[$categorie]->total_realise ?? 0);
