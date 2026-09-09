@@ -108,4 +108,3 @@ class BudgetPrevisionnelService
         return $builder;
     }
 }
-}
