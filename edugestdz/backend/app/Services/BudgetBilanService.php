@@ -6,7 +6,9 @@ use App\Models\Depense;
 use App\Models\Facture;
 use App\Models\Paiement;
 use Carbon\Carbon;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Bilans mensuel et annuel du budget.
@@ -32,16 +34,18 @@ class BudgetBilanService
             ->periode($mois, $annee)
             ->sum('montant');
 
-        /** @var Collection<int, object{categorie: string, total: string}> $lignes */
-        $lignes = Depense::validees()
-            ->periode($mois, $annee)
+        /** @var Collection<int, stdClass> $lignes */
+        $lignes = $this->table('depenses')
+            ->where('statut', 'validee')
+            ->where('mois', $mois)
+            ->where('annee', $annee)
             ->selectRaw('categorie, SUM(montant) AS total')
             ->groupBy('categorie')
             ->get();
 
         $depensesDetail = $lignes->map(fn ($ligne): array => [
-            'categorie' => $ligne->categorie,
-            'libelle'   => Depense::categorieLibelle($ligne->categorie),
+            'categorie' => (string) $ligne->categorie,
+            'libelle'   => Depense::categorieLibelle((string) $ligne->categorie),
             'total'     => (float) $ligne->total,
         ]);
 
@@ -70,17 +74,19 @@ class BudgetBilanService
      */
     public function bilanAnnuel(int $annee): array
     {
-        /** @var Collection<int, object{mois: string, total: string}> $recettesParMois */
-        $recettesParMois = Paiement::confirmes()
+        /** @var Collection<int, stdClass> $recettesParMois */
+        $recettesParMois = $this->table('paiements')
+            ->where('statut', 'confirmé')
             ->whereYear('date_paiement', $annee)
             ->selectRaw('EXTRACT(MONTH FROM date_paiement) AS mois, SUM(montant) AS total')
             ->groupByRaw('EXTRACT(MONTH FROM date_paiement)')
             ->get()
             ->keyBy(fn ($ligne): int => (int) $ligne->mois);
 
-        /** @var Collection<int, object{mois: int, total: string}> $depensesParMois */
-        $depensesParMois = Depense::validees()
-            ->annee($annee)
+        /** @var Collection<int, stdClass> $depensesParMois */
+        $depensesParMois = $this->table('depenses')
+            ->where('statut', 'validee')
+            ->where('annee', $annee)
             ->selectRaw('mois, SUM(montant) AS total')
             ->groupBy('mois')
             ->get()
@@ -91,8 +97,8 @@ class BudgetBilanService
         $totalDepenses = 0.0;
 
         for ($m = 1; $m <= 12; $m++) {
-            $rec = (float) ($recettesParMois[$m]?->total ?? 0);
-            $dep = (float) ($depensesParMois[$m]?->total ?? 0);
+            $rec = (float) ($recettesParMois[$m]->total ?? 0);
+            $dep = (float) ($depensesParMois[$m]->total ?? 0);
 
             $totalRecettes += $rec;
             $totalDepenses += $dep;
@@ -106,16 +112,17 @@ class BudgetBilanService
             ];
         }
 
-        /** @var Collection<int, object{categorie: string, total: string}> $lignes */
-        $lignes = Depense::validees()
-            ->annee($annee)
+        /** @var Collection<int, stdClass> $lignes */
+        $lignes = $this->table('depenses')
+            ->where('statut', 'validee')
+            ->where('annee', $annee)
             ->selectRaw('categorie, SUM(montant) AS total')
             ->groupBy('categorie')
             ->get();
 
         $depensesParCategorie = $lignes->map(fn ($ligne): array => [
-            'categorie' => $ligne->categorie,
-            'libelle'   => Depense::categorieLibelle($ligne->categorie),
+            'categorie' => (string) $ligne->categorie,
+            'libelle'   => Depense::categorieLibelle((string) $ligne->categorie),
             'total'     => (float) $ligne->total,
             'pct'       => $totalDepenses > 0
                 ? round(((float) $ligne->total / $totalDepenses) * 100, 1)
@@ -130,5 +137,23 @@ class BudgetBilanService
             'resultat_annuel'        => $totalRecettes - $totalDepenses,
             'depenses_par_categorie' => $depensesParCategorie,
         ];
+    }
+
+    /**
+     * Requête brute sur une table, répliquant le scope tenant (fail-closed)
+     * de App\Traits\BelongsToTenant : sans contexte tenant, aucun résultat.
+     */
+    private function table(string $table): Builder
+    {
+        $builder = DB::table($table);
+        $tenantId = config('tenant.current_id');
+
+        if ($tenantId !== null) {
+            $builder->where('tenant_id', $tenantId);
+        } else {
+            $builder->whereRaw('1 = 0');
+        }
+
+        return $builder;
     }
 }

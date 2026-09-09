@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\BudgetPrevisionnel;
 use App\Models\Depense;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Budget prévisionnel : consultation, saisie, référentiel des catégories.
@@ -45,23 +46,29 @@ class BudgetPrevisionnelService
      */
     public function previsionnel(int $annee, ?int $mois): array
     {
-        $previsions = BudgetPrevisionnel::where('annee', $annee)
+        /** @var Collection<string, stdClass> $previsions */
+        $previsions = $this->table('budget_previsionnel')
+            ->where('annee', $annee)
             ->where('mois', $mois)
-            ->get()
+            ->get(['categorie', 'montant_prevu'])
             ->keyBy('categorie');
 
-        /** @var Collection<string, object{categorie: string, total_realise: string}> $realises */
-        $realises = Depense::validees()
+        $requeteRealises = $this->table('depenses')
+            ->where('statut', 'validee')
             ->where('annee', $annee)
-            ->when($mois !== null, fn ($requete) => $requete->where('mois', $mois))
             ->selectRaw('categorie, SUM(montant) AS total_realise')
-            ->groupBy('categorie')
-            ->get()
-            ->keyBy('categorie');
+            ->groupBy('categorie');
+
+        if ($mois !== null) {
+            $requeteRealises->where('mois', $mois);
+        }
+
+        /** @var Collection<string, stdClass> $realises */
+        $realises = $requeteRealises->get()->keyBy('categorie');
 
         $lignes = collect(self::CATEGORIES)->map(function (string $categorie) use ($previsions, $realises): array {
-            $prevu   = (float) ($previsions[$categorie]?->montant_prevu ?? 0);
-            $realise = (float) ($realises[$categorie]?->total_realise ?? 0);
+            $prevu   = (float) ($previsions[$categorie]->montant_prevu ?? 0);
+            $realise = (float) ($realises[$categorie]->total_realise ?? 0);
 
             return [
                 'categorie'   => $categorie,
@@ -77,9 +84,28 @@ class BudgetPrevisionnelService
             'annee'         => $annee,
             'mois'          => $mois,
             'lignes'        => $lignes,
-            'total_prevu'   => $lignes->sum('prevu'),
-            'total_realise' => $lignes->sum('realise'),
-            'ecart_total'   => $lignes->sum('ecart'),
+            'total_prevu'   => (float) $lignes->sum('prevu'),
+            'total_realise' => (float) $lignes->sum('realise'),
+            'ecart_total'   => (float) $lignes->sum('ecart'),
         ];
     }
+
+    /**
+     * Requête brute sur une table, répliquant le scope tenant (fail-closed)
+     * de App\Traits\BelongsToTenant : sans contexte tenant, aucun résultat.
+     */
+    private function table(string $table): Builder
+    {
+        $builder = DB::table($table);
+        $tenantId = config('tenant.current_id');
+
+        if ($tenantId !== null) {
+            $builder->where('tenant_id', $tenantId);
+        } else {
+            $builder->whereRaw('1 = 0');
+        }
+
+        return $builder;
+    }
+}
 }

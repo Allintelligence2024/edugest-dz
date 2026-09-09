@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\BudgetPrevisionnel;
 use App\Models\Depense;
 use App\Models\Facture;
 use App\Models\Paiement;
 use Carbon\Carbon;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Agrégats du tableau de bord budgétaire (sprint M13).
@@ -21,6 +22,11 @@ use Illuminate\Support\Collection;
  */
 class BudgetDashboardService
 {
+    /**
+     * @return array{recettes: float, depenses: float, resultat_net: float,
+     *               impayes: float, par_categorie: Collection<string, array{libelle: string, total: float, prevu: float}>,
+     *               evolution: Collection<int, array{label: string, recettes: float, depenses: float, resultat: float}>}
+     */
     public function getDashboard(int $mois, int $annee): array
     {
         $cle = "budget_dashboard_" . config('tenant.current_id') . "_{$mois}_{$annee}";
@@ -48,26 +54,32 @@ class BudgetDashboardService
             ->where('date_echeance', '<', today())
             ->sum('total_ttc');
 
-        /** @var Collection<int, object{categorie: string, total: string}> $depensesParCategorie */
-        $depensesParCategorie = Depense::validees()
-            ->periode($mois, $annee)
+        /** @var Collection<int, stdClass> $depensesParCategorie */
+        $depensesParCategorie = $this->table('depenses')
+            ->where('statut', 'validee')
+            ->where('mois', $mois)
+            ->where('annee', $annee)
             ->selectRaw('categorie, SUM(montant) AS total')
             ->groupBy('categorie')
             ->get();
 
-        $previsions = BudgetPrevisionnel::where('annee', $annee)
+        /** @var Collection<string, stdClass> $previsions */
+        $previsions = $this->table('budget_previsionnel')
+            ->where('annee', $annee)
             ->where('mois', $mois)
-            ->get()
+            ->get(['categorie', 'montant_prevu'])
             ->keyBy('categorie');
 
         // Avant : BudgetPrevisionnel::getPrevision() par catégorie, soit une
         // requête SQL supplémentaire par ligne. Une seule requête suffit.
         $parCategorie = $depensesParCategorie->mapWithKeys(function ($ligne) use ($previsions): array {
+            $categorie = (string) $ligne->categorie;
+
             return [
-                $ligne->categorie => [
-                    'libelle' => Depense::categorieLibelle($ligne->categorie),
+                $categorie => [
+                    'libelle' => Depense::categorieLibelle($categorie),
                     'total'   => (float) $ligne->total,
-                    'prevu'   => (float) ($previsions[$ligne->categorie]?->montant_prevu ?? 0.0),
+                    'prevu'   => (float) ($previsions[$categorie]->montant_prevu ?? 0.0),
                 ],
             ];
         });
@@ -97,9 +109,10 @@ class BudgetDashboardService
             ->map(fn (int $i): Carbon => now()->subMonths($i))
             ->map(fn (Carbon $date): array => ['annee' => (int) $date->year, 'mois' => (int) $date->month]);
 
-        /** @var Collection<string, object{annee: string, mois: string, total: string}> $recettesParPeriode */
-        $recettesParPeriode = Paiement::confirmes()
-            ->where(function ($requete) use ($periodes): void {
+        /** @var Collection<string, stdClass> $recettesParPeriode */
+        $recettesParPeriode = $this->table('paiements')
+            ->where('statut', 'confirmé')
+            ->where(function (Builder $requete) use ($periodes): void {
                 foreach ($periodes as $periode) {
                     $requete->orWhere(fn ($meme) => $meme
                         ->whereMonth('date_paiement', $periode['mois'])
@@ -111,9 +124,10 @@ class BudgetDashboardService
             ->get()
             ->keyBy(fn ($ligne): string => "{$ligne->annee}-{$ligne->mois}");
 
-        /** @var Collection<string, object{mois: int, annee: int, total: string}> $depensesParPeriode */
-        $depensesParPeriode = Depense::validees()
-            ->where(function ($requete) use ($periodes): void {
+        /** @var Collection<string, stdClass> $depensesParPeriode */
+        $depensesParPeriode = $this->table('depenses')
+            ->where('statut', 'validee')
+            ->where(function (Builder $requete) use ($periodes): void {
                 foreach ($periodes as $periode) {
                     $requete->orWhere(fn ($meme) => $meme
                         ->where('mois', $periode['mois'])
@@ -128,8 +142,8 @@ class BudgetDashboardService
         return $periodes->map(function (array $periode) use ($recettesParPeriode, $depensesParPeriode): array {
             $cle = "{$periode['annee']}-{$periode['mois']}";
 
-            $recettes = (float) ($recettesParPeriode[$cle]?->total ?? 0);
-            $depenses = (float) ($depensesParPeriode[$cle]?->total ?? 0);
+            $recettes = (float) ($recettesParPeriode[$cle]->total ?? 0);
+            $depenses = (float) ($depensesParPeriode[$cle]->total ?? 0);
 
             return [
                 'label'    => Carbon::create($periode['annee'], $periode['mois'], 1)->translatedFormat('M Y'),
@@ -138,5 +152,23 @@ class BudgetDashboardService
                 'resultat' => $recettes - $depenses,
             ];
         });
+    }
+
+    /**
+     * Requête brute sur une table, répliquant le scope tenant (fail-closed)
+     * de App\Traits\BelongsToTenant : sans contexte tenant, aucun résultat.
+     */
+    private function table(string $table): Builder
+    {
+        $builder = DB::table($table);
+        $tenantId = config('tenant.current_id');
+
+        if ($tenantId !== null) {
+            $builder->where('tenant_id', $tenantId);
+        } else {
+            $builder->whereRaw('1 = 0');
+        }
+
+        return $builder;
     }
 }
