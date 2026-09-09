@@ -34,7 +34,7 @@ class BudgetBilanService
             ->periode($mois, $annee)
             ->sum('montant');
 
-        /** @var Collection<int, stdClass> $lignes */
+        /** @var Collection<int, object{categorie: string, total: string}> $lignes */
         $lignes = $this->table('depenses')
             ->where('statut', 'validee')
             ->where('mois', $mois)
@@ -74,7 +74,7 @@ class BudgetBilanService
      */
     public function bilanAnnuel(int $annee): array
     {
-        /** @var Collection<int, stdClass> $recettesParMois */
+        /** @var Collection<int, object{mois: string, total: string}> $recettesParMois */
         $recettesParMois = $this->table('paiements')
             ->where('statut', 'confirmé')
             ->whereYear('date_paiement', $annee)
@@ -83,7 +83,7 @@ class BudgetBilanService
             ->get()
             ->keyBy(fn ($ligne): int => (int) $ligne->mois);
 
-        /** @var Collection<int, stdClass> $depensesParMois */
+        /** @var Collection<int, object{mois: string, total: string}> $depensesParMois */
         $depensesParMois = $this->table('depenses')
             ->where('statut', 'validee')
             ->where('annee', $annee)
@@ -112,7 +112,7 @@ class BudgetBilanService
             ];
         }
 
-        /** @var Collection<int, stdClass> $lignes */
+        /** @var Collection<int, object{categorie: string, total: string}> $lignes */
         $lignes = $this->table('depenses')
             ->where('statut', 'validee')
             ->where('annee', $annee)

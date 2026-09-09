@@ -46,7 +46,7 @@ class BudgetPrevisionnelService
      */
     public function previsionnel(int $annee, ?int $mois): array
     {
-        /** @var Collection<string, stdClass> $previsions */
+        /** @var Collection<string, object{categorie: string, montant_prevu: float|null}> $previsions */
         $previsions = $this->table('budget_previsionnel')
             ->where('annee', $annee)
             ->where('mois', $mois)
@@ -63,7 +63,7 @@ class BudgetPrevisionnelService
             $requeteRealises->where('mois', $mois);
         }
 
-        /** @var Collection<string, stdClass> $realises */
+        /** @var Collection<string, object{categorie: string, total_realise: string}> $realises */
         $realises = $requeteRealises->get()->keyBy('categorie');
 
         $lignes = collect(self::CATEGORIES)->map(function (string $categorie) use ($previsions, $realises): array {

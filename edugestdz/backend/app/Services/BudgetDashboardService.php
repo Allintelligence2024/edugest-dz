@@ -54,7 +54,7 @@ class BudgetDashboardService
             ->where('date_echeance', '<', today())
             ->sum('total_ttc');
 
-        /** @var Collection<int, stdClass> $depensesParCategorie */
+        /** @var Collection<int, object{categorie: string, total: string}> $depensesParCategorie */
         $depensesParCategorie = $this->table('depenses')
             ->where('statut', 'validee')
             ->where('mois', $mois)
@@ -63,7 +63,7 @@ class BudgetDashboardService
             ->groupBy('categorie')
             ->get();
 
-        /** @var Collection<string, stdClass> $previsions */
+        /** @var Collection<string, object{categorie: string, montant_prevu: float|null}> $previsions */
         $previsions = $this->table('budget_previsionnel')
             ->where('annee', $annee)
             ->where('mois', $mois)
@@ -109,7 +109,7 @@ class BudgetDashboardService
             ->map(fn (int $i): Carbon => now()->subMonths($i))
             ->map(fn (Carbon $date): array => ['annee' => (int) $date->year, 'mois' => (int) $date->month]);
 
-        /** @var Collection<string, stdClass> $recettesParPeriode */
+        /** @var Collection<string, object{annee: string, mois: string, total: string}> $recettesParPeriode */
         $recettesParPeriode = $this->table('paiements')
             ->where('statut', 'confirmé')
             ->where(function (Builder $requete) use ($periodes): void {
@@ -124,7 +124,7 @@ class BudgetDashboardService
             ->get()
             ->keyBy(fn ($ligne): string => "{$ligne->annee}-{$ligne->mois}");
 
-        /** @var Collection<string, stdClass> $depensesParPeriode */
+        /** @var Collection<string, object{annee: string, mois: string, total: string}> $depensesParPeriode */
         $depensesParPeriode = $this->table('depenses')
             ->where('statut', 'validee')
             ->where(function (Builder $requete) use ($periodes): void {
