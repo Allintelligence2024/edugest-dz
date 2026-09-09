@@ -57,6 +57,8 @@ return [
         'api/v1/factures'    => 40,
         'api/v1/groupes'     => 40,
         'api/v1/enseignants' => 40,
+        'api/v1/budget/dashboard'    => 15,
+        'api/v1/budget/bilan-annuel' => 10,
     ],
 
     /*

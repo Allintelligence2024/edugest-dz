@@ -10,7 +10,6 @@ edugestdz/backend/app/Http/Controllers/Api/V1/StockInventaireController.php|569
 edugestdz/backend/app/Http/Controllers/Api/V1/EntretienController.php|464
 edugestdz/backend/app/Http/Controllers/Api/V1/EleveController.php|463
 edugestdz/backend/app/Http/Controllers/Api/V1/TransportController.php|459
-edugestdz/backend/app/Http/Controllers/Api/V1/BudgetController.php|442
 edugestdz/backend/app/Http/Controllers/Api/V1/AuthController.php|440
 edugestdz/backend/app/Http/Controllers/Api/V1/PaiementEnLigneController.php|422
 edugestdz/backend/app/Http/Controllers/Api/V1/CantineController.php|412
