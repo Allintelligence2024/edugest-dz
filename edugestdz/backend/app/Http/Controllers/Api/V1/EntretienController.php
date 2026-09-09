@@ -3,20 +3,25 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\BaseApiController;
-use App\Models\Depense;
-use App\Models\EntretienPreventif;
-use App\Models\InterventionEntretien;
-use App\Models\LocalBatiment;
-use App\Models\PrestatireEntretien;
+use App\Services\EntretienService;
+use App\Services\EntretienPreventifService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class EntretienController extends BaseApiController
 {
-    // ═══════════════════════════════════════════
-    // LOCAUX
-    // ═══════════════════════════════════════════
+    protected $entretienService;
+    protected $preventifService;
+
+    public function __construct(
+        EntretienService $entretienService,
+        EntretienPreventifService $preventifService
+    ) {
+        $this->entretienService   = $entretienService;
+        $this->preventifService   = $preventifService;
+    }
+
+    // ── LOCAUX ──────────────────────────────────────────────────────────────
 
     public function indexLocaux(Request $request): JsonResponse
     {
@@ -59,7 +64,7 @@ class EntretienController extends BaseApiController
 
     public function updateLocal(Request $request, string $id): JsonResponse
     {
-        $local     = LocalBatiment::findOrFail($id);
+        $local = LocalBatiment::findOrFail($id);
         $validated = $request->validate([
             'nom'          => 'sometimes|string|max:100',
             'etat_general' => 'sometimes|in:bon,moyen,mauvais,critique',
@@ -89,9 +94,7 @@ class EntretienController extends BaseApiController
         return $this->success(null, "Local '{$nom}' supprimé");
     }
 
-    // ═══════════════════════════════════════════
-    // PRESTATAIRES
-    // ═══════════════════════════════════════════
+    // ── PRESTATAIRES ───────────────────────────────────────────────────────
 
     public function indexPrestataires(): JsonResponse
     {
@@ -135,320 +138,102 @@ class EntretienController extends BaseApiController
         return $this->success($prestataire->fresh(), 'Prestataire mis à jour');
     }
 
-    // ═══════════════════════════════════════════
-    // INTERVENTIONS (TICKETS)
-    // ═══════════════════════════════════════════
+    // ── INTERVENTIONS ───────────────────────────────────────────────────────
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/entretien/interventions",
-     *     summary="Liste des interventions d'entretien",
-     *     tags={"Entretien"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
-     *     @OA\Parameter(name="statut",   in="query", @OA\Schema(type="string", enum={"signale","en_cours","en_attente","resolu","annule"})),
-     *     @OA\Parameter(name="priorite", in="query", @OA\Schema(type="string", enum={"urgente","haute","normale","basse"})),
-     *     @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer", default=20)),
-     *     @OA\Response(response=200, description="Interventions paginées", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
-     * )
-     */
     public function indexInterventions(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'statut'   => 'nullable|in:signale,en_cours,en_attente,resolu,annule',
-            'priorite' => 'nullable|in:urgente,haute,normale,basse',
-            'type'     => 'nullable|string',
-            'local_id' => 'nullable|uuid',
-            'per_page' => 'nullable|integer|min:5|max:100',
-        ]);
-
-        $paginator = InterventionEntretien::with([
-            'local:id,nom,type',
-            'prestataire:id,nom,specialite',
-        ])
-            ->when($validated['statut']   ?? null, fn($q, $s) => $q->where('statut', $s))
-            ->when($validated['priorite'] ?? null, fn($q, $p) => $q->where('priorite', $p))
-            ->when($validated['type']     ?? null, fn($q, $t) => $q->where('type', $t))
-            ->when($validated['local_id'] ?? null, fn($q, $l) => $q->where('local_id', $l))
-            ->orderByRaw("CASE priorite
-                WHEN 'urgente' THEN 1
-                WHEN 'haute'   THEN 2
-                WHEN 'normale' THEN 3
-                WHEN 'basse'   THEN 4
-                ELSE 5 END")
-            ->orderByDesc('date_signalement')
-            ->paginate($validated['per_page'] ?? 20);
-
-        $stats = [
-            'total_ouverts' => InterventionEntretien::ouverts()->count(),
-            'urgentes'      => InterventionEntretien::ouverts()->priorite('urgente')->count(),
-            'hautes'        => InterventionEntretien::ouverts()->priorite('haute')->count(),
-            'resolues_mois' => InterventionEntretien::where('statut', 'resolu')
-                ->whereMonth('date_resolution', now()->month)->count(),
-        ];
-
-        return $this->paginatedResponse($paginator, 'Interventions récupérées', ['stats' => $stats]);
+        $result = $this->entretienService->index($request);
+        return $this->paginatedResponse(
+            $result['paginator'],
+            'Interventions récupérées',
+            ['stats' => $result['stats']]
+        );
     }
 
-    public function showIntervention(string $id): JsonResponse
-    {
-        $intervention = InterventionEntretien::with([
-            'local:id,nom,type,etage',
-            'prestataire:id,nom,specialite,telephone',
-            'signalePar:id,nom,prenom',
-            'depense',
-        ])->findOrFail($id);
-
-        return $this->success([
-            'intervention'   => $intervention,
-            'priorite_label' => $intervention->priorite_label,
-            'statut_label'   => $intervention->statut_label,
-            'duree_jours'    => $intervention->duree_jours,
-        ]);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/entretien/interventions",
-     *     summary="Signaler une intervention d'entretien",
-     *     tags={"Entretien"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(ref="#/components/parameters/TenantId"),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"titre","type","priorite"},
-     *             @OA\Property(property="titre",         type="string"),
-     *             @OA\Property(property="description",   type="string", nullable=true),
-     *             @OA\Property(property="type",          type="string", enum={"panne","degradation","entretien_preventif","renovation","nettoyage","inspection"}),
-     *             @OA\Property(property="priorite",      type="string", enum={"urgente","haute","normale","basse"}),
-     *             @OA\Property(property="local_id",      type="string", format="uuid", nullable=true),
-     *             @OA\Property(property="prestataire_id",type="string", format="uuid", nullable=true),
-     *             @OA\Property(property="cout_estime",   type="number", format="float", nullable=true)
-     *         )
-     *     ),
-     *     @OA\Response(response=201, description="Intervention créée", @OA\JsonContent(ref="#/components/schemas/SuccessResponse"))
-     * )
-     */
     public function signalerIntervention(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'titre'           => 'required|string|max:200',
-            'description'     => 'nullable|string|max:1000',
-            'type'            => 'required|in:panne,degradation,entretien_preventif,renovation,nettoyage,inspection',
-            'priorite'        => 'required|in:urgente,haute,normale,basse',
-            'local_id'        => 'nullable|uuid|exists:locaux_batiment,id',
-            'prestataire_id'  => 'nullable|uuid|exists:prestataires_entretien,id',
-            'date_signalement'=> 'nullable|date',
-            'cout_estime'     => 'nullable|numeric|min:0',
-        ]);
-
-        $validated['date_signalement'] = $validated['date_signalement'] ?? today()->toDateString();
-        $validated['signale_par']      = auth()->id();
-        $validated['statut']           = 'signale';
-
-        $intervention = InterventionEntretien::create($validated);
-
+        $result = $this->entretienService->signalerIntervention($request->all());
+        if (isset($result['error'])) {
+            return $this->error($result['error'], $result['code'], $result['status']);
+        }
+        $r = $result;
         return $this->created([
-            'intervention'   => $intervention->load(['local', 'prestataire']),
-            'priorite_label' => $intervention->priorite_label,
-        ], "Intervention signalée : {$intervention->titre}");
+            'intervention'   => $r['intervention'],
+            'priorite_label' => $r['intervention']->priorite_label,
+        ], "Intervention signalée : {$r['success']}");
     }
 
     public function changerStatut(Request $request, string $id): JsonResponse
     {
-        $validated = $request->validate([
-            'statut'                  => 'required|in:en_cours,en_attente,annule',
-            'prestataire_id'          => 'nullable|uuid|exists:prestataires_entretien,id',
-            'date_debut_intervention' => 'nullable|date',
-        ]);
-
-        $intervention = InterventionEntretien::findOrFail($id);
-
-        if ($intervention->statut === 'resolu') {
-            return $this->error('Cette intervention est déjà résolue', 'DEJA_RESOLU', 409);
+        $result = $this->entretienService->changerStatut($id, $request->all());
+        if (isset($result['error'])) {
+            return $this->error($result['error'], $result['code'], $result['status']);
         }
-
-        $data = ['statut' => $validated['statut']];
-
-        if ($validated['statut'] === 'en_cours') {
-            $data['date_debut_intervention'] = $validated['date_debut_intervention'] ?? today()->toDateString();
-            if (isset($validated['prestataire_id'])) {
-                $data['prestataire_id'] = $validated['prestataire_id'];
-            }
-        }
-
-        $intervention->update($data);
+        $r = $result;
         return $this->success(
-            $intervention->fresh(['local', 'prestataire']),
-            "Statut mis à jour : {$intervention->statut_label}"
+            $r['intervention'] ?? null,
+            "Statut mis à jour : {$r['success']}"
         );
     }
 
     public function resoudreIntervention(Request $request, string $id): JsonResponse
     {
-        $validated = $request->validate([
-            'cout_reel'            => 'required|numeric|min:0',
-            'rapport_intervention' => 'nullable|string|max:2000',
-            'date_resolution'      => 'nullable|date',
-            'date_entretien_suivant'=> 'nullable|date|after:today',
-            'etat_local_apres'     => 'nullable|in:bon,moyen,mauvais,critique',
-        ]);
-
-        $intervention = InterventionEntretien::with('local')->findOrFail($id);
-
-        if ($intervention->statut === 'resolu') {
-            return $this->error('Déjà résolu', 'DEJA_RESOLU', 409);
+        $result = $this->entretienService->resoudreIntervention($id, $request->all());
+        if (isset($result['error'])) {
+            return $this->error($result['error'], $result['code'], $result['status']);
         }
-
-        DB::transaction(function () use ($intervention, $validated) {
-            $intervention->update([
-                'statut'                => 'resolu',
-                'cout_reel'             => $validated['cout_reel'],
-                'rapport_intervention'  => $validated['rapport_intervention'] ?? null,
-                'date_resolution'       => $validated['date_resolution'] ?? today()->toDateString(),
-                'date_entretien_suivant'=> $validated['date_entretien_suivant'] ?? null,
-            ]);
-
-            if (isset($validated['etat_local_apres']) && $intervention->local) {
-                $intervention->local->update(['etat_general' => $validated['etat_local_apres']]);
-            }
-
-            if ($validated['cout_reel'] > 0) {
-                $depense = Depense::create([
-                    'tenant_id'    => config('tenant.current_id'),
-                    'categorie'    => 'maintenance_reparation',
-                    'libelle'      => "Entretien : {$intervention->titre}",
-                    'montant'      => $validated['cout_reel'],
-                    'date_depense' => today()->toDateString(),
-                    'mois'         => now()->month,
-                    'annee'        => now()->year,
-                    'fournisseur'  => $intervention->prestataire?->nom,
-                    'mode_paiement'=> 'cash',
-                    'statut'       => 'validee',
-                    'saisie_par'   => auth()->id(),
-                    'note'         => "Lié à l'intervention #{$intervention->id}",
-                ]);
-
-                $intervention->update(['depense_id' => $depense->id]);
-            }
-        });
-
+        $r = $result;
         return $this->success([
-            'intervention' => $intervention->fresh(['local', 'prestataire', 'depense']),
-            'depense_creee'=> $validated['cout_reel'] > 0,
-        ], "Intervention résolue — Coût : " . number_format($validated['cout_reel'], 2) . " DA");
+            'intervention' => $r['intervention'],
+            'depense_creee' => $r['depense_creee'],
+        ], "Intervention résolue — Coût : " . number_format($validated['cout_reel'] ?? 0, 2) . " DA");
     }
 
-    // ═══════════════════════════════════════════
-    // ENTRETIENS PRÉVENTIFS
-    // ═══════════════════════════════════════════
+    // ── ENTRAÎNEMENTS PRÉVENTIFS ───────────────────────────────────────────
 
     public function indexPreventif(): JsonResponse
     {
-        $entretiens = EntretienPreventif::where('actif', true)
-            ->with(['local:id,nom', 'prestataire:id,nom'])
-            ->orderBy('prochaine_echeance')
-            ->get()
-            ->map(fn($e) => array_merge($e->toArray(), [
-                'en_retard'              => $e->en_retard,
-                'jours_avant_echeance'   => $e->jours_avant_echeance,
-            ]));
-
-        $alertes = $entretiens->filter(fn($e) => $e['jours_avant_echeance'] <= 30)->count();
-
+        $result = $this->preventifService->index();
         return $this->success([
-            'entretiens' => $entretiens,
-            'alertes_30j'=> $alertes,
+            'entretiens' => $result['entretiens'],
+            'alertes_30j'=> $result['alertes_30j'],
         ], 'Entretiens préventifs récupérés');
     }
 
     public function planifierPreventif(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'nom'                 => 'required|string|max:150',
-            'description'         => 'nullable|string|max:500',
-            'local_id'            => 'nullable|uuid|exists:locaux_batiment,id',
-            'prestataire_id'      => 'nullable|uuid|exists:prestataires_entretien,id',
-            'frequence'           => 'required|in:hebdomadaire,mensuel,trimestriel,semestriel,annuel,biennal',
-            'prochaine_echeance'  => 'required|date',
-            'cout_estime'         => 'nullable|numeric|min:0',
-        ]);
-
-        $entretien = EntretienPreventif::create($validated);
-        return $this->created($entretien->load(['local', 'prestataire']), "Entretien planifié : {$entretien->nom}");
+        $result = $this->preventifService->planifierPreventif($request->all());
+        return $this->created($result['entretien'], $result['success']);
     }
 
-    public function realiserPreventif(Request $request, string $id): JsonResponse
+    public function realizierPreventif(Request $request, string $id): JsonResponse
     {
-        $validated = $request->validate([
-            'cout_reel'   => 'nullable|numeric|min:0',
-            'observations'=> 'nullable|string|max:500',
-        ]);
-
-        $entretien = EntretienPreventif::findOrFail($id);
-
-        $prochaine = match ($entretien->frequence) {
-            'hebdomadaire' => now()->addWeek(),
-            'mensuel'      => now()->addMonth(),
-            'trimestriel'  => now()->addMonths(3),
-            'semestriel'   => now()->addMonths(6),
-            'annuel'       => now()->addYear(),
-            'biennal'      => now()->addYears(2),
-            default        => now()->addYear(),
-        };
-
-        $entretien->update([
-            'derniere_realisation'  => today(),
-            'prochaine_echeance'    => $prochaine->toDateString(),
-        ]);
-
-        if (($validated['cout_reel'] ?? 0) > 0) {
-            Depense::create([
-                'tenant_id'    => config('tenant.current_id'),
-                'categorie'    => 'maintenance_reparation',
-                'libelle'      => "Entretien préventif : {$entretien->nom}",
-                'montant'      => $validated['cout_reel'],
-                'date_depense' => today()->toDateString(),
-                'mois'         => now()->month,
-                'annee'        => now()->year,
-                'fournisseur'  => $entretien->prestataire?->nom,
-                'mode_paiement'=> 'cash',
-                'statut'       => 'validee',
-                'saisie_par'   => auth()->id(),
-            ]);
+        $result = $this->preventifService->realizierPreventif($id, $request->all());
+        if (isset($result['error'])) {
+            return $this->error($result['error'], null, 400);
         }
-
-        return $this->success([
-            'entretien'        => $entretien->fresh(),
-            'prochaine_echeance'=> $prochaine->format('d/m/Y'),
-        ], "Entretien réalisé · Prochain : {$prochaine->format('d/m/Y')}");
+        return $this->success($result['entretien'], $result['success']);
     }
 
-    // ═══════════════════════════════════════════
-    // DASHBOARD
-    // ═══════════════════════════════════════════
+    // ── DASHBOARD ──────────────────────────────────────────────────────────
 
     public function dashboard(): JsonResponse
     {
-        $today = today();
+        $alertes_30j = $this->preventifService->index()['alertes_30j'];
 
         $stats = [
             'tickets_ouverts'   => InterventionEntretien::ouverts()->count(),
             'tickets_urgents'   => InterventionEntretien::ouverts()->priorite('urgente')->count(),
             'resolus_ce_mois'   => InterventionEntretien::where('statut', 'resolu')
-                ->whereMonth('date_resolution', $today->month)
-                ->whereYear('date_resolution', $today->year)
-                ->count(),
+                ->whereMonth('date_resolution', today()->month)
+                ->whereYear('date_resolution', today()->year)->count(),
             'cout_mois'         => InterventionEntretien::where('statut', 'resolu')
-                ->whereMonth('date_resolution', $today->month)
-                ->whereYear('date_resolution', $today->year)
-                ->sum('cout_reel'),
+                ->whereMonth('date_resolution', today()->month)
+                ->whereYear('date_resolution', today()->year)->sum('cout_reel'),
             'locaux_critique'   => LocalBatiment::actifs()->where('etat_general', 'critique')->count(),
             'preventifs_retard' => EntretienPreventif::where('actif', true)
-                ->where('prochaine_echeance', '<', $today)->count(),
-            'preventifs_30j'    => EntretienPreventif::where('actif', true)
-                ->whereBetween('prochaine_echeance', [$today, $today->copy()->addDays(30)])->count(),
+                ->where('prochaine_echeance', '<', today())->count(),
+            'preventifs_30j'    => $alertes_30j,
         ];
 
         $derniersTickets = InterventionEntretien::ouverts()
