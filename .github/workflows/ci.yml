@@ -299,3 +299,6 @@ jobs:
       - name: Analyse statique backend (PHPStan niveau 6, bloquant avec baseline)
         working-directory: edugestdz/backend
         run: ../../scripts/analyse-statique.sh --no-progress
+
+      - name: "Garde-fou — contrôleurs ≤350 lignes (baseline Lot C)"
+        run: scripts/verifier-controleurs.sh
