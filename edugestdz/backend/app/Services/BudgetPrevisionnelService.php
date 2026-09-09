@@ -92,13 +92,23 @@ class BudgetPrevisionnelService
             ];
         });
 
+        $totalPrevu   = 0.0;
+        $totalRealise = 0.0;
+        $ecartTotal   = 0.0;
+
+        foreach ($lignes as $ligne) {
+            $totalPrevu   += $ligne['prevu'];
+            $totalRealise += $ligne['realise'];
+            $ecartTotal   += $ligne['ecart'];
+        }
+
         return [
             'annee'         => $annee,
             'mois'          => $mois,
             'lignes'        => $lignes,
-            'total_prevu'   => (float) $lignes->sum('prevu'),
-            'total_realise' => (float) $lignes->sum('realise'),
-            'ecart_total'   => (float) $lignes->sum('ecart'),
+            'total_prevu'   => $totalPrevu,
+            'total_realise' => $totalRealise,
+            'ecart_total'   => $ecartTotal,
         ];
     }
 
