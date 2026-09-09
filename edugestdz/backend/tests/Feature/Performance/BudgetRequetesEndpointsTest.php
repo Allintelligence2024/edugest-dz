@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Performance;
 
-use App\Models\{Eleve, Enseignant, Facture, Groupe, LigneFacture, ParentEleve, Role, Tenant, User};
+use App\Models\{BudgetPrevisionnel, Depense, Eleve, Enseignant, Facture, Groupe, LigneFacture, Paiement, ParentEleve, Role, Tenant, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\BudgetRequetes;
 use Tests\TestCase;
@@ -151,6 +151,71 @@ class BudgetRequetesEndpointsTest extends TestCase
 
             $this->assertBudgetRequetes($budget, $this->appeler($url), "GET {$url}");
         }
+    }
+
+    // ── Budget ───────────────────────────────────────────────────────────
+
+    public function test_dashboard_budget_respecte_son_plafond_de_requetes(): void
+    {
+        $this->creerDonneesBudget();
+
+        $this->assertBudgetRequetes(
+            (int) config('performance.budgets.api/v1/budget/dashboard'),
+            $this->appeler('/api/v1/budget/dashboard'),
+            'GET /api/v1/budget/dashboard'
+        );
+    }
+
+    public function test_bilan_annuel_respecte_son_plafond_de_requetes(): void
+    {
+        $this->creerDonneesBudget();
+
+        $this->assertBudgetRequetes(
+            (int) config('performance.budgets.api/v1/budget/bilan-annuel'),
+            $this->appeler('/api/v1/budget/bilan-annuel?annee=' . now()->year),
+            'GET /api/v1/budget/bilan-annuel'
+        );
+    }
+
+    /**
+     * Crée des données budgétaires dans le mois courant : sans elles, le
+     * cache du dashboard ne se reconstitue pas et les requêtes GROUP BY
+     * restent à vide — le plafond ne prouverait rien.
+     */
+    private function creerDonneesBudget(): void
+    {
+        Depense::factory()->count(3)->create([
+            'tenant_id' => $this->tenant->id,
+            'mois'      => now()->month,
+            'annee'     => now()->year,
+            'statut'    => 'validee',
+        ]);
+
+        $eleve = Eleve::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        Facture::factory()->count(2)->create([
+            'tenant_id' => $this->tenant->id,
+            'eleve_id'  => $eleve->id,
+            'date_emission' => now(),
+        ]);
+
+        Paiement::create([
+            'tenant_id'     => $this->tenant->id,
+            'facture_id'    => Facture::first()->id,
+            'eleve_id'      => $eleve->id,
+            'montant'       => 10000,
+            'statut'        => 'confirmé',
+            'mode_paiement' => 'cash',
+            'date_paiement' => now(),
+        ]);
+
+        BudgetPrevisionnel::create([
+            'tenant_id'     => $this->tenant->id,
+            'annee'         => now()->year,
+            'mois'          => now()->month,
+            'categorie'     => 'fournitures_bureau',
+            'montant_prevu' => 50000,
+        ]);
     }
 
     // ── Instrumentation ───────────────────────────────────────────────────

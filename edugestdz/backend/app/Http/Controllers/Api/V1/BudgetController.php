@@ -5,13 +5,21 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\BudgetPrevisionnel;
 use App\Models\Depense;
-use App\Models\Facture;
-use App\Models\Paiement;
+use App\Services\BudgetBilanService;
+use App\Services\BudgetDashboardService;
+use App\Services\BudgetPrevisionnelService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BudgetController extends BaseApiController
 {
+    public function __construct(
+        private BudgetDashboardService $dashboardService,
+        private BudgetBilanService $bilanService,
+        private BudgetPrevisionnelService $previsionnelService,
+    ) {}
+
     /**
      * @OA\Get(
      *     path="/api/v1/budget/dashboard",
@@ -40,61 +48,8 @@ class BudgetController extends BaseApiController
     {
         $mois  = (int) ($request->mois  ?? now()->month);
         $annee = (int) ($request->annee ?? now()->year);
-        $key   = "budget_dashboard_" . config('tenant.current_id') . "_{$mois}_{$annee}";
 
-        $data = cache()->remember($key, 600, function () use ($mois, $annee) {
-            $recettes = (float) Paiement::where('statut', 'confirmé')
-                ->whereMonth('date_paiement', $mois)
-                ->whereYear('date_paiement', $annee)
-                ->sum('montant');
-
-            $depenses = (float) Depense::validees()
-                ->periode($mois, $annee)
-                ->sum('montant');
-
-            $impayes = (float) Facture::whereIn('statut', ['émise', 'en_retard', 'partiellement_payée'])
-                ->where('date_echeance', '<', today())
-                ->sum('total_ttc');
-
-            $parCategorie = Depense::validees()
-                ->periode($mois, $annee)
-                ->selectRaw('categorie, SUM(montant) as total')
-                ->groupBy('categorie')
-                ->get()
-                ->mapWithKeys(fn($r) => [
-                    $r->categorie => [
-                        'libelle' => Depense::categorieLibelle($r->categorie),
-                        'total'   => (float) $r->total,
-                        'prevu'   => BudgetPrevisionnel::getPrevision($r->categorie, now()->year, $mois),
-                    ],
-                ]);
-
-            $evolution = [];
-            for ($i = 5; $i >= 0; $i--) {
-                $date = now()->subMonths($i);
-                $evolution[] = [
-                    'label'    => $date->translatedFormat('M Y'),
-                    'recettes' => (float) Paiement::where('statut', 'confirmé')
-                        ->whereMonth('date_paiement', $date->month)
-                        ->whereYear('date_paiement', $date->year)
-                        ->sum('montant'),
-                    'depenses' => (float) Depense::validees()
-                        ->periode($date->month, $date->year)
-                        ->sum('montant'),
-                ];
-                $evolution[count($evolution) - 1]['resultat'] =
-                    $evolution[count($evolution) - 1]['recettes'] - $evolution[count($evolution) - 1]['depenses'];
-            }
-
-            return [
-                'recettes'      => $recettes,
-                'depenses'      => $depenses,
-                'resultat_net'  => $recettes - $depenses,
-                'impayes'       => $impayes,
-                'par_categorie' => $parCategorie,
-                'evolution'     => $evolution,
-            ];
-        });
+        $data = $this->dashboardService->getDashboard($mois, $annee);
 
         return $this->success(array_merge($data, ['periode' => compact('mois', 'annee')]), "Dashboard budget {$mois}/{$annee}");
     }
@@ -158,7 +113,7 @@ class BudgetController extends BaseApiController
             'note'               => 'nullable|string|max:500',
         ]);
 
-        $date = \Carbon\Carbon::parse($validated['date_depense']);
+        $date = Carbon::parse($validated['date_depense']);
         $validated['mois']       = $date->month;
         $validated['annee']      = $date->year;
         $validated['saisie_par'] = auth()->id();
@@ -189,7 +144,7 @@ class BudgetController extends BaseApiController
         ]);
 
         if (isset($validated['date_depense'])) {
-            $date = \Carbon\Carbon::parse($validated['date_depense']);
+            $date = Carbon::parse($validated['date_depense']);
             $validated['mois']  = $date->month;
             $validated['annee'] = $date->year;
         }
@@ -248,49 +203,10 @@ class BudgetController extends BaseApiController
         $annee = (int) ($request->annee ?? now()->year);
         $mois  = $request->filled('mois') ? (int) $request->mois : null;
 
-        $categories = [
-            'salaires_enseignants', 'salaires_personnel', 'loyer',
-            'electricite_gaz', 'eau', 'telephone_internet',
-            'fournitures_bureau', 'fournitures_pedagogiques',
-            'maintenance_reparation', 'assurance', 'publicite_marketing',
-            'transport', 'cantine_restauration', 'taxes_impots', 'autres',
-        ];
-
-        $previsions = BudgetPrevisionnel::where('annee', $annee)
-            ->where('mois', $mois)
-            ->get()
-            ->keyBy('categorie');
-
-        $realises = Depense::validees()
-            ->where('annee', $annee)
-            ->when($mois, fn($q) => $q->where('mois', $mois))
-            ->selectRaw('categorie, SUM(montant) as total_realise')
-            ->groupBy('categorie')
-            ->get()
-            ->keyBy('categorie');
-
-        $data = collect($categories)->map(function (string $cat) use ($previsions, $realises) {
-            $prevu   = (float) ($previsions[$cat]?->montant_prevu ?? 0);
-            $realise = (float) ($realises[$cat]?->total_realise   ?? 0);
-
-            return [
-                'categorie'   => $cat,
-                'libelle'     => Depense::categorieLibelle($cat),
-                'prevu'       => $prevu,
-                'realise'     => $realise,
-                'ecart'       => $prevu - $realise,
-                'pct_realise' => $prevu > 0 ? round(($realise / $prevu) * 100, 1) : null,
-            ];
-        });
-
-        return $this->success([
-            'annee'         => $annee,
-            'mois'          => $mois,
-            'lignes'        => $data,
-            'total_prevu'   => $data->sum('prevu'),
-            'total_realise' => $data->sum('realise'),
-            'ecart_total'   => $data->sum('ecart'),
-        ], "Budget prévisionnel {$annee}");
+        return $this->success(
+            $this->previsionnelService->previsionnel($annee, $mois),
+            "Budget prévisionnel {$annee}"
+        );
     }
 
     public function setPrevisionnel(Request $request): JsonResponse
@@ -332,110 +248,26 @@ class BudgetController extends BaseApiController
         $mois  = (int) ($request->mois  ?? now()->month);
         $annee = (int) ($request->annee ?? now()->year);
 
-        $recettes = (float) Paiement::where('statut', 'confirmé')
-            ->whereMonth('date_paiement', $mois)
-            ->whereYear('date_paiement', $annee)
-            ->sum('montant');
-
-        $depenses = (float) Depense::validees()
-            ->periode($mois, $annee)
-            ->sum('montant');
-
-        $depensesDetail = Depense::validees()
-            ->periode($mois, $annee)
-            ->selectRaw('categorie, SUM(montant) as total')
-            ->groupBy('categorie')
-            ->get()
-            ->map(fn($r) => [
-                'categorie' => $r->categorie,
-                'libelle'   => Depense::categorieLibelle($r->categorie),
-                'total'     => (float) $r->total,
-            ]);
-
-        $facturesEmises = (float) Facture::whereMonth('date_emission', $mois)
-            ->whereYear('date_emission', $annee)
-            ->sum('total_ttc');
-
-        return $this->success([
-            'periode'           => compact('mois', 'annee'),
-            'recettes'          => $recettes,
-            'factures_emises'   => $facturesEmises,
-            'depenses'          => $depenses,
-            'resultat_net'      => $recettes - $depenses,
-            'taux_recouvrement' => $facturesEmises > 0
-                ? round(($recettes / $facturesEmises) * 100, 1) : 0,
-            'depenses_detail'   => $depensesDetail,
-        ], "Bilan {$mois}/{$annee}");
+        return $this->success(
+            $this->bilanService->bilanMensuel($mois, $annee),
+            "Bilan {$mois}/{$annee}"
+        );
     }
 
     public function bilanAnnuel(Request $request): JsonResponse
     {
         $annee = (int) ($request->annee ?? now()->year);
 
-        $data = [];
-        $totalRecettes = 0;
-        $totalDepenses = 0;
-
-        for ($m = 1; $m <= 12; $m++) {
-            $rec = (float) Paiement::where('statut', 'confirmé')
-                ->whereMonth('date_paiement', $m)
-                ->whereYear('date_paiement', $annee)
-                ->sum('montant');
-
-            $dep = (float) Depense::validees()
-                ->periode($m, $annee)
-                ->sum('montant');
-
-            $totalRecettes += $rec;
-            $totalDepenses += $dep;
-
-            $data[] = [
-                'mois'     => $m,
-                'label'    => \Carbon\Carbon::create($annee, $m, 1)->translatedFormat('F'),
-                'recettes' => $rec,
-                'depenses' => $dep,
-                'resultat' => $rec - $dep,
-            ];
-        }
-
-        $depensesParCategorie = Depense::validees()
-            ->annee($annee)
-            ->selectRaw('categorie, SUM(montant) as total')
-            ->groupBy('categorie')
-            ->get()
-            ->map(fn($r) => [
-                'categorie' => $r->categorie,
-                'libelle'   => Depense::categorieLibelle($r->categorie),
-                'total'     => (float) $r->total,
-                'pct'       => $totalDepenses > 0
-                    ? round(($r->total / $totalDepenses) * 100, 1) : 0,
-            ]);
-
-        return $this->success([
-            'annee'                  => $annee,
-            'mois_par_mois'          => $data,
-            'total_recettes'         => $totalRecettes,
-            'total_depenses'         => $totalDepenses,
-            'resultat_annuel'        => $totalRecettes - $totalDepenses,
-            'depenses_par_categorie' => $depensesParCategorie,
-        ], "Bilan annuel {$annee}");
+        return $this->success(
+            $this->bilanService->bilanAnnuel($annee),
+            "Bilan annuel {$annee}"
+        );
     }
 
     public function categories(): JsonResponse
     {
-        $cats = [
-            'salaires_enseignants', 'salaires_personnel', 'loyer',
-            'electricite_gaz', 'eau', 'telephone_internet',
-            'fournitures_bureau', 'fournitures_pedagogiques',
-            'maintenance_reparation', 'assurance', 'publicite_marketing',
-            'transport', 'cantine_restauration', 'taxes_impots', 'autres',
-        ];
-
         return $this->success(
-            collect($cats)->map(fn($c) => [
-                'code'    => $c,
-                'libelle' => Depense::categorieLibelle($c),
-            ]),
+            $this->previsionnelService->categories(),
             'Categories de depenses'
         );
     }
