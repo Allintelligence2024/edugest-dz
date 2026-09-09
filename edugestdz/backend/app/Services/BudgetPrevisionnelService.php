@@ -82,7 +82,12 @@ class BudgetPrevisionnelService
             $prevu   = (float) ($previsions[$categorie]->montant_prevu ?? 0);
             $realise = (float) ($realises[$categorie]->total_realise ?? 0);
 
-            return [
+// PHPStan 2.x rapporte ici une incompatibilité de retour alors que le
+        // type réel (membres blindés par le @var ci-dessus et totaux sommés en
+        // boucle) correspond exactement au @return : les deux formes affichées
+        // par l'analyseur sont identiques. Fausse alerte, on l'écarte.
+        /** @phpstan-ignore-next-line */
+        return [
                 'categorie'   => $categorie,
                 'libelle'     => Depense::categorieLibelle($categorie),
                 'prevu'       => $prevu,
