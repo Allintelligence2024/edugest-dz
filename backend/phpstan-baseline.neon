@@ -8441,3 +8441,45 @@ parameters:
 			identifier: argument.templateType
 			count: 1
 			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Auth\\AuthManager\:\:factory\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\StatefulGuard\:\:factory\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\StatefulGuard\:\:refresh\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined static method Tymon\\JWTAuth\\Facades\\JWTAuth\:\:fromUser\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 3
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$tenant\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AuthCompteService.php

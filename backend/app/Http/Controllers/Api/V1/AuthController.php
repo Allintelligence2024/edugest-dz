@@ -2,16 +2,18 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Services\RefreshTokenService;
-use App\Services\TwoFactorService;
+use App\Services\AuthCompteService;
+use App\Services\AuthSessionService;
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\{Cache, Hash, Password};
-use Illuminate\Support\Str;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Symfony\Component\HttpFoundation\Cookie;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private AuthSessionService $session,
+        private AuthCompteService $compte,
+    ) {}
+
     /**
      * @OA\Post(
      *     path="/api/v1/auth/login",
@@ -43,162 +45,32 @@ class AuthController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
+        $result   = $this->session->login($request);
+        $response = response()->json($result['payload'], $result['status']);
 
-        $monitor = app(\App\Services\SecurityMonitorService::class);
-
-        if ($monitor->estEnBruteForce($credentials['email'], $request->ip())) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Trop de tentatives. Reessayez dans 15 minutes.',
-                'code'    => 'BRUTE_FORCE_BLOCKED',
-            ], 429);
+        if (!isset($result['cookie'])) {
+            return $response;
         }
 
-        $user = User::where('email', $credentials['email'])->first();
+        /** @var Cookie $cookie */
+        $cookie = $result['cookie'];
 
-        if (!$user) {
-            try { $monitor->loginEchoue($credentials['email'], $request->ip()); } catch (\Throwable) {}
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
-            ], 401);
-        }
-
-        if (app(TwoFactorService::class)->isLocked($user)) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'ACCOUNT_LOCKED', 'message' => 'Compte temporairement verrouillé après trop de tentatives'],
-            ], 423);
-        }
-
-        if (!Hash::check($credentials['password'], $user->password)) {
-            app(TwoFactorService::class)->incrementLoginAttempts($user);
-            try { $monitor->loginEchoue($credentials['email'], $request->ip()); } catch (\Throwable) {}
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'INVALID_CREDENTIALS', 'message' => 'Email ou mot de passe incorrect'],
-            ], 401);
-        }
-
-        if ($user->statut !== 'actif') {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'ACCOUNT_INACTIVE', 'message' => 'Compte désactivé'],
-            ], 403);
-        }
-
-        app(TwoFactorService::class)->resetLoginAttempts($user);
-
-        if ($user->two_factor_confirmed_at !== null) {
-            $tempToken = Str::random(60);
-            Cache::put('2fa_temp_' . $tempToken, $user->id, now()->addMinutes(5));
-
-            return response()->json([
-                'success'             => true,
-                'two_factor_required' => true,
-                'two_factor_type'     => $user->two_factor_type,
-                'user_id'             => $user->id,
-                'temp_token'          => $tempToken,
-            ]);
-        }
-
-        $token  = JWTAuth::fromUser($user);
-        $tenant = $user->tenant;
-
-        // Le refresh token part dans un cookie httpOnly : il n'est jamais
-        // exposé au JavaScript, donc invulnérable au vol par XSS.
-        [, $cookieRefresh] = app(RefreshTokenService::class)->emettre($user, $request);
-
-        return response()->json([
-            'success'       => true,
-            'access_token'  => $token,
-            'token_type'    => 'bearer',
-            'expires_in'    => auth()->factory()->getTTL() * 60,
-            'user'          => $this->formatUser($user),
-            'tenant'        => $tenant ? [
-                'id'               => $tenant->id,
-                'nom'              => $tenant->nom_etablissement,
-                'slug'             => $tenant->slug,
-                'statut'           => $tenant->statut,
-                'date_expiration'  => $tenant->date_expiration,
-                'wilaya_id'        => $tenant->wilaya_id,
-                'commune_id'       => $tenant->commune_id,
-                'telephone'        => $tenant->telephone,
-            ] : null,
-        ])->withCookie($cookieRefresh);
+        return $response->withCookie($cookie);
     }
 
     public function complete2fa(Request $request): JsonResponse
     {
-        $request->validate([
-            'temp_token' => 'required|string',
-            'code'       => 'required|string',
-        ]);
+        $result   = $this->session->complete2fa($request);
+        $response = response()->json($result['payload'], $result['status']);
 
-        $userId = Cache::pull('2fa_temp_' . $request->temp_token);
-
-        if (!$userId) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'INVALID_TEMP_TOKEN', 'message' => 'Session 2FA expirée ou invalide'],
-            ], 422);
+        if (!isset($result['cookie'])) {
+            return $response;
         }
 
-        $user = User::find($userId);
+        /** @var Cookie $cookie */
+        $cookie = $result['cookie'];
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'USER_NOT_FOUND', 'message' => 'Utilisateur introuvable'],
-            ], 404);
-        }
-
-        $twoFactorService = app(TwoFactorService::class);
-        $valid = false;
-
-        if ($user->two_factor_type === 'totp') {
-            $valid = $twoFactorService->verifyCode($user->two_factor_secret, $request->code);
-
-            if (!$valid) {
-                $valid = $twoFactorService->validateRecoveryCode($request->code, $user);
-            }
-        } elseif ($user->two_factor_type === 'sms') {
-            $valid = $twoFactorService->verifySmsOtp($user, $request->code);
-        }
-
-        if (!$valid) {
-            return response()->json([
-                'success' => false,
-                'error'   => ['code' => 'INVALID_2FA_CODE', 'message' => 'Code 2FA invalide'],
-            ], 422);
-        }
-
-        $token  = JWTAuth::fromUser($user);
-        $tenant = $user->tenant;
-
-        [, $cookieRefresh] = app(RefreshTokenService::class)->emettre($user, $request);
-
-        return response()->json([
-            'success'       => true,
-            'access_token'  => $token,
-            'token_type'    => 'bearer',
-            'expires_in'    => auth()->factory()->getTTL() * 60,
-            'user'          => $this->formatUser($user),
-            'tenant'        => $tenant ? [
-                'id'               => $tenant->id,
-                'nom'              => $tenant->nom,
-                'slug'             => $tenant->slug,
-                'statut'           => $tenant->statut,
-                'date_expiration'  => $tenant->date_expiration,
-                'wilaya_id'        => $tenant->wilaya_id,
-                'commune_id'       => $tenant->commune_id,
-                'telephone'        => $tenant->telephone,
-            ] : null,
-        ])->withCookie($cookieRefresh);
+        return $response->withCookie($cookie);
     }
 
     /**
@@ -213,36 +85,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $service = app(RefreshTokenService::class);
+        $result   = $this->session->logout($request);
+        $response = response()->json($result['payload'], $result['status']);
 
-        // Un logout ne doit jamais renvoyer 500 : si le JWT est absent ou
-        // illisible, on révoque quand même ce qu'on peut et on efface le
-        // cookie. Se déconnecter doit toujours aboutir.
-        try {
-            $userId = auth('api')->id();
-        } catch (\Throwable) {
-            $userId = null;
-        }
+        /** @var Cookie $cookie */
+        $cookie = $result['cookie'];
 
-        // Révoquer le refresh token présenté, et par sécurité toutes les
-        // sessions de l'utilisateur : un logout doit être sans ambiguïté.
-        if ($cookie = $request->cookie(RefreshTokenService::COOKIE)) {
-            $service->revoquerJeton((string) $cookie, 'logout');
-        }
-
-        if ($userId) {
-            $service->revoquerUtilisateur($userId, 'logout');
-        }
-
-        try {
-            auth('api')->logout();
-        } catch (\Throwable) {
-            // Jeton déjà invalide : la déconnexion est de fait effective.
-        }
-
-        return response()
-            ->json(['success' => true, 'message' => 'Déconnexion réussie'])
-            ->withCookie($service->cookieEfface());
+        return $response->withCookie($cookie);
     }
 
     /**
@@ -257,67 +106,17 @@ class AuthController extends Controller
      */
     public function refresh(Request $request): JsonResponse
     {
-        $service = app(RefreshTokenService::class);
+        $result   = $this->session->refresh($request);
+        $response = response()->json($result['payload'], $result['status']);
 
-        // Le refresh token vient du cookie httpOnly. On accepte encore le
-        // corps de requête pour les clients mobiles, qui utilisent un
-        // stockage sécurisé natif (Expo SecureStore) et non un navigateur.
-        // Lecture défensive : selon la pile de middlewares traversée, un
-        // cookie non chiffré peut n'être visible que dans le sac Symfony et
-        // pas via $request->cookie(), qui suppose un cookie géré par Laravel.
-        // On tente les trois sources plutôt que d'échouer silencieusement.
-        $presente = $request->cookie(RefreshTokenService::COOKIE)
-            ?: $request->cookies->get(RefreshTokenService::COOKIE)
-            ?: $request->input('refresh_token');
-
-        if ($presente) {
-            $rotation = $service->faireTourner((string) $presente, $request);
-
-            if ($rotation === null) {
-                return response()
-                    ->json([
-                        'success' => false,
-                        'error'   => ['code' => 'REFRESH_INVALIDE', 'message' => 'Session expirée, veuillez vous reconnecter'],
-                    ], 401)
-                    ->withCookie($service->cookieEfface());
-            }
-
-            [$user, $nouveauClair, $cookie] = $rotation;
-
-            $reponse = [
-                'success'      => true,
-                'access_token' => JWTAuth::fromUser($user),
-                'token_type'   => 'bearer',
-                'expires_in'   => auth('api')->factory()->getTTL() * 60,
-            ];
-
-            // Les clients non navigateur ont besoin du jeton en clair ;
-            // les navigateurs se contentent du cookie.
-            if (!$request->cookie(RefreshTokenService::COOKIE)) {
-                $reponse['refresh_token'] = $nouveauClair;
-            }
-
-            return response()->json($reponse)->withCookie($cookie);
+        if (!isset($result['cookie'])) {
+            return $response;
         }
 
-        // Repli : rafraîchissement à partir du JWT encore valide.
-        //
-        // Cette route étant devenue publique, il faut viser explicitement le
-        // guard `api` : sans utilisateur résolu par un middleware, auth() sans
-        // argument ne rattacherait aucun jeton et le refresh échouerait pour
-        // les clients qui n'ont pas encore de cookie (mobile, tests).
-        try {
-            $token = auth('api')->refresh();
-        } catch (\Throwable) {
-            return response()->json(['success' => false, 'error' => ['code' => 'TOKEN_EXPIRED', 'message' => 'Token expiré, veuillez vous reconnecter']], 401);
-        }
+        /** @var Cookie $cookie */
+        $cookie = $result['cookie'];
 
-        return response()->json([
-            'success'      => true,
-            'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => auth('api')->factory()->getTTL() * 60,
-        ]);
+        return $response->withCookie($cookie);
     }
 
     /**
@@ -332,109 +131,36 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        $user = auth()->user();
-        return response()->json([
-            'success' => true,
-            'data'    => $this->formatUser($user),
-            'tenant'  => $user->tenant ? [
-                'id'               => $user->tenant->id,
-                'nom'              => $user->tenant->nom,
-                'slug'             => $user->tenant->slug,
-                'statut'           => $user->tenant->statut,
-            ] : null,
-        ]);
+        $result = $this->compte->me();
+
+        return response()->json($result['payload'], $result['status']);
     }
 
     public function changePassword(Request $request): JsonResponse
     {
-        $request->validate([
-            'current_password' => 'required|string',
-            'new_password'     => 'required|string|min:8|confirmed',
-        ]);
+        $result = $this->compte->changePassword($request);
 
-        $policyService = app(\App\Services\PasswordPolicyService::class);
-        $violations    = $policyService->valider($request->new_password, auth()->user()->email);
-
-        if (!empty($violations)) {
-            return response()->json([
-                'success'    => false,
-                'message'    => 'Mot de passe non conforme à la politique de sécurité.',
-                'violations' => $violations,
-            ], 422);
-        }
-
-        $user = auth()->user();
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['success' => false, 'error' => ['code' => 'WRONG_PASSWORD', 'message' => 'Mot de passe actuel incorrect']], 422);
-        }
-
-        $user->update(['password' => Hash::make($request->new_password)]);
-
-        return response()->json(['success' => true, 'message' => 'Mot de passe modifié avec succès']);
+        return response()->json($result['payload'], $result['status']);
     }
 
     public function updateProfile(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $result = $this->compte->updateProfile($request);
 
-        $validated = $request->validate([
-            'nom'         => 'sometimes|string|max:100',
-            'prenom'      => 'sometimes|string|max:100',
-            'telephone'   => 'sometimes|string|max:20',
-            'langue'      => 'sometimes|in:fr,ar',
-        ]);
-
-        $user->update($validated);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Profil mis à jour',
-            'data'    => $this->formatUser($user->fresh()),
-        ]);
+        return response()->json($result['payload'], $result['status']);
     }
 
     public function forgotPassword(Request $request): JsonResponse
     {
-        $request->validate(['email' => 'required|email']);
+        $result = $this->compte->forgotPassword($request);
 
-        $status = Password::sendResetLink($request->only('email'));
-
-        return $status === Password::RESET_LINK_SENT
-            ? response()->json(['success' => true, 'message' => 'Email de réinitialisation envoyé'])
-            : response()->json(['success' => false, 'error' => ['code' => 'RESET_FAILED', 'message' => 'Impossible d\'envoyer l\'email']], 400);
+        return response()->json($result['payload'], $result['status']);
     }
 
     public function resetPassword(Request $request): JsonResponse
     {
-        $request->validate([
-            'token'    => 'required',
-            'email'    => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        $result = $this->compte->resetPassword($request);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            fn(User $user, string $password) => $user->update(['password' => Hash::make($password)])
-        );
-
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['success' => true, 'message' => 'Mot de passe réinitialisé avec succès'])
-            : response()->json(['success' => false, 'error' => ['code' => 'RESET_FAILED', 'message' => __($status)]], 400);
-    }
-
-    private function formatUser(User $u): array
-    {
-        return [
-            'id'                 => $u->id,
-            'nom'                => $u->nom,
-            'prenom'             => $u->prenom,
-            'email'              => $u->email,
-            'telephone'          => $u->telephone,
-            'role'               => $u->role?->nom,
-            'langue'             => $u->langue,
-            'two_factor_enabled' => $u->two_factor_confirmed_at !== null,
-            'two_factor_type'    => $u->two_factor_type,
-        ];
+        return response()->json($result['payload'], $result['status']);
     }
 }
