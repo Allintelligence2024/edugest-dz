@@ -1,19 +1,23 @@
 import { useState } from 'react';
 import { useModules } from '@context/ModulesContext';
+import { useI18n } from '@context/I18nContext';
 
 import { Circle, Info, Settings, Users } from 'lucide-react';
 
+// categorie = clé API ; label = clé i18n (rendue via t(), repli brut
+// pour une catégorie inconnue).
 const CATEGORIES = {
-  core:        { label: 'Fonctions de base',    color: '#2563EB' },
-  pedagogie:   { label: 'Pédagogie',            color: '#7C3AED' },
-  finance:     { label: 'Finance',              color: '#10B981' },
-  gestion:     { label: 'Gestion Centre',       color: '#F59E0B' },
-  rh:          { label: 'Ressources Humaines',  color: '#06B6D4' },
-  vie_scolaire:{ label: 'Vie Scolaire',         color: '#EF4444' },
-  securite:    { label: 'Sécurité',             color: '#EF4444' },
-  marketing:   { label: 'Marketing',            color: '#7C3AED' },
+  core:        { label: 'modules_cat_core',        color: '#2563EB' },
+  pedagogie:   { label: 'modules_cat_pedagogie',   color: '#7C3AED' },
+  finance:     { label: 'modules_cat_finance',     color: '#10B981' },
+  gestion:     { label: 'modules_cat_gestion',     color: '#F59E0B' },
+  rh:          { label: 'modules_cat_rh',          color: '#06B6D4' },
+  vie_scolaire:{ label: 'modules_cat_vie_scolaire', color: '#EF4444' },
+  securite:    { label: 'modules_cat_securite',    color: '#EF4444' },
+  marketing:   { label: 'modules_cat_marketing',   color: '#7C3AED' },
 };
 
+// Plans tarifaires : noms propres, non traduits (comme CIB/Dahabia).
 const PLANS = {
   starter:  { label: 'Starter',  color: '#64748B' },
   standard: { label: 'Standard', color: '#2563EB' },
@@ -21,6 +25,7 @@ const PLANS = {
 };
 
 export default function ModulesPage() {
+  const { t } = useI18n();
   const { modules, loading, isActive, activerModule, desactiverModule, recharger } = useModules();
   const [saving, setSaving]       = useState({});
   const [msg, setMsg]             = useState('');
@@ -33,7 +38,7 @@ export default function ModulesPage() {
       setSaving(s => ({ ...s, [moduleKey]: true }));
       const res = await activerModule(moduleKey);
       setSaving(s => ({ ...s, [moduleKey]: false }));
-      setMsg(res.success ? `${moduleKey} activé` : res.message); setMsgOk(res.success);
+      setMsg(res.success ? t('modules_active', { module: moduleKey }) : res.message); setMsgOk(res.success);
       setTimeout(() => setMsg(''), 3000);
     } else {
       setShowRaison(moduleKey);
@@ -47,7 +52,7 @@ export default function ModulesPage() {
     setSaving(s => ({ ...s, [showRaison]: false }));
     setShowRaison(null);
     setRaison('');
-    setMsg(res.success ? `${showRaison} désactivé` : res.message); setMsgOk(res.success);
+    setMsg(res.success ? t('modules_desactive_ok', { module: showRaison }) : res.message); setMsgOk(res.success);
     setTimeout(() => setMsg(''), 3000);
   };
 
@@ -61,11 +66,10 @@ export default function ModulesPage() {
     <div style={{ padding: '24px', background: '#070B14', minHeight: '100vh' }}>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>
-          <Settings size={22} aria-hidden='true' />Gestion des Modules
+          <Settings size={22} aria-hidden='true' />{t('modules_title')}
                   </h1>
         <p style={{ fontSize: '12px', color: '#64748B' }}>
-          Activez ou désactivez les modules selon les besoins de votre établissement.
-          Les modules désactivés n'apparaissent plus dans la navigation.
+          {t('modules_intro')}
         </p>
       </div>
 
@@ -78,15 +82,13 @@ export default function ModulesPage() {
       <div style={{ background: '#1e3a5f22', border: '1px solid #2563eb44', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', fontSize: '11px', color: '#93C5FD', display: 'flex', gap: '10px', alignItems: 'center' }}>
         <span style={{ fontSize: '18px' }}><Info size={18} aria-hidden='true' /></span>
         <span>
-          Les modules <strong>obligatoires</strong> (Dashboard, Élèves, Planning, Notes, Bulletins, Factures)
-          ne peuvent pas être désactivés. Tous les autres peuvent être activés/désactivés à tout moment
-          <strong> sans perte de données</strong>.
+          {t('modules_info_a')} <strong>{t('modules_info_b')}</strong> {t('modules_info_c')}<strong> {t('modules_info_d')}</strong>.
         </span>
       </div>
 
       {loading ? (
         <div style={{ textAlign: 'center', color: '#64748B', padding: '60px' }}>
-          Chargement des modules...
+          {t('modules_chargement')}
         </div>
       ) : (
         Object.entries(parCategorie).map(([categorie, mods]) => {
@@ -95,7 +97,7 @@ export default function ModulesPage() {
             <div key={categorie} style={{ marginBottom: '24px' }}>
               <div style={{ fontSize: '11px', fontWeight: 800, color: catInfo.color, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '16px', height: '2px', background: catInfo.color, borderRadius: '99px' }} />
-                {catInfo.label}
+                {t(catInfo.label)}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                 {mods.map(module => {
@@ -123,7 +125,7 @@ export default function ModulesPage() {
                         </div>
                         {module.obligatoire ? (
                           <span style={{ fontSize: '9px', background: '#2563EB22', color: '#93C5FD', padding: '3px 8px', borderRadius: '20px', fontWeight: 700 }}>
-                            Obligatoire
+                            {t('modules_obligatoire')}
                           </span>
                         ) : (
                           <button
@@ -155,7 +157,7 @@ export default function ModulesPage() {
                       )}
                       {!module.actif && !module.obligatoire && (
                         <div style={{ marginTop: '8px', padding: '6px 8px', background: '#1E2D40', borderRadius: '6px', fontSize: '9px', color: '#64748B' }}>
-                          <Circle size={9} fill="#f87171" color="#f87171" aria-hidden='true' />Module désactivé — cliquer pour réactiver
+                          <Circle size={9} fill="#f87171" color="#f87171" aria-hidden='true' />{t('modules_desactive_info')}
                                                   </div>
                       )}
                     </div>
@@ -171,28 +173,28 @@ export default function ModulesPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: '#111318', border: '1px solid #1E2D40', borderRadius: '14px', padding: '24px', width: '420px', maxWidth: '90%' }}>
             <h3 style={{ color: '#fff', fontWeight: 800, marginBottom: '8px' }}>
-              Désactiver « {showRaison} » ?
+              {t('modules_confirm_desactivation', { module: showRaison })}
             </h3>
             <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '16px', lineHeight: '1.6' }}>
-              Ce module sera caché de la navigation. <strong style={{ color: '#E2E8F0' }}>Vos données ne seront pas supprimées</strong> et vous pourrez réactiver le module à tout moment.
+              {t('modules_desc_1')} <strong style={{ color: '#E2E8F0' }}>{t('modules_desc_2')}</strong> {t('modules_desc_3')}
             </p>
             <label style={{ fontSize: '10px', color: '#64748B', display: 'block', marginBottom: '6px' }}>
-              Raison (optionnelle)
+              {t('modules_raison')}
             </label>
             <input
               value={raison}
               onChange={e => setRaison(e.target.value)}
-              placeholder="ex: Nous n'avons pas de service de cantine"
+              placeholder={t('modules_ph_raison')}
               style={{ width: '100%', background: '#1E293B', border: '1px solid #334155', borderRadius: '8px', color: '#E2E8F0', padding: '9px 12px', fontSize: '12px', marginBottom: '16px', fontFamily: 'Inter, sans-serif' }}
             />
             <div style={{ display: 'flex', gap: '10px' }}>
               <button onClick={() => { setShowRaison(null); setRaison(''); }}
                 style={{ flex: 1, background: '#1E293B', border: '1px solid #1E2D40', color: '#94A3B8', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
-                Annuler
+                {t('cancel')}
               </button>
               <button onClick={confirmerDesactivation}
                 style={{ flex: 2, background: '#EF4444', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
-                <Circle size={16} fill="#f87171" color="#f87171" aria-hidden='true' />Désactiver le module
+                <Circle size={16} fill="#f87171" color="#f87171" aria-hidden='true' />{t('modules_desactiver_btn')}
                               </button>
             </div>
           </div>

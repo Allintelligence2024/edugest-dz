@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -38,15 +39,25 @@ const post = (path, body) => fetch(`${BASE_URL}/api/v1${path}`, {
   body: JSON.stringify(body),
 }).then(r => r.json());
 
+// niveau_global = énum API (comparaisons et filtres inchangés) ;
+// label = clé i18n rendue via t().
 const NIVEAUX = {
-  critique:  { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', icon: Siren, label: 'CRITIQUE' },
-  danger:    { color: '#f87171', bg: '#350808', border: '#991b1b', icon: Circle, fill: '#f87171', label: 'DANGER' },
-  vigilance: { color: '#fb923c', bg: '#1f1008', border: '#c2410c', icon: AlertTriangle, label: 'VIGILANCE' },
-  normal:    { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', icon: CheckCircle, label: 'NORMAL' },
-  excellent: { color: '#4ade80', bg: '#0d2515', border: '#16a34a', icon: Star, fill: 'currentColor', label: 'EXCELLENT' },
+  critique:  { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', icon: Siren, label: 'diag_niveau_critique' },
+  danger:    { color: '#f87171', bg: '#350808', border: '#991b1b', icon: Circle, fill: '#f87171', label: 'diag_niveau_danger' },
+  vigilance: { color: '#fb923c', bg: '#1f1008', border: '#c2410c', icon: AlertTriangle, label: 'diag_niveau_vigilance' },
+  normal:    { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', icon: CheckCircle, label: 'diag_niveau_normal' },
+  excellent: { color: '#4ade80', bg: '#0d2515', border: '#16a34a', icon: Star, fill: 'currentColor', label: 'diag_niveau_excellent' },
+};
+
+// priorite = énum API ; clé de libellé + repli sur la valeur brute.
+const PRIORITE_LABELS = {
+  urgente: 'diag_prio_urgente',
+  haute:  'diag_prio_haute',
+  info:   'diag_prio_info',
 };
 
 export default function DiagnosticPage() {
+  const { t } = useI18n();
   const [dashboard, setDashboard] = useState(null);
   const [eleves, setEleves]       = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -84,19 +95,18 @@ export default function DiagnosticPage() {
   const analyserTous = async () => {
     setAnalysing(true);
     const res = await post('/diagnostic/analyser-tous', {});
-    alert(`Analyse terminée : ${res?.data?.total} élèves analysés`);
+    alert(t('diag_analyse_terminee', { total: res?.data?.total }));
     setAnalysing(false);
     loadData();
   };
 
   const convoquer = async (eleveId) => {
-    const msg = prompt('Message de convocation (sera envoyé par SMS) :',
-      "Nous vous prions de bien vouloir vous présenter à l'établissement pour discuter du niveau académique de votre enfant.");
+    const msg = prompt(t('diag_convocation_prompt'), t('diag_convocation_message_defaut'));
     if (!msg) return;
     const res = await post('/diagnostic/convocations', {
       eleve_id: eleveId, motif: 'niveau_critique', message: msg, canal: 'sms',
     });
-    alert(res?.message ?? 'Convocation envoyée');
+    alert(res?.message ?? t('diag_convocation_envoyee'));
   };
 
   const StatBox = ({ label, value, color, onClick }) => (
@@ -129,11 +139,11 @@ export default function DiagnosticPage() {
             {d.eleve?.prenom} {d.eleve?.nom}
             <span style={{ fontSize: '9px', background: n.color + '22', color: n.color,
               padding: '1px 6px', borderRadius: '20px', marginLeft: '8px', fontWeight: 700 }}>
-              {n.label}
+              {t(n.label)}
             </span>
           </div>
           <div style={{ fontSize: '10px', color: '#64748b' }}>
-            {d.eleve?.niveau_scolaire} · Moyenne : {d.moyenne_generale ?? '—'}/20
+            {d.eleve?.niveau_scolaire} · {t('diag_moyenne')} : {d.moyenne_generale ?? '—'}/20
             {d.tendance !== null && (
               <span style={{ color: d.tendance < 0 ? '#f87171' : '#4ade80', marginLeft: '8px' }}>
                 {d.tendance > 0 ? '↑' : '↓'} {Math.abs(d.tendance)}pts
@@ -142,7 +152,7 @@ export default function DiagnosticPage() {
           </div>
           {d.matieres_en_danger?.length > 0 && (
             <div style={{ fontSize: '9px', color: '#f87171', marginTop: '2px' }}>
-              Difficultés : {d.matieres_en_danger.map(m => m.matiere).join(', ')}
+              {t('diag_difficultes')} : {d.matieres_en_danger.map(m => m.matiere).join(', ')}
             </div>
           )}
         </div>
@@ -150,13 +160,13 @@ export default function DiagnosticPage() {
           <button onClick={() => voirDetail(d.eleve_id)}
             style={{ background: '#1e293b', color: '#60a5fa', border: 'none',
               borderRadius: '6px', padding: '5px 10px', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }}>
-            Détail
+            {t('diag_detail')}
           </button>
           {(d.niveau_global === 'critique' || d.niveau_global === 'danger') && (
             <button onClick={() => convoquer(d.eleve_id)}
               style={{ background: '#450a0a', color: '#f87171', border: 'none',
                 borderRadius: '6px', padding: '5px 10px', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }}>
-              <Smartphone size={10} aria-hidden='true' />Convoquer
+              <Smartphone size={10} aria-hidden='true' />{t('diag_convoquer')}
                           </button>
           )}
         </div>
@@ -169,10 +179,10 @@ export default function DiagnosticPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>
-            <Microscope size={22} aria-hidden='true' />Diagnostic de Niveau
+            <Microscope size={22} aria-hidden='true' />{t('diagnostic_title')}
                       </h1>
           <p style={{ fontSize: '12px', color: '#64748b' }}>
-            Early Warning System — surveillance continue du niveau académique
+            {t('diag_sous_titre')}
           </p>
         </div>
         <button onClick={analyserTous} disabled={analysing} style={{
@@ -182,17 +192,17 @@ export default function DiagnosticPage() {
           display: 'flex', alignItems: 'center', gap: '6px',
         }}>
           <RefreshCw size={13} />
-          {analysing ? 'Analyse en cours...' : 'Analyser tous'}
+          {analysing ? t('diag_analyse_en_cours') : t('diagnostic_analyze_all')}
         </button>
       </div>
 
       <div style={{ display: 'flex', gap: '4px', marginBottom: '20px' }}>
         {[
-          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, 'Vue globale'],
-          ['liste', <Users size={12} aria-hidden="true" />, 'Tous les élèves'],
-          ['critique', <Siren size={12} aria-hidden="true" />, 'Critiques'],
-          ['excellence', <Star size={12} fill="currentColor" aria-hidden="true" />, 'Excellents'],
-          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, 'Détail élève']] : []),
+          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, t('diag_tab_globale')],
+          ['liste', <Users size={12} aria-hidden="true" />, t('diag_tab_tous')],
+          ['critique', <Siren size={12} aria-hidden="true" />, t('diag_tab_critiques')],
+          ['excellence', <Star size={12} fill="currentColor" aria-hidden="true" />, t('diag_tab_excellents')],
+          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, t('diag_tab_detail')]] : []),
         ].map(([id, icon, label]) => (
           <button key={id} onClick={() => {
             setTab(id);
@@ -212,21 +222,21 @@ export default function DiagnosticPage() {
       {tab === 'dashboard' && dashboard && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px', marginBottom: '20px' }}>
-            <StatBox label="Excellents" value={dashboard.par_niveau?.excellent} color="#4ade80"
+            <StatBox label={t('diag_tab_excellents')} value={dashboard.par_niveau?.excellent} color="#4ade80"
               onClick={() => { setFiltreNiveau('excellent'); setTab('liste'); }} />
-            <StatBox label="Normaux"    value={dashboard.par_niveau?.normal}    color="#60a5fa" />
-            <StatBox label="Vigilance"  value={dashboard.par_niveau?.vigilance} color="#fb923c"
+            <StatBox label={t('diag_stat_normaux')}    value={dashboard.par_niveau?.normal}    color="#60a5fa" />
+            <StatBox label={t('diagnostic_watch')}  value={dashboard.par_niveau?.vigilance} color="#fb923c"
               onClick={() => { setFiltreNiveau('vigilance'); setTab('liste'); }} />
-            <StatBox label="Danger"     value={dashboard.par_niveau?.danger}    color="#f87171"
+            <StatBox label={t('diagnostic_danger')}     value={dashboard.par_niveau?.danger}    color="#f87171"
               onClick={() => { setFiltreNiveau('danger'); setTab('liste'); }} />
-            <StatBox label="Critiques"  value={dashboard.par_niveau?.critique}  color="#ef4444"
+            <StatBox label={t('diag_tab_critiques')}  value={dashboard.par_niveau?.critique}  color="#ef4444"
               onClick={() => { setFiltreNiveau('critique'); setTab('critique'); }} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '11px', color: '#f87171', fontWeight: 800, marginBottom: '12px' }}>
-                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />TOP 5 ÉLÈVES À RISQUE
+                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />{t('diag_top_risque')}
                               </div>
               {dashboard.top_risque?.map((e, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
@@ -235,7 +245,7 @@ export default function DiagnosticPage() {
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <span style={{ fontSize: '10px', color: '#64748b' }}>{e.moyenne ?? '—'}/20</span>
                     <span style={{ fontSize: '9px', color: NIVEAUX[e.niveau]?.color, fontWeight: 700 }}>
-                      {NIVEAUX[e.niveau]?.emoji} {e.niveau?.toUpperCase()}
+                      {NIVEAUX[e.niveau]?.emoji} {e.niveau ? (NIVEAUX[e.niveau] ? t(NIVEAUX[e.niveau].label) : e.niveau.toUpperCase()) : ''}
                     </span>
                   </div>
                 </div>
@@ -244,11 +254,11 @@ export default function DiagnosticPage() {
 
             <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800, marginBottom: '12px' }}>
-                <Star size={11} fill="currentColor" aria-hidden='true' />TOP 5 MEILLEURS ÉLÈVES
+                <Star size={11} fill="currentColor" aria-hidden='true' />{t('diag_top_excellence')}
                               </div>
               {dashboard.top_excellence?.length === 0 && (
                 <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>
-                  Aucun élève excellent détecté
+                  {t('diag_aucun_excellent')}
                 </div>
               )}
               {dashboard.top_excellence?.map((e, i) => (
@@ -268,15 +278,15 @@ export default function DiagnosticPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px', marginTop: '12px' }}>
             <div style={{ background: '#1a0808', border: '1px solid #b91c1c', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 900, color: '#f87171' }}>{dashboard.actions_requises?.convocations}</div>
-              <div style={{ fontSize: '10px', color: '#64748b' }}>CONVOCATIONS REQUISES</div>
+              <div style={{ fontSize: '10px', color: '#64748b' }}>{t('diag_convocations_requises')}</div>
             </div>
             <div style={{ background: '#1f1008', border: '1px solid #c2410c', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 900, color: '#fb923c' }}>{dashboard.actions_requises?.rattrapages}</div>
-              <div style={{ fontSize: '10px', color: '#64748b' }}>RATTRAPAGES REQUIS</div>
+              <div style={{ fontSize: '10px', color: '#64748b' }}>{t('diag_rattrapages_requis')}</div>
             </div>
             <div style={{ background: '#0d2515', border: '1px solid #16a34a', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: 900, color: '#4ade80' }}>{dashboard.actions_requises?.excellents}</div>
-              <div style={{ fontSize: '10px', color: '#64748b' }}>MENTIONS EXCELLENCE</div>
+              <div style={{ fontSize: '10px', color: '#64748b' }}>{t('diag_mentions_excellence')}</div>
             </div>
           </div>
         </div>
@@ -292,15 +302,15 @@ export default function DiagnosticPage() {
                 border: `1px solid ${filtreNiveau === key ? val.border : '#1e293b'}`,
                 borderRadius: '20px', padding: '5px 12px', fontSize: '10px',
                 fontWeight: 700, cursor: 'pointer',
-              }}><val.icon size={12} fill={val.fill} color={val.fill} aria-hidden="true" /> {val.label}</button>
+              }}><val.icon size={12} fill={val.fill} color={val.fill} aria-hidden="true" /> {t(val.label)}</button>
             ))}
           </div>
 
           {loading ? (
-            <div style={{ color: '#475569', textAlign: 'center', padding: '40px' }}>Analyse en cours...</div>
+            <div style={{ color: '#475569', textAlign: 'center', padding: '40px' }}>{t('diag_analyse_en_cours')}</div>
           ) : eleves.length === 0 ? (
             <div style={{ color: '#475569', textAlign: 'center', padding: '40px' }}>
-              Aucun élève dans ce niveau. Lancez une analyse d'abord.
+              {t('diag_aucun_eleve_niveau')}
             </div>
           ) : (
             eleves.map(d => <EleveCard key={d.id} d={d} />)
@@ -318,19 +328,19 @@ export default function DiagnosticPage() {
               </h2>
               <div style={{ fontSize: '11px', color: '#64748b' }}>
                 {detail.diagnostic?.eleve?.niveau_scolaire} ·
-                Niveau : {NIVEAUX[detail.diagnostic?.niveau_global]?.label} ·
-                Score risque : {detail.diagnostic?.score_risque}/100
+                {t('students_level')} : {detail.diagnostic?.niveau_global && NIVEAUX[detail.diagnostic.niveau_global] ? t(NIVEAUX[detail.diagnostic.niveau_global].label) : ''} ·
+                {t('diagnostic_risk_score')} : {detail.diagnostic?.score_risque}/100
               </div>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginBottom: '16px' }}>
             {[
-              ['Moyenne', `${detail.diagnostic?.moyenne_generale ?? '—'}/20`, '#60a5fa'],
-              ['Tendance', detail.diagnostic?.tendance !== null ? `${detail.diagnostic.tendance > 0 ? '+' : ''}${detail.diagnostic.tendance}pts` : '—',
+              [t('diag_moyenne'), `${detail.diagnostic?.moyenne_generale ?? '—'}/20`, '#60a5fa'],
+              [t('diag_tendance'), detail.diagnostic?.tendance !== null ? `${detail.diagnostic.tendance > 0 ? '+' : ''}${detail.diagnostic.tendance}pts` : '—',
                 detail.diagnostic?.tendance < 0 ? '#f87171' : '#4ade80'],
-              ['Absences/mois', detail.diagnostic?.nb_absences_mois, '#fb923c'],
-              ['Notes < 5', detail.diagnostic?.nb_notes_sous_5, '#f87171'],
+              [t('students_absences'), detail.diagnostic?.nb_absences_mois, '#fb923c'],
+              [t('diag_notes_sous_5'), detail.diagnostic?.nb_notes_sous_5, '#f87171'],
             ].map(([label, val, color]) => (
               <div key={label} style={{ background: '#1e293b', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
                 <div style={{ fontSize: '22px', fontWeight: 900, color }}>{val}</div>
@@ -342,7 +352,7 @@ export default function DiagnosticPage() {
           {detail.recommandations?.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginBottom: '8px' }}>
-                <Lightbulb size={11} aria-hidden='true' />RECOMMANDATIONS
+                <Lightbulb size={11} aria-hidden='true' />{t('diag_recommandations')}
                               </div>
               {detail.recommandations.map((r, i) => (
                 <div key={i} style={{
@@ -357,7 +367,7 @@ export default function DiagnosticPage() {
                     : r.priorite === 'haute' ? '#fb923c'
                     : r.priorite === 'info' ? '#4ade80' : '#60a5fa',
                     fontWeight: 700, width: '60px', flexShrink: 0 }}>
-                    {r.priorite?.toUpperCase()}
+                    {PRIORITE_LABELS[r.priorite] ? t(PRIORITE_LABELS[r.priorite]) : (r.priorite ?? '').toUpperCase()}
                   </span>
                   <span style={{ fontSize: '11px', color: '#94a3b8' }}>{r.action}</span>
                 </div>
@@ -368,7 +378,7 @@ export default function DiagnosticPage() {
           {detail.diagnostic?.matieres_en_danger?.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#f87171', fontWeight: 800, marginBottom: '8px' }}>
-                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />MATIÈRES EN DIFFICULTÉ
+                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />{t('diag_matieres_difficulte')}
                               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {detail.diagnostic.matieres_en_danger.map(m => (
@@ -377,7 +387,7 @@ export default function DiagnosticPage() {
                     borderRadius: '8px', padding: '8px 12px',
                   }}>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#f87171' }}>{m.matiere}</div>
-                    <div style={{ fontSize: '10px', color: '#64748b' }}>Moy : {m.moyenne}/20</div>
+                    <div style={{ fontSize: '10px', color: '#64748b' }}>{t('diag_moy')} : {m.moyenne}/20</div>
                   </div>
                 ))}
               </div>
@@ -387,7 +397,7 @@ export default function DiagnosticPage() {
           {detail.historique?.length > 0 && (
             <div>
               <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginBottom: '8px' }}>
-                <TrendingUp size={11} aria-hidden='true' />HISTORIQUE DE PROGRESSION
+                <TrendingUp size={11} aria-hidden='true' />{t('diag_historique_progression')}
                               </div>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
                 {detail.historique.slice(0, 8).reverse().map((h, i) => (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
+import { useI18n } from '@context/I18nContext';
 
 import { BarChart3, Map, MapPin, Square } from 'lucide-react';
 
@@ -76,6 +77,7 @@ function getHeatColor(nbAbsences, max) {
 }
 
 export default function CarteAbsencesPage() {
+  const { t } = useI18n();
   const [wilayaData, setWilayaData] = useState([]);
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -125,14 +127,14 @@ export default function CarteAbsencesPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Carte Chaleur des Absences</h1>
-        <p className="text-gray-500 mt-1">Répartition géographique des absences par wilaya</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('carte_titre')}</h1>
+        <p className="text-gray-500 mt-1">{t('carte_sous_titre')}</p>
       </div>
 
       {/* Filtres */}
       <div className="flex gap-4 items-center">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Date début</label>
+          <label className="block text-xs text-gray-500 mb-1">{t('carte_date_debut')}</label>
           <input
             type="date"
             value={filters.date_debut}
@@ -141,7 +143,7 @@ export default function CarteAbsencesPage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Date fin</label>
+          <label className="block text-xs text-gray-500 mb-1">{t('carte_date_fin')}</label>
           <input
             type="date"
             value={filters.date_fin}
@@ -155,10 +157,10 @@ export default function CarteAbsencesPage() {
       {resume && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total absences', value: resume.total_absences, icon: <BarChart3 size={24} aria-hidden="true" /> },
-            { label: 'Élèves avec wilaya', value: resume.eleves_avec_wilaya, icon: <MapPin size={24} aria-hidden="true" /> },
-            { label: 'Wilayas concernées', value: resume.wilayas_concernees, icon: <Map size={24} aria-hidden="true" /> },
-            { label: 'Wilayas sans données', value: 58 - resume.wilayas_concernees, icon: <Square size={24} aria-hidden="true" /> },
+            { label: t('carte_total_absences'), value: resume.total_absences, icon: <BarChart3 size={24} aria-hidden="true" /> },
+            { label: t('carte_eleves_avec_wilaya'), value: resume.eleves_avec_wilaya, icon: <MapPin size={24} aria-hidden="true" /> },
+            { label: t('carte_wilayas_concernees'), value: resume.wilayas_concernees, icon: <Map size={24} aria-hidden="true" /> },
+            { label: t('carte_wilayas_sans_donnees'), value: 58 - resume.wilayas_concernees, icon: <Square size={24} aria-hidden="true" /> },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
               <div className="text-2xl mb-1">{kpi.icon}</div>
@@ -171,7 +173,7 @@ export default function CarteAbsencesPage() {
 
       {/* Carte SVG */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Carte de l'Algérie</h3>
+        <h3 className="font-semibold text-gray-900 mb-4">{t('carte_algerie')}</h3>
         <svg viewBox="0 0 700 560" className="w-full max-w-4xl mx-auto">
           {WILAYAS_POSITIONS.map(w => {
             const nb = getNbAbsences(w.id);
@@ -217,10 +219,10 @@ export default function CarteAbsencesPage() {
       {selectedWilaya && (
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <h3 className="font-semibold text-gray-900 mb-2">
-            {selectedWilaya.nom} — {getNbAbsences(selectedWilaya.id)} absence(s)
+            {selectedWilaya.nom} — {t('carte_absences_count', { count: getNbAbsences(selectedWilaya.id) })}
           </h3>
           <div className="text-sm text-gray-500">
-            Code wilaya : {selectedWilaya.code}
+            {t('carte_code_wilaya')} : {selectedWilaya.code}
           </div>
         </div>
       )}
@@ -229,16 +231,16 @@ export default function CarteAbsencesPage() {
       {resume?.top_5_wilayas?.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <div className="px-6 py-4 border-b">
-            <h3 className="font-semibold text-gray-900">Top 5 Wilayas</h3>
+            <h3 className="font-semibold text-gray-900">{t('carte_top5')}</h3>
           </div>
           <div className="divide-y">
             {resume.top_5_wilayas.map((w, i) => (
               <div key={i} className="px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-bold text-gray-400">#{i + 1}</span>
-                  <span className="font-medium text-gray-900">{w.nom_fr || 'Sans wilaya'}</span>
+                  <span className="font-medium text-gray-900">{w.nom_fr || t('carte_sans_wilaya')}</span>
                 </div>
-                <span className="text-sm font-bold text-red-600">{w.nb_absences} abs.</span>
+                <span className="text-sm font-bold text-red-600">{t('carte_abs_court', { count: w.nb_absences })}</span>
               </div>
             ))}
           </div>

@@ -317,9 +317,10 @@ littéraux) ne tient pas dans un lot relisable. Découpage assumé :
 - **Phase 1 (fait)** : socle i18next + façade compatible + garde-fou.
 - **Phase 2 (fait le 10 sept.)** : emoji → `lucide-react` (+ `aria-label`),
   table ci-dessous — détail dans « Ce qui a été fait (phase 2) ».
-- **Phase 3 (lots 1-3 faits le 10 sept.)** : littéraux français → `t()` —
-  détail dans « Ce qui a été fait (phase 3, lots 1-2) » et « … lot 3 ».
-  Restent 49 fichiers (pages), cliquet `fr-literals-guard.test.js` en place.
+- **Phase 3 (lots 1-4 faits le 10 sept.)** : littéraux français → `t()` —
+  détail dans « Ce qui a été fait (phase 3, lots 1-2) », « … lot 3 » et
+  « … lot 4 ». Restent 46 fichiers (pages), cliquet
+  `fr-literals-guard.test.js` en place.
 - Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
   scope, noté pour le Sprint 6.
 
@@ -574,3 +575,37 @@ comparé à HEAD via stash : **0 nouvelle alerte** (22 problèmes préexistants
 antérieure au lot, hors périmètre i18n). Reste ouvert : les dates passent
 par `toLocaleDateString('fr-DZ'/'fr-FR')` hardcodé — à brancher sur la
 locale i18n dans un lot dédié.
+
+
+### Ce qui a été fait (phase 3, lot 4 — 10 sept.)
+
+**Lot 4 : 4 pages de plus** (102 nouvelles entrées × 4 langues —
+dictionnaires 634 → 736 clés) :
+
+- `pages/RgpdPage` : export/archivage (confirmations interpolées
+  `{{annee}}`), politique de données, table des demandes (énum API
+  `statut` : comparaisons inchangées, affichage `rgpd_statut_*`) ;
+- `pages/DiagnosticPage` : `NIVEAUX` en clés (libellés MAJUSCULES
+  préservés à l'identique), énum API `priorite` en map
+  `PRIORITE_LABELS` + repli brut, convocation (prompt + message par
+  défaut traduits), stats et historique ;
+- `pages/ModulesPage` : `CATEGORIES` en clés (repli brut pour une
+  catégorie inconnue), bannière d'info découpée en segments autour des
+  `<strong>`, plans Starter/Standard/Premium non traduits (noms
+  commerciaux, comme CIB/Dahabia) ;
+- `pages/CarteAbsencesPage` : titre, filtres, KPI, légende, top 5.
+  **Décision assumée** : les 58 noms de wilayas de `WILAYAS_POSITIONS`
+  sont des données géographiques (comme `'Algérie'` dans la Sidebar) —
+  non traduits dans ce lot, le fichier reste donc compté au cliquet
+  (faux positif documenté ; traduction via l'API `nom_ar` à étudier
+  avec le backend).
+
+Réutilisation : `modules_title`, `diagnostic_title/danger/watch/
+risk_score/analyze_all`, `students_level/absences`, `status`, `date`,
+`actions`, `cancel`.
+
+Cliquet `fr-literals-guard.test.js` : **49 → 46 fichiers** (les 3
+conversions nettes ; CarteAbsencesPage reste compté, voir ci-dessus).
+Vérifs : `vitest run` 137/137 verts ; esbuild (find, 130 fichiers)
+0 erreur ; parité 4 dicts 736/736/736/737 ; ESLint des 4 fichiers
+comparé à HEAD via stash : 0 nouvelle alerte (16 préexistantes).
