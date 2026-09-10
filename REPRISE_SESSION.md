@@ -88,10 +88,19 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    ~~scénarios k6 + doc~~ (✅ écrits le 10 sept. — 7 scénarios dans
    `tests/k6/` + `docs/PERF_TESTS_K6.md` ; **exécution réelle sur l'env
    de perf et publication du rapport restent à faire** — journal
-   `docs/SPRINT6_EXPLOITATION.md` § 2), pentest ciblé (calibration
-   `RiskScoreEngine`, JWT blacklist, kill-switch MPC, chaîne Merkle),
-   observabilité (alertes Sentry sur les middlewares sécurité,
-   instrumentation version mobile), ~~réparation de
+   `docs/SPRINT6_EXPLOITATION.md` § 2), ~~pentest ciblé (calibration
+   `RiskScoreEngine`, JWT blacklist, kill-switch MPC, chaîne Merkle)~~
+   (✅ fait le 10 sept. — 7 constats C1-C7, **3 corrigés** (rôle admin
+   sur kill-switch + dashboard sécurité, health du kill-switch,
+   `audit:verify` planifié 03 h 30 + whitelist cron) + garde-fou RBAC
+   étendu ; **C2 (blacklist JWT / verrouillage d'urgence jamais
+   branchés) et C3 (Zero-Trust strict mort, challenge auto-solutionné)
+   documentés avec correctif décrit, à appliquer avec une suite de
+   tests exécutable** ; C5 (trustProxies, poids du score) en
+   recommandation — journal `docs/SPRINT6_EXPLOITATION.md` § 3),
+   observabilité (alertes Sentry sur les middlewares sécurité — dont
+   le FAILURE de `audit:verify` désormais planifié —, instrumentation
+   version mobile), ~~réparation de
    `restore-backup.sh`~~ (✅ le 10 sept. — journal § 1), conformité
    18-07 (registre, rétention/purge, consentement parental), vérité du
    README.

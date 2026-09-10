@@ -106,6 +106,13 @@ $app = Application::configure(basePath: dirname(__DIR__))
                  ->dailyAt('02:00')
                  ->withoutOverlapping();
 
+        // Pentest Sprint 6 : la chaîne Merkle d'audit était vérifiée
+        // nulle part — une altération non détectée équivaut à une absence
+        // de chaîne (cf. VerifierAuditChainCommand).
+        $schedule->command('audit:verify')
+                 ->dailyAt('03:30')
+                 ->withoutOverlapping();
+
         $schedule->command('edugest:deadman-switch')
                  ->dailyAt('06:00')
                  ->withoutOverlapping();

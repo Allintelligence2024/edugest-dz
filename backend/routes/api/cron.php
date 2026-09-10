@@ -26,6 +26,7 @@ $commandesPlanifiees = [
     'alertes-preventif'       => 'edugest:alertes-preventif',
     'diagnostic-hebdomadaire' => 'edugest:diagnostic-hebdomadaire',
     'prune'                   => 'model:prune',
+    'audit-verify'            => 'audit:verify',
 ];
 
 Route::prefix('cron')->group(function () use ($commandesPlanifiees) {

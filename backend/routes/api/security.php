@@ -13,10 +13,17 @@ $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription
 Route::middleware($protected)->group(function () {
 
     // ── Security Dashboard ──
-    Route::get('security/dashboard', [SecurityDashboardController::class, 'index']);
+    // Pentest Sprint 6 : sans contrôle de rôle, n'importe quel compte
+    // authentifié (parent, élève) pouvait lire le dashboard de sécurité.
+    Route::get('security/dashboard', [SecurityDashboardController::class, 'index'])
+        ->middleware('role:admin');
 
     // ── Kill Switch (Niveau 6) ──
-    Route::prefix('kill-switch')->group(function () {
+    // Pentest Sprint 6 : ces routes coupaient le service pour TOUS les
+    // tenants (503 global) alors qu'elles n'exigeaient qu'être authentifié —
+    // deux comptes quelconques (initiateur + approbateur distincts)
+    // suffisaient. Réservées aux admins (le super_admin traverse role:).
+    Route::prefix('kill-switch')->middleware('role:admin')->group(function () {
         Route::post('initier',    [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'initier']);
         Route::post('{voteId}/approuver', [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'approuver']);
         Route::post('{voteId}/refuser',   [\App\Http\Controllers\Api\V1\KillSwitchController::class, 'refuser']);
