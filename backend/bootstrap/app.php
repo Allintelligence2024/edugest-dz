@@ -113,6 +113,12 @@ $app = Application::configure(basePath: dirname(__DIR__))
                  ->dailyAt('03:30')
                  ->withoutOverlapping();
 
+        // Sprint 6 § 5 : rétention 18-07 — purge quotidienne des exports
+        // RGPD (30 j) et d'audit (1 an) expirés (cf. RgpdRetentionCommand).
+        $schedule->command('edugest:rgpd-retention')
+                 ->dailyAt('04:10')
+                 ->withoutOverlapping();
+
         $schedule->command('edugest:deadman-switch')
                  ->dailyAt('06:00')
                  ->withoutOverlapping();

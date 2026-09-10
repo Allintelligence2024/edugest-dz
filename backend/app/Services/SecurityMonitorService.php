@@ -110,6 +110,12 @@ class SecurityMonitorService
             $details
         );
 
+        // Sprint 6 § 4 : les alertes de sécurité (brute force, accès hors
+        // horaires, volume anormal, lockdown…) sont aussi signalées à Sentry
+        // quand il est configuré — c'est le canal qui déclenche les
+        // notifications (e-mail/Slack) chez Sentry, contrairement au log.
+        SentryObservabilite::capturer($message, $severite, $details);
+
         $telegramToken = config('services.telegram.bot_token');
         $telegramChat  = config('services.telegram.chat_id');
 

@@ -78,28 +78,33 @@ Réponse JSON standardisée
 ## Chaîne de sécurité — Détail
 
 ### Risk Score Engine
-Chaque requête reçoit un score de risque 0-100 :
+Chaque requête authentifiée reçoit un score de risque 0-100 (grille réelle
+du code, `RiskScoreEngine`) :
 
 | Facteur | Points |
 |---------|--------|
-| IP jamais vue pour cet utilisateur | +40 |
-| Pays inhabituel (non-Algérie) | +30 |
-| Appareil non reconnu | +25 |
-| Heure anormale (2h-5h) | +20 |
-| >50 requêtes en 5 minutes | +20 |
-| >3 erreurs 403 en 10 minutes | +15 |
-| >3 logins échoués | +15 |
-| User-Agent botlike (curl, python...) | +10 |
-| Volume de données suspect | +10 |
+| Appareil inconnu (empreinte non enregistrée) | +40 |
+| Pas d'en-tête `Sec-Ch-Ua` | +15 |
+| Nuit (hors 6 h-22 h) | +15 |
+| Pas d'en-tête `Accept-Language` | +10 |
+| IP privée/réservée | +5 |
+| En-tête proxy présent (X-Forwarded-For…) | +5 |
+| Exception pendant le calcul | 100 (fail-secure) |
 
-Actions : 0-50 → OK · 51-75 → Loggé · 76-90 → Bloqué · 91-100 → Compte verrouillé 30min
+Actions réelles : le score est journalisé à chaque requête et signalé à
+Sentry au-delà de 50. Le mode `zero.trust:strict` (428 + challenge
+appareil) existe dans le middleware mais n'est **pas encore branché sur
+une route** — l'enforcement est un reste ouvert (pentest Sprint 6,
+constat C3). La calibration derrière un proxy reste à faire (constat C5 :
+pas de `trustProxies`, +10 systématiques derrière nginx).
 
 ### Audit Chain (Merkle Tree)
 Chaque opération sensible (CREATE/UPDATE/DELETE) est enregistrée dans une chaîne :
 ```
-Bloc N : {contenu} + hash(Bloc N-1) → hash_merkle(N) → HMAC-SHA3-256
+Bloc N : {contenu} + hash(Bloc N-1) → HMAC-SHA-256 (clé dédiée hors APP_KEY)
 ```
-Toute modification d'un log invalide mathématiquement tous les blocs suivants.
+Toute modification d'un log invalide mathématiquement tous les blocs
+suivants. La chaîne est vérifiée chaque nuit à 03 h 30 (`audit:verify`).
 
 ---
 

@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#08090f"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "dz.edugest.app",
@@ -44,7 +46,8 @@
           "color": "#3b82f6",
           "sounds": []
         }
-      ]
+      ],
+      "sentry-expo"
     ],
     "extra": {
       "apiBaseUrl": "https://app.edugest.dz/api/v1",

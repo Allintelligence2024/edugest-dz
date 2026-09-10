@@ -83,33 +83,62 @@ maintenu à 45 jusqu'à la mesure post-5.3.
 4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
-   tests mobile, CSRF (double-submit).
+   tests mobile (état réel au 10 sept. : 12 passés / 2 échoués —
+   `LoginScreen` — et 2 suites aux chemins d'import cassés :
+   `ParentDashboardScreen.test.js` vise `screens/parent/ParentDashboardScreen`
+   qui n'existe pas, `AuthContext.test.js` vise `../../../api/endpoints`
+   au lieu de `../../`), CSRF (double-submit).
 6. **Sprint 6** (décidé : après le Sprint 5, amorcé le 10 sept.) :
    ~~scénarios k6 + doc~~ (✅ écrits le 10 sept. — 7 scénarios dans
    `tests/k6/` + `docs/PERF_TESTS_K6.md` ; **exécution réelle sur l'env
    de perf et publication du rapport restent à faire** — journal
-   `docs/SPRINT6_EXPLOITATION.md` § 2), ~~pentest ciblé (calibration
-   `RiskScoreEngine`, JWT blacklist, kill-switch MPC, chaîne Merkle)~~
-   (✅ fait le 10 sept. — 7 constats C1-C7, **3 corrigés** (rôle admin
-   sur kill-switch + dashboard sécurité, health du kill-switch,
-   `audit:verify` planifié 03 h 30 + whitelist cron) + garde-fou RBAC
-   étendu ; **C2 (blacklist JWT / verrouillage d'urgence jamais
-   branchés) et C3 (Zero-Trust strict mort, challenge auto-solutionné)
-   documentés avec correctif décrit, à appliquer avec une suite de
-   tests exécutable** ; C5 (trustProxies, poids du score) en
-   recommandation — journal `docs/SPRINT6_EXPLOITATION.md` § 3),
-   observabilité (alertes Sentry sur les middlewares sécurité — dont
-   le FAILURE de `audit:verify` désormais planifié —, instrumentation
-   version mobile), ~~réparation de
-   `restore-backup.sh`~~ (✅ le 10 sept. — journal § 1), conformité
-   18-07 (registre, rétention/purge, consentement parental), vérité du
-   README.
+   `docs/SPRINT6_EXPLOITATION.md` § 2), ~~pentest ciblé~~ (✅ 7 constats
+   C1-C7, **3 corrigés** (rôle admin sur kill-switch + dashboard
+   sécurité, health du kill-switch, `audit:verify` planifié 03 h 30 +
+   whitelist cron) + garde-fou RBAC étendu ; **C2 (blacklist JWT /
+   verrouillage d'urgence jamais branchés) et C3 (Zero-Trust strict
+   mort, challenge auto-solutionné) documentés avec correctif décrit, à
+   appliquer avec une suite de tests exécutable** ; C5 (trustProxies,
+   poids du score) en recommandation — journal § 3), ~~observabilité
+   Sentry~~ (✅ le 10 sept. — `SentryObservabilite` câblé sur
+   SecurityMonitor/ZeroTrust/KillSwitch/audit:verify, no-op sans DSN ;
+   mobile : `sentry-expo@7.0.1` (version SDK 52) + init gardée
+   `EXPO_PUBLIC_SENTRY_DSN` + plugin app.json, suite Jest identique à
+   la baseline ; **restent** : DSN réelles par env, frontend web —
+   journal § 4), ~~conformité 18-07~~ (✅ le 10 sept. — consentements
+   parentaux immuables (`POST /api/v1/rgpd/consentements`, 7 tests) +
+   rétention `edugest:rgpd-retention` 04 h 10 (30 j exports RGPD /
+   1 an audit, 4 tests) + `docs/REGISTRE_TRAITEMENTS.md` + ANPDP
+   corrigé (argumentaire commercial dangereux reformulé) ; la
+   déclaration ANPDP elle-même relève de chaque établissement —
+   journal § 5), ~~réparation de `restore-backup.sh`~~ (✅ journal § 1),
+   ~~vérité du README~~ (✅ le 10 sept. — 12 corrections README (58
+   wilayas, HMAC-SHA-256 pas SHA3, pas post-quantique, MFA super-admin
+   seulement, compteurs réels 79/75/106/95/25, pgAdmin/branches/tests,
+   badge ANPDP « Outils livrés ») + 11 corrections SECURITE.md (dead
+   man switch 80/90 j, kill-switch 2 admins, restes C2/C3 visibles) +
+   MONITORING (clé kill-switch) + CHANGELOG (SHA3/Post-Quantum) —
+   journal § 6). **Restes Sprint 6 : campagne k6 réelle sur env de
+   perf, application C2/C3 avec suite exécutable, C5 trustProxies.**
 
 ---
 
 ## Contraintes de l'environnement — toujours valables
 
 Retestées le 2026-09-08. Les trois tiennent.
+
+### Le workspace perd node_modules entre les tours (constaté le 10 sept.)
+
+`frontend/node_modules` et `mobile/node_modules` ne survivent pas au
+snapshot (dossiers exclus par la plateforme). Le `npm ci` mobile a de
+plus révélé un lockfile désynchronisé (resynchronisé le 10 sept.). Et le
+`.git` peut être re-cloné sur un ancêtre entre deux tours : toujours
+refaire `git log --oneline -3` + `git ls-remote` avant de commit ; si
+HEAD a reculé, `git fetch origin <branche>` puis `git reset FETCH_HEAD`
+(jamais `--hard`) remet la branche en place sans toucher à l'arbre.
+Autres blocages réseau constatés : API Expo (`npx expo install`), CDN
+Sentry (binaire `@sentry/cli` au postinstall — `--ignore-scripts` pour
+installer localement).
 
 ### PHP est indisponible localement
 

@@ -1,17 +1,21 @@
 # 🛡️ Documentation Sécurité — EduGest DZ
 ## Pour les auditeurs, partenaires et équipes techniques
 
+> **État réel au 10 sept. 2026** : ce document distingue ce qui est **en
+> production** de ce qui reste ouvert. Le référentiel est le pentest Sprint 6
+> (7 constats C1-C7, 3 corrigés) : [`SPRINT6_EXPLOITATION.md`](SPRINT6_EXPLOITATION.md) § 3.
+
 ---
 
 ## Résumé de conformité
 
 | Exigence | Statut | Détail |
 |----------|--------|--------|
-| Loi 18-07 (ANPDP) | ✅ Préparé | Déclaration à déposer avant données réelles |
+| Loi 18-07 (ANPDP) | ✅ Outils livrés | Registre des traitements, consentements parentaux tracés, rétention automatique — déclaration ANPDP à déposer par chaque établissement |
 | Chiffrement données sensibles | ✅ AES-256-CBC | Colonnes tokens, clés API |
-| Authentification forte | ✅ JWT + 2FA TOTP | Obligatoire pour admins |
+| Authentification forte | ✅ JWT + 2FA TOTP | Obligatoire sur les routes super-admin ; au choix pour les admins |
 | Isolation données tenants | ✅ Triple couche | Applicatif + RLS PostgreSQL + Middleware |
-| Audit logs immuables | ✅ Merkle SHA3-256 | Falsification détectable mathématiquement |
+| Audit logs immuables | ✅ Merkle + HMAC-SHA-256 | Falsification détectable mathématiquement ; vérification quotidienne automatique |
 | Politique mots de passe | ✅ 12 chars min + complexité | Blacklist 40+ mots de passe courants |
 | Réponse aux incidents | ✅ Documentée | INCIDENT_RESPONSE_PLAN.md |
 | Headers sécurité HTTP | ✅ OWASP complets | CSP, HSTS, X-Frame-Options, etc. |
@@ -21,14 +25,15 @@
 ## Les 6 niveaux de sécurité
 
 ### Niveau 1 — Fondations
-- **JWT Blacklist** : tokens révoqués immédiatement à la déconnexion (Redis + BDD)
+- **Révocation JWT** : les tokens sont invalidés à la déconnexion (blacklist du garde JWT)
+- ⚠️ **Reste ouvert** (pentest Sprint 6, constat C2) : la seconde blacklist maison (`jwt_blacklist` + middleware `jwt.blacklist`) n'est appliquée à aucune route — le « verrouillage d'urgence » de la breach response n'invalide donc **pas** les JWT existants. Correctif décrit dans `SPRINT6_EXPLOITATION.md` § 3
 - **PostgreSQL RLS** : Row-Level Security sur 40+ tables (filet BDD)
 - **Isolation tenant** : `BelongsToTenant` + `TenantIsolationVerifier`
 - **Fichiers sécurisés** : URLs signées HMAC expirantes (jamais d'URL permanente publique)
 
 ### Niveau 2 — Protection des données
 - **Chiffrement colonnes** : `EncryptedString` cast sur tokens Satim, Google OAuth, Firebase
-- **MFA obligatoire** : 2FA TOTP requis pour admin et super_admin
+- **MFA** : 2FA TOTP/SMS — obligatoire pour les super-admins (middleware `mfa` sur les routes `super-admin/*`), recommandée pour les admins d'établissement
 - **Brute force** : blocage après 10 tentatives, période 15 min
 - **Headers OWASP** : CSP, HSTS, X-Content-Type-Options, Referrer-Policy
 
@@ -41,7 +46,8 @@
 
 ### Niveau 4 — Zero-Trust
 - **Risk Score 0-100** : 9 facteurs évalués par requête, fail-secure (exception = 100)
-- **Device Fingerprinting** : appareils enregistrés + challenge OTP pour nouveaux appareils
+- **Device Fingerprinting** : empreinte par appareil (IP, en-têtes, user-agent)
+- ⚠️ **Reste ouvert** (pentest Sprint 6, constat C3) : le mode `zero.trust:strict` (428 + challenge) n'est branché sur aucune route et le flux de vérification du challenge est incomplet — le score est aujourd'hui calculé, journalisé et signalé à Sentry (> 50), mais pas enforcé
 - **RBAC granulaire** : permissions au niveau du champ (ex: enseignant voit notes mais pas salaires)
 - **Rate Limiter adaptatif** : quotas différents par rôle/heure/type de route
 
@@ -52,13 +58,13 @@
 - **SQL Injection Layer** : 18 patterns détectés avant d'atteindre Eloquent
 - **Vault Secrets** : secrets hors .env (HashiCorp Vault ou BDD chiffrée en fallback)
 - **Insider Threat** : détection volume anormal de téléchargement
-- **Dead Man Switch** : alerte si aucun admin ne se connecte en 7 jours
+- **Dead Man Switch** : notification à 80 jours d'inactivité admin, signalement à 90 jours (désactivation manuelle uniquement)
 
 ### Niveau 6 — Forteresse
-- **Audit Chain Merkle** : SHA3-256 + DB::transaction + chunk(1000) — falsification impossible
+- **Audit Chain Merkle** : HMAC-SHA-256 (clé dédiée hors APP_KEY, rotation par version) + DB::transaction — vérifiée chaque nuit à 03 h 30 (`audit:verify`)
 - **SIEM** : 5 règles de corrélation (credential stuffing, impossible travel, SQLi coordonnée...)
-- **Post-Quantum** : Ed25519 (sodium) avec fallback RSA-4096
-- **Kill Switch MPC** : 2 super-admins requis + fenêtre 600s pour activer
+- **Crypto asymétrique** : Ed25519 (libsodium) avec fallback RSA-4096 — cryptographie classique robuste, **pas** post-quantique (assumé, cf. en-tête du service)
+- **Kill Switch MPC** : 2 admins distincts requis (`role:admin`, pentest C1) + fenêtre 600 s — coupe le service pour tous les tenants
 - **Supply Chain** : vérification hash composer.lock chaque semaine
 
 ---
@@ -67,5 +73,5 @@
 
 Pour signaler une vulnérabilité ou un incident :
 - Email sécurité : [à configurer par l'établissement]
-- Procédure complète : [INCIDENT_RESPONSE_PLAN.md](../INCIDENT_RESPONSE_PLAN.md)
+- Procédure complète : [guides/INCIDENT_RESPONSE_PLAN.md](guides/INCIDENT_RESPONSE_PLAN.md)
 - ANPDP : www.anpdp.dz (délai légal 72h pour notification breach)

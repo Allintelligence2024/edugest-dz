@@ -54,6 +54,15 @@ class VerifierAuditChainCommand extends Command
             'premiers_blocs'=> array_slice($resultats['invalides'], 0, 10),
         ]);
 
+        // Sprint 6 § 4 : depuis que audit:verify est planifié (03 h 30),
+        // c'est ce signal qui doit réveiller l'astreinte — un Log::critical
+        // dans un conteneur serverless n'alerte personne tout seul.
+        \App\Services\SentryObservabilite::capturer(
+            'Chaîne d\'audit Merkle compromise — intégrité des journaux rompue',
+            'critical',
+            ['total' => $resultats['total'], 'nb_invalides' => count($resultats['invalides'])]
+        );
+
         return self::FAILURE;
     }
 }

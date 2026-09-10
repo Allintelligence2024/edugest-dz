@@ -5,14 +5,29 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [Non publié] — Sprint 6 (septembre 2026)
+
+### Ajouté
+- **Pentest ciblé des 4 composants de sécurité** : 7 constats (C1-C7), 3 corrigés — rôle admin sur le kill-switch MPC et le dashboard sécurité (C1, critique : DoS global possible avec 2 comptes quelconques), `/health` mentait sur l'état du kill-switch (C4), `audit:verify` désormais planifié chaque nuit + cron serverless (C6) ; garde-fou RBAC étendu (`docs/SPRINT6_EXPLOITATION.md` § 3)
+- **Observabilité Sentry** : alertes de sécurité (brute force, verrouillage d'urgence), scores Zero-Trust > 50, événements kill-switch, chaîne d'audit rompue — câblage no-op sans `SENTRY_DSN` ; instrumentation mobile `sentry-expo` (no-op sans `EXPO_PUBLIC_SENTRY_DSN`)
+- **Conformité 18-07** : consentements parentaux tracés de façon immuable (`POST /api/v1/rgpd/consentements` + historique), rétention automatique quotidienne des exports (RGPD 30 j, audit 1 an — `edugest:rgpd-retention`), registre des traitements pré-rempli (`docs/REGISTRE_TRAITEMENTS.md`)
+- **Scénarios de charge k6** : 7 scénarios (smoke, charge, isolation RLS, QR, bulletins, throttle auth, webhook) + lanceur + guide (`tests/k6/`, `docs/PERF_TESTS_K6.md`)
+- Réparation de la chaîne backup/restore (`restore-backup.sh` rejoué sur stubs)
+
+### Corrigé
+- `README.md`, `docs/SECURITE.md`, `docs/ARCHITECTURE.md` (grille Risk Score fictive remplacée par la vraie), `docs/ANPDP_DECLARATION.md`, `docs/MONITORING_CHECKLIST.md` : alignés sur la réalité (58 wilayas et non 48, Merkle HMAC-SHA-256 et non SHA3, MFA obligatoire seulement super-admin, crypto classique et non post-quantique, compteurs réels, lien plan d'incident, argumentaire commercial ANPDP reformulé)
+- Lockfile mobile resynchronisé avec `package.json` (`npm ci` échouait)
+
+---
+
 ## [1.0.0-beta] — 8 Juillet 2026
 
 ### Ajouté
-- **Sécurité Niveau 6** : Audit Chain Merkle SHA3-256, SIEM 5 règles, Kill Switch MPC, Post-Quantum Crypto (Ed25519/RSA-4096), Supply Chain Verifier — 19 tests
+- **Sécurité Niveau 6** : Audit Chain Merkle HMAC-SHA-256, SIEM 5 règles, Kill Switch MPC, crypto asymétrique Ed25519/RSA-4096 (classique, pas post-quantique), Supply Chain Verifier — 19 tests
 - **Sécurité Niveau 5** : Honeypots actifs (16 routes leurres), Canary Tokens, SSRF Protection, SQL Injection Layer, HashiCorp Vault (fallback BDD chiffrée), Insider Threat Detector, Dead Man Switch — 24 tests
 - **Sécurité Niveau 4** : Zero-Trust Risk Score Engine, Device Fingerprinting, RBAC granulaire par champ, Intelligent Rate Limiter — 18 tests
 - **Sécurité Niveau 3** : Audit logs HMAC-SHA256, Password Policy (12 chars + blacklist), IP Allowlist super-admin, JWT rotation, Breach Response API — 9 tests
-- **Sécurité Niveau 2** : Chiffrement colonnes AES-256, MFA obligatoire admins, Brute force protection, Headers OWASP complets — 11 tests
+- **Sécurité Niveau 2** : Chiffrement colonnes AES-256, MFA (obligatoire super-admin), Brute force protection, Headers OWASP complets — 11 tests
 - **Sécurité Niveau 1** : JWT Blacklist Redis, PostgreSQL RLS, Isolation tenant triple, Fichiers signés URL temporaires
 - **BEM/BAC** : Module examens officiels, 5 tables, 22 endpoints, 5 PDFs, 12 tests
 - **LMS** : Cours en ligne, chapitres, leçons (vidéo/PDF/quiz), quiz auto-corrigés, certificats — 13 tests

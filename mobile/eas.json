@@ -19,7 +19,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1",
+        "EXPO_PUBLIC_SENTRY_DSN": ""
       }
     },
     "production": {
@@ -28,7 +29,8 @@
       },
       "ios": {},
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://api.edugest.dz/api/v1",
+        "EXPO_PUBLIC_SENTRY_DSN": ""
       }
     }
   },

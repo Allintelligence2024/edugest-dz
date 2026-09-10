@@ -7,6 +7,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\{
+    ConsentementRgpdController,
     ExportRgpdController,
     ParametreController,
     ModuleController,
@@ -49,8 +50,15 @@ Route::middleware($protected)->group(function () use ($directionRoles, $rhRoles)
     });
 
     // ── RGPD / Loi 18-07 ──
-    // Export/suppression de données personnelles : direction uniquement.
+    // Export/suppression de données personnelles et consentements parentaux :
+    // direction uniquement.
     Route::prefix('rgpd')->middleware($directionRoles)->group(function () {
+        // Sprint 6 § 5 — consentement parental (loi 18-07, mineurs) :
+        // enregistrement et historique (jamais de modification/suppression,
+        // un retrait = nouvelle ligne accepte=false).
+        Route::get('/consentements',            [ConsentementRgpdController::class, 'index']);
+        Route::post('/consentements',           [ConsentementRgpdController::class, 'enregistrer']);
+
         Route::get('/export-tenant',             [ExportRgpdController::class, 'exporterTenant']);
         Route::get('/export-eleve/{eleveId}',    [ExportRgpdController::class, 'exporterEleve']);
         Route::post('/demande-suppression',      [ExportRgpdController::class, 'demanderSuppression']);
