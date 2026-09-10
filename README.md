@@ -93,10 +93,10 @@ restes ouverts (révélés par le pentest Sprint 6) :
 
 | Niveau | Protection |
 |--------|------------|
-| 1 | Révocation JWT à la déconnexion + PostgreSQL RLS + isolation tenant triple |
+| 1 | Révocation JWT (déconnexion + verrouillage d'urgence effectif) + PostgreSQL RLS + isolation tenant triple |
 | 2 | Chiffrement colonnes sensibles (AES-256) + 2FA TOTP (obligatoire super-admin) |
 | 3 | Audit logs HMAC-SHA-256 + Password Policy + IP Allowlist |
-| 4 | Risk Score 0-100 + Device Fingerprinting (calculé, journalisé, signalé Sentry — enforcement strict en reste ouvert) |
+| 4 | Risk Score 0-100 + Device Fingerprinting + challenge appareil hors-bande (e-mail) — enforcement strict du score : reste ouvert, conditionné au frontend |
 | 5 | Honeypots + Canary Tokens + SSRF Protection + Vault Secrets |
 | 6 | Chaîne d'audit Merkle HMAC-SHA-256 vérifiée chaque nuit + SIEM + Kill Switch MPC (2 admins) |
 
@@ -146,7 +146,7 @@ docker compose exec app php artisan migrate --seed
 ```bash
 cd backend && php artisan test          # ≈ 1 140 tests (PHPUnit, Unit + Feature)
 cd frontend && npx vitest run           # 137 tests (Vitest)
-cd mobile && npm test                   # 14 tests (Jest — 2 suites à réparer, hors CI)
+cd mobile && npm test                   # 21 tests (Jest, 4 suites vertes — hors CI)
 ```
 
 L'exactitude de ces comptes est vérifiée par la CI à chaque push ; les

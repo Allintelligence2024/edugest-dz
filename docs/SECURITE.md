@@ -25,8 +25,7 @@
 ## Les 6 niveaux de sécurité
 
 ### Niveau 1 — Fondations
-- **Révocation JWT** : les tokens sont invalidés à la déconnexion (blacklist du garde JWT)
-- ⚠️ **Reste ouvert** (pentest Sprint 6, constat C2) : la seconde blacklist maison (`jwt_blacklist` + middleware `jwt.blacklist`) n'est appliquée à aucune route — le « verrouillage d'urgence » de la breach response n'invalide donc **pas** les JWT existants. Correctif décrit dans `SPRINT6_EXPLOITATION.md` § 3
+- **Révocation JWT** : tokens invalidés à la déconnexion (blacklist du garde JWT) + middleware `jwt.blacklist` sur **toutes** les routes authentifiées (pentest Sprint 6, C2 corrigé) — le verrouillage d'urgence invalide réellement les jetons émis avant l'incident
 - **PostgreSQL RLS** : Row-Level Security sur 40+ tables (filet BDD)
 - **Isolation tenant** : `BelongsToTenant` + `TenantIsolationVerifier`
 - **Fichiers sécurisés** : URLs signées HMAC expirantes (jamais d'URL permanente publique)
@@ -40,14 +39,14 @@
 ### Niveau 3 — Conformité
 - **Audit logs signés** : SHA-256 + HMAC exportés quotidiennement
 - **Politique MDP** : 12 chars, majuscule, chiffre, spécial, blacklist 40+ mots interdits
-- **IP Allowlist** : Super-admin restreint aux IPs connues
+- **IP Allowlist** : Super-admin restreint aux IPs connues · `TRUSTED_PROXIES` opt-in pour un `$request->ip()` correct derrière nginx/Vercel (C5)
 - **JWT rotation** : renouvellement programmable avec période de grâce 24h
 - **Breach API** : déclaration d'incident avec rappel délai 72h ANPDP
 
 ### Niveau 4 — Zero-Trust
 - **Risk Score 0-100** : 9 facteurs évalués par requête, fail-secure (exception = 100)
-- **Device Fingerprinting** : empreinte par appareil (IP, en-têtes, user-agent)
-- ⚠️ **Reste ouvert** (pentest Sprint 6, constat C3) : le mode `zero.trust:strict` (428 + challenge) n'est branché sur aucune route et le flux de vérification du challenge est incomplet — le score est aujourd'hui calculé, journalisé et signalé à Sentry (> 50), mais pas enforcé
+- **Device Fingerprinting** : empreinte par appareil (IP, en-têtes, user-agent) + challenge à code hors-bande (e-mail) vérifiable via `POST /security/zero-trust/verify` (C3, partiellement corrigé)
+- **Reste ouvert** (pentest Sprint 6, C3) : le mode `zero.trust:strict` n'est pas encore branché sur des routes (conditionné au traitement du 428 côté frontend) — le score est calculé, journalisé et signalé à Sentry (> 50), mais pas enforcé
 - **RBAC granulaire** : permissions au niveau du champ (ex: enseignant voit notes mais pas salaires)
 - **Rate Limiter adaptatif** : quotas différents par rôle/heure/type de route
 

@@ -53,7 +53,7 @@ class DeviceFingerprintService
         $rawCode = Str::random(64);
         $hash = hash('sha256', $rawCode);
 
-        DeviceChallenge::create([
+        $challenge = DeviceChallenge::create([
             'user_id' => $user->id,
             'challenge_hash' => $hash,
             'attempts' => 0,
@@ -61,9 +61,14 @@ class DeviceFingerprintService
             'expires_at' => now()->addMinutes(15),
         ]);
 
+        // Pentest Sprint 6 (C3) : 'challenge' (code brut) n'est destiné QU'AU
+        // canal hors-bande (e-mail) — jamais à la réponse HTTP. Le client ne
+        // reçoit que 'challenge_id'. La clé reste exposée ici pour les appels
+        // internes et les tests service.
         return [
+            'challenge_id' => $challenge->id,
             'challenge' => $rawCode,
-            'expires_at' => now()->addMinutes(15),
+            'expires_at' => $challenge->expires_at,
         ];
     }
 

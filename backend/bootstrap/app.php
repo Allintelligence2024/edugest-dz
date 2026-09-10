@@ -18,6 +18,22 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
 
+        // Pentest Sprint 6 (C5) : derrière un reverse proxy (nginx du compose,
+        // Vercel…), $request->ip() renvoyait l'IP PRIVÉE du proxy — +10 points
+        // de risque systématiques pour 100 % du trafic légitime, throttles par
+        // IP inopérants, empreinte device faussée. Opt-in par environnement :
+        // TRUSTED_PROXIES='*' (tout le trafic arrive via le proxy) ou une liste
+        // d'IP/CIDR séparés par des virgules. Vide (défaut) = rien n'est
+        // trusté, comportement inchangé.
+        $proxiesTrust = (string) env('TRUSTED_PROXIES', '');
+        if ($proxiesTrust !== '') {
+            $middleware->trustProxies(
+                at: $proxiesTrust === '*'
+                    ? '*'
+                    : array_map('trim', explode(',', $proxiesTrust))
+            );
+        }
+
         $middleware->api(prepend: [
             \App\Http\Middleware\KillSwitchMiddleware::class,
             \App\Http\Middleware\LicenceCheck::class,

@@ -25,7 +25,10 @@ Route::prefix('marketplace')->group(function () {
 });
 
 // ── Marketplace Authenticated ──
-$protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
+// Pentest Sprint 6 (C2) : jwt.blacklist rend enfin effectifs le verrouillage
+// d'urgence (global_tokens_invalidated_at) et la révocation de jetons —
+// le middleware est fail-open : sans incident, coût = 1 lecture cache.
+$protected = ['auth:api', 'jwt.blacklist', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
 Route::middleware($protected)->group(function () {
     Route::prefix('marketplace')->middleware('module:marketplace')->group(function () {
         Route::post('offres',                [OffreController::class, 'store']);

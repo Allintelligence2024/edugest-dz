@@ -13,7 +13,10 @@ use App\Http\Controllers\Api\V1\{
     ContratController,
 };
 
-$protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
+// Pentest Sprint 6 (C2) : jwt.blacklist rend enfin effectifs le verrouillage
+// d'urgence (global_tokens_invalidated_at) et la révocation de jetons —
+// le middleware est fail-open : sans incident, coût = 1 lecture cache.
+$protected = ['auth:api', 'jwt.blacklist', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
 
 // ── RBAC (Sprint 2) ────────────────────────────────────────────────────────
 // Les dossiers élèves/parents/enseignants sont administratifs : un parent ne

@@ -1,6 +1,9 @@
 import React from 'react'
 import { render } from '@testing-library/react-native'
-import ParentDashboardScreen from '../../../screens/parent/ParentDashboardScreen'
+// L'écran « tableau de bord parent » vit dans DashboardScreen.js (le
+// composant exporté s'appelle ParentDashboardScreen) — l'ancien import
+// visait screens/parent/ParentDashboardScreen, fichier qui n'existe pas.
+import ParentDashboardScreen from '../../../screens/parent/DashboardScreen'
 
 jest.mock('../../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -12,19 +15,17 @@ jest.mock('../../../context/AuthContext', () => ({
   }),
 }))
 
+// Les libellés reflètent src/lang/fr.js (clés réellement utilisées par
+// l'écran : welcome, nextCourse, average, monthPresences, lastPayment).
 jest.mock('../../../context/I18nContext', () => ({
   useI18n: () => ({
     t: (key) => {
       const labels = {
-        dashboardTitle: 'Tableau de bord',
-        welcomeMessage: 'Bienvenue',
-        myChildren: 'Mes enfants',
-        recentGrades: 'Notes récentes',
-        attendance: 'Assiduité',
-        payments: 'Paiements',
-        schedule: 'Emploi du temps',
-        noData: 'Aucune donnée disponible',
-        logout: 'Déconnexion',
+        welcome: 'Bienvenue',
+        nextCourse: 'Prochain cours',
+        average: 'Moyenne générale',
+        monthPresences: 'Présences du mois',
+        lastPayment: 'Dernier paiement',
       }
       return labels[key] || key
     },
@@ -37,55 +38,23 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn() }),
 }))
 
-jest.mock('@expo/vector-icons', () => ({
-  Ionicons: 'Ionicons',
-  MaterialIcons: 'MaterialIcons',
-  FontAwesome5: 'FontAwesome5',
-  MaterialCommunityIcons: 'MaterialCommunityIcons',
-}))
-
-jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons')
-jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons')
-jest.mock('react-native-vector-icons/FontAwesome5', () => 'FontAwesome5')
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'MaterialCommunityIcons')
-jest.mock('react-native-vector-icons', () => ({
-  default: 'Icon',
-}))
-
 describe('ParentDashboardScreen', () => {
-  it('renders welcome message with user name', () => {
+  it('affiche le message de bienvenue avec le nom de l’utilisateur', () => {
     const { getByText } = render(<ParentDashboardScreen />)
     expect(getByText(/Amine/)).toBeTruthy()
     expect(getByText(/Benali/)).toBeTruthy()
   })
 
-  it('renders tenant name', () => {
+  it('affiche le nom de l’établissement', () => {
     const { getByText } = render(<ParentDashboardScreen />)
     expect(getByText(/Lycée El Mokrani/)).toBeTruthy()
   })
 
-  it('renders dashboard sections', () => {
+  it('affiche les quatre indicateurs', () => {
     const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Mes enfants/)).toBeTruthy()
-  })
-
-  it('renders logout button', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText('Déconnexion')).toBeTruthy()
-  })
-
-  it('renders attendance section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Assiduité/)).toBeTruthy()
-  })
-
-  it('renders payments section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Paiements/)).toBeTruthy()
-  })
-
-  it('renders schedule section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Emploi du temps/)).toBeTruthy()
+    expect(getByText('Prochain cours')).toBeTruthy()
+    expect(getByText('Moyenne générale')).toBeTruthy()
+    expect(getByText('Présences du mois')).toBeTruthy()
+    expect(getByText('Dernier paiement')).toBeTruthy()
   })
 })

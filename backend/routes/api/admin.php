@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\V1\{
 };
 
 // ── Super-Admin (sans tenant scope) — first set ──
-Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
+Route::prefix('super-admin')->middleware(['auth:api', 'jwt.blacklist', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
     Route::get('tenants',                          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'indexTenants']);
     Route::get('stats',                            [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'statsGlobales']);
     Route::post('tenants/{id}/suspendre',          [\App\Http\Controllers\Api\V1\SuperAdmin\SuperAdminController::class, 'suspendreTenant']);
@@ -23,7 +23,10 @@ Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'su
 });
 
 // ── Routes protégées par JWT ──
-$protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
+// Pentest Sprint 6 (C2) : jwt.blacklist rend enfin effectifs le verrouillage
+// d'urgence (global_tokens_invalidated_at) et la révocation de jetons —
+// le middleware est fail-open : sans incident, coût = 1 lecture cache.
+$protected = ['auth:api', 'jwt.blacklist', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
 // ── RBAC (Sprint 2) ────────────────────────────────────────────────────────
 // Paramètres établissement, RGPD, journaux d'audit et dossiers du personnel
 // sont des zones de direction : jamais accessibles aux enseignants/parents.
@@ -104,7 +107,7 @@ Route::middleware($protected)->group(function () use ($directionRoles, $rhRoles)
 });
 
 // ── Gestion des Modules (accessible même hors module) ──
-Route::prefix('modules')->middleware(['auth:api', 'resolve.tenant'])->group(function () {
+Route::prefix('modules')->middleware(['auth:api', 'jwt.blacklist', 'resolve.tenant'])->group(function () {
     Route::get('/',                         [ModuleController::class, 'index']);
     Route::get('/actifs',                   [ModuleController::class, 'actifs']);
     Route::post('/bulk',                    [ModuleController::class, 'bulkUpdate']);
@@ -113,7 +116,7 @@ Route::prefix('modules')->middleware(['auth:api', 'resolve.tenant'])->group(func
 });
 
 // ── Onboarding Wizard (accessible hors modules) ──
-Route::prefix('onboarding')->middleware(['auth:api', 'resolve.tenant'])->group(function () {
+Route::prefix('onboarding')->middleware(['auth:api', 'jwt.blacklist', 'resolve.tenant'])->group(function () {
     Route::get('/',                          [OnboardingController::class, 'statut']);
     Route::post('/avancer',                  [OnboardingController::class, 'avancer']);
     Route::post('/tester-notification',       [OnboardingController::class, 'testerNotification']);
@@ -121,7 +124,7 @@ Route::prefix('onboarding')->middleware(['auth:api', 'resolve.tenant'])->group(f
 });
 
 // ── Super-Admin second set (hors scope tenant) ──
-Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
+Route::prefix('super-admin')->middleware(['auth:api', 'jwt.blacklist', 'ip.allowlist', 'mfa', 'super_admin'])->group(function () {
     Route::post('tenants',                   [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'store']);
     Route::get('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'show']);
     Route::put('tenants/{id}',               [\App\Http\Controllers\Api\V1\SuperAdmin\TenantController::class, 'update']);

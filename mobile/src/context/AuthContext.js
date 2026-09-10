@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../api/endpoints';
-import { TOKEN_KEY, REFRESH_KEY } from '../api/axios';
+import api, { TOKEN_KEY, REFRESH_KEY } from '../api/axios';
 
 const AuthContext = createContext(null);
 

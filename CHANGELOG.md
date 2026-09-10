@@ -14,6 +14,12 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 - **Scénarios de charge k6** : 7 scénarios (smoke, charge, isolation RLS, QR, bulletins, throttle auth, webhook) + lanceur + guide (`tests/k6/`, `docs/PERF_TESTS_K6.md`)
 - Réparation de la chaîne backup/restore (`restore-backup.sh` rejoué sur stubs)
 
+### Ajouté (suites pentest, clôture Sprint 6)
+- **C2 corrigé** : middleware `jwt.blacklist` appliqué à toutes les routes authentifiées — le verrouillage d'urgence invalide désormais les JWT existants
+- **C3 partiel** : code du challenge Zero-Trust envoyé hors-bande (e-mail), plus jamais dans la réponse 428 ; nouvel endpoint `POST /security/zero-trust/verify` (+ 5 tests)
+- **C5 partiel** : `TRUSTED_PROXIES` opt-in (`bootstrap/app.php`) pour un `$request->ip()` correct derrière proxy
+- **Mobile** : `AuthContext.js` corrigé (référence `api` non importée → crash du logout et suppression silencieuse du token au démarrage) ; suite de tests Jest réparée : **4 suites / 21 tests verts** (chemins d'import, mock i18n du LoginScreen, assertions alignées sur les écrans réels)
+
 ### Corrigé
 - `README.md`, `docs/SECURITE.md`, `docs/ARCHITECTURE.md` (grille Risk Score fictive remplacée par la vraie), `docs/ANPDP_DECLARATION.md`, `docs/MONITORING_CHECKLIST.md` : alignés sur la réalité (58 wilayas et non 48, Merkle HMAC-SHA-256 et non SHA3, MFA obligatoire seulement super-admin, crypto classique et non post-quantique, compteurs réels, lien plan d'incident, argumentaire commercial ANPDP reformulé)
 - Lockfile mobile resynchronisé avec `package.json` (`npm ci` échouait)

@@ -1,6 +1,7 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react-native'
 import { NavigationContainer } from '@react-navigation/native'
+import { Alert } from 'react-native'
 import LoginScreen from '../../../screens/auth/LoginScreen'
 
 const mockLogin = jest.fn()
@@ -18,14 +19,14 @@ jest.mock('../../../context/AuthContext', () => ({
 jest.mock('../../../context/I18nContext', () => ({
   useI18n: () => ({
     t: (key) => {
+      // Clés réellement utilisées par LoginScreen : login, email,
+      // password, loginButton, error (cf. src/lang/fr.js).
       const translations = {
-        loginTitle: 'Connexion EduGest',
-        emailLabel: 'Adresse email',
-        passwordLabel: 'Mot de passe',
+        login: 'Connexion',
+        email: 'Email',
+        password: 'Mot de passe',
         loginButton: 'Se connecter',
-        loginError: 'Email ou mot de passe incorrect',
-        fieldRequired: 'Ce champ est obligatoire',
-        sessionExpired: 'Session expirée',
+        error: 'Erreur',
       }
       return translations[key] || key
     },
@@ -65,7 +66,7 @@ describe('LoginScreen', () => {
   it('renders login form with all elements', () => {
     const { getByText, getByPlaceholderText } = renderWithNavigation(<LoginScreen />)
 
-    expect(getByText('Connexion EduGest')).toBeTruthy()
+    expect(getByText('Connexion')).toBeTruthy()
     expect(getByPlaceholderText('admin@edugestdz.local')).toBeTruthy()
     expect(getByPlaceholderText('••••••••')).toBeTruthy()
     expect(getByText('Se connecter')).toBeTruthy()
@@ -88,13 +89,21 @@ describe('LoginScreen', () => {
   it('shows error message on login failure', async () => {
     mockLogin.mockRejectedValueOnce(new Error('Email ou mot de passe incorrect'))
 
-    const { getByPlaceholderText, getByText, findByText } = renderWithNavigation(<LoginScreen />)
+    // L'écran signale l'échec via Alert.alert (native), pas par un texte
+    // rendu — on espionne donc l'alerte plutôt que chercher un nœud texte.
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {})
+
+    const { getByPlaceholderText, getByText } = renderWithNavigation(<LoginScreen />)
 
     fireEvent.changeText(getByPlaceholderText('admin@edugestdz.local'), 'admin@test.com')
     fireEvent.changeText(getByPlaceholderText('••••••••'), 'wrongpassword')
     fireEvent.press(getByText('Se connecter'))
 
-    expect(await findByText('Email ou mot de passe incorrect')).toBeTruthy()
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Erreur', 'Email ou mot de passe incorrect')
+    })
+
+    alertSpy.mockRestore()
   })
 
   it('does not call login when fields are empty', () => {

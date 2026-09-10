@@ -83,11 +83,11 @@ maintenu à 45 jusqu'à la mesure post-5.3.
 4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
-   tests mobile (état réel au 10 sept. : 12 passés / 2 échoués —
-   `LoginScreen` — et 2 suites aux chemins d'import cassés :
-   `ParentDashboardScreen.test.js` vise `screens/parent/ParentDashboardScreen`
-   qui n'existe pas, `AuthContext.test.js` vise `../../../api/endpoints`
-   au lieu de `../../`), CSRF (double-submit).
+   ~~tests mobile~~ (✅ réparés le 10 sept., clôture Sprint 6 : **4 suites /
+   21 tests verts**, chemins d'import + mock i18n LoginScreen + assertions
+   réalignées ; **bug applicatif corrigé** au passage : `AuthContext.js`
+   référençait `api` sans l'importer → crash du logout + token supprimé
+   silencieusement au démarrage), CSRF (double-submit).
 6. **Sprint 6** (décidé : après le Sprint 5, amorcé le 10 sept.) :
    ~~scénarios k6 + doc~~ (✅ écrits le 10 sept. — 7 scénarios dans
    `tests/k6/` + `docs/PERF_TESTS_K6.md` ; **exécution réelle sur l'env
@@ -118,8 +118,19 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    badge ANPDP « Outils livrés ») + 11 corrections SECURITE.md (dead
    man switch 80/90 j, kill-switch 2 admins, restes C2/C3 visibles) +
    MONITORING (clé kill-switch) + CHANGELOG (SHA3/Post-Quantum) —
-   journal § 6). **Restes Sprint 6 : campagne k6 réelle sur env de
-   perf, application C2/C3 avec suite exécutable, C5 trustProxies.**
+   journal § 6). **Restes Sprint 6 après clôture (10 sept., soir)** :
+   ~~application C2/C3~~ (✅ C2 `jwt.blacklist` sur toutes les routes
+   authentifiées ; C3 code hors-bande + endpoint
+   `POST /security/zero-trust/verify` + 5 tests — **brancher
+   `zero.trust:strict` reste conditionné au traitement du 428 côté
+   frontend** ; C5 `TRUSTED_PROXIES` opt-in) ; **PR #90 MERGÉE dans
+   `main` sur instruction du propriétaire** (le mandat « rapport
+   uniquement » est levé) — la CI de `main` (workflows patchés préservés :
+   la branche n'a jamais touché `.github/`) valide l'ensemble, dont les
+   tests backend écrits sans exécution locale. Restent externes :
+   campagne k6 réelle sur env de perf, DSN Sentry par environnement,
+   baseline PHPStan (poste avec PHP), recalibration C5 des poids du
+   score. Journal `docs/SPRINT6_EXPLOITATION.md` § 7.
 
 ---
 

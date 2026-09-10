@@ -59,18 +59,49 @@ class ZeroTrustMiddleware
         }
 
         if ($mode === 'strict' && $score > 50) {
-            $deviceHash = $this->deviceFingerprint->genererEmpreinte($request);
             $challenge = $this->deviceFingerprint->creerChallenge($user);
+
+            // Pentest Sprint 6 (C3) : l'ancienne réponse renvoyait le code du
+            // challenge DANS le corps du 428 — le client recevait lui-même le
+            // secret à présenter, le contrôle ne prouvait rien. Le code part
+            // désormais hors-bande, par e-mail au titulaire du compte.
+            $this->envoyerCodeHorsBande($user, (string) $challenge['challenge']);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Vérification supplémentaire requise.',
+                'message' => 'Nouvel appareil détecté : un code de vérification vous a été envoyé par e-mail.',
                 'code' => 'ZERO_TRUST_CHALLENGE',
-                'challenge' => $challenge['challenge'],
+                'challenge_id' => $challenge['challenge_id'],
                 'expires_at' => $challenge['expires_at'],
+                'verification_url' => '/api/v1/security/zero-trust/verify',
             ], 428);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Livraison du code hors-bande (C3). Jamais bloquant : si l'e-mail
+     * échoue, le challenge existe côté serveur et le support peut le
+     * relancer — mais on ne rabat JAMAIS le code dans la réponse HTTP.
+     */
+    private function envoyerCodeHorsBande(\App\Models\User $user, string $code): void
+    {
+        try {
+            \Illuminate\Support\Facades\Mail::raw(
+                "Votre code de vérification EduGest DZ : {$code}\n\n"
+                . 'Il expire dans 15 minutes. Si vous n\'êtes pas à l\'origine de cette connexion, changez votre mot de passe.',
+                function ($message) use ($user) {
+                    $message->to($user->email)->subject('EduGest DZ — vérification de nouvel appareil');
+                }
+            );
+        } catch (\Throwable $e) {
+            // Ne pas faire échouer la requête pour un échec d'envoi : le
+            // challenge reste vérifiable côté serveur.
+            Log::warning('ZeroTrust: envoi du code hors-bande échoué', [
+                'user_id' => $user->id,
+                'erreur'  => $e->getMessage(),
+            ]);
+        }
     }
 }
