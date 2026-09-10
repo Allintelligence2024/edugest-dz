@@ -1,14 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch } from '@hooks/useSearch';
+import { useI18n } from '@context/I18nContext';
 
+// Labels = clés i18n, traduites au rendu (type_eleve, type_enseignant…).
 const TYPE_CONFIG = {
-  eleve:      { label: 'Élève',      color: 'var(--accent)',   route: '/eleves' },
-  enseignant: { label: 'Enseignant', color: 'var(--green)',    route: '/enseignants' },
-  matiere:    { label: 'Matière',    color: 'var(--teal)',     route: '/matieres' },
-  groupe:     { label: 'Groupe',     color: 'var(--orange)',   route: '/groupes' },
-  salle:      { label: 'Salle',      color: 'var(--accent2)',  route: '/salles' },
-  parent:     { label: 'Parent',     color: 'var(--pink)',     route: '/eleves' },
+  eleve:      { label: 'type_eleve',      color: 'var(--accent)',   route: '/eleves' },
+  enseignant: { label: 'type_enseignant', color: 'var(--green)',    route: '/enseignants' },
+  matiere:    { label: 'type_matiere',    color: 'var(--teal)',     route: '/matieres' },
+  groupe:     { label: 'type_groupe',     color: 'var(--orange)',   route: '/groupes' },
+  salle:      { label: 'type_salle',      color: 'var(--accent2)',  route: '/salles' },
+  parent:     { label: 'type_parent',     color: 'var(--pink)',     route: '/eleves' },
 };
 
 function HighlightMatch({ text, query }) {
@@ -27,6 +29,7 @@ function HighlightMatch({ text, query }) {
 export default function SearchModal({ isOpen, onClose }) {
   const { query, setQuery, results, total, isLoading } = useSearch(300);
   const navigate = useNavigate();
+  const { t } = useI18n();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -79,7 +82,7 @@ export default function SearchModal({ isOpen, onClose }) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Rechercher élève, enseignant, matière..."
+            placeholder={t('search_modal_placeholder')}
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
               color: 'var(--text)', fontSize: '0.95rem',
@@ -102,16 +105,16 @@ export default function SearchModal({ isOpen, onClose }) {
         <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
           {query.length < 2 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.875rem' }}>
-              Tapez au moins 2 caractères pour rechercher
+              {t('search_modal_hint')}
             </div>
           ) : results.length === 0 && !isLoading ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.875rem' }}>
-              Aucun résultat pour "{query}"
+              {t('search_modal_no_result', { query })}
             </div>
           ) : (
             <>
               <div style={{ padding: '6px 12px', fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {total} résultat{total > 1 ? 's' : ''}
+                {t('search_modal_results', { count: total })}
               </div>
               {results.map((item, idx) => {
                 const config = TYPE_CONFIG[item.type] || TYPE_CONFIG.eleve;
@@ -133,7 +136,7 @@ export default function SearchModal({ isOpen, onClose }) {
                       background: `${config.color}20`, color: config.color,
                       fontWeight: 600, flexShrink: 0, minWidth: '60px', textAlign: 'center',
                     }}>
-                      {config.label}
+                      {t(config.label)}
                     </span>
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {item.nom && <HighlightMatch text={`${item.prenom ? item.prenom + ' ' : ''}${item.nom}`} query={query} />}

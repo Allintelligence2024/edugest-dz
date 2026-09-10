@@ -1,6 +1,8 @@
 import React from 'react';
+import { useI18n } from '@context/I18nContext';
 
 export default function Pagination({ meta, onChange }) {
+  const { t } = useI18n();
   if (!meta || meta.last_page <= 1) return null;
   const { current_page, last_page, total, from, to } = meta;
 
@@ -12,10 +14,7 @@ export default function Pagination({ meta, onChange }) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 mt-4">
-      <p className="text-sm text-neutral-500">
-        <span className="font-medium text-neutral-800">{from}–{to}</span> sur{' '}
-        <span className="font-medium text-neutral-800">{total}</span> résultats
-      </p>
+      <p className="text-sm text-neutral-500">{t('showing', { from, to, total })}</p>
       <div className="flex items-center gap-1">
         <button onClick={() => onChange(current_page - 1)} disabled={current_page === 1}
                 className="px-3 py-2 text-sm rounded-lg border border-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors font-medium">◀</button>

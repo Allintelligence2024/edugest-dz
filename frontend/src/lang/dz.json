@@ -201,6 +201,7 @@
   "theme_dark": "الوضع الداكن",
   "theme_light": "الوضع الفاتح",
   "theme_system": "تلقائي",
+
   "lang_select": "اللغة",
   "lang_fr": "Français",
   "lang_ar": "العربية",
@@ -222,5 +223,71 @@
   "notifications_title": "الإشعارات",
   "notifications_none": "ما كاينش إشعارات جديدة",
   "notifications_mark_all_read": "علّم الكل كمقروء",
-  "notifications_view_all": "شوف الكل"
+  "notifications_view_all": "شوف الكل",
+
+  "planning_title": "التخطيط والحصص",
+  "presences_title": "الحضور",
+  "billets_title": "التيكيات",
+  "notes_title": "النقط والاختبارات",
+  "bulletins_title": "كشوف النقاط PDF",
+  "budget_title": "البودجة السنوية",
+  "stock_title": "الستوك والجردة",
+  "personnel_title": "الموظفين",
+  "entretien_title": "صيانة البنيان",
+  "pointage_title": "تسجيل الحضور تاع الأساتذة",
+  "messages_title": "الرسائل",
+  "campagnes_title": "الحملات",
+  "marketplace_title": "الماركت",
+  "mes_reservations_title": "الحجوزات تاعي",
+  "audit_title": "سجل التدقيق",
+  "modules_title": "إدارة الوحدات",
+
+  "crumb_diagnostic": "التشخيص",
+  "crumb_factures": "الفاكتورات",
+  "crumb_gestion": "الإدارة",
+  "crumb_reservations": "الحجوزات",
+  "crumb_profil": "البروفيل",
+  "crumb_audit": "التدقيق",
+  "crumb_modules": "الوحدات",
+
+  "topbar_search": "لوج...",
+  "search_modal_placeholder": "لوج على تلميذ، أستاذ، مادة...",
+  "search_modal_hint": "اكتب حرفين على الأقل باش تلوج",
+  "search_modal_no_result": "ماكاينش نتيجة على \"{{query}}\"",
+  "search_modal_results_one": "نتيجة وحدة",
+  "search_modal_results_other": "{{count}} نتائج",
+
+  "type_eleve": "تلميذ",
+  "type_enseignant": "أستاذ",
+  "type_matiere": "مادة",
+  "type_groupe": "مجموعة",
+  "type_salle": "قاعة",
+  "type_parent": "وليّ",
+
+  "quick_add_student": "زيد تلميذ",
+  "quick_create_invoice": "صاوب فاكتورة",
+  "quick_manage_planning": "سيّر التخطيط",
+  "quick_enter_attendance": "سجّل الحضور",
+
+  "diag_risk": "في خطر",
+  "diag_medium": "متوسط",
+  "diag_good": "مزيان",
+  "diag_alert": "تحذير",
+  "diag_not_evaluated": "ما تقيّمش",
+
+  "offline_banner_offline": "ماكاش كونكسيون — الداتا لي معروضة هي من آخر تحميل",
+  "offline_banner_pending_one": "عملية وحدة في الانتظار",
+  "offline_banner_pending_other": "{{count}} عمليات في الانتظار",
+  "offline_banner_back": "رجعت الكونكسيون — نحيّنو الداتا...",
+
+  "school_badge_default": "المدرسة",
+  "reset": "عاود",
+
+  "module_unavailable": "الوحدة ماشي متوفرة",
+  "module_disabled": "الوحدة «{{module}}» ما هيش مفعّلة في المؤسسة تاعكم.",
+  "module_contact_admin": "اتصّل بالأدمين باش يفعّلها.",
+
+  "error_loading": "مشكل في التحميل",
+  "success_operation": "العملية نجحت",
+  "error_operation": "مشكل في العملية"
 }

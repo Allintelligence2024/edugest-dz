@@ -19,7 +19,10 @@ livrés (voir `docs/SPRINT5_ARCHITECTURE.md`), **5.2 fusionné le 10 sept.**
 (`68e4f1d` + `64c53c2`, workflows en `docs/fusion-workflows.patch`),
 **5.3 fait le 10 sept.** (9/9 contrôleurs, baseline garde-fou vide) et
 **5.6 phases 1-2 faites** (socle i18next + emoji → lucide : 515 occurrences
-→ **0**, garde-fou verrouillé à 0/0, tests 134/134 — journal § 5.6).
+→ **0**, garde-fou verrouillé à 0/0, tests 134/134 — journal § 5.6) et
+**phase 3 entamée** (lot 1 « chrome » : 13 fichiers convertis, 56 clés × 4
+langues, cliquet `fr-literals-guard.test.js` à 60 fichiers, parité des
+dictionnaires gardée par test — journal § 5.6).
 Correctif au passage : `tenant.nom` (colonne inexistante, `null` renvoyé)
 → `nom_etablissement` dans `complete2fa`, `me` et `RelancesEcheanceCommand`,
 et pluriels darija réparés (`getRule('dz')` délégué à l'arabe, i18next ≥ 25
@@ -69,8 +72,9 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    `package.json` → `UNLICENSED`.
 3. Finir le Sprint 5 : **5.3** ✅ (9/9, garde-fou vide) ; **5.6** phase 2 ✅
    (emoji → lucide le 10 sept., 515 occ. → 0, garde-fou verrouillé à 0/0,
-   134/134 tests verts) ; reste la phase 3 (littéraux français → `t()`,
-   96 fichiers mesurés).
+   134/134 tests verts) ; phase 3 : lot 1 (chrome) ✅ le 10 sept., restent
+   ~60 fichiers (pages et modales métier) à passer en `t()` — cliquet en
+   place (`fr-literals-guard.test.js`, plafond 60).
 4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),

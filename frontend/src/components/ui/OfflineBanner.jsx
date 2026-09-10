@@ -4,11 +4,13 @@
  */
 
 import { useOfflineStatus } from '@hooks/useOfflineStatus';
+import { useI18n } from '@context/I18nContext';
 
 import { CheckCircle, WifiOff } from 'lucide-react';
 
 export default function OfflineBanner() {
   const { isOffline, wasOffline, pendingActions } = useOfflineStatus();
+  const { t } = useI18n();
 
   if (!isOffline && !wasOffline) return null;
 
@@ -38,7 +40,7 @@ export default function OfflineBanner() {
       {isOffline ? (
         <>
           <span><WifiOff size={16} aria-hidden='true' /></span>
-          <span>Mode hors-ligne — Les données affichées sont celles du dernier chargement</span>
+          <span>{t('offline_banner_offline')}</span>
           {pendingActions > 0 && (
             <span style={{
               background: '#78350f',
@@ -46,14 +48,14 @@ export default function OfflineBanner() {
               borderRadius: '12px',
               fontSize: '11px',
             }}>
-              {pendingActions} action(s) en attente
+              {t('offline_banner_pending', { count: pendingActions })}
             </span>
           )}
         </>
       ) : (
         <>
           <span><CheckCircle size={16} aria-hidden='true' /></span>
-          <span>Connexion rétablie — Mise à jour des données...</span>
+          <span>{t('offline_banner_back')}</span>
         </>
       )}
     </div>

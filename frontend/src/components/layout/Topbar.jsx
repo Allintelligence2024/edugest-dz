@@ -3,51 +3,55 @@ import { Link, useLocation } from 'react-router-dom';
 import LanguageThemeSelector from '@components/LanguageThemeSelector';
 import { useTheme } from '@context/ThemeContext';
 import SearchModal from '@components/SearchModal';
+import { useI18n } from '@context/I18nContext';
 import { getAccessToken } from '../../api/tokenStore';
 
+// Titres et fils d'Ariane par route — valeurs = clés i18n (src/lang/*.json),
+// traduites au rendu. t() renvoie la clé si elle manque (repli visible).
 const PAGE_META = {
-  '/':                 { title: 'Tableau de bord',     crumb: [] },
-  '/eleves':           { title: 'Gestion des Élèves',  crumb: ['Élèves'] },
-  '/planning':         { title: 'Planning & Séances',  crumb: ['Planning'] },
-  '/presences':        { title: 'Présences',           crumb: ['Présences'] },
-  '/absences':         { title: 'Absences Journalières',crumb: ['Absences'] },
-  '/billets':          { title: 'Billets',             crumb: ['Billets'] },
-  '/notes':            { title: 'Notes & Évaluations', crumb: ['Pédagogie', 'Notes'] },
-  '/bulletins':        { title: 'Bulletins PDF',       crumb: ['Pédagogie', 'Bulletins'] },
-  '/diagnostic':       { title: 'Diagnostic Niveau',   crumb: ['Pédagogie', 'Diagnostic'] },
-  '/factures':         { title: 'Finance & Paiements', crumb: ['Finance', 'Factures'] },
-  '/budget':           { title: 'Budget Annuel',       crumb: ['Finance', 'Budget'] },
-  '/transport':        { title: 'Transport Scolaire',  crumb: ['Gestion', 'Transport'] },
-  '/cantine':          { title: 'Cantine',             crumb: ['Gestion', 'Cantine'] },
-  '/stock':            { title: 'Stock & Inventaire',  crumb: ['Gestion', 'Stock'] },
-  '/personnel-admin':  { title: 'Personnel',           crumb: ['Gestion', 'Personnel'] },
-  '/entretien':        { title: 'Entretien Bâtiment',  crumb: ['Gestion', 'Entretien'] },
-  '/surveillance':     { title: 'Surveillance Dahua',  crumb: ['Surveillance'] },
-  '/pointage':         { title: 'Pointage Enseignants',crumb: ['Pointage'] },
-  '/messages':         { title: 'Messages',            crumb: ['Communication', 'Messages'] },
-  '/campagnes':        { title: 'Campagnes',           crumb: ['Communication', 'Campagnes'] },
-  '/centres':          { title: 'Marketplace',         crumb: ['Marketplace'] },
-  '/mes-reservations': { title: 'Mes Réservations',   crumb: ['Marketplace', 'Réservations'] },
-  '/profil':           { title: 'Mon Profil',          crumb: ['Paramètres', 'Profil'] },
-  '/audit-logs':       { title: "Journal d'audit",    crumb: ['Paramètres', 'Audit'] },
-  '/super-admin':      { title: 'Super-Admin',         crumb: ['Super-Admin'] },
-  '/modules':          { title: 'Gestion des Modules', crumb: ['Paramètres', 'Modules'] },
+  '/':                 { title: 'dashboard_title',    crumb: [] },
+  '/eleves':           { title: 'students_title',     crumb: ['nav_students'] },
+  '/planning':         { title: 'planning_title',     crumb: ['nav_planning'] },
+  '/presences':        { title: 'presences_title',    crumb: ['nav_attendance'] },
+  '/absences':         { title: 'absences_title',     crumb: ['nav_absences'] },
+  '/billets':          { title: 'billets_title',      crumb: ['nav_tickets'] },
+  '/notes':            { title: 'notes_title',        crumb: ['section_pedagogy', 'nav_notes'] },
+  '/bulletins':        { title: 'bulletins_title',    crumb: ['section_pedagogy', 'nav_bulletins'] },
+  '/diagnostic':       { title: 'diagnostic_title',   crumb: ['section_pedagogy', 'crumb_diagnostic'] },
+  '/factures':         { title: 'finance_title',      crumb: ['section_finance', 'crumb_factures'] },
+  '/budget':           { title: 'budget_title',       crumb: ['section_finance', 'nav_budget'] },
+  '/transport':        { title: 'transport_title',    crumb: ['crumb_gestion', 'nav_transport'] },
+  '/cantine':          { title: 'canteen_title',      crumb: ['crumb_gestion', 'nav_canteen'] },
+  '/stock':            { title: 'stock_title',        crumb: ['crumb_gestion', 'nav_stock'] },
+  '/personnel-admin':  { title: 'personnel_title',    crumb: ['crumb_gestion', 'nav_staff'] },
+  '/entretien':        { title: 'entretien_title',    crumb: ['crumb_gestion', 'nav_maintenance'] },
+  '/surveillance':     { title: 'surveillance_title', crumb: ['nav_surveillance'] },
+  '/pointage':         { title: 'pointage_title',     crumb: ['nav_pointage'] },
+  '/messages':         { title: 'messages_title',     crumb: ['section_communication', 'nav_messages'] },
+  '/campagnes':        { title: 'campagnes_title',    crumb: ['section_communication', 'nav_campaigns'] },
+  '/centres':          { title: 'marketplace_title',  crumb: ['nav_marketplace'] },
+  '/mes-reservations': { title: 'mes_reservations_title', crumb: ['nav_marketplace', 'crumb_reservations'] },
+  '/profil':           { title: 'profile_title',      crumb: ['section_settings', 'crumb_profil'] },
+  '/audit-logs':       { title: 'audit_title',        crumb: ['section_settings', 'crumb_audit'] },
+  '/super-admin':      { title: 'nav_superadmin',     crumb: ['nav_superadmin'] },
+  '/modules':          { title: 'modules_title',      crumb: ['section_settings', 'crumb_modules'] },
 };
 
 export default function Topbar({ user }) {
   const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
+  const { lang, t, formatDate } = useI18n();
   const [notifCount, setNotifCount] = useState(0);
   const [today, setToday] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const meta = PAGE_META[location.pathname] || { title: 'EduGest DZ', crumb: [] };
+  const meta = PAGE_META[location.pathname] || { title: 'app_name', crumb: [] };
 
   useEffect(() => {
-    setToday(new Date().toLocaleDateString('fr-DZ', {
+    setToday(formatDate(new Date(), lang, {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     }));
-  }, []);
+  }, [lang, formatDate]);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -65,7 +69,7 @@ export default function Topbar({ user }) {
     <header className="bg-surface border-b border-border h-16 flex items-center px-6 gap-4 sticky top-0 z-30 shrink-0">
       <div className="flex-1 min-w-0">
         <h1 className="text-base font-extrabold text-text truncate">
-          {meta.title}
+          {t(meta.title)}
         </h1>
         {meta.crumb.length > 0 && (
           <div className="flex items-center gap-1 text-[10px] text-muted mt-0.5">
@@ -75,7 +79,7 @@ export default function Topbar({ user }) {
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <path d="M3 2L6 5L3 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className={i === meta.crumb.length - 1 ? 'text-accent' : 'text-muted'}>{c}</span>
+                <span className={i === meta.crumb.length - 1 ? 'text-accent' : 'text-muted'}>{t(c)}</span>
               </span>
             ))}
           </div>
@@ -91,7 +95,7 @@ export default function Topbar({ user }) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        Rechercher...
+        {t('topbar_search')}
         <kbd className="ml-2 text-[9px] px-1.5 py-0.5 rounded bg-surface border border-border font-mono">⌘K</kbd>
       </button>
 

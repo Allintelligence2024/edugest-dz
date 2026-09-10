@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import api from '@api/axiosInstance';
 import { toast } from 'react-hot-toast';
+// Hook React mais messages émis hors rendu : instance i18next directe.
+import i18n from '../i18n';
 
 export const useApi = (endpoint, options = {}) => {
   const [data, setData] = useState(options.initialData ?? null);
@@ -22,7 +24,7 @@ export const useApi = (endpoint, options = {}) => {
     } catch (err) {
       if (err.name !== 'AbortError') {
         setError(err);
-        if (options.showError !== false) toast.error(err?.error?.message || 'Erreur de chargement');
+        if (options.showError !== false) toast.error(err?.error?.message || i18n.t('error_loading'));
       }
       return null;
     } finally { setIsLoading(false); }
@@ -33,11 +35,11 @@ export const useApi = (endpoint, options = {}) => {
     try {
       const url = id ? `${endpoint}/${id}` : endpoint;
       const res = await api[method](url, body);
-      const message = res.message || 'Opération réussie';
+      const message = res.message || i18n.t('success_operation');
       if (options.showSuccess !== false) toast.success(message);
       return res;
     } catch (err) {
-      toast.error(err?.error?.message || "Erreur lors de l'opération");
+      toast.error(err?.error?.message || i18n.t('error_operation'));
       throw err;
     } finally { setIsLoading(false); }
   }, [endpoint]);
@@ -79,7 +81,7 @@ export const useList = (endpoint, queryOrParams = {}, _name, refreshKey) => {
       return res;
     } catch (err) {
       if (err?.response?.status !== 401) {
-        toast.error('Erreur de chargement');
+        toast.error(i18n.t('error_loading'));
       }
       return null;
     } finally { setIsLoading(false); }

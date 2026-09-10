@@ -1,4 +1,7 @@
-export default function Table({ headers, rows, empty = 'Aucune donnée', className = '' }) {
+import { useI18n } from '@context/I18nContext';
+
+export default function Table({ headers, rows, empty = null, className = '' }) {
+  const { t } = useI18n();
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table className="w-full border-collapse">
@@ -18,7 +21,7 @@ export default function Table({ headers, rows, empty = 'Aucune donnée', classNa
           {rows.length === 0 ? (
             <tr>
               <td colSpan={headers.length} className="text-center text-muted text-xs py-12">
-                {empty}
+                {empty ?? t('no_data')}
               </td>
             </tr>
           ) : rows.map((row, ri) => (

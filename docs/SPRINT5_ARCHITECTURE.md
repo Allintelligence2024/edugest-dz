@@ -317,7 +317,9 @@ littéraux) ne tient pas dans un lot relisable. Découpage assumé :
 - **Phase 1 (fait)** : socle i18next + façade compatible + garde-fou.
 - **Phase 2 (fait le 10 sept.)** : emoji → `lucide-react` (+ `aria-label`),
   table ci-dessous — détail dans « Ce qui a été fait (phase 2) ».
-- **Phase 3** : littéraux français → `t()` + traductions ar/en/dz.
+- **Phase 3 (lot 1 fait le 10 sept.)** : littéraux français → `t()` —
+  détail dans « Ce qui a été fait (phase 3, lot 1) ». Restent ~60 fichiers
+  (pages et modales métier), cliquet `fr-literals-guard.test.js` en place.
 - Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
   scope, noté pour le Sprint 6.
 
@@ -454,3 +456,43 @@ Bonus i18next : correctif des **pluriels darija** — i18next ≥ 25 a supprimé
 le dzongkha côté `Intl.PluralRules`, une seule catégorie) → délégation
 `getRule('dz')` → règle de l'arabe dans `i18n.js`. Le test « pluriels darija =
 règles arabes », rouge depuis la phase 1, repasse au vert.
+
+### Ce qui a été fait (phase 3, lot 1 — 10 sept.)
+
+**Lot 1 : le chrome de l'application** — ce qui s'affiche sur toutes les
+pages. 13 fichiers vivants convertis, 56 nouvelles clés × 4 langues
+(208 → 264 clés par dictionnaire) :
+
+- `layout/Topbar.jsx` : la carte `PAGE_META` (titres + fils d'Ariane de 26
+  routes) porte désormais des clés i18n, traduites au rendu ; date du jour
+  localisée via `formatDate(date, lang, options)` (était `fr-DZ` en dur) ;
+- `SearchModal` (types, placeholder, hint, « aucun résultat », pluriel CLDR
+  du compteur), `ui/QuickActions`, `ui/DiagBadge`, `ui/OfflineBanner`
+  (dont pluriel des actions en attente), `ui/SchoolBadge`, `common/Pagination`
+  (réutilise la clé `showing` existante), `common/FilterBar` (`reset`),
+  `common/DataTable` + `ui/Table` (défaut de prop `null` → `t('no_data')`
+  au rendu), `ModuleProtectedRoute` (message module désactivé interpolé) ;
+- hors composants React : `hooks/useApi.js` (toasts erreur/succès) et
+  `api/axiosInstance.js` (« Erreur réseau » → clé `error_network`) passent
+  par l'instance i18next directement — pas de hook hors rendu.
+
+Deux garde-fous nouveaux :
+
+- `src/i18n-parity.test.js` : les 4 dictionnaires exposent le même jeu de
+  clés (les `_`-préfixées comme `_comment` sont des métadonnées, ignorées)
+  et aucune traduction vide. Écart hérité détecté au passage : dz.json
+  portait `_comment` en plus — documenté, pas une régression.
+- `src/fr-literals-guard.test.js` : cliquet sur le nombre de fichiers avec
+  littéraux français (accents hors commentaires), **plafond 60** après ce
+  lot. Chaque lot suivant le baisse. Exclusions documentées : tests, dicts,
+  socle i18n, et code mort (`components/Header.jsx`, `components/DataTable.jsx`,
+  `services/api.js` — plus aucun import nulle part ; suppression notée pour
+  un lot de nettoyage, on ne traduit pas du code qui ne s'affiche pas).
+
+Vérifications : `vitest run` → **137/137 verts** (5 fichiers de tests de
+composants enveloppés dans `<I18nProvider>` — ils montaient `render` nu et
+auraient levé `useI18n must be used within <I18nProvider>` ; 2 assertions
+adaptées : « Aucune donnée » → « Aucune donnée disponible », résumé de
+pagination désormais une seule phrase) ; esbuild 154 `.jsx` → 0 erreur ;
+ESLint sans nouvelle alerte ; clés littérales référencées vérifiées contre
+fr.json (les pluriels `_one`/`_other` exceptés, résolution CLDR normale).

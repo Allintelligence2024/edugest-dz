@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import ModuleProtectedRoute from '@components/ModuleProtectedRoute';
+import { I18nProvider } from '@context/I18nContext';
 
 let mockIsActive;
 let mockLoading;
@@ -14,7 +15,9 @@ vi.mock('@context/ModulesContext', () => ({
 }));
 
 const wrapper = ({ children }) => (
-  <MemoryRouter>{children}</MemoryRouter>
+  <MemoryRouter>
+    <I18nProvider>{children}</I18nProvider>
+  </MemoryRouter>
 );
 
 describe('ModuleProtectedRoute', () => {

@@ -1,14 +1,17 @@
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '@context/I18nContext';
 
+// Labels par défaut = clés i18n, traduits au rendu (quick_add_student…).
 const ACTIONS = [
-  { label: 'Ajouter un élève',     path: '/eleves',       color: 'var(--accent)',  icon: 'M12 5v14m7-7H5' },
-  { label: 'Créer une facture',    path: '/factures',     color: 'var(--green)',   icon: 'M12 5v14m7-7H5' },
-  { label: 'Gérer le planning',    path: '/planning',     color: 'var(--accent2)', icon: 'M8 2V6M16 2V6M3 10H21M5 4H19C20.1 4 21 4.9 21 6V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V6C3 4.9 3.9 4 5 4Z' },
-  { label: 'Saisir les présences', path: '/presences',    color: 'var(--orange)',  icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+  { label: 'quick_add_student',     path: '/eleves',    color: 'var(--accent)',  icon: 'M12 5v14m7-7H5' },
+  { label: 'quick_create_invoice',  path: '/factures',  color: 'var(--green)',   icon: 'M12 5v14m7-7H5' },
+  { label: 'quick_manage_planning', path: '/planning',  color: 'var(--accent2)', icon: 'M8 2V6M16 2V6M3 10H21M5 4H19C20.1 4 21 4.9 21 6V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V6C3 4.9 3.9 4 5 4Z' },
+  { label: 'quick_enter_attendance', path: '/presences', color: 'var(--orange)', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
 ];
 
 export default function QuickActions({ items }) {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const actions = items || ACTIONS;
 
   return (
@@ -47,7 +50,7 @@ export default function QuickActions({ items }) {
               <path d={a.icon} />
             </svg>
           </div>
-          <span style={{ fontSize: '11px', fontWeight: 600, lineHeight: '1.3' }}>{a.label}</span>
+          <span style={{ fontSize: '11px', fontWeight: 600, lineHeight: '1.3' }}>{t(a.label)}</span>
         </button>
       ))}
     </div>

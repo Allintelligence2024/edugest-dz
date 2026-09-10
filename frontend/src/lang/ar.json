@@ -200,6 +200,7 @@
   "theme_dark": "الوضع الداكن",
   "theme_light": "الوضع الفاتح",
   "theme_system": "النظام",
+
   "lang_select": "اللغة",
   "lang_fr": "Français",
   "lang_ar": "العربية",
@@ -221,5 +222,71 @@
   "notifications_title": "الإشعارات",
   "notifications_none": "لا توجد إشعارات غير مقروءة",
   "notifications_mark_all_read": "تحديد الكل كمقروء",
-  "notifications_view_all": "عرض الكل"
+  "notifications_view_all": "عرض الكل",
+
+  "planning_title": "التخطيط والحصص",
+  "presences_title": "الحضور",
+  "billets_title": "التذاكر",
+  "notes_title": "النقاط والتقييمات",
+  "bulletins_title": "كشوف النقاط PDF",
+  "budget_title": "الميزانية السنوية",
+  "stock_title": "المخزون والجرد",
+  "personnel_title": "الموظفون",
+  "entretien_title": "صيانة المبنى",
+  "pointage_title": "تسجيل حضور الأساتذة",
+  "messages_title": "الرسائل",
+  "campagnes_title": "الحملات",
+  "marketplace_title": "السوق",
+  "mes_reservations_title": "حجوزاتي",
+  "audit_title": "سجل التدقيق",
+  "modules_title": "إدارة الوحدات",
+
+  "crumb_diagnostic": "التشخيص",
+  "crumb_factures": "الفواتير",
+  "crumb_gestion": "الإدارة",
+  "crumb_reservations": "الحجوزات",
+  "crumb_profil": "الملف الشخصي",
+  "crumb_audit": "التدقيق",
+  "crumb_modules": "الوحدات",
+
+  "topbar_search": "ابحث...",
+  "search_modal_placeholder": "ابحث عن تلميذ، أستاذ، مادة...",
+  "search_modal_hint": "اكتب حرفين على الأقل للبحث",
+  "search_modal_no_result": "لا توجد نتائج عن \"{{query}}\"",
+  "search_modal_results_one": "نتيجة واحدة",
+  "search_modal_results_other": "{{count}} نتائج",
+
+  "type_eleve": "تلميذ",
+  "type_enseignant": "أستاذ",
+  "type_matiere": "مادة",
+  "type_groupe": "مجموعة",
+  "type_salle": "قاعة",
+  "type_parent": "وليّ",
+
+  "quick_add_student": "إضافة تلميذ",
+  "quick_create_invoice": "إنشاء فاتورة",
+  "quick_manage_planning": "إدارة التخطيط",
+  "quick_enter_attendance": "تسجيل الحضور",
+
+  "diag_risk": "في خطر",
+  "diag_medium": "متوسط",
+  "diag_good": "جيد",
+  "diag_alert": "تنبيه",
+  "diag_not_evaluated": "غير مقيّم",
+
+  "offline_banner_offline": "وضع دون اتصال — البيانات المعروضة هي من آخر تحميل",
+  "offline_banner_pending_one": "إجراء واحد في الانتظار",
+  "offline_banner_pending_other": "{{count}} إجراءات في الانتظار",
+  "offline_banner_back": "تم استعادة الاتصال — جارٍ تحديث البيانات...",
+
+  "school_badge_default": "المدرسة",
+  "reset": "إعادة تعيين",
+
+  "module_unavailable": "الوحدة غير متوفرة",
+  "module_disabled": "الوحدة «{{module}}» غير مفعّلة في مؤسستكم.",
+  "module_contact_admin": "اتصل بالمدير لتفعيلها.",
+
+  "error_loading": "خطأ في التحميل",
+  "success_operation": "تمت العملية بنجاح",
+  "error_operation": "خطأ أثناء العملية"
 }

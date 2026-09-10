@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { RefreshCw } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 
 /**
  * Barre de filtres déroulants.
@@ -34,6 +35,7 @@ const typeDuFiltre = (filter) => {
 };
 
 export default function FilterBar({ filters = [], values = {}, onChange, onReset }) {
+  const { t } = useI18n();
   const emettre = (cle, valeur) => {
     if (typeof onChange !== 'function') return;
     // Les pages passent directement `setFilters` : on fusionne pour ne pas
@@ -79,7 +81,7 @@ export default function FilterBar({ filters = [], values = {}, onChange, onReset
       {Object.values(values).some((v) => v) && (
         <button onClick={onReset}
                 className="text-sm text-neutral-500 hover:text-primary-600 flex items-center gap-1 transition-colors">
-          <RefreshCw size={14} aria-hidden='true' />Réinitialiser
+          <RefreshCw size={14} aria-hidden='true' />{t('reset')}
                   </button>
       )}
     </div>

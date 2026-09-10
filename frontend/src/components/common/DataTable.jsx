@@ -1,10 +1,12 @@
 import React from 'react';
 
 import { ClipboardList } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 
 
-export default function DataTable({ columns, data, isLoading, emptyIcon = <ClipboardList size={48} aria-hidden="true" />, emptyMessage = 'Aucune donnée',
+export default function DataTable({ columns, data, isLoading, emptyIcon = <ClipboardList size={48} aria-hidden="true" />, emptyMessage = null,
                                      onRowClick, selectedId, rowClassName = '' }) {
+  const { t } = useI18n();
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
@@ -23,7 +25,7 @@ export default function DataTable({ columns, data, isLoading, emptyIcon = <Clipb
       <div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <span className="text-5xl">{emptyIcon}</span>
-          <p className="text-neutral-500 font-medium text-sm">{emptyMessage}</p>
+          <p className="text-neutral-500 font-medium text-sm">{emptyMessage ?? t('no_data')}</p>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ import {
   clearAccessToken,
   purgerAncienStockage,
 } from './tokenStore';
+import i18n from '../i18n';
 
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
@@ -90,7 +91,7 @@ api.interceptors.response.use(
 
     const normalized = error.response?.data || {
       success: false,
-      error: { code: 'NETWORK_ERROR', message: error.message || 'Erreur réseau' },
+      error: { code: 'NETWORK_ERROR', message: error.message || i18n.t('error_network') },
     };
     return Promise.reject(normalized);
   },

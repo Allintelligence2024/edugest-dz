@@ -200,6 +200,7 @@
   "theme_dark": "Dark mode",
   "theme_light": "Light mode",
   "theme_system": "System",
+
   "lang_select": "Language",
   "lang_fr": "Français",
   "lang_ar": "العربية",
@@ -221,5 +222,71 @@
   "notifications_title": "Notifications",
   "notifications_none": "No unread notifications",
   "notifications_mark_all_read": "Mark all as read",
-  "notifications_view_all": "View all"
+  "notifications_view_all": "View all",
+
+  "planning_title": "Planning & Sessions",
+  "presences_title": "Attendance",
+  "billets_title": "Tickets",
+  "notes_title": "Grades & Assessments",
+  "bulletins_title": "Report Cards (PDF)",
+  "budget_title": "Annual Budget",
+  "stock_title": "Stock & Inventory",
+  "personnel_title": "Staff",
+  "entretien_title": "Building Maintenance",
+  "pointage_title": "Teacher Check-in",
+  "messages_title": "Messages",
+  "campagnes_title": "Campaigns",
+  "marketplace_title": "Marketplace",
+  "mes_reservations_title": "My Bookings",
+  "audit_title": "Audit Log",
+  "modules_title": "Module Management",
+
+  "crumb_diagnostic": "Diagnostics",
+  "crumb_factures": "Invoices",
+  "crumb_gestion": "Management",
+  "crumb_reservations": "Bookings",
+  "crumb_profil": "Profile",
+  "crumb_audit": "Audit",
+  "crumb_modules": "Modules",
+
+  "topbar_search": "Search...",
+  "search_modal_placeholder": "Search student, teacher, subject...",
+  "search_modal_hint": "Type at least 2 characters to search",
+  "search_modal_no_result": "No results for \"{{query}}\"",
+  "search_modal_results_one": "{{count}} result",
+  "search_modal_results_other": "{{count}} results",
+
+  "type_eleve": "Student",
+  "type_enseignant": "Teacher",
+  "type_matiere": "Subject",
+  "type_groupe": "Group",
+  "type_salle": "Room",
+  "type_parent": "Parent",
+
+  "quick_add_student": "Add a student",
+  "quick_create_invoice": "Create an invoice",
+  "quick_manage_planning": "Manage planning",
+  "quick_enter_attendance": "Enter attendance",
+
+  "diag_risk": "At risk",
+  "diag_medium": "Fair",
+  "diag_good": "Good",
+  "diag_alert": "Alert",
+  "diag_not_evaluated": "Not assessed",
+
+  "offline_banner_offline": "Offline mode — showing data from the last load",
+  "offline_banner_pending_one": "{{count}} pending action",
+  "offline_banner_pending_other": "{{count}} pending actions",
+  "offline_banner_back": "Back online — updating data...",
+
+  "school_badge_default": "School",
+  "reset": "Reset",
+
+  "module_unavailable": "Module unavailable",
+  "module_disabled": "The \"{{module}}\" module is not enabled for your establishment.",
+  "module_contact_admin": "Contact your administrator to enable it.",
+
+  "error_loading": "Loading error",
+  "success_operation": "Operation successful",
+  "error_operation": "Operation failed"
 }

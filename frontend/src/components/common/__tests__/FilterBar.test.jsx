@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FilterBar from '@components/common/FilterBar';
+import { I18nProvider } from '@context/I18nContext';
 
 const filters = [
   { key: 'niveau', label: 'Niveau', type: 'select', options: [
@@ -17,33 +18,53 @@ const filters = [
 
 describe('FilterBar', () => {
   it('renders filter options', () => {
-    render(<FilterBar filters={filters} values={{}} onChange={vi.fn()} />);
+    render(
+      <I18nProvider>
+        <FilterBar filters={filters} values={{}} onChange={vi.fn()} />
+      </I18nProvider>
+    );
     expect(screen.getByText('Niveau')).toBeInTheDocument();
     expect(screen.getByText('Statut')).toBeInTheDocument();
   });
 
   it('calls onChange when a filter value is changed', async () => {
     const onChange = vi.fn();
-    render(<FilterBar filters={filters} values={{}} onChange={onChange} />);
+    render(
+      <I18nProvider>
+        <FilterBar filters={filters} values={{}} onChange={onChange} />
+      </I18nProvider>
+    );
     const niveauSelect = screen.getAllByRole('combobox')[0];
     await userEvent.selectOptions(niveauSelect, '1AS');
     expect(onChange).toHaveBeenCalledWith({ niveau: '1AS' });
   });
 
   it('shows reset button when a filter has value', () => {
-    render(<FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} />);
+    render(
+      <I18nProvider>
+        <FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} />
+      </I18nProvider>
+    );
     expect(screen.getByText('Réinitialiser')).toBeInTheDocument();
   });
 
   it('calls onReset when reset button is clicked', async () => {
     const onReset = vi.fn();
-    render(<FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} onReset={onReset} />);
+    render(
+      <I18nProvider>
+        <FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} onReset={onReset} />
+      </I18nProvider>
+    );
     await userEvent.click(screen.getByText('Réinitialiser'));
     expect(onReset).toHaveBeenCalledOnce();
   });
 
   it('does not show reset when all values are empty', () => {
-    render(<FilterBar filters={filters} values={{}} onChange={vi.fn()} />);
+    render(
+      <I18nProvider>
+        <FilterBar filters={filters} values={{}} onChange={vi.fn()} />
+      </I18nProvider>
+    );
     expect(screen.queryByText('Réinitialiser')).not.toBeInTheDocument();
   });
 });

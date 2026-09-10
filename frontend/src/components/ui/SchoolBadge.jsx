@@ -1,4 +1,7 @@
+import { useI18n } from '@context/I18nContext';
+
 export default function SchoolBadge({ name, wilaya, compact = false }) {
+  const { t } = useI18n();
   const initials = name
     ? name.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
     : '?';
@@ -35,7 +38,7 @@ export default function SchoolBadge({ name, wilaya, compact = false }) {
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {name || 'École'}
+            {name || t('school_badge_default')}
           </div>
           {wilaya && (
             <div style={{ fontSize: '9px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -78,7 +81,7 @@ export default function SchoolBadge({ name, wilaya, compact = false }) {
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {name || 'École'}
+          {name || t('school_badge_default')}
         </div>
         {wilaya && (
           <div style={{ fontSize: '10px', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

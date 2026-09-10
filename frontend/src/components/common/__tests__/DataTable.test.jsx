@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import DataTable from '@components/common/DataTable';
+import { I18nProvider } from '@context/I18nContext';
 
 const columns = [
   { key: 'nom', label: 'Nom' },
@@ -14,29 +15,49 @@ const data = [
 
 describe('DataTable', () => {
   it('renders headers', () => {
-    render(<DataTable columns={columns} data={data} />);
+    render(
+      <I18nProvider>
+        <DataTable columns={columns} data={data} />
+      </I18nProvider>
+    );
     expect(screen.getByText('Nom')).toBeInTheDocument();
     expect(screen.getByText('Âge')).toBeInTheDocument();
   });
 
   it('renders rows', () => {
-    render(<DataTable columns={columns} data={data} />);
+    render(
+      <I18nProvider>
+        <DataTable columns={columns} data={data} />
+      </I18nProvider>
+    );
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
   });
 
   it('shows loading state', () => {
-    render(<DataTable columns={columns} data={[]} isLoading />);
+    render(
+      <I18nProvider>
+        <DataTable columns={columns} data={[]} isLoading />
+      </I18nProvider>
+    );
     expect(screen.getByText('Chargement...')).toBeInTheDocument();
   });
 
   it('shows empty state message', () => {
-    render(<DataTable columns={columns} data={[]} emptyMessage="Aucun élément" />);
+    render(
+      <I18nProvider>
+        <DataTable columns={columns} data={[]} emptyMessage="Aucun élément" />
+      </I18nProvider>
+    );
     expect(screen.getByText('Aucun élément')).toBeInTheDocument();
   });
 
   it('shows default empty message when no data', () => {
-    render(<DataTable columns={columns} data={[]} />);
-    expect(screen.getByText('Aucune donnée')).toBeInTheDocument();
+    render(
+      <I18nProvider>
+        <DataTable columns={columns} data={[]} />
+      </I18nProvider>
+    );
+    expect(screen.getByText('Aucune donnée disponible')).toBeInTheDocument();
   });
 });

@@ -1,12 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModules } from '@context/ModulesContext';
+import { useI18n } from '@context/I18nContext';
 
 import { Lock } from 'lucide-react';
 
 export default function ModuleProtectedRoute({ moduleKey, children }) {
   const { isActive, loading } = useModules();
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   if (loading) {
     return (
@@ -22,11 +24,11 @@ export default function ModuleProtectedRoute({ moduleKey, children }) {
         <div style={{ textAlign:'center', maxWidth:'400px' }}>
           <div style={{ fontSize:'48px', marginBottom:'12px' }}><Lock size={48} aria-hidden='true' /></div>
           <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'8px' }}>
-            Module indisponible
+            {t('module_unavailable')}
           </h2>
           <p style={{ color:'var(--muted)', fontSize:'13px', marginBottom:'20px', lineHeight:'1.6' }}>
-            Le module <strong>{moduleKey}</strong> n'est pas activé sur votre établissement.
-            Contactez votre administrateur pour l'activer.
+            {t('module_disabled', { module: moduleKey })}{' '}
+            {t('module_contact_admin')}
           </p>
           <button
             onClick={() => navigate(-1)}
@@ -36,7 +38,7 @@ export default function ModuleProtectedRoute({ moduleKey, children }) {
               fontWeight:700, cursor:'pointer',
             }}
           >
-            ← Retour
+            ← {t('back')}
           </button>
         </div>
       </div>
