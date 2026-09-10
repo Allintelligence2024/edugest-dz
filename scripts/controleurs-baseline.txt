@@ -9,4 +9,3 @@
 backend/app/Http/Controllers/Api/V1/EleveController.php|463
 backend/app/Http/Controllers/Api/V1/AuthController.php|440
 backend/app/Http/Controllers/Api/V1/PaiementEnLigneController.php|422
-backend/app/Http/Controllers/Api/V1/LmsController.php|377

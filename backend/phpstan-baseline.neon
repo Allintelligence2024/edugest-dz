@@ -8261,3 +8261,69 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Relation ''enseignant'' is not found in App\\Models\\LmsCours model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Relation ''chapitres'' is not found in App\\Models\\LmsCours model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsCours\>\:\:create\(\) expects array\<model property of App\\Models\\LmsCours, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsChapitre\>\:\:create\(\) expects array\<model property of App\\Models\\LmsChapitre, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsContenuService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsLecon\>\:\:create\(\) expects array\<model property of App\\Models\\LmsLecon, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsContenuService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsQuiz\>\:\:create\(\) expects array\<model property of App\\Models\\LmsQuiz, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsQuizService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsQuestion\>\:\:create\(\) expects array\<model property of App\\Models\\LmsQuestion, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsQuizService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LmsInscription\:\:\$cours\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Relation ''cours'' is not found in App\\Models\\LmsInscription model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LmsInscription\:\:\$progressions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of method Illuminate\\Database\\Eloquent\\Model\:\:update\(\) expects array\<model property of App\\Models\\LmsDevoir, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsDevoirService.php
