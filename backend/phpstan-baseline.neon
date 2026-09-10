@@ -8147,3 +8147,81 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: routes/web.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$article_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantite\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantite_stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\PretMateriel\>\:\:create\(\) expects array\<model property of App\\Models\\PretMateriel, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EntretienService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EntretienPreventifService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\TransportEleve\>\:\:create\(\) expects array\<model property of App\\Models\\TransportEleve, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TransportEnrollmentService.php

@@ -6,10 +6,7 @@
 #   - un contrôleur présent doit rester <= sa taille maximale ici (jamais
 #     d'aggravation : les 9 gros contrôleurs seront refactorisés en dessous
 #     du seuil, ce qui fera diminuer puis disparaître ces lignes).
-backend/app/Http/Controllers/Api/V1/StockInventaireController.php|569
-backend/app/Http/Controllers/Api/V1/EntretienController.php|464
 backend/app/Http/Controllers/Api/V1/EleveController.php|463
-backend/app/Http/Controllers/Api/V1/TransportController.php|459
 backend/app/Http/Controllers/Api/V1/AuthController.php|440
 backend/app/Http/Controllers/Api/V1/PaiementEnLigneController.php|422
 backend/app/Http/Controllers/Api/V1/CantineController.php|412
