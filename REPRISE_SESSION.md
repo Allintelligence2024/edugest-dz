@@ -85,12 +85,16 @@ maintenu à 45 jusqu'à la mesure post-5.3.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
    tests mobile, CSRF (double-submit).
 6. **Sprint 6** (décidé : après le Sprint 5, amorcé le 10 sept.) :
-   scénarios k6 + doc, pentest ciblé (calibration `RiskScoreEngine`, JWT
-   blacklist, kill-switch MPC, chaîne Merkle), observabilité (alertes
-   Sentry sur les middlewares sécurité, instrumentation version mobile),
-   ~~réparation de `restore-backup.sh`~~ (✅ le 10 sept. — journal
-   `docs/SPRINT6_EXPLOITATION.md` § 1), conformité 18-07 (registre,
-   rétention/purge, consentement parental), vérité du README.
+   ~~scénarios k6 + doc~~ (✅ écrits le 10 sept. — 7 scénarios dans
+   `tests/k6/` + `docs/PERF_TESTS_K6.md` ; **exécution réelle sur l'env
+   de perf et publication du rapport restent à faire** — journal
+   `docs/SPRINT6_EXPLOITATION.md` § 2), pentest ciblé (calibration
+   `RiskScoreEngine`, JWT blacklist, kill-switch MPC, chaîne Merkle),
+   observabilité (alertes Sentry sur les middlewares sécurité,
+   instrumentation version mobile), ~~réparation de
+   `restore-backup.sh`~~ (✅ le 10 sept. — journal § 1), conformité
+   18-07 (registre, rétention/purge, consentement parental), vérité du
+   README.
 
 ---
 
