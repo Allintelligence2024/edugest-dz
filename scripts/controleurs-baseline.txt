@@ -8,4 +8,3 @@
 #     du seuil, ce qui fera diminuer puis disparaître ces lignes).
 backend/app/Http/Controllers/Api/V1/EleveController.php|463
 backend/app/Http/Controllers/Api/V1/AuthController.php|440
-backend/app/Http/Controllers/Api/V1/PaiementEnLigneController.php|422

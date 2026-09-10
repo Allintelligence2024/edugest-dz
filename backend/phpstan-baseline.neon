@@ -8327,3 +8327,45 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/LmsDevoirService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$numero_facture\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$parents\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_ttc\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:paiements\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Parameter \#1 \$num of function number_format expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
