@@ -8225,3 +8225,39 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/InscriptionCantineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/InscriptionCantineService.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Services/StockCuisineService.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>prix_unitaire" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PointageCantineService.php
