@@ -16,6 +16,7 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -28,11 +29,13 @@ const api = (path, opts) => fetch(`${BASE_URL}/api/v1${path}`, {
   ...opts,
 }).then(r => r.json());
 
+// niveau_risque = énum API (comparaisons et filtres inchangés) ;
+// label = clé i18n rendue via t().
 const RISQUE_COLORS = {
-  critique: { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', label: 'CRITIQUE' },
-  eleve:    { color: '#f87171', bg: '#350808', border: '#991b1b', label: 'ÉLEVÉ' },
-  modere:   { color: '#fb923c', bg: '#1f1008', border: '#c2410c', label: 'MODÉRÉ' },
-  faible:   { color: '#4ade80', bg: '#0d2515', border: '#16a34a', label: 'FAIBLE' },
+  critique: { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', label: 'prediction_risque_critique' },
+  eleve:    { color: '#f87171', bg: '#350808', border: '#991b1b', label: 'prediction_risque_eleve' },
+  modere:   { color: '#fb923c', bg: '#1f1008', border: '#c2410c', label: 'prediction_risque_modere' },
+  faible:   { color: '#4ade80', bg: '#0d2515', border: '#16a34a', label: 'prediction_risque_faible' },
 };
 
 const RISQUE_ICONS = {
@@ -42,7 +45,14 @@ const RISQUE_ICONS = {
   faible:   <CheckCircle size={22} aria-hidden="true" />,
 };
 
+// urgence = énum API ; clé de libellé + repli sur la valeur brute.
+const URGENCE_LABELS = {
+  immediate: 'prediction_urgence_immediate',
+  urgent:    'prediction_urgence_urgent',
+};
+
 export default function PredictionIAPage() {
+  const { t } = useI18n();
   const [stats, setStats]           = useState(null);
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -62,7 +72,7 @@ export default function PredictionIAPage() {
       setStats(res?.data?.stats ?? []);
       setPredictions(res?.data?.predictions ?? []);
     } catch (e) {
-      console.error('Erreur chargement prédictions', e);
+      console.error('Erreur chargement predictions', e);
     }
     setLoading(false);
   };
@@ -74,7 +84,7 @@ export default function PredictionIAPage() {
       const res = await api(`/ia/prediction/eleve/${eleveId}`);
       setDetail(res?.data);
     } catch (e) {
-      console.error('Erreur détail prédiction', e);
+      console.error('Erreur detail prediction', e);
     }
   };
 
@@ -88,6 +98,8 @@ export default function PredictionIAPage() {
     }
     setCalculating(false);
   };
+
+  const risqueLabel = (niv) => (niv && RISQUE_COLORS[niv]) ? t(RISQUE_COLORS[niv].label) : '';
 
   const statsMap = {};
   (stats || []).forEach(s => { statsMap[s.niveau_risque] = s; });
@@ -128,11 +140,11 @@ export default function PredictionIAPage() {
               fontSize: '9px', background: r.color + '22', color: r.color,
               padding: '1px 6px', borderRadius: '20px', marginLeft: '8px', fontWeight: 700,
             }}>
-              {r.label}
+              {risqueLabel(p.niveau_risque)}
             </span>
           </div>
           <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
-            {p.niveau_scolaire} · Horizon : {p.horizon?.replace('_', ' ')}
+            {p.niveau_scolaire} · {t('prediction_horizon')} : {p.horizon?.replace('_', ' ')}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -140,7 +152,7 @@ export default function PredictionIAPage() {
             {proba.toFixed(0)}%
           </div>
           <div style={{ fontSize: '9px', color: '#64748b' }}>
-            Confiance {confiance.toFixed(0)}%
+            {t('prediction_confiance')} {confiance.toFixed(0)}%
           </div>
         </div>
         <button onClick={() => voirDetail(p.eleve_id)}
@@ -148,7 +160,7 @@ export default function PredictionIAPage() {
             background: '#1e293b', color: '#60a5fa', border: 'none',
             borderRadius: '6px', padding: '5px 10px', fontSize: '10px', cursor: 'pointer', fontWeight: 700,
           }}>
-          Détail
+          {t('prediction_detail')}
         </button>
       </div>
     );
@@ -161,10 +173,10 @@ export default function PredictionIAPage() {
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Brain size={24} color="#7C3AED" />
-            Prédiction IA — Échec Scolaire
+            {t('prediction_titre')}
           </h1>
           <p style={{ fontSize: '12px', color: '#64748b' }}>
-            Modèle logistique v1 · Analyse prédictive multi-signaux
+            {t('prediction_sous_titre')}
           </p>
         </div>
         <button onClick={recalculerTous} disabled={calculating} style={{
@@ -174,20 +186,20 @@ export default function PredictionIAPage() {
           display: 'flex', alignItems: 'center', gap: '6px',
         }}>
           <RefreshCw size={13} className={calculating ? 'animate-spin' : ''} />
-          {calculating ? 'Calcul en cours...' : 'Recalculer tout'}
+          {calculating ? t('prediction_calcul_en_cours') : t('prediction_recalculer_tout')}
         </button>
       </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '4px', marginBottom: '20px' }}>
         {[
-          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, 'Tableau de bord'],
-          ['classement', <Trophy size={12} aria-hidden="true" />, 'Classement risque'],
-          ['faible', <CheckCircle size={12} aria-hidden="true" />, 'Risque faible'],
-          ['modere', <AlertTriangle size={12} aria-hidden="true" />, 'Risque modéré'],
-          ['eleve', <Circle size={12} fill="#f87171" color="#f87171" aria-hidden="true" />, 'Risque élevé'],
-          ['critique', <Siren size={12} aria-hidden="true" />, 'Critique'],
-          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, 'Détail élève']] : []),
+          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, t('dashboard_title')],
+          ['classement', <Trophy size={12} aria-hidden="true" />, t('prediction_tab_classement')],
+          ['faible', <CheckCircle size={12} aria-hidden="true" />, t('prediction_tab_faible')],
+          ['modere', <AlertTriangle size={12} aria-hidden="true" />, t('prediction_tab_modere')],
+          ['eleve', <Circle size={12} fill="#f87171" color="#f87171" aria-hidden="true" />, t('prediction_tab_eleve')],
+          ['critique', <Siren size={12} aria-hidden="true" />, t('diagnostic_critical')],
+          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, t('prediction_tab_detail')]] : []),
         ].map(([id, icon, label]) => (
           <button key={id} onClick={() => {
             if (id === 'faible' || id === 'modere' || id === 'eleve' || id === 'critique') {
@@ -213,7 +225,7 @@ export default function PredictionIAPage() {
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <div style={{ width: '36px', height: '36px', border: '3px solid #1e293b', borderTopColor: '#7C3AED',
             borderRadius: '50%', margin: '0 auto', animation: 'spin 1s linear infinite' }} />
-          <div style={{ color: '#64748b', fontSize: '12px', marginTop: '12px' }}>Chargement des prédictions...</div>
+          <div style={{ color: '#64748b', fontSize: '12px', marginTop: '12px' }}>{t('prediction_chargement')}</div>
         </div>
       )}
 
@@ -221,16 +233,16 @@ export default function PredictionIAPage() {
       {tab === 'dashboard' && !loading && (
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginBottom: '24px' }}>
-            <StatBox label="Total prédit" value={totalPred} color="#7C3AED" icon={Brain} />
-            <StatBox label="Critiques" value={statsMap.critique?.total ?? 0} color="#ef4444" icon={AlertTriangle} />
-            <StatBox label="Risque élevé" value={statsMap.eleve?.total ?? 0} color="#f87171" icon={TrendingDown} />
-            <StatBox label="Risque modéré" value={statsMap.modere?.total ?? 0} color="#fb923c" icon={Activity} />
+            <StatBox label={t('prediction_stat_total')} value={totalPred} color="#7C3AED" icon={Brain} />
+            <StatBox label={t('prediction_stat_critiques')} value={statsMap.critique?.total ?? 0} color="#ef4444" icon={AlertTriangle} />
+            <StatBox label={t('prediction_stat_risque_eleve')} value={statsMap.eleve?.total ?? 0} color="#f87171" icon={TrendingDown} />
+            <StatBox label={t('prediction_stat_risque_modere')} value={statsMap.modere?.total ?? 0} color="#fb923c" icon={Activity} />
           </div>
 
           {/* Probabilité moyenne par niveau */}
           <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px', marginBottom: '20px' }}>
             <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '16px' }}>
-              Probabilité moyenne par niveau de risque
+              {t('prediction_proba_moyenne_titre')}
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               {['faible', 'modere', 'eleve', 'critique'].map(niv => {
@@ -242,9 +254,9 @@ export default function PredictionIAPage() {
                     flex: 1, background: r.bg, border: `1px solid ${r.border}`,
                     borderRadius: '8px', padding: '12px', textAlign: 'center',
                   }}>
-                    <div style={{ fontSize: '9px', color: r.color, fontWeight: 700, textTransform: 'uppercase' }}>{r.label}</div>
+                    <div style={{ fontSize: '9px', color: r.color, fontWeight: 700, textTransform: 'uppercase' }}>{t(r.label)}</div>
                     <div style={{ fontSize: '22px', fontWeight: 900, color: r.color, margin: '4px 0' }}>{proba}%</div>
-                    <div style={{ fontSize: '9px', color: '#64748b' }}>{s?.total ?? 0} élèves</div>
+                    <div style={{ fontSize: '9px', color: '#64748b' }}>{t('prediction_eleves_count', { count: s?.total ?? 0 })}</div>
                   </div>
                 );
               })}
@@ -254,14 +266,14 @@ export default function PredictionIAPage() {
           {/* Top 5 critiques */}
           <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px' }}>
             <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
-              <Siren size={13} aria-hidden='true' />Top 5 élèves les plus à risque
+              <Siren size={13} aria-hidden='true' />{t('prediction_top5')}
                           </div>
             {predictions.slice(0, 5).map(p => (
               <PredictionCard key={p.eleve_id} p={p} />
             ))}
             {predictions.length === 0 && (
               <div style={{ color: '#64748b', fontSize: '12px', textAlign: 'center', padding: '20px' }}>
-                Aucune prédiction disponible
+                {t('prediction_aucune')}
               </div>
             )}
           </div>
@@ -273,8 +285,8 @@ export default function PredictionIAPage() {
         <div>
           {filtreNiveau && (
             <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '12px' }}>
-              Filtré par : <span style={{ color: RISQUE_COLORS[filtreNiveau]?.color, fontWeight: 700 }}>
-                {RISQUE_COLORS[filtreNiveau]?.label}
+              {t('prediction_filtre_par')} : <span style={{ color: RISQUE_COLORS[filtreNiveau]?.color, fontWeight: 700 }}>
+                {risqueLabel(filtreNiveau)}
               </span>
             </div>
           )}
@@ -283,7 +295,7 @@ export default function PredictionIAPage() {
           ))}
           {predictions.length === 0 && (
             <div style={{ color: '#64748b', fontSize: '12px', textAlign: 'center', padding: '40px' }}>
-              Aucune prédiction pour ce niveau
+              {t('prediction_aucune_niveau')}
             </div>
           )}
         </div>
@@ -297,7 +309,7 @@ export default function PredictionIAPage() {
               background: '#1e293b', color: '#60a5fa', border: 'none',
               borderRadius: '6px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', marginBottom: '16px',
             }}>
-            ← Retour au classement
+            ← {t('prediction_retour_classement')}
           </button>
 
           {/* Élève info */}
@@ -323,10 +335,10 @@ export default function PredictionIAPage() {
               <Cpu size={24} color={RISQUE_COLORS[detail.prediction?.niveau_risque]?.color} />
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: RISQUE_COLORS[detail.prediction?.niveau_risque]?.color }}>
-                  Probabilité : {detail.prediction?.probabilite}%
+                  {t('prediction_probabilite')} : {detail.prediction?.probabilite}%
                 </div>
                 <div style={{ fontSize: '10px', color: '#64748b' }}>
-                  Confiance : {detail.prediction?.confiance}% · Moteur : {detail.prediction?.moteur}
+                  {t('prediction_confiance')} : {detail.prediction?.confiance}% · {t('prediction_moteur')} : {detail.prediction?.moteur}
                 </div>
               </div>
               <div style={{
@@ -334,7 +346,7 @@ export default function PredictionIAPage() {
                 color: RISQUE_COLORS[detail.prediction?.niveau_risque]?.color,
                 padding: '4px 12px', borderRadius: '20px', fontWeight: 800, fontSize: '11px',
               }}>
-                {RISQUE_COLORS[detail.prediction?.niveau_risque]?.label}
+                {risqueLabel(detail.prediction?.niveau_risque)}
               </div>
             </div>
 
@@ -345,7 +357,7 @@ export default function PredictionIAPage() {
             {/* Facteurs de risque */}
             {detail.prediction?.facteurs_risque?.length > 0 && (
               <div style={{ marginTop: '12px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>Facteurs de risque :</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>{t('prediction_facteurs')} :</div>
                 {detail.prediction.facteurs_risque.map((f, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0',
@@ -353,7 +365,7 @@ export default function PredictionIAPage() {
                   }}>
                     <span style={{ fontSize: '14px' }}>{f.icone}</span>
                     <span style={{ fontSize: '11px', color: '#94a3b8', flex: 1 }}>{f.label}</span>
-                    <span style={{ fontSize: '9px', color: '#64748b' }}>Poids: {(f.poids * 100).toFixed(0)}%</span>
+                    <span style={{ fontSize: '9px', color: '#64748b' }}>{t('prediction_poids')} : {(f.poids * 100).toFixed(0)}%</span>
                   </div>
                 ))}
               </div>
@@ -362,7 +374,7 @@ export default function PredictionIAPage() {
             {/* Recommandations */}
             {detail.prediction?.recommandations?.length > 0 && (
               <div style={{ marginTop: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>Recommandations :</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>{t('diagnostic_recommendations')} :</div>
                 {detail.prediction.recommandations.map((rec, i) => (
                   <div key={i} style={{
                     background: '#0d1117', border: '1px solid #1e293b', borderRadius: '6px',
@@ -374,7 +386,7 @@ export default function PredictionIAPage() {
                       background: rec.urgence === 'immediate' ? '#ef444422' : rec.urgence === 'urgent' ? '#fb923c22' : '#3b82f622',
                       color: rec.urgence === 'immediate' ? '#ef4444' : rec.urgence === 'urgent' ? '#fb923c' : '#60a5fa',
                     }}>
-                      {rec.urgence?.toUpperCase()}
+                      {URGENCE_LABELS[rec.urgence] ? t(URGENCE_LABELS[rec.urgence]) : (rec.urgence ?? '').toUpperCase()}
                     </span>
                     <span style={{ fontSize: '11px', color: '#94a3b8', flex: 1 }}>{rec.label}</span>
                     <span style={{ fontSize: '9px', color: '#64748b' }}>{rec.delai}</span>
@@ -391,23 +403,23 @@ export default function PredictionIAPage() {
               padding: '20px', marginBottom: '16px',
             }}>
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
-                {detail.profil_apprentissage.emoji} Profil : {detail.profil_apprentissage.label_fr}
+                {detail.profil_apprentissage.emoji} {t('prediction_profil')} : {detail.profil_apprentissage.label_fr}
               </div>
               <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '12px' }}>
                 {detail.profil_apprentissage.explication}
               </div>
               {detail.profil_apprentissage.points_forts?.length > 0 && (
                 <div style={{ fontSize: '10px', color: '#4ade80', marginBottom: '4px' }}>
-                  Points forts : {detail.profil_apprentissage.points_forts.join(', ')}
+                  {t('prediction_points_forts')} : {detail.profil_apprentissage.points_forts.join(', ')}
                 </div>
               )}
               {detail.profil_apprentissage.points_faibles?.length > 0 && (
                 <div style={{ fontSize: '10px', color: '#f87171' }}>
-                  Points faibles : {detail.profil_apprentissage.points_faibles.join(', ')}
+                  {t('prediction_points_faibles')} : {detail.profil_apprentissage.points_faibles.join(', ')}
                 </div>
               )}
               <div style={{ fontSize: '10px', color: '#64748b', marginTop: '8px' }}>
-                Stabilité : {detail.profil_apprentissage.stabilite}/100
+                {t('prediction_stabilite')} : {detail.profil_apprentissage.stabilite}/100
               </div>
             </div>
           )}
@@ -419,7 +431,7 @@ export default function PredictionIAPage() {
               padding: '20px',
             }}>
               <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
-                Historique des prédictions
+                {t('prediction_historique')}
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {detail.historique.map((h, i) => {

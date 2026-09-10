@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { authApi } from '@api/auth.api';
 import toast from 'react-hot-toast';
+import { useI18n } from '@context/I18nContext';
 
 export default function TwoFactorSetupPage() {
+  const { t } = useI18n();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState('idle');
@@ -33,41 +35,41 @@ export default function TwoFactorSetupPage() {
         setRecoveryCodes(res.data.recovery_codes);
         setStep('confirm');
       } else {
-        toast.success('Code de vérification envoyé par SMS');
+        toast.success(t('twofa_sms_envoye'));
         setStep('confirm');
       }
     } catch (err) {
-      toast.error(err?.error?.message || 'Erreur lors de l\'activation');
+      toast.error(err?.error?.message || t('twofa_erreur_activation'));
     }
     setLoading(false);
   };
 
   const handleConfirm = async () => {
     if (!code) {
-      toast.error('Veuillez entrer le code de vérification');
+      toast.error(t('twofa_code_requis'));
       return;
     }
     setLoading(true);
     try {
       const res = await authApi.confirm2fa(code);
-      toast.success(res.message || '2FA activée avec succès');
+      toast.success(res.message || t('twofa_activee'));
       setStep('success');
       fetchStatus();
     } catch (err) {
-      toast.error(err?.error?.message || 'Code invalide');
+      toast.error(err?.error?.message || t('twofa_code_invalide'));
     }
     setLoading(false);
   };
 
   const handleDisable = async () => {
     if (!password) {
-      toast.error('Veuillez entrer votre mot de passe');
+      toast.error(t('twofa_mot_de_passe_requis'));
       return;
     }
     setLoading(true);
     try {
       const res = await authApi.disable2fa(password);
-      toast.success(res.message || '2FA désactivée');
+      toast.success(res.message || t('twofa_desactivee'));
       setStep('idle');
       setSecretData(null);
       setRecoveryCodes([]);
@@ -75,7 +77,7 @@ export default function TwoFactorSetupPage() {
       setPassword('');
       fetchStatus();
     } catch (err) {
-      toast.error(err?.error?.message || 'Mot de passe incorrect');
+      toast.error(err?.error?.message || t('twofa_mot_de_passe_incorrect'));
     }
     setLoading(false);
   };
@@ -92,15 +94,15 @@ export default function TwoFactorSetupPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-neutral-800">Sécurité du compte</h1>
+      <h1 className="text-2xl font-bold text-neutral-800">{t('twofa_titre')}</h1>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 space-y-6">
         {!enabled && step === 'idle' && (
           <>
             <div>
-              <h2 className="text-lg font-semibold text-neutral-800 mb-2">Authentification à deux facteurs</h2>
+              <h2 className="text-lg font-semibold text-neutral-800 mb-2">{t('twofa_titre_section')}</h2>
               <p className="text-sm text-neutral-500">
-                Renforcez la sécurité de votre compte en activant la vérification en deux étapes.
+                {t('twofa_intro')}
               </p>
             </div>
 
@@ -114,8 +116,8 @@ export default function TwoFactorSetupPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h3 className="font-semibold text-neutral-800 mb-1">Application d'authentification</h3>
-                <p className="text-xs text-neutral-500">Utilisez Google Authenticator, Authy ou une application similaire</p>
+                <h3 className="font-semibold text-neutral-800 mb-1">{t('twofa_methode_totp')}</h3>
+                <p className="text-xs text-neutral-500">{t('twofa_totp_desc')}</p>
               </button>
 
               <button
@@ -128,7 +130,7 @@ export default function TwoFactorSetupPage() {
                   </svg>
                 </div>
                 <h3 className="font-semibold text-neutral-800 mb-1">SMS</h3>
-                <p className="text-xs text-neutral-500">Recevez un code par SMS à chaque connexion</p>
+                <p className="text-xs text-neutral-500">{t('twofa_sms_desc')}</p>
               </button>
             </div>
           </>
@@ -136,14 +138,14 @@ export default function TwoFactorSetupPage() {
 
         {!enabled && step === 'choose' && (
           <>
-            <button onClick={() => setStep('idle')} className="text-sm text-primary-600 hover:underline">&larr; Retour</button>
+            <button onClick={() => setStep('idle')} className="text-sm text-primary-600 hover:underline">&larr; {t('back')}</button>
             <h2 className="text-lg font-semibold text-neutral-800">
-              {method === 'totp' ? 'Application d\'authentification' : 'Authentification par SMS'}
+              {method === 'totp' ? t('twofa_methode_totp') : t('twofa_methode_sms')}
             </h2>
 
             {method === 'totp' && (
               <div className="space-y-4">
-                <p className="text-sm text-neutral-500">Scannez le code QR avec votre application d'authentification, puis saisissez le code à 6 chiffres.</p>
+                <p className="text-sm text-neutral-500">{t('twofa_totp_scan')}</p>
 
                 {secretData?.qrCodeUrl && (
                   <div className="flex justify-center">
@@ -153,10 +155,10 @@ export default function TwoFactorSetupPage() {
 
                 {secretData?.secret && (
                   <div>
-                    <label className="block text-sm font-semibold text-neutral-700 mb-1">Ou saisissez la clé manuellement</label>
+                    <label className="block text-sm font-semibold text-neutral-700 mb-1">{t('twofa_cle_manuelle')}</label>
                     <div className="flex gap-2">
                       <input readOnly value={secretData.secret} className="flex-1 px-4 py-2 rounded-xl border border-neutral-200 bg-neutral-50 text-sm font-mono" />
-                      <button onClick={() => { navigator.clipboard.writeText(secretData.secret); toast.success('Clé copiée'); }} className="px-3 py-2 bg-neutral-100 rounded-xl text-sm hover:bg-neutral-200">Copier</button>
+                      <button onClick={() => { navigator.clipboard.writeText(secretData.secret); toast.success(t('twofa_cle_copiee')); }} className="px-3 py-2 bg-neutral-100 rounded-xl text-sm hover:bg-neutral-200">{t('copier')}</button>
                     </div>
                   </div>
                 )}
@@ -165,9 +167,9 @@ export default function TwoFactorSetupPage() {
 
             {method === 'sms' && (
               <div className="space-y-4">
-                <p className="text-sm text-neutral-500">Un code de vérification vous sera envoyé par SMS.</p>
+                <p className="text-sm text-neutral-500">{t('twofa_sms_intro')}</p>
                 <div>
-                  <label className="block text-sm font-semibold text-neutral-700 mb-1">Numéro de téléphone</label>
+                  <label className="block text-sm font-semibold text-neutral-700 mb-1">{t('twofa_numero_tel')}</label>
                   <input
                     type="text"
                     value={phone}
@@ -184,16 +186,16 @@ export default function TwoFactorSetupPage() {
               disabled={loading}
               className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-60"
             >
-              {loading ? 'Envoi en cours...' : method === 'totp' ? 'Continuer' : 'Envoyer le code'}
+              {loading ? t('twofa_envoi_en_cours') : method === 'totp' ? t('twofa_continuer') : t('twofa_envoyer_code')}
             </button>
           </>
         )}
 
         {!enabled && step === 'confirm' && (
           <div className="space-y-4">
-            <button onClick={() => { setStep('choose'); setCode(''); }} className="text-sm text-primary-600 hover:underline">&larr; Retour</button>
-            <h2 className="text-lg font-semibold text-neutral-800">Confirmer le code</h2>
-            <p className="text-sm text-neutral-500">Saisissez le code à 6 chiffres généré par votre application.</p>
+            <button onClick={() => { setStep('choose'); setCode(''); }} className="text-sm text-primary-600 hover:underline">&larr; {t('back')}</button>
+            <h2 className="text-lg font-semibold text-neutral-800">{t('twofa_confirmer_titre')}</h2>
+            <p className="text-sm text-neutral-500">{t('twofa_confirmer_desc')}</p>
 
             <input
               type="text"
@@ -210,7 +212,7 @@ export default function TwoFactorSetupPage() {
               disabled={loading || code.length !== 6}
               className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-60"
             >
-              {loading ? 'Vérification...' : 'Confirmer'}
+              {loading ? t('twofa_verification') : t('confirm')}
             </button>
           </div>
         )}
@@ -221,7 +223,7 @@ export default function TwoFactorSetupPage() {
               <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <p className="text-sm font-medium">Conservez ces codes de récupération dans un endroit sûr. Ils ne seront plus jamais affichés.</p>
+              <p className="text-sm font-medium">{t('twofa_codes_recup_avertissement')}</p>
             </div>
 
             <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4">
@@ -238,7 +240,7 @@ export default function TwoFactorSetupPage() {
               onClick={() => { setStep('idle'); setRecoveryCodes([]); setCode(''); }}
               className="w-full py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors"
             >
-              Terminé
+              {t('twofa_termine')}
             </button>
           </div>
         )}
@@ -252,20 +254,20 @@ export default function TwoFactorSetupPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-neutral-800">2FA activée</h2>
-                <p className="text-sm text-neutral-500">Méthode : {status?.type === 'totp' ? 'Application d\'authentification' : 'SMS'}</p>
+                <h2 className="text-lg font-semibold text-neutral-800">{t('twofa_activee_titre')}</h2>
+                <p className="text-sm text-neutral-500">{t('twofa_methode')} : {status?.type === 'totp' ? t('twofa_methode_totp') : 'SMS'}</p>
               </div>
             </div>
 
             <hr className="border-neutral-200" />
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-700">Désactiver la 2FA</h3>
+              <h3 className="text-sm font-semibold text-neutral-700">{t('twofa_desactiver')}</h3>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Votre mot de passe"
+                placeholder={t('twofa_votre_mot_de_passe')}
                 className="w-full px-4 py-3 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500"
               />
               <button
@@ -273,7 +275,7 @@ export default function TwoFactorSetupPage() {
                 disabled={loading || !password}
                 className="w-full py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                {loading ? 'Désactivation...' : 'Désactiver la 2FA'}
+                {loading ? t('twofa_desactivation_en_cours') : t('twofa_desactiver')}
               </button>
             </div>
           </div>

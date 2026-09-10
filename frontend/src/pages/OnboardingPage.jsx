@@ -2,64 +2,68 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@api/client';
 import { useAuth } from '@context/AuthContext';
+import { useI18n } from '@context/I18nContext';
 
 import { Bell, BookOpen, Check, CheckCircle, ClipboardList, GraduationCap, Hourglass, Presentation, XCircle } from 'lucide-react';
 
+// titre/desc/action/label = clés i18n (rendues via t()).
+// Les placeholders d'exemple (noms propres, formats) restent bruts.
 const ETAPES = [
   {
-    id:    1, emoji: <BookOpen size={48} aria-hidden="true" />, titre: 'Votre première matière',
-    desc:  'Commencez par créer les matières enseignées dans votre établissement.',
-    action:'Créer une matière', url:'/matieres',
+    id:    1, emoji: <BookOpen size={48} aria-hidden="true" />, titre: 'onboarding_etape1_titre', court: 'onboarding_etape1_court',
+    desc:  'onboarding_etape1_desc',
+    action:'onboarding_etape1_action', url:'/matieres',
     champs:[
-      { key:'nom_fr', label:'Nom en français', placeholder:'Mathématiques', required:true },
-      { key:'nom_ar', label:'الاسم بالعربية',  placeholder:'الرياضيات', required:false },
-      { key:'code',   label:'Code court',       placeholder:'MATH', required:false },
+      { key:'nom_fr', label:'onboarding_label_nom_fr', placeholder:'onboarding_ph_matiere', required:true },
+      { key:'nom_ar', label:'onboarding_label_nom_ar',  placeholder:'الرياضيات', required:false },
+      { key:'code',   label:'onboarding_label_code',       placeholder:'MATH', required:false },
     ],
   },
   {
-    id:    2, emoji: <Presentation size={48} aria-hidden="true" />, titre: 'Votre premier enseignant',
-    desc:  'Ajoutez l\'enseignant qui donnera les premiers cours.',
-    action:'Ajouter un enseignant', url:'/enseignants',
+    id:    2, emoji: <Presentation size={48} aria-hidden="true" />, titre: 'onboarding_etape2_titre', court: 'onboarding_etape2_court',
+    desc:  'onboarding_etape2_desc',
+    action:'onboarding_etape2_action', url:'/enseignants',
     champs:[
-      { key:'nom',       label:'Nom',       placeholder:'Benali',   required:true },
-      { key:'prenom',    label:'Prénom',    placeholder:'Amina',    required:true },
-      { key:'email',     label:'Email',     placeholder:'prof@ecole.dz', type:'email', required:true },
-      { key:'telephone', label:'Téléphone', placeholder:'0555 12 34 56', required:false },
-      { key:'specialite',label:'Spécialité',placeholder:'Mathématiques', required:false },
+      { key:'nom',       label:'name',       placeholder:'Benali',   required:true },
+      { key:'prenom',    label:'eleve_prenom',    placeholder:'Amina',    required:true },
+      { key:'email',     label:'email',     placeholder:'prof@ecole.dz', type:'email', required:true },
+      { key:'telephone', label:'phone', placeholder:'0555 12 34 56', required:false },
+      { key:'specialite',label:'onboarding_label_specialite',placeholder:'onboarding_ph_matiere', required:false },
     ],
   },
   {
-    id:    3, emoji: <ClipboardList size={48} aria-hidden="true" />, titre: 'Votre premier groupe',
-    desc:  'Créez un groupe de niveau pour regrouper vos élèves.',
-    action:'Créer un groupe', url:'/groupes',
+    id:    3, emoji: <ClipboardList size={48} aria-hidden="true" />, titre: 'onboarding_etape3_titre', court: 'onboarding_etape3_court',
+    desc:  'onboarding_etape3_desc',
+    action:'onboarding_etape3_action', url:'/groupes',
     champs:[
-      { key:'nom',    label:'Nom du groupe',   placeholder:'3ème AM - Groupe A', required:true },
-      { key:'niveau', label:'Niveau scolaire', placeholder:'3AM', required:true },
-      { key:'capacite_max', label:'Capacité maximale', placeholder:'25', type:'number', required:false },
+      { key:'nom',    label:'onboarding_label_nom_groupe',   placeholder:'onboarding_ph_groupe', required:true },
+      { key:'niveau', label:'onboarding_label_niveau_scolaire', placeholder:'3AM', required:true },
+      { key:'capacite_max', label:'onboarding_label_capacite_max', placeholder:'25', type:'number', required:false },
     ],
   },
   {
-    id:    4, emoji: <GraduationCap size={48} aria-hidden="true" />, titre: 'Votre premier élève',
-    desc:  'Inscrivez le premier élève de votre établissement.',
-    action:'Inscrire un élève', url:'/eleves',
+    id:    4, emoji: <GraduationCap size={48} aria-hidden="true" />, titre: 'onboarding_etape4_titre', court: 'onboarding_etape4_court',
+    desc:  'onboarding_etape4_desc',
+    action:'onboarding_etape4_action', url:'/eleves',
     champs:[
-      { key:'nom',         label:'Nom',    placeholder:'Mammeri',  required:true },
-      { key:'prenom',      label:'Prénom', placeholder:'Karim',    required:true },
-      { key:'date_naissance', label:'Date de naissance', type:'date', required:false },
-      { key:'niveau_scolaire', label:'Niveau',    placeholder:'3AM', required:false },
-      { key:'telephone_parent', label:'Téléphone parent', placeholder:'0555 00 00 00', required:false },
+      { key:'nom',         label:'name',    placeholder:'Mammeri',  required:true },
+      { key:'prenom',      label:'eleve_prenom', placeholder:'Karim',    required:true },
+      { key:'date_naissance', label:'onboarding_label_date_naissance', type:'date', required:false },
+      { key:'niveau_scolaire', label:'students_level',    placeholder:'3AM', required:false },
+      { key:'telephone_parent', label:'onboarding_label_tel_parent', placeholder:'0555 00 00 00', required:false },
     ],
   },
   {
-    id:    5, emoji: <Bell size={48} aria-hidden="true" />, titre: 'Tester les notifications',
-    desc:  'Envoyez-vous une notification de test pour confirmer que tout fonctionne.',
-    action:'Envoyer la notification test',
+    id:    5, emoji: <Bell size={48} aria-hidden="true" />, titre: 'onboarding_etape5_titre', court: 'onboarding_etape5_court',
+    desc:  'onboarding_etape5_desc',
+    action:'onboarding_etape5_action',
     champs:[],
   },
 ];
 
 export default function OnboardingPage() {
   const navigate   = useNavigate();
+  const { t }      = useI18n();
   const { marquerOnboardingComplete } = useAuth();
   const [statut,   setStatut]   = useState(null);
   const [etapeIdx, setEtapeIdx] = useState(0);
@@ -86,19 +90,19 @@ export default function OnboardingPage() {
       if (etape.id === 5) {
         await api('/onboarding/tester-notification', { method:'POST' });
         marquerOnboardingComplete();
-        setSuccess('Notification envoyée ! Votre installation est terminée.');
+        setSuccess(t('onboarding_succes_notification'));
         setTimeout(() => navigate('/dashboard'), 2000);
       } else {
         await api(etape.url, { method:'POST', body: JSON.stringify(form) });
         await api('/onboarding/avancer', { method:'POST', body: JSON.stringify({ etape: etape.id }) });
-        setSuccess(`${etape.titre} créé(e) avec succès !`);
+        setSuccess(t('onboarding_succes_creation', { titre: t(etape.titre) }));
         setTimeout(() => {
           setSuccess('');
           setForm({});
           if (etapeIdx < ETAPES.length - 1) setEtapeIdx(e => e + 1);
         }, 1500);
       }
-    } catch (e) { setError(e.message ?? 'Erreur lors de la sauvegarde'); }
+    } catch (e) { setError(e.message ?? t('onboarding_erreur_sauvegarde')); }
     finally { setLoading(false); }
   };
 
@@ -117,10 +121,10 @@ export default function OnboardingPage() {
         <div style={{ textAlign:'center', marginBottom:'32px' }}>
           <div style={{ fontSize:'48px', marginBottom:'8px' }}><GraduationCap size={48} aria-hidden='true' /></div>
           <h1 style={{ fontSize:'26px', fontWeight:900, color:'var(--text)' }}>
-            Bienvenue sur <span style={{ color:'var(--accent)' }}>EduGest DZ</span>
+            {t('onboarding_bienvenue')} <span style={{ color:'var(--accent)' }}>EduGest DZ</span>
           </h1>
           <p style={{ color:'var(--muted)', fontSize:'13px', marginTop:'6px' }}>
-            Configurez votre établissement en 5 étapes simples — Moins de 5 minutes
+            {t('onboarding_sous_titre')}
           </p>
         </div>
 
@@ -143,7 +147,7 @@ export default function OnboardingPage() {
                   {done ? <Check size={14} aria-hidden='true' /> : e.emoji}
                 </div>
                 <div style={{ fontSize:'10px', color: i === etapeIdx ? 'var(--text)' : 'var(--muted)', fontWeight: i === etapeIdx ? 700 : 400, maxWidth:'70px' }}>
-                  {e.titre.split(' ').slice(0,2).join(' ')}
+                  {t(e.court)}
                 </div>
               </div>
             );
@@ -154,9 +158,9 @@ export default function OnboardingPage() {
           <div style={{ textAlign:'center', marginBottom:'24px' }}>
             <div style={{ fontSize:'48px', marginBottom:'8px' }}>{etape.emoji}</div>
             <h2 style={{ fontSize:'20px', fontWeight:800, color:'var(--text)', marginBottom:'6px' }}>
-              Étape {etapeIdx + 1} — {etape.titre}
+              {t('onboarding_etape_num', { num: etapeIdx + 1 })} — {t(etape.titre)}
             </h2>
-            <p style={{ color:'var(--muted)', fontSize:'13px' }}>{etape.desc}</p>
+            <p style={{ color:'var(--muted)', fontSize:'13px' }}>{t(etape.desc)}</p>
           </div>
 
           {error && (
@@ -175,13 +179,13 @@ export default function OnboardingPage() {
               {etape.champs.map(ch => (
                 <div key={ch.key}>
                   <label style={{ display:'block', fontSize:'12px', fontWeight:700, color:'var(--text)', marginBottom:'5px' }}>
-                    {ch.label} {ch.required && <span style={{ color:'var(--red)' }}>*</span>}
+                    {t(ch.label)} {ch.required && <span style={{ color:'var(--red)' }}>*</span>}
                   </label>
                   <input
                     type={ch.type ?? 'text'}
                     value={form[ch.key] ?? ''}
                     onChange={e => setForm(f => ({...f, [ch.key]: e.target.value}))}
-                    placeholder={ch.placeholder}
+                    placeholder={t(ch.placeholder)}
                     required={ch.required}
                     style={{
                       width:'100%', background:'var(--surface2)', border:'1px solid var(--border)',
@@ -197,7 +201,7 @@ export default function OnboardingPage() {
           {etape.id === 5 && (
             <div style={{ textAlign:'center', padding:'20px 0' }}>
               <div style={{ fontSize:'64px', marginBottom:'16px' }}><Bell size={64} aria-hidden='true' /></div>
-              <p style={{ color:'var(--muted)', fontSize:'13px', lineHeight:'1.7' }}>Cliquez pour recevoir votre première notification EduGest DZ.<br/>Elle apparaîtra dans votre cloche <Bell size={13} aria-hidden='true' />en haut à droite.
+              <p style={{ color:'var(--muted)', fontSize:'13px', lineHeight:'1.7' }}>{t('onboarding_notif_hint1')}<br/>{t('onboarding_notif_hint2')} <Bell size={13} aria-hidden='true' />{t('onboarding_notif_hint3')}
                               </p>
             </div>
           )}
@@ -210,13 +214,13 @@ export default function OnboardingPage() {
                 border:'none', borderRadius:'12px', padding:'14px', fontSize:'15px',
                 fontWeight:800, cursor: loading ? 'not-allowed' : 'pointer',
               }}>
-              {loading ? <><Hourglass size={15} aria-hidden='true' />En cours...</> : `${etape.action} →`}
+              {loading ? <><Hourglass size={15} aria-hidden='true' />{t('onboarding_en_cours')}</> : `${t(etape.action)} →`}
             </button>
 
             {etapeIdx < ETAPES.length - 1 && (
               <button onClick={() => { setForm({}); setEtapeIdx(e => e + 1); }}
                 style={{ background:'none', border:'1px solid var(--border)', borderRadius:'12px', padding:'14px 20px', color:'var(--muted)', fontSize:'13px', cursor:'pointer' }}>
-                Passer
+                {t('onboarding_passer')}
               </button>
             )}
           </div>
@@ -224,7 +228,7 @@ export default function OnboardingPage() {
           {etapeIdx === 0 && (
             <div style={{ textAlign:'center', marginTop:'16px' }}>
               <button onClick={skip} style={{ background:'none', border:'none', color:'var(--muted)', fontSize:'12px', cursor:'pointer', textDecoration:'underline' }}>
-                Je suis déjà configuré, accéder au dashboard →
+                {t('onboarding_skip')} →
               </button>
             </div>
           )}

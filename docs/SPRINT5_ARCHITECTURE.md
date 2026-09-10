@@ -317,9 +317,9 @@ littéraux) ne tient pas dans un lot relisable. Découpage assumé :
 - **Phase 1 (fait)** : socle i18next + façade compatible + garde-fou.
 - **Phase 2 (fait le 10 sept.)** : emoji → `lucide-react` (+ `aria-label`),
   table ci-dessous — détail dans « Ce qui a été fait (phase 2) ».
-- **Phase 3 (lots 1-2 faits le 10 sept.)** : littéraux français → `t()` —
-  détail dans « Ce qui a été fait (phase 3, lots 1-2) ». Restent 54 fichiers
-  (pages), cliquet `fr-literals-guard.test.js` en place.
+- **Phase 3 (lots 1-3 faits le 10 sept.)** : littéraux français → `t()` —
+  détail dans « Ce qui a été fait (phase 3, lots 1-2) » et « … lot 3 ».
+  Restent 49 fichiers (pages), cliquet `fr-literals-guard.test.js` en place.
 - Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
   scope, noté pour le Sprint 6.
 
@@ -536,3 +536,41 @@ doit énumérer ses fichiers (`find src -name "*.jsx"`), pas les glober.
 `find` sur 130 fichiers js/jsx hors tests : 0 erreur ; `vitest run` →
 137/137 verts ; ESLint sans nouvelle alerte (une alerte exhaustive-deps
 corrigée au passage).
+
+
+### Ce qui a été fait (phase 3, lot 3 — 10 sept.)
+
+**Lot 3 : premières pages** (5 fichiers, 220 nouvelles clés × 4 langues —
+dictionnaires 414 → 634 clés) :
+
+- `pages/SurveillancePage` (50 caractères accentués — la plus grosse page) :
+  `NIVEAUX`/`TYPES_ALERTE` restructurés en clés + icônes (le JSX module-level
+  ne peut pas appeler `t()`), `CAMERA_TYPES` pour l'énum API `type` caméra
+  (valeur POST `entree`/`couloir`/… inchangée, libellé traduit avec repli
+  brut), config DVR en 6 étapes traduites, pluriel CLDR `alertes_count` ;
+- `pages/OnboardingPage` : `ETAPES` module-level → clés (titre/desc/action/
+  court/champs/labels), libellés courts dédiés (l'ancien
+  `titre.split(' ').slice(0,2)` ne survit pas à l'i18n), succès interpolé
+  `{{titre}}`, placeholders d'exemple passés par `t()` avec repli brut
+  (seuls les exemples accentués sont des clés) ;
+- `pages/TwoFactorSetupPage` : toasts, états totp/sms, codes de récupération ;
+- `pages/LmsPage` : catalogue, stats, activité, création de cours, pluriels
+  CLDR `inscrits_count`/`lecons_count` ;
+- `pages/PredictionIAPage` : énums API `niveau_risque`/`urgence` en maps clé +
+  repli brut (comparaisons et filtres inchangés), helper `risqueLabel`,
+  logs `console.error` désaccentués (traces dev, pas de l'UI).
+
+Réutilisation : `loading`, `cancel`, `save`, `close`, `back`, `confirm`,
+`email`, `phone`, `name`, `eleve_prenom`, `students_level`, `type_matiere`,
+`lang_select`, `lang_ar/fr/en`, `creation_en_cours`, `dashboard_title`,
+`diagnostic_critical`, `diagnostic_recommendations`, `absences_sms_sent`,
+et les `surveillance_*` préexistantes.
+
+Cliquet `fr-literals-guard.test.js` : **54 → 49 fichiers**. Vérifs :
+`vitest run` 137/137 verts ; esbuild (find, 130 fichiers js/jsx hors
+tests) 0 erreur ; parité 4 dicts 634/634/634/635 ; ESLint des 5 fichiers
+comparé à HEAD via stash : **0 nouvelle alerte** (22 problèmes préexistants
+— `static-components` par composants définis dans les composants, dette
+antérieure au lot, hors périmètre i18n). Reste ouvert : les dates passent
+par `toLocaleDateString('fr-DZ'/'fr-FR')` hardcodé — à brancher sur la
+locale i18n dans un lot dédié.

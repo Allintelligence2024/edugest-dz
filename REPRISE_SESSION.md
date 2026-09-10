@@ -20,10 +20,11 @@ livrés (voir `docs/SPRINT5_ARCHITECTURE.md`), **5.2 fusionné le 10 sept.**
 **5.3 fait le 10 sept.** (9/9 contrôleurs, baseline garde-fou vide) et
 **5.6 phases 1-2 faites** (socle i18next + emoji → lucide : 515 occurrences
 → **0**, garde-fou verrouillé à 0/0, tests 134/134 — journal § 5.6) et
-**phase 3 aux 2/3 du front non-page** (lot 1 « chrome » + lot 2 « composants
-métier » : 22 fichiers convertis, 206 clés × 4 langues, dictionnaires à 414
-clés, cliquet `fr-literals-guard.test.js` à 54 fichiers, parité des
-dictionnaires gardée par test — journal § 5.6).
+**phase 3 bien avancée** : lots 1 « chrome » + 2 « composants métier »
+(22 fichiers, 206 clés) puis lot 3 « pages » (Surveillance, Onboarding,
+2FA, LMS, Prédiction IA — 5 fichiers, 220 clés) le 10 sept. — 27 fichiers
+convertis au total, dictionnaires à 634 clés, cliquet à 49 fichiers,
+parité des dictionnaires gardée par test — journal § 5.6).
 Correctif au passage : `tenant.nom` (colonne inexistante, `null` renvoyé)
 → `nom_etablissement` dans `complete2fa`, `me` et `RelancesEcheanceCommand`,
 et pluriels darija réparés (`getRule('dz')` délégué à l'arabe, i18next ≥ 25
@@ -73,9 +74,10 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    `package.json` → `UNLICENSED`.
 3. Finir le Sprint 5 : **5.3** ✅ (9/9, garde-fou vide) ; **5.6** phase 2 ✅
    (emoji → lucide le 10 sept., 515 occ. → 0, garde-fou verrouillé à 0/0,
-   134/134 tests verts) ; phase 3 : lots 1 (chrome) et 2 (composants métier) ✅ le 10 sept., restent
-   54 fichiers (pages surtout) à passer en `t()` — cliquet en place
-   (`fr-literals-guard.test.js`, plafond 54).
+   134/134 tests verts) ; phase 3 : lots 1 (chrome), 2 (composants métier) et 3 (5 grosses pages :
+   Surveillance, Onboarding, 2FA, LMS, Prédiction IA) ✅ le 10 sept., restent
+   49 fichiers (pages) à passer en `t()` — cliquet en place
+   (`fr-literals-guard.test.js`, plafond 49).
 4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
