@@ -42,8 +42,8 @@ et résorber les dettes ouvertes**.
 - Documents à lire en premier, dans cet ordre :
   1. `REPRISE_SESSION.md` — passation, contraintes d'environnement, leçons.
   2. `PLAN_REMEDIATION_2026.md` — le plan, avec le bilan par sprint.
-  3. `edugestdz/docs/SPRINT4_QUALITE.md` et
-     `edugestdz/docs/SPRINT5_ARCHITECTURE.md` — journaux détaillés.
+  3. `docs/SPRINT4_QUALITE.md` et
+     `docs/SPRINT5_ARCHITECTURE.md` — journaux détaillés.
 
 ---
 
@@ -57,7 +57,7 @@ plusieurs contournements deviennent inutiles.
 
 ```bash
 php -v; composer -V; node -v; npm -v; docker -v; psql --version; redis-cli -v
-cd edugestdz/backend && php artisan --version
+cd backend && php artisan --version
 ```
 
 Consigne le résultat en tête de ton journal de travail. Trois cas :
@@ -71,7 +71,7 @@ Consigne le résultat en tête de ton journal de travail. Trois cas :
   Groupe tes changements, chaque passage coûte ~4 min. Les logs Actions sont
   illisibles sur ce dépôt (`gh run view --log`, l'API `jobs/{id}/logs` et le
   zip renvoient tous `EOF`) ; le seul canal de diagnostic est l'extension
-  `edugestdz/backend/tests/Support/CiDiagnosticExtension.php`, qui republie
+  `backend/tests/Support/CiDiagnosticExtension.php`, qui republie
   les échecs en annotations. Pour les lire :
 
 ```bash
@@ -97,11 +97,11 @@ un workflow** (`git push` après une modification triviale de `ci.yml`) : si
 oui, applique-les directement.
 
 ```bash
-git apply edugestdz/docs/ci-secrets.patch
-git apply edugestdz/docs/pre-deploy-secrets.patch
-git apply edugestdz/docs/ci-qualite.patch
-cp    edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-rm    edugestdz/docs/*.patch
+git apply docs/ci-secrets.patch
+git apply docs/pre-deploy-secrets.patch
+git apply docs/ci-qualite.patch
+cp    docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+rm    docs/*.patch
 git add -A && git commit -m "ci: secrets hors du code + qualité/sécurité"
 ```
 
@@ -125,7 +125,7 @@ Ils s'appliquent en séquence, dans cet ordre (vérifié). Ce qu'ils font :
 Ensuite :
 
 ```bash
-cd edugestdz && ./scripts/generer-secrets.sh    # NB : dans edugestdz/scripts/, pas scripts/
+cd edugestdz && ./scripts/generer-secrets.sh    # NB : dans scripts/, pas scripts/
 cd backend && php artisan migrate               # 2 migrations en attente
 ```
 
@@ -138,7 +138,7 @@ réellement, et **tu as lu au moins une fois le pourcentage réel de couverture
 backend**. Ce chiffre n'a jamais été mesuré. Tout objectif de couverture
 énoncé avant cette lecture est une invention.
 
-Puis génère la baseline PHPStan (niveau 6, `edugestdz/backend/phpstan.neon`)
+Puis génère la baseline PHPStan (niveau 6, `backend/phpstan.neon`)
 et rends l'étape bloquante dans `scripts/analyse-statique.sh`.
 
 ---
@@ -155,7 +155,7 @@ défense en profondeur.
 
 Sur 106 modèles : 67 sont scopés, 8 l'ont été au sprint 5, il reste **6
 modèles** listés dans la constante `DETTE` de
-`edugestdz/backend/tests/Feature/Security/PorteeTenantModelesTest.php` :
+`backend/tests/Feature/Security/PorteeTenantModelesTest.php` :
 
 `AlerteSurveillance`, `CameraConfig`, `CandidatExamen`, `SalleExamen`,
 `SessionExamen`, `SurveiillantExamen` (la faute de frappe est dans le nom de
@@ -187,7 +187,7 @@ super-admin, et `User` qui est cherché par e-mail avant que le tenant existe).
 
 Neuf fichiers, mesurés :
 
-| Fichier (`edugestdz/backend/app/Http/Controllers/Api/V1/`) | Lignes |
+| Fichier (`backend/app/Http/Controllers/Api/V1/`) | Lignes |
 |---|---|
 | `StockInventaireController.php` | 569 |
 | `EntretienController.php` | 464 |
@@ -206,7 +206,7 @@ Méthode imposée :
   validation, autorisation et forme de la réponse.
 - **Ne change aucune URL, aucun nom de route, aucune forme de réponse.**
   C'est un refactoring, pas une v2 de l'API. Le versioning est documenté dans
-  `edugestdz/docs/VERSIONING_API.md` : lis-le avant de croire qu'un changement
+  `docs/VERSIONING_API.md` : lis-le avant de croire qu'un changement
   est anodin. Ajouter une valeur d'énumération **en sortie** est une rupture.
 - Conserve la compatibilité avec `route:cache` : les routes utilisent
   `apiResource(...)->only()/->except()`.
@@ -228,7 +228,7 @@ contrôleur repasse au-dessus du seuil — sinon la dette revient.
 ## Lot D — 5.6 i18n et icônes
 
 **État réel :** il existe déjà une i18n maison,
-`edugestdz/frontend/src/context/I18nContext.jsx` (61 lignes), avec quatre
+`frontend/src/context/I18nContext.jsx` (61 lignes), avec quatre
 langues dans `src/lang/{fr,ar,en,dz}.json` et une gestion RTL pour `ar` et
 `dz`. Ce n'est pas un terrain vierge.
 
@@ -287,7 +287,7 @@ ne pose de collision de nom de fichier** :
 
 | Entrée | Racine | `edugestdz/` | Traitement |
 |---|---|---|---|
-| `.github/` | `ci.yml`, `deploy.yml`, `pre-deploy-check.yml` | `frontend-ci.yml` (**inerte** : GitHub ne lit que la racine) | Le job frontend est déjà repris par `ci-qualite.patch`. Vérifie qu'il ne reste rien d'utile dans `frontend-ci.yml`, puis supprime `edugestdz/.github/`. |
+| `.github/` | `ci.yml`, `deploy.yml`, `pre-deploy-check.yml` | `frontend-ci.yml` (**inerte** : GitHub ne lit que la racine) | Le job frontend est déjà repris par `ci-qualite.patch`. Vérifie qu'il ne reste rien d'utile dans `frontend-ci.yml`, puis supprime `.github/`. |
 | `scripts/` | `analyse-statique.sh`, `audit-securite.sh`, `verify-api-pages.sh` | `generer-secrets.sh`, `restore-backup.sh`, `smoke-test.sh` | Fusion directe, 6 fichiers distincts. |
 | `docs/` | `archive/`, `design/`, `business/`, `guides/`, `README.md` | documentation de référence (`SECURITE.md`, `ARCHITECTURE.md`, …) | Fusion directe, aucun nom en commun. Mets `docs/README.md` à jour pour distinguer référence et archive. |
 
@@ -299,7 +299,7 @@ aussi `vercel.json` (répertoire racine du projet), le `Makefile`, `install.sh`,
 `deploy.sh`, `update.sh`, `server-setup.sh` et les `docker-compose*.yml`.
 
 Enfin, **le README pointera à nouveau vers `docs/...`** : ses liens ont été
-réécrits vers `edugestdz/docs/...` au sprint 5 parce que les cibles n'existaient
+réécrits vers `docs/...` au sprint 5 parce que les cibles n'existaient
 pas. Après fusion, remets-les et **vérifie chaque lien relatif par un script**,
 comme au sprint 5 — onze liens du README étaient morts sans que personne ne le
 voie.
@@ -324,11 +324,11 @@ Prometheus dans le dépôt.
    documentée : il faut des **métriques d'usage par version d'API et par
    client**, sans quoi aucune version ne pourra jamais être retirée en
    connaissance de cause. Sentry est déjà configuré (`config/sentry.php`).
-4. **Sauvegardes** : `edugestdz/scripts/restore-backup.sh` existe ;
-   `edugestdz/backups/` aussi. **Teste une restauration réelle.** Une
+4. **Sauvegardes** : `scripts/resipts/restore-backup.sh` existe ;
+   `backups/` aussi. **Teste une restauration réelle.** Une
    sauvegarde jamais restaurée n'est pas une sauvegarde.
 5. **Loi 18-07** (protection des données personnelles, Algérie) :
-   `edugestdz/ANPDP_DECLARATION.md` existe. Vérifie la cohérence entre ce
+   `docs/ANPDP_DECLARATION.md` existe. Vérifie la cohérence entre ce
    qui est déclaré et ce que le code fait réellement — durées de rétention,
    export RGPD (`ExportRgpdController`), caviardage dans la chaîne d'audit.
 6. **Vérité du README** : il annonce « 607 tests ✅ 0 failures 6 skipped » et
@@ -354,7 +354,7 @@ Prometheus dans le dépôt.
 
 1. **La licence.** Le README affiche un badge « Licence Propriétaire »
    pointant vers un fichier `LICENSE` **absent du dépôt**, tandis que
-   `edugestdz/backend/composer.json` déclare `"license": "MIT"`. Ces deux
+   `backend/composer.json` déclare `"license": "MIT"`. Ces deux
    affirmations n'autorisent pas les mêmes usages par des tiers. C'est une
    question juridique : pose-la, n'y réponds pas.
 2. **`SECURITY.md` n'existe pas** alors que le plan le liste comme fichier

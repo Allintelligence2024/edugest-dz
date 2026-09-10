@@ -20,11 +20,11 @@
 ssh root@VOTRE_IP_VPS
 
 # 3. Lancer le setup automatique
-curl -fsSL https://raw.githubusercontent.com/Allintelligence2024/edugest-dz/main/edugestdz/server-setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Allintelligence2024/edugest-dz/main/server-setup.sh | bash
 
 # 4. Cloner le repo
 git clone https://github.com/Allintelligence2024/edugest-dz.git /opt/edugestdz
-cd /opt/edugestdz/edugestdz
+cd /opt/edugestdz
 
 # 5. Configurer
 cp backend/.env.level1.example backend/.env
@@ -125,7 +125,7 @@ apt install -y git curl nano
 
 # ── Étape 2 : Cloner le projet (5-10 min selon connexion) ──
 git clone https://github.com/Allintelligence2024/edugest-dz.git /opt/edugestdz
-cd /opt/edugestdz/edugestdz
+cd /opt/edugestdz
 
 # ── Étape 3 : Configurer (10-15 min) ───────────────────────
 cp backend/.env.level3.example backend/.env
@@ -166,7 +166,7 @@ docker compose logs app --tail=50
 ### Mise à jour (5-15 minutes)
 
 ```bash
-cd /opt/edugestdz/edugestdz
+cd /opt/edugestdz
 bash update.sh
 # → Sauvegarde automatique BDD → Pull nouvelles images → Migrations → Redémarrage
 ```

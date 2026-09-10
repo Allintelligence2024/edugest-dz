@@ -10,10 +10,12 @@ pourquoi une décision a été prise, et un audit de 2026 se relit quand la
 même question revient. Mais cet historique n'a pas à être la première chose
 qu'un nouveau venu voit en ouvrant le dépôt.
 
-> **Documentation de référence** (à jour, maintenue) : [`edugestdz/docs/`](../edugestdz/docs/).
-> Ce dossier-ci contient l'archive, les maquettes et les études. Ne pas
-> confondre les deux : les archives décrivent des états passés du projet et
-> **ne sont pas mises à jour**.
+> **Documentation de référence** (à jour, maintenue) : les fichiers Markdown à
+> la racine de ce dossier (`ARCHITECTURE.md`, `SECURITE.md`, journaux
+> `SPRINT*.md`, …).
+> Les sous-dossiers `archive/`, `design/`, `business/`, `guides/` contiennent
+> l'historique, les maquettes et les études. Ne pas confondre les deux : les
+> archives décrivent des états passés du projet et **ne sont pas mises à jour**.
 
 ---
 
@@ -92,12 +94,12 @@ grep -ril "sujet recherché" docs/archive/missions/
 Les deux derniers partiront en archive une fois la remédiation terminée.
 
 **Note :** le dump `seed_curriculum_algerie.sql` a rejoint
-[`edugestdz/backend/database/sql/`](../edugestdz/backend/database/sql/) —
+[`backend/database/sql/`](../backend/database/sql/) —
 c'est de la donnée applicative, pas de la documentation.
 
 **Point ouvert :** le README affiche un badge « Licence Propriétaire » qui
 pointe vers un fichier `LICENSE` **absent du dépôt**, alors que
-`edugestdz/backend/composer.json` déclare `"license": "MIT"`. Les deux
+`backend/composer.json` déclare `"license": "MIT"`. Les deux
 affirmations sont contradictoires et la question est juridique, pas
 technique : elle doit être tranchée par le propriétaire du projet, puis le
 fichier `LICENSE` ajouté à la racine.

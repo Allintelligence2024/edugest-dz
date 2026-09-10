@@ -118,7 +118,7 @@ Groupes, Notes, Présences, Absences, Bulletins, Factures).
 
 | Livrable | État |
 |---|---|
-| `edugestdz/backend/phpstan.neon` | Niveau 6, prêt. |
+| `backend/phpstan.neon` | Niveau 6, prêt. |
 | `scripts/analyse-statique.sh` | Installe Larastan à la volée puis analyse. |
 | `scripts/audit-securite.sh` | `composer audit`, `npm audit`, Gitleaks — exécute tout avant de conclure. |
 | `.gitleaks.toml` | Règles maison (mot de passe historique, clés HMAC, DSN Postgres) et exclusions explicites. |
@@ -129,7 +129,7 @@ régénérer faute de PHP. Le paquet est donc installé à la volée par le
 script et par la CI. Dès qu'un poste disposant de PHP reprend la main :
 
 ```bash
-cd edugestdz/backend
+cd backend
 composer require --dev larastan/larastan:^3.0
 composer analyse -- --generate-baseline
 ```
@@ -152,7 +152,7 @@ révoqués. La réécriture d'historique est un chantier distinct
 ## 5. Unification de la CI — `docs/ci-qualite.patch`
 
 **Le frontend n'était pas testé en intégration continue.** Les tests
-Vitest existaient, mais `edugestdz/.github/workflows/frontend-ci.yml`
+Vitest existaient, mais `.github/workflows/frontend-ci.yml`
 n'est lu par personne : GitHub ne considère que `.github/workflows/` à la
 racine du dépôt. Les 79 tests annoncés verts l'étaient sur un poste, pas
 en CI.
@@ -175,11 +175,11 @@ Ils sont empilés et doivent être appliqués dans cet ordre. La séquence a
 été vérifiée (`git apply --check` sur les trois, YAML parsé après coup) :
 
 ```bash
-git apply edugestdz/docs/ci-secrets.patch
-git apply edugestdz/docs/pre-deploy-secrets.patch
-git apply edugestdz/docs/ci-qualite.patch
-cp    edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-rm    edugestdz/docs/*.patch
+git apply docs/ci-secrets.patch
+git apply docs/pre-deploy-secrets.patch
+git apply docs/ci-qualite.patch
+cp    docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+rm    docs/*.patch
 git add -A && git commit -m "ci: secrets hors du code, gardes sécurité et unification qualité" && git push
 ```
 

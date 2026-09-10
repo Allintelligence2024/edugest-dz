@@ -31,7 +31,7 @@ echouer() {
 titre "composer audit — backend"
 
 if command -v composer >/dev/null 2>&1; then
-  if (cd "${RACINE}/edugestdz/backend" && composer audit --no-interaction --format=plain); then
+  if (cd "${RACINE}/backend" && composer audit --no-interaction --format=plain); then
     echo "✔ Aucune vulnérabilité connue dans les dépendances PHP"
   else
     echouer "composer audit a signalé des vulnérabilités"
@@ -43,7 +43,7 @@ fi
 # ── Dépendances JS ─────────────────────────────────────────────────────────
 
 for projet in frontend mobile; do
-  chemin="${RACINE}/edugestdz/${projet}"
+  chemin="${RACINE}/${projet}"
   [ -f "${chemin}/package.json" ] || continue
 
   titre "npm audit — ${projet}"

@@ -19,7 +19,7 @@
 ## Étape 2 — Backend (Laravel)
 
 ```bash
-cd edugestdz/backend
+cd backend
 
 # 1. Dépendances
 composer install
@@ -57,7 +57,7 @@ Le seeder `EcoleDemoSeeder` crée automatiquement :
 ## Étape 3 — Frontend (React)
 
 ```bash
-cd edugestdz/frontend
+cd frontend
 
 # 1. Dépendances
 npm install
@@ -99,14 +99,14 @@ Le frontend démarre sur `http://localhost:5173`.
 
 ### Backend (PHP)
 ```bash
-cd edugestdz/backend
+cd backend
 php artisan test
 # Résultat attendu : 1012+ tests passés
 ```
 
 ### Frontend (Vitest)
 ```bash
-cd edugestdz/frontend
+cd frontend
 npm run test
 ```
 

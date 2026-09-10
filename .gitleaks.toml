@@ -51,7 +51,7 @@ paths = [
     '''(^|/)dist/''',
     '''(^|/)coverage/''',
     '''\.lock$''',
-    '''(^|/)edugestdz/docs/.*\.patch$''',
+    '''(^|/)docs/.*\.patch$''',
     '''(^|/)\.gitleaks\.toml$''',
 ]
 

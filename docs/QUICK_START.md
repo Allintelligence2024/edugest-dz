@@ -4,7 +4,7 @@
 
 ```bash
 # 1. Backend
-cd edugestdz/backend && composer install && cp .env.example .env
+cd backend && composer install && cp .env.example .env
 php artisan key:generate && php artisan jwt:secret --force
 php artisan migrate --seed --force
 
@@ -24,7 +24,7 @@ cd ../frontend && npm install && npm run dev
 ## Architecture
 
 ```
-edugestdz/
+edugest-dz/
 ├── backend/     → Laravel 11, PostgreSQL, JWT, API REST v1
 ├── frontend/    → React 18, Vite, Tailwind CSS
 └── mobile/      → Expo (React Native)

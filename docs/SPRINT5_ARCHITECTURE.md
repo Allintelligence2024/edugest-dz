@@ -102,7 +102,7 @@ empêche 21 trous de devenir 22.
 | `docs/design/` | Maquettes HTML, schémas d'architecture | 16 |
 | `docs/business/` | Étude de marché, cahier des charges | 3 |
 | `docs/guides/` | Guide utilisateur, plan de réponse aux incidents | 2 |
-| `edugestdz/backend/database/sql/` | `seed_curriculum_algerie.sql` — donnée, pas documentation | 1 |
+| `backend/database/sql/` | `seed_curriculum_algerie.sql` — donnée, pas documentation | 1 |
 
 Rien n'a été supprimé, et `git mv` préserve l'historique. Aucun fichier
 déplacé n'était référencé par du code, un workflow ou une configuration —
@@ -115,7 +115,7 @@ et la commande `grep` pour fouiller les 85 journaux de mission.
 
 Le README pointait vers `docs/SECURITE.md`, `docs/ARCHITECTURE.md`,
 `ANPDP_DECLARATION.md` et six autres. **Aucun de ces chemins n'existait** :
-la documentation réelle vit dans `edugestdz/docs/`, et le dossier `docs/`
+la documentation réelle vit dans `docs/`, et le dossier `docs/`
 racine n'existait pas du tout avant ce sprint. Onze liens morts dans le
 premier écran du dépôt. Corrigés, puis vérifiés par un contrôle qui résout
 chaque lien relatif.
@@ -128,7 +128,7 @@ aujourd'hui.
 
 Le README affiche un badge « Licence Propriétaire » pointant vers un fichier
 `LICENSE` **absent du dépôt**, tandis que
-`edugestdz/backend/composer.json` déclare `"license": "MIT"`. Les deux
+`backend/composer.json` déclare `"license": "MIT"`. Les deux
 affirmations sont contradictoires, et l'écart est juridique, pas technique :
 propriétaire et MIT n'autorisent pas les mêmes usages par des tiers. La
 question doit être tranchée par le propriétaire du projet, puis le fichier
@@ -194,7 +194,7 @@ bascule sans effet est pire qu'absente, elle donne l'illusion du contrôle.
 
 ## 5.5 — Versioning de l'API
 
-`edugestdz/docs/VERSIONING_API.md`. Le document décrit d'abord l'état réel
+`docs/VERSIONING_API.md`. Le document décrit d'abord l'état réel
 — `v1` seule, versioning par URI, ~439 routes, **aucun** mécanisme de
 dépréciation — puis fixe la politique : critères de rupture, en-têtes
 `Deprecation` (RFC 9745) et `Sunset` (RFC 8594), `410 Gone` après retrait.

@@ -110,7 +110,7 @@ Aucun worker ne tourne : les migrations **ne s'exécutent pas au déploiement**.
 Les lancer manuellement depuis une machine ayant accès à la base :
 
 ```bash
-cd edugestdz/backend
+cd backend
 DB_HOST=... DB_PASSWORD=... php artisan migrate --force
 ```
 
@@ -167,16 +167,11 @@ Ce sont des contraintes **structurelles** de Vercel, pas des bugs :
 
 ---
 
-## 8. Action manuelle requise — désactivation de `deploy.yml`
+## 8. Action manuelle — désactivation de `deploy.yml` ✅ appliquée
 
-> ⚠️ **Non appliqué** : les workflows ne sont pas poussables depuis
-> l'environnement de travail (voir `docs/SPRINT3_SECURITE.md` §1).
-> Fichier de remplacement prêt : `edugestdz/docs/deploy.yml.desactive.patch`.
->
-> ```bash
-> cp edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-> git add .github/workflows/deploy.yml && git commit -m "ci: désactiver le déploiement VPS" && git push
-> ```
+Le workflow `CD — Deploy Production` a été passé en déclenchement manuel
+(`workflow_dispatch`) : le déploiement cible est Vercel, plus le VPS par SSH.
+État courant : voir `.github/workflows/deploy.yml`.
 
 Le changement : `.github/workflows/deploy.yml` passe de `on: push` (branche `main`) à
 `on: workflow_dispatch` avec une saisie de confirmation obligatoire : il faut

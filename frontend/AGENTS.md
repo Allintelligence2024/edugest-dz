@@ -36,7 +36,7 @@ Application React 18 + Vite + Tailwind de gestion de cours particuliers en Algé
 
 ## Commandes utiles
 ```bash
-cd edugestdz/frontend
+cd frontend
 npm run dev       # Serveur dev
 npm run build     # Build production
 npm run lint      # ESLint

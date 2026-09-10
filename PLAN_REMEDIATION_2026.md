@@ -33,7 +33,7 @@
 ## 1. Classification des problèmes
 
 > **Avancement** — Sprint 1 ✅ terminé · Sprint 2 ✅ terminé (voir
-> `edugestdz/docs/RBAC_MATRIX.md` et `edugestdz/DEPLOIEMENT_VERCEL.md`).
+> `docs/RBAC_MATRIX.md` et `docs/DEPLOIEMENT_VERCEL.md`).
 > P0-1, P0-2, P0-3, P0-4 résolus. Restent P0-5 (localStorage) et P0-6 (clé
 > HMAC audit), traités au Sprint 3.
 
@@ -91,7 +91,7 @@
 - Tests : génération, vérification, token expiré, token d'un autre tenant, token forgé.
 
 **1.2 Réactiver le test d'isolation**
-- Déplacer `/TenantIsolationTest.php` → `edugestdz/backend/tests/Feature/Security/TenantIsolationTest.php`.
+- Déplacer `/TenantIsolationTest.php` → `backend/tests/Feature/Security/TenantIsolationTest.php`.
 - Corriger namespace, vérifier que les 16 tests passent, les rendre **bloquants en CI**.
 
 **1.3 Purger les binaires**
@@ -160,13 +160,13 @@
 ### **Sprint 4 — Qualité & tests (P1-5, P1-6, P1-8)** 🔵 **EN GRANDE PARTIE FAIT**
 
 > **Livré.** Détail d'exécution, écarts assumés et points restants : voir
-> `edugestdz/docs/SPRINT4_QUALITE.md`.
+> `docs/SPRINT4_QUALITE.md`.
 >
 > - ✅ **Tests N+1** — `QueryMonitor` branché sur `config/performance.php`,
 >   détection par mesure différentielle (1 vs N enregistrements) plutôt que
 >   par seuil arbitraire. Bloquant en CI.
 > - ✅ **Unification CI** — jobs `frontend` et `qualite` ajoutés. Le frontend
->   n'était **pas testé du tout** en CI : `edugestdz/.github/workflows/` n'est
+>   n'était **pas testé du tout** en CI : `.github/workflows/` n'est
 >   pas lu par GitHub. Livré en patch (`docs/ci-qualite.patch`), les workflows
 >   restant non poussables depuis le bac à sable.
 > - ✅ **Job sécurité** — `composer audit`, `npm audit`, Gitleaks, PHPStan 6.
@@ -200,7 +200,7 @@
 
 ### **Sprint 5 — Architecture & maintenabilité (P2-3, P2-4, P2-9, P2-10)** 🔵 **EN COURS**
 
-> **Bilan au 8 septembre 2026 — voir `edugestdz/docs/SPRINT5_ARCHITECTURE.md`**
+> **Bilan au 8 septembre 2026 — voir `docs/SPRINT5_ARCHITECTURE.md`**
 >
 > - ✅ **P1-6 (report du Sprint 4)** — invariant tenant rendu vrai puis
 >   verrouillé. 8 modèles reçoivent `BelongsToTenant` ;
@@ -218,7 +218,7 @@
 >   d'écart**. `.env`, `admin`, `debug`, `backup`, `config`, `dump` étaient
 >   déclarés comme leurres sans qu'aucune route ne les serve, pendant qu'un
 >   test affirmait « 22 leurres » en comptant le tableau du service.
-> - ✅ **5.5 Versioning API** — `edugestdz/docs/VERSIONING_API.md`.
+> - ✅ **5.5 Versioning API** — `docs/VERSIONING_API.md`.
 > - ⏳ **5.2, 5.3, 5.6** — non entamés. La fusion `edugestdz/` (5.2) attend
 >   un commit dédié sans PR en vol.
 > - ⏳ **Coverage backend 45 → 60 %** — le palier de 45 % n'a pas encore été
@@ -248,7 +248,7 @@ juridique, à trancher par le propriétaire du projet.
 
 **5.4** Honeypot : routes déplacées en config (`config/security.php`), extensibles sans redéploiement de code. ✅
 
-**5.5** Politique de versioning API ✅ — livrée sous `edugestdz/docs/VERSIONING_API.md` : critères de rupture, en-têtes `Deprecation` (RFC 9745) et `Sunset` (RFC 8594), `410 Gone` après retrait, fenêtre de six mois **subordonnée** à une mesure d'adoption du parc mobile qui reste à instrumenter (Sprint 6).
+**5.5** Politique de versioning API ✅ — livrée sous `docs/VERSIONING_API.md` : critères de rupture, en-têtes `Deprecation` (RFC 9745) et `Sunset` (RFC 8594), `410 Gone` après retrait, fenêtre de six mois **subordonnée** à une mesure d'adoption du parc mobile qui reste à instrumenter (Sprint 6).
 
 **5.6** i18n : migrer vers `i18next` (ICU, pluriels, dates/nombres, RTL robuste). Remplacer les emoji JSX par des icônes `lucide-react` avec `aria-label`.
 

@@ -14,9 +14,9 @@ Pull request : **[#82](https://github.com/Allintelligence2024/edugest-dz/pull/82
 précédente est **verte** sur `main`. Il n'y a plus rien à vérifier de ce côté.
 
 Sprints 1, 2, 3 livrés. Sprint 4 terminé — voir
-`edugestdz/docs/SPRINT4_QUALITE.md`. **Sprint 5 entamé** : P1-6 (reporté du
+`docs/SPRINT4_QUALITE.md`. **Sprint 5 entamé** : P1-6 (reporté du
 Sprint 4), 5.1 hygiène racine, 5.4 honeypot en configuration, 5.5 versioning
-de l'API — voir `edugestdz/docs/SPRINT5_ARCHITECTURE.md`.
+de l'API — voir `docs/SPRINT5_ARCHITECTURE.md`.
 
 Deux enseignements de ce sprint méritent d'être lus avant de continuer :
 
@@ -148,11 +148,11 @@ séquence a été vérifiée (`git apply --check` sur les trois, YAML parsé apr
 application).
 
 ```bash
-git apply edugestdz/docs/ci-secrets.patch
-git apply edugestdz/docs/pre-deploy-secrets.patch
-git apply edugestdz/docs/ci-qualite.patch
-cp    edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-rm    edugestdz/docs/*.patch
+git apply docs/ci-secrets.patch
+git apply docs/pre-deploy-secrets.patch
+git apply docs/ci-qualite.patch
+cp    docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+rm    docs/*.patch
 git add -A && git commit -m "ci: secrets hors du code, gardes sécurité et unification qualité" && git push
 ```
 
@@ -187,7 +187,7 @@ exécution a mis au jour huit défauts. Les trois enseignements qui resservent :
    faille** : trois tests hérités affirmaient qu'un parent pouvait supprimer
    n'importe quel élève et qu'un enseignant lisait le budget.
 
-Détail complet : `edugestdz/docs/SPRINT3_SECURITE.md`.
+Détail complet : `docs/SPRINT3_SECURITE.md`.
 
 ### Sprint 4
 
@@ -216,7 +216,7 @@ Détail complet : `edugestdz/docs/SPRINT3_SECURITE.md`.
 8. **Un seuil qu'on n'exécute pas ne protège rien.** La couverture frontend
    était déclarée à 70 % dans `vitest.config.js` alors que `npm run test` ne
    la calcule même pas, et le workflow qui aurait dû lancer ces tests
-   (`edugestdz/.github/workflows/frontend-ci.yml`) n'est lu par personne :
+   (`.github/workflows/frontend-ci.yml`) n'est lu par personne :
    GitHub ne considère que `.github/` à la racine. Vérifier qu'une garde
    s'exécute avant de la croire.
 
@@ -226,13 +226,13 @@ Détail complet : `edugestdz/docs/SPRINT3_SECURITE.md`.
 
 ### Arborescence
 
-Dossier intermédiaire `edugestdz/` : `edugestdz/backend`, `edugestdz/frontend`,
-`edugestdz/mobile`. **Les seuls workflows actifs sont ceux de `.github/` à la
-racine** — ceux de `edugestdz/.github/` sont inertes (P1-8).
+Dossier intermédiaire `edugestdz/` : `backend`, `frontend`,
+`mobile`. **Les seuls workflows actifs sont ceux de `.github/` à la
+racine** — ceux de `.github/` sont inertes (P1-8).
 
 Depuis le Sprint 5, la racine ne contient plus que 5 fichiers ; les 114 autres
 sont classés sous `docs/` (voir `docs/README.md`). La documentation **de
-référence** reste sous `edugestdz/docs/` ; `docs/` racine contient l'archive,
+référence** reste sous `docs/` ; `docs/` racine contient l'archive,
 les maquettes et les études. La fusion des deux est le point 5.2.
 
 ### Conventions établies
@@ -265,13 +265,13 @@ les maquettes et les études. La fusion des deux est le point 5.2.
 ### Documentation
 
 - `PLAN_REMEDIATION_2026.md` — plan en 6 sprints, état d'avancement.
-- `edugestdz/docs/SPRINT3_SECURITE.md` — détail du Sprint 3.
-- `edugestdz/docs/SPRINT4_QUALITE.md` — détail du Sprint 4, écarts assumés.
-- `edugestdz/docs/SPRINT5_ARCHITECTURE.md` — détail du Sprint 5, écarts assumés.
-- `edugestdz/docs/VERSIONING_API.md` — politique de versioning de l'API.
+- `docs/SPRINT3_SECURITE.md` — détail du Sprint 3.
+- `docs/SPRINT4_QUALITE.md` — détail du Sprint 4, écarts assumés.
+- `docs/SPRINT5_ARCHITECTURE.md` — détail du Sprint 5, écarts assumés.
+- `docs/VERSIONING_API.md` — politique de versioning de l'API.
 - `docs/README.md` — index des archives (missions, audits, maquettes, études).
-- `edugestdz/docs/RBAC_MATRIX.md` — matrice rôles × contrôleurs.
-- `edugestdz/DEPLOIEMENT_VERCEL.md` — architecture Vercel.
+- `docs/RBAC_MATRIX.md` — matrice rôles × contrôleurs.
+- `docs/DEPLOIEMENT_VERCEL.md` — architecture Vercel.
 
 ---
 

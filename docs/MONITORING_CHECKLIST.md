@@ -30,8 +30,8 @@
 
 ```bash
 # Run locally
-chmod +x edugestdz/scripts/smoke-test.sh
-./edugestdz/scripts/smoke-test.sh http://localhost:8000
+chmod +x scripts/smoke-test.sh
+./scripts/smoke-test.sh http://localhost:8000
 
 # Expected output:
 # ✓ GET /api/v1/health → 200

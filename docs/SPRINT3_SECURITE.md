@@ -194,10 +194,10 @@ integration`). Les correctifs sont donc livrés en patch.
 
 ```bash
 cd /chemin/vers/edugest-dz
-git apply edugestdz/docs/ci-secrets.patch
-git apply edugestdz/docs/pre-deploy-secrets.patch
-cp    edugestdz/docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-rm    edugestdz/docs/*.patch
+git apply docs/ci-secrets.patch
+git apply docs/pre-deploy-secrets.patch
+cp    docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
+rm    docs/*.patch
 git add -A && git commit -m "ci: secrets hors du code + gardes sécurité" && git push
 ```
 
