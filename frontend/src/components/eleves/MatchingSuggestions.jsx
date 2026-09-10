@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { matchingApi } from '@api/matching.api';
+import { useI18n } from '@context/I18nContext';
 
 import { MapPin, Search, Star } from 'lucide-react';
 
 export default function MatchingSuggestions({ eleveId, onAssign }) {
+  const { t } = useI18n();
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [llmUsed, setLlmUsed] = useState(false);
@@ -58,7 +60,7 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
     return (
       <div className="text-center py-8">
         <div className="text-4xl mb-2"><Search size={36} aria-hidden='true' /></div>
-        <p className="text-neutral-500 text-sm">Aucun enseignant trouvé</p>
+        <p className="text-neutral-500 text-sm">{t('matching_aucun_enseignant')}</p>
       </div>
     );
   }
@@ -66,7 +68,7 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-neutral-700">Suggestions IA</h3>
+        <h3 className="text-sm font-bold text-neutral-700">{t('eleve_tab_matching')}</h3>
         {llmUsed && (
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
             LLM
@@ -145,7 +147,7 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
                   onClick={() => onAssign(ens)}
                   className="mt-3 w-full text-xs py-2 rounded-lg border border-primary-200 text-primary-700 font-medium hover:bg-primary-50 transition-colors"
                 >
-                  Proposer cet enseignant
+                  {t('matching_proposer')}
                 </button>
               )}
             </div>

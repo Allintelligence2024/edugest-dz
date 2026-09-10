@@ -317,9 +317,9 @@ littéraux) ne tient pas dans un lot relisable. Découpage assumé :
 - **Phase 1 (fait)** : socle i18next + façade compatible + garde-fou.
 - **Phase 2 (fait le 10 sept.)** : emoji → `lucide-react` (+ `aria-label`),
   table ci-dessous — détail dans « Ce qui a été fait (phase 2) ».
-- **Phase 3 (lot 1 fait le 10 sept.)** : littéraux français → `t()` —
-  détail dans « Ce qui a été fait (phase 3, lot 1) ». Restent ~60 fichiers
-  (pages et modales métier), cliquet `fr-literals-guard.test.js` en place.
+- **Phase 3 (lots 1-2 faits le 10 sept.)** : littéraux français → `t()` —
+  détail dans « Ce qui a été fait (phase 3, lots 1-2) ». Restent 54 fichiers
+  (pages), cliquet `fr-literals-guard.test.js` en place.
 - Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
   scope, noté pour le Sprint 6.
 
@@ -444,9 +444,12 @@ Décisions de conversion :
   de react-hot-toast v2) ; icônes des cartes `<option>` retirées (HTML
   interdit dans `<option>`).
 
-Vérifications : esbuild sur les 154 `.jsx` → 0 erreur ; `vitest run` →
-**134/134 verts** (23 assertions dans 9 fichiers de tests cherchaient le
-texte avec emoji — adaptées, ex. `getByText('Élèves')`, ou
+Vérifications : esbuild sur les `.jsx` → 0 erreur (⚠️ rectifié au lot 2 :
+le glob `src/**/*.jsx` du shell ne descendait qu'un niveau sans `globstar`
+— 69 fichiers sur 120, les sous-répertoires `components/*/**` n'étaient
+pas couverts ; la vérification exhaustive via `find` corrige cela) ;
+`vitest run` → **134/134 verts** (23 assertions dans 9 fichiers de tests
+cherchaient le texte avec emoji — adaptées, ex. `getByText('Élèves')`, ou
 `getByRole('heading', …)` pour distinguer le bouton du titre de modal) ;
 ESLint sans nouvelle alerte (−8 `no-unused-vars` au passage). Garde-fou
 emoji **verrouillé à 0/0** : toute régression casse la CI.
@@ -493,6 +496,43 @@ Vérifications : `vitest run` → **137/137 verts** (5 fichiers de tests de
 composants enveloppés dans `<I18nProvider>` — ils montaient `render` nu et
 auraient levé `useI18n must be used within <I18nProvider>` ; 2 assertions
 adaptées : « Aucune donnée » → « Aucune donnée disponible », résumé de
-pagination désormais une seule phrase) ; esbuild 154 `.jsx` → 0 erreur ;
-ESLint sans nouvelle alerte ; clés littérales référencées vérifiées contre
-fr.json (les pluriels `_one`/`_other` exceptés, résolution CLDR normale).
+pagination désormais une seule phrase) ; esbuild 0 erreur ; ESLint sans
+nouvelle alerte ; clés littérales référencées vérifiées contre fr.json
+(les pluriels `_one`/`_other` exceptés, résolution CLDR normale).
+
+
+### Ce qui a été fait (phase 3, lot 2 — 10 sept.)
+
+**Lot 2 : composants métier** (9 fichiers convertis, 150 nouvelles clés × 4
+langues — dictionnaires 264 → 414 clés) :
+
+- `eleves/EleveDetailDrawer` (onglets, infos perso, listes notes/présences/
+  paiements), `eleves/EleveModal` (3 étapes, validation yup, parents,
+  récapitulatif), `eleves/MatchingSuggestions` ;
+- `planning/CoursModal` (jours, récurrence, détection de conflits + pluriel
+  CLDR), `planning/SeanceCard` (bannières) ;
+- `finance/FactureModal`, `finance/PaiementModal` (modes de paiement — CIB,
+  Dahabia, BaridiMob restent des marques), `personnel/PaieDetailDrawer` ;
+- `SuggestionRemplacantCard` (critères de matching).
+
+Règle de conversion étendue, appliquée partout : **les énums backend ne se
+traduisent pas** — les comparaisons (`p.statut === 'présent'`, valeurs POST
+`lien: 'père'`) restent sur la valeur API ; seul l'affichage passe par une
+clé avec repli sur la valeur brute (maps `LIEN_PARENTAL`, `STATUT_PRESENCE`,
+`STATUT_PAIEMENT`). Les messages yup deviennent des clés, traduits au rendu
+par `t(errors.x.message)` (repli : la chaîne inchangée si ce n'est pas une
+clé).
+
+Cliquet `fr-literals-guard.test.js` : **60 → 54 fichiers** (les 9 conversions
+nettes ; Sidebar garde ses 2 faux positifs assumés : `statut=non_justifiée`
+est un paramètre d'API, `'Algérie'` une valeur de donnée).
+
+Enseignement du lot (à lire avant toute nouvelle « vérification globale ») :
+le `src/**/*.jsx` du shell sans `globstar` ne descend qu'un niveau — la
+vérification esbuild des lots précédents ne couvrait que 69 fichiers sur
+120, et un import cassé dans `CoursModal` est passé inaperçu (rattrapé par
+ESLint, puis par le `find` exhaustif). Toute vérification de périmètre
+doit énumérer ses fichiers (`find src -name "*.jsx"`), pas les glober.
+`find` sur 130 fichiers js/jsx hors tests : 0 erreur ; `vitest run` →
+137/137 verts ; ESLint sans nouvelle alerte (une alerte exhaustive-deps
+corrigée au passage).

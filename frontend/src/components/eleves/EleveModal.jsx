@@ -6,29 +6,37 @@ import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 
 import { Camera, Check, CheckCircle, Hourglass, PartyPopper, Pencil, Plus, Save, Trash2, User, X } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 
 const schema = yup.object({
   nom: yup.string().min(2).required('Nom requis'),
-  prenom: yup.string().min(2).required('Prénom requis'),
-  sexe: yup.string().required('Sexe requis'),
-  date_naissance: yup.string().required('Date de naissance requise'),
-  niveau_scolaire: yup.string().required('Niveau requis'),
+  prenom: yup.string().min(2).required('validation_prenom_requis'),
+  sexe: yup.string().required('validation_sexe_requis'),
+  date_naissance: yup.string().required('validation_date_naissance_requise'),
+  niveau_scolaire: yup.string().required('validation_niveau_requis'),
 });
 
+// group = clé i18n traduite au rendu.
 const NIVEAUX = [
-  { group: 'Primaire', options: ['1AP','2AP','3AP','4AP','5AP'] },
-  { group: 'Moyen', options: ['1AM','2AM','3AM','4AM'] },
-  { group: 'Lycée', options: ['1AS','2AS','3AS'] },
-  { group: 'Autre', options: ['universitaire','autre'] },
+  { group: 'groupe_niveau_primaire', options: ['1AP','2AP','3AP','4AP','5AP'] },
+  { group: 'groupe_niveau_moyen', options: ['1AM','2AM','3AM','4AM'] },
+  { group: 'groupe_niveau_lycee', options: ['1AS','2AS','3AS'] },
+  { group: 'groupe_niveau_autre', options: ['universitaire','autre'] },
 ];
 
+// Énums backend : comparaisons et valeurs POST inchangées ; l'affichage
+// passe par une clé, avec repli sur la valeur brute.
+const LIEN_PARENTAL = { 'père': 'lien_pere', 'mère': 'lien_mere', 'tuteur': 'lien_tuteur', 'frère': 'lien_frere', 'sœur': 'lien_soeur', 'autre': 'lien_autre' };
+
+// label = clé i18n.
 const STEPS = [
-  { id: 'eleve', label: 'Élève', icon: '1' },
-  { id: 'parents', label: 'Parents', icon: '2' },
-  { id: 'recap', label: 'Récap', icon: '3' },
+  { id: 'eleve', label: 'eleve_step_eleve', icon: '1' },
+  { id: 'parents', label: 'eleve_step_parents', icon: '2' },
+  { id: 'recap', label: 'eleve_step_recap', icon: '3' },
 ];
 
 export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [wilayas, setWilayas] = useState([]);
   const [communes, setCommunes] = useState([]);
@@ -82,16 +90,16 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
       if (isEdit) {
         const res = await api.put(`/eleves/${eleve.id}`, rest);
         if (photo_file) { const fd = new FormData(); fd.append('photo', photo_file); await api.post(`/eleves/${eleve.id}/photo`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); }
-        toast.success('Élève mis à jour !');
+        toast.success(t('eleve_mis_a_jour'));
       } else {
         const res = await api.post('/eleves', rest);
-        toast.success(`Élève ${res.data?.nom} créé !`, { icon: <PartyPopper size={18} aria-hidden="true" /> });
+        toast.success(t('eleve_cree', { nom: res.data?.nom }), { icon: <PartyPopper size={18} aria-hidden="true" /> });
       }
       onSuccess();
     } catch (err) {
       const details = err?.error?.details;
       if (details) Object.values(details).flat().slice(0, 3).forEach(m => toast.error(m));
-      else toast.error(err?.error?.message || 'Erreur');
+      else toast.error(err?.error?.message || t('error_operation'));
     } finally { setIsLoading(false); }
   };
 
@@ -105,9 +113,9 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
         <div className="p-5 border-b border-neutral-100 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-neutral-800">
-              {isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier — {eleve.nom} {eleve.prenom}</> : <><Plus size={18} aria-hidden='true' />Nouvel élève</>}
+              {isEdit ? <><Pencil size={18} aria-hidden='true' />{t('edit')} — {eleve.nom} {eleve.prenom}</> : <><Plus size={18} aria-hidden='true' />{t('eleve_nouveau')}</>}
             </h2>
-            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400"><X size={16} aria-label='Fermer' /></button>
+            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400"><X size={16} aria-label={t('close')} /></button>
           </div>
           <div className="flex items-center">
             {STEPS.map((s, i) => (
@@ -118,7 +126,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                     ${i === step ? 'border-primary-600 bg-primary-600 text-white' : i < step ? 'border-green-500 bg-green-500 text-white' : 'border-neutral-200 text-neutral-400'}`}>
                     {i < step ? <Check size={16} aria-hidden='true' /> : s.icon}
                   </span>
-                  <span className="hidden sm:block">{s.label}</span>
+                  <span className="hidden sm:block">{t(s.label)}</span>
                 </button>
                 {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 transition-colors ${i < step ? 'bg-green-400' : 'bg-neutral-200'}`} />}
               </React.Fragment>
@@ -140,36 +148,36 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                   </label>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-neutral-600">Photo de l'élève (optionnel)</p>
+                  <p className="text-sm font-medium text-neutral-600">{t('eleve_photo_optionnel')}</p>
                   <p className="text-xs text-neutral-400 mt-0.5">JPG, PNG • Max 2 Mo</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Nom *</label>
+                  <label className="label">{t('name')} *</label>
                   <input {...register('nom')} className={`input ${errors.nom ? 'input-error' : ''}`} placeholder="BENALI"
                          onChange={e => setValue('nom', e.target.value.toUpperCase())} />
-                  {errors.nom && <p className="error-msg">{errors.nom.message}</p>}
+                  {errors.nom && <p className="error-msg">{t(errors.nom.message)}</p>}
                 </div>
                 <div>
-                  <label className="label">Prénom *</label>
+                  <label className="label">{t('eleve_prenom')} *</label>
                   <input {...register('prenom')} className={`input ${errors.prenom ? 'input-error' : ''}`} placeholder="Ahmed" />
-                  {errors.prenom && <p className="error-msg">{errors.prenom.message}</p>}
+                  {errors.prenom && <p className="error-msg">{t(errors.prenom.message)}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Nom arabe</label>
+                  <label className="label">{t('eleve_nom_arabe')}</label>
                   <input {...register('nom_ar')} className="input" dir="rtl" placeholder="بن علي" />
                 </div>
                 <div>
-                  <label className="label">Prénom arabe</label>
+                  <label className="label">{t('eleve_prenom_arabe')}</label>
                   <input {...register('prenom_ar')} className="input" dir="rtl" placeholder="أحمد" />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="label">Sexe *</label>
+                  <label className="label">{t('eleve_sexe')} *</label>
                   <div className="flex gap-2">
                     {[{ v:'M', l: <><User size={14} aria-hidden="true" /> M</> },{ v:'F', l: <><User size={14} aria-hidden="true" /> F</> }].map(s => (
                       <label key={s.v} className={`flex-1 flex items-center justify-center py-2.5 rounded-xl border-2 cursor-pointer transition-all text-sm font-semibold
@@ -180,39 +188,39 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                   </div>
                 </div>
                 <div>
-                  <label className="label">Date naissance *</label>
+                  <label className="label">{t('eleve_date_naissance')} *</label>
                   <input type="date" {...register('date_naissance')} className={`input ${errors.date_naissance ? 'input-error' : ''}`} max={new Date().toISOString().split('T')[0]} />
-                  {errors.date_naissance && <p className="error-msg">{errors.date_naissance.message}</p>}
+                  {errors.date_naissance && <p className="error-msg">{t(errors.date_naissance.message)}</p>}
                 </div>
                 <div>
-                  <label className="label">Niveau *</label>
+                  <label className="label">{t('students_level')} *</label>
                   <select {...register('niveau_scolaire')} className={`input ${errors.niveau_scolaire ? 'input-error' : ''}`}>
                     <option value="">—</option>
                     {NIVEAUX.map(g => (
-                      <optgroup key={g.group} label={g.group}>{g.options.map(n => <option key={n} value={n}>{n}</option>)}</optgroup>
+                      <optgroup key={g.group} label={t(g.group)}>{g.options.map(n => <option key={n} value={n}>{n}</option>)}</optgroup>
                     ))}
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="label">Wilaya</label>
+                  <label className="label">{t('eleve_wilaya')}</label>
                   <select {...register('wilaya_id')} className="input">
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('select')}</option>
                     {wilayas.map(w => <option key={w.id} value={w.id}>{w.code} — {w.nom_fr}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="label">Commune</label>
+                  <label className="label">{t('eleve_commune')}</label>
                   <select {...register('commune_id')} className="input" disabled={!watchedWilaya}>
-                    <option value="">Sélectionner</option>
+                    <option value="">{t('select')}</option>
                     {communes.map(c => <option key={c.id} value={c.id}>{c.nom_fr}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="label">École d'origine</label>
-                <input {...register('ecole_origine')} className="input" placeholder="Ex: Lycée Colonel Amirouche" />
+                <label className="label">{t('eleve_ecole_origine')}</label>
+                <input {...register('ecole_origine')} className="input" placeholder={t('eleve_ecole_exemple')} />
               </div>
               <div>
                 <label className="label">Notes internes</label>
@@ -224,41 +232,41 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
           {step === 1 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-neutral-700">Contacts parents/tuteurs ({parentFields.length})</p>
+                <p className="text-sm font-semibold text-neutral-700">{t('eleve_contacts_tuteurs', { count: parentFields.length })}</p>
                 {parentFields.length < 3 && (
                   <button type="button" onClick={() => addParent({ lien: 'mère' })}
-                          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"><Plus size={14} aria-hidden='true' />Ajouter un contact</button>
+                          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"><Plus size={14} aria-hidden='true' />{t('eleve_ajouter_contact')}</button>
                 )}
               </div>
               {parentFields.map((field, i) => (
                 <div key={field.id} className="bg-neutral-50 rounded-xl p-4 space-y-3 relative">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Contact {i + 1} {i === 0 ? '(Principal)' : ''}</span>
-                    {i > 0 && <button type="button" onClick={() => removeParent(i)} className="text-red-400 hover:text-red-600 text-xs"><Trash2 size={12} aria-hidden='true' />Supprimer</button>}
+                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">{t('eleve_contact_numero', { numero: i + 1 })} {i === 0 ? t('eleve_contact_principal') : ''}</span>
+                    {i > 0 && <button type="button" onClick={() => removeParent(i)} className="text-red-400 hover:text-red-600 text-xs"><Trash2 size={12} aria-hidden='true' />{t('delete')}</button>}
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="label">Lien *</label>
+                      <label className="label">{t('eleve_lien')} *</label>
                       <select {...register(`parents.${i}.lien`)} className="input">
-                        {['père','mère','tuteur','frère','sœur','autre'].map(l => <option key={l} value={l}>{l}</option>)}
+                        {['père','mère','tuteur','frère','sœur','autre'].map(l => <option key={l} value={l}>{LIEN_PARENTAL[l] ? t(LIEN_PARENTAL[l]) : l}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="label">Nom *</label>
+                      <label className="label">{t('name')} *</label>
                       <input {...register(`parents.${i}.nom`)} className="input" placeholder="NOM" />
                     </div>
                     <div>
-                      <label className="label">Prénom *</label>
-                      <input {...register(`parents.${i}.prenom`)} className="input" placeholder="Prénom" />
+                      <label className="label">{t('eleve_prenom')} *</label>
+                      <input {...register(`parents.${i}.prenom`)} className="input" placeholder={t('eleve_prenom')} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="label">Téléphone 1 *</label>
+                      <label className="label">{t('eleve_telephone_1')} *</label>
                       <input {...register(`parents.${i}.telephone_1`)} className="input" placeholder="0555 XX XX XX" />
                     </div>
                     <div>
-                      <label className="label">Téléphone 2</label>
+                      <label className="label">{t('eleve_telephone_2')}</label>
                       <input {...register(`parents.${i}.telephone_2`)} className="input" placeholder="0555 XX XX XX" />
                     </div>
                   </div>
@@ -268,8 +276,8 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="label">Profession</label>
-                      <input {...register(`parents.${i}.profession`)} className="input" placeholder="Médecin, Ingénieur..." />
+                      <label className="label">{t('eleve_profession')}</label>
+                      <input {...register(`parents.${i}.profession`)} className="input" placeholder={t('eleve_profession_exemple')} />
                     </div>
                   </div>
                 </div>
@@ -280,7 +288,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
           {step === 2 && (
             <div className="space-y-4">
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2"><CheckCircle size={16} aria-hidden='true' />Récapitulatif</h3>
+                <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2"><CheckCircle size={16} aria-hidden='true' />{t('eleve_recapitulatif')}</h3>
                 <div className="flex items-center gap-3 mb-4">
                   {photoPreview ? <img src={photoPreview} className="w-16 h-16 rounded-xl object-cover" alt="" /> : <div className="w-16 h-16 rounded-xl bg-primary-100 flex items-center justify-center text-2xl"><User size={24} aria-hidden='true' /></div>}
                   <div>
@@ -289,7 +297,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  {[['Date naissance', watch('date_naissance')], ['École origine', watch('ecole_origine') || '—'], ['Parents', `${parentFields.length} contact(s)`]].map(([k, v]) => (
+                  {[[t('eleve_date_naissance'), watch('date_naissance')], [t('eleve_ecole_origine'), watch('ecole_origine') || '—'], [t('eleve_step_parents'), t('eleve_contacts_count', { count: parentFields.length })]].map(([k, v]) => (
                     <div key={k} className="bg-white rounded-lg p-2.5">
                       <div className="text-xs text-neutral-400">{k}</div>
                       <div className="font-medium text-neutral-800 mt-0.5">{v}</div>
@@ -304,16 +312,16 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
         {/* Footer */}
         <div className="p-4 border-t border-neutral-100 flex gap-3 flex-shrink-0">
           {step > 0 ? (
-            <button type="button" onClick={() => setStep(s => s - 1)} className="btn btn-secondary flex-1">← Retour</button>
+            <button type="button" onClick={() => setStep(s => s - 1)} className="btn btn-secondary flex-1">← {t('back')}</button>
           ) : (
-            <button type="button" onClick={onClose} className="btn btn-secondary flex-1">Annuler</button>
+            <button type="button" onClick={onClose} className="btn btn-secondary flex-1">{t('cancel')}</button>
           )}
           {step < STEPS.length - 1 ? (
-            <button type="button" onClick={() => setStep(s => s + 1)} className="btn btn-primary flex-1">Suivant →</button>
+            <button type="button" onClick={() => setStep(s => s + 1)} className="btn btn-primary flex-1">{t('next')} →</button>
           ) : (
             <button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading}
                     className="btn btn-primary flex-1">
-              {isLoading ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> Création...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer l'élève</>}
+              {isLoading ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> {t('creation_en_cours')}</> : isEdit ? <><Save size={16} aria-hidden='true' />{t('save')}</> : <><CheckCircle size={16} aria-hidden='true' />{t('eleve_creer')}</>}
             </button>
           )}
         </div>

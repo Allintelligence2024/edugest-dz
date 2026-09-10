@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 //  - les valeurs d'API type `statut=non_justifiée` (énums backend français)
 //    comptent ici ; elles sont tranchées au moment de convertir leur fichier ;
 //  - le socle i18n, les dictionnaires et le code mort documenté sont exclus.
-const PLAFOND_FICHIERS = 60;
+const PLAFOND_FICHIERS = 54;
 
 // Code mort détecté au lot 1 (plus aucun import nulle part — voir § 5.6) :
 // on ne traduit pas du code qui ne s'affiche pas ; sa suppression est notée

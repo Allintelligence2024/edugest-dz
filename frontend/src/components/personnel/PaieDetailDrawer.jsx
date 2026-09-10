@@ -3,8 +3,10 @@ import { paieApi } from '@api/paie.api';
 import toast from 'react-hot-toast';
 
 import { Check } from 'lucide-react';
+import { useI18n } from '@context/I18nContext';
 
 export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
+  const { t } = useI18n();
   const p = paie;
   const baseImposable = Math.max(0, (Number(p.salaire_base) || 0) - (Number(p.cnas) || 0));
   const bulletinUrl = p.bulletin_url;
@@ -19,7 +21,7 @@ export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error('Erreur téléchargement bulletin');
+      toast.error(t('paie_erreur_bulletin'));
     }
   };
 
@@ -29,7 +31,7 @@ export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
       <div className="fixed inset-y-0 right-0 w-96 bg-white shadow-2xl z-50 flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-neutral-100">
           <div>
-            <h2 className="text-lg font-bold text-neutral-800">Détail de la paie</h2>
+            <h2 className="text-lg font-bold text-neutral-800">{t('paie_detail_titre')}</h2>
             <p className="text-sm text-neutral-500">
               {p.enseignant?.nom} {p.enseignant?.prenom}
             </p>
@@ -46,25 +48,25 @@ export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-neutral-600 mb-3">Décomposition du salaire</h3>
+            <h3 className="text-sm font-semibold text-neutral-600 mb-3">{t('paie_decomposition')}</h3>
             <div className="space-y-3">
-              <DecompRow label="Salaire brut" value={p.salaire_base || 0} color="text-neutral-800" />
+              <DecompRow label={t('paie_salaire_brut')} value={p.salaire_base || 0} color="text-neutral-800" />
               <DecompRow label="CNAS (9%)" value={p.cnas || 0} color="text-red-600" minus />
               <div className="border-t border-dashed border-neutral-200 pt-2">
-                <DecompRow label="Base imposable" value={baseImposable} color="text-neutral-700" />
+                <DecompRow label={t('paie_base_imposable')} value={baseImposable} color="text-neutral-700" />
               </div>
-              <DecompRow label="IRG" value={p.irg || 0} color="text-amber-600" minus />
+              <DecompRow label={t('paie_irg')} value={p.irg || 0} color="text-amber-600" minus />
               <div className="border-t-2 border-neutral-300 pt-2">
-                <DecompRow label="Salaire net" value={p.salaire_net || 0} color="text-green-700 font-bold" />
+                <DecompRow label={t('paie_salaire_net')} value={p.salaire_net || 0} color="text-green-700 font-bold" />
               </div>
             </div>
           </div>
 
           <div className="bg-neutral-50 rounded-xl p-4 space-y-2 text-sm">
-            <p className="text-neutral-500">Barème IRG 2026 appliqué</p>
+            <p className="text-neutral-500">{t('paie_bareme_irg')}</p>
             <p className="text-neutral-500">CNAS : 9% du brut</p>
             {Number(p.irg) === 0 && (
-              <p className="text-green-600 font-medium"><Check size={16} aria-hidden='true' />Exonéré IRG (SMIG ≤ 20 000 DA)</p>
+              <p className="text-green-600 font-medium"><Check size={16} aria-hidden='true' />{t('paie_exonere_irg')}</p>
             )}
           </div>
 
@@ -72,7 +74,7 @@ export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
             onClick={handleTelechargerBulletin}
             className="w-full py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 text-sm"
           >
-            Télécharger le bulletin PDF
+            {t('paie_telecharger_bulletin')}
           </button>
         </div>
       </div>

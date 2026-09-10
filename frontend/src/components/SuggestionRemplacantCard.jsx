@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
+import { useI18n } from '@context/I18nContext';
 
 import { Check } from 'lucide-react';
 
 function getScoreBadge(score) {
-  if (score >= 70) return { bg: '#EDFAF3', text: '#229A54', label: 'Excellent' };
-  if (score >= 40) return { bg: '#FFF8EC', text: '#E08E0B', label: 'Bon' };
-  return { bg: '#FDECEA', text: '#C0392B', label: 'Faible' };
+  if (score >= 70) return { bg: '#EDFAF3', text: '#229A54' };
+  if (score >= 40) return { bg: '#FFF8EC', text: '#E08E0B' };
+  return { bg: '#FDECEA', text: '#C0392B' };
 }
 
 function CheckIcon({ ok }) {
@@ -18,6 +19,7 @@ function CheckIcon({ ok }) {
 }
 
 export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
+  const { t } = useI18n();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,16 +33,16 @@ export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
         setError(null);
       })
       .catch((err) => {
-        setError(err?.error?.message || 'Erreur de chargement');
+        setError(err?.error?.message || t('error_loading'));
         setData(null);
       })
       .finally(() => setLoading(false));
-  }, [seanceId]);
+  }, [seanceId, t]);
 
   if (loading) {
     return (
       <div style={{ padding: 24, textAlign: 'center', color: '#999' }}>
-        Chargement des suggestions...
+        {t('remplacant_chargement')}
       </div>
     );
   }
@@ -56,7 +58,7 @@ export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
   if (!data?.suggestions?.length) {
     return (
       <div style={{ padding: 24, textAlign: 'center', color: '#999' }}>
-        Aucun remplaçant disponible trouvé.
+        {t('remplacant_aucun')}
       </div>
     );
   }
@@ -78,7 +80,7 @@ export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
         background: 'var(--surface, #f9fafb)',
       }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text, #111)' }}>
-          Suggestions de remplaçant
+          {t('remplacant_suggestions')}
         </div>
         <div style={{ fontSize: 13, color: 'var(--muted, #666)', marginTop: 4 }}>
           {matiere} — {heure}
@@ -123,11 +125,11 @@ export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
                   {s.specialite || '—'}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--muted, #888)', marginTop: 4 }}>
-                  <CheckIcon ok={s.matiere_match} /> Spécialité
+                  <CheckIcon ok={s.matiere_match} /> {t('remplacant_specialite')}
                   <span style={{ margin: '0 6px' }}>·</span>
-                  <CheckIcon ok={s.disponibilite_ok} /> Disponible
+                  <CheckIcon ok={s.disponibilite_ok} /> {t('remplacant_disponible')}
                   <span style={{ margin: '0 6px' }}>·</span>
-                  <CheckIcon ok={s.experience_groupe} /> Connu du groupe
+                  <CheckIcon ok={s.experience_groupe} /> {t('remplacant_connu_groupe')}
                 </div>
               </div>
 
@@ -147,7 +149,7 @@ export default function SuggestionRemplacantCard({ seanceId, onSelect }) {
                 }}
                 disabled={!s.disponibilite_ok}
               >
-                Choisir
+                {t('remplacant_choisir')}
               </button>
             </div>
           );

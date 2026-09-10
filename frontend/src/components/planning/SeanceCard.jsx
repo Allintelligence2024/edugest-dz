@@ -1,4 +1,8 @@
 import React from 'react';
+import { useI18n } from '@context/I18nContext';
+
+// Les clés de STATUT_CONFIG sont des énums backend (planifiée, annulée…),
+// elles ne se traduisent pas ; seuls les libellés de bannière s'affichent.
 
 const STATUT_CONFIG = {
   planifiée:  { bg: '#EEF4FF', border: '#1E5EBC', text: '#1E5EBC' },
@@ -9,10 +13,10 @@ const STATUT_CONFIG = {
 };
 
 const BANNIERE_CONFIG = {
-  en_cours:   { label: 'En cours',  bg: '#F39C12', textColor: '#fff' },
-  terminee:   { label: 'Terminée',  bg: '#27AE60', textColor: '#fff' },
-  a_venir:    { label: 'À venir',   bg: '#2563EB', textColor: '#fff' },
-  aujourd_hui:{ label: "Aujourd'hui", bg: '#7C3AED', textColor: '#fff' },
+  en_cours:   { label: 'seance_en_cours',  bg: '#F39C12', textColor: '#fff' },
+  terminee:   { label: 'seance_terminee',  bg: '#27AE60', textColor: '#fff' },
+  a_venir:    { label: 'seance_a_venir',   bg: '#2563EB', textColor: '#fff' },
+  aujourd_hui:{ label: 'today',            bg: '#7C3AED', textColor: '#fff' },
 };
 
 function getSeanceBanner(seance) {
@@ -44,6 +48,7 @@ function isToday(seance) {
 }
 
 export default function SeanceCard({ seance, onClick }) {
+  const { t } = useI18n();
   const config  = STATUT_CONFIG[seance.statut] || STATUT_CONFIG.planifiée;
   const couleur = seance.couleur || config.border;
   const banner  = getSeanceBanner(seance);
@@ -64,11 +69,11 @@ export default function SeanceCard({ seance, onClick }) {
           className="rounded px-1.5 py-0.5 mb-1 text-[9px] font-extrabold uppercase tracking-wider text-center"
           style={{ background: banner.bg, color: banner.textColor }}
         >
-          {banner.label}
+          {t(banner.label)}
         </div>
       )}
       <div className="font-bold truncate" style={{ color: couleur }}>
-        {seance.matiere || 'Cours'}
+        {seance.matiere || t('seance_cours_defaut')}
       </div>
       <div className="text-neutral-600 truncate mt-0.5">{seance.groupe}</div>
       <div className="flex items-center justify-between mt-1 text-neutral-400">
