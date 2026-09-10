@@ -154,23 +154,24 @@ php artisan test --parallel
 
 ```
 edugest-dz/
-├── edugestdz/
-│   ├── backend/          # Laravel 11 — API REST
-│   │   ├── app/
-│   │   │   ├── Http/Controllers/Api/V1/  # 35+ controllers
-│   │   │   ├── Services/                  # 25+ services métier
-│   │   │   ├── Models/                    # 55+ modèles Eloquent
-│   │   │   ├── Http/Middleware/           # 10 middlewares sécurité
-│   │   │   └── Console/Commands/          # Schedulers artisan
-│   │   └── database/migrations/           # 60+ migrations
-│   ├── frontend/         # React 18 + Vite
-│   ├── mobile/           # React Native + Expo 52
-│   └── docs/             # Documentation de référence
-├── docs/                 # Archives, maquettes, études (voir docs/README.md)
-├── scripts/              # Outillage : secrets, audit sécurité, analyse statique
-├── docker-compose.yml    # Développement (9 services)
+├── backend/              # Laravel 11 — API REST
+│   ├── app/
+│   │   ├── Http/Controllers/Api/V1/  # 35+ controllers
+│   │   ├── Services/                  # 25+ services métier
+│   │   ├── Models/                    # 55+ modèles Eloquent
+│   │   ├── Http/Middleware/           # 10 middlewares sécurité
+│   │   └── Console/Commands/          # Schedulers artisan
+│   └── database/migrations/           # 60+ migrations
+├── frontend/             # React 18 + Vite
+├── mobile/               # React Native + Expo 52
+├── docs/                 # Documentation de référence + archives (voir docs/README.md)
+├── scripts/              # Outillage : secrets, audit, analyse statique, backups
+├── docker/ nginx/ backups/
+├── docker-compose.yml            # Développement (9 services)
 ├── docker-compose.prod.yml
-└── install.sh            # Installation self-hosted 1 commande
+├── docker-compose.selfhosted.yml
+├── vercel.json  Makefile  install.sh  deploy.sh  update.sh
+└── LICENSE  SECURITY.md  CHANGELOG.md  CONTRIBUTING.md
 ```
 
 ---

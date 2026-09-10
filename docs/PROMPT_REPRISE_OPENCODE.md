@@ -72,8 +72,8 @@ Consigne le résultat en tête de ton journal de travail. Trois cas :
 - **PHP disponible** → exécute `php artisan test` en local, mesure la
   couverture réellement, génère la baseline PHPStan. Ignore tous les
   contournements « CI seule » ci-dessous.
-- **PHP absent mais Docker disponible** → `docker compose` depuis
-  `edugestdz/` ; le dépôt fournit `docker-compose.yml` (9 services).
+- **PHP absent mais Docker disponible** → `docker compose` depuis la racine
+  du dépôt ; le dépôt fournit `docker-compose.yml` (9 services).
 - **Ni l'un ni l'autre** → la CI GitHub Actions est ton seul exécuteur.
   Groupe tes changements, chaque passage coûte ~4 min. Les logs Actions sont
   illisibles sur ce dépôt (`gh run view --log`, l'API `jobs/{id}/logs` et le
@@ -132,7 +132,7 @@ Ils s'appliquent en séquence, dans cet ordre (vérifié). Ce qu'ils font :
 Ensuite :
 
 ```bash
-cd edugestdz && ./scripts/generer-secrets.sh    # NB : dans scripts/, pas scripts/
+./scripts/generer-secrets.sh          # depuis la racine du dépôt
 cd backend && php artisan migrate               # 2 migrations en attente
 ```
 
@@ -331,7 +331,7 @@ Prometheus dans le dépôt.
    documentée : il faut des **métriques d'usage par version d'API et par
    client**, sans quoi aucune version ne pourra jamais être retirée en
    connaissance de cause. Sentry est déjà configuré (`config/sentry.php`).
-4. **Sauvegardes** : `scripts/resipts/restore-backup.sh` existe ;
+4. **Sauvegardes** : `scripts/restore-backup.sh` existe ;
    `backups/` aussi. **Teste une restauration réelle.** Une
    sauvegarde jamais restaurée n'est pas une sauvegarde.
 5. **Loi 18-07** (protection des données personnelles, Algérie) :

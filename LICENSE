@@ -1,0 +1,54 @@
+Licence d'utilisation — EduGest DZ
+====================================
+
+Copyright (c) 2026 AllIntelligence, Oran (Algérie). Tous droits réservés.
+
+1. Objet
+--------
+Le présent fichier définit les conditions d'utilisation du logiciel
+« EduGest DZ » (ci-après « le Logiciel ») : API Laravel, applications web
+React et mobile React Native, scripts, configurations et documentation
+associée, tels que versionnés dans ce dépôt.
+
+2. Propriété
+------------
+Le Logiciel est la propriété exclusive d'AllIntelligence. Il est protégé
+par la législation algérienne sur le droit d'auteur (ordonnance 03-05 du
+19 juillet 2003) et les conventions internationales applicables.
+
+3. Droits accordés
+------------------
+Sauf contrat écrit contraire signé avec AllIntelligence, aucun droit
+d'utilisation, de reproduction, de modification, de distribution ou de
+représentation du Logiciel n'est accordé. La simple mise à disposition du
+code source dans ce dépôt n'emporte aucune cession de droits.
+
+Les établissements clients d'AllIntelligence utilisent le Logiciel
+exclusivement dans le cadre de leur contrat de souscription (SaaS) ou de
+leur contrat de licence : accès utilisateur final, sans droit de
+redistribution ni d'ingénierie inverse au-delà de ce que la loi autorise.
+
+4. Composants tiers
+-------------------
+Le Logiciel s'appuie sur des composants open source (frameworks Laravel,
+React, React Native, bibliothèques listées dans `backend/composer.lock`,
+`frontend/package-lock.json` et leurs équivalents mobile). Ces composants
+restent soumis à leurs licences d'origine respectives, qui priment sur le
+présent fichier pour ce qui les concerne. Le présent fichier ne s'applique
+qu'au code propre d'AllIntelligence.
+
+5. Garantie et responsabilité
+-----------------------------
+Le Logiciel est fourni « en l'état », sans garantie d'aucune sorte,
+expresse ou implicite. Dans les limites autorisées par la loi applicable,
+AllIntelligence ne saurait être tenue responsable des dommages directs ou
+indirects résultant de l'utilisation ou de l'impossibilité d'utiliser
+le Logiciel.
+
+6. Contact
+----------
+AllIntelligence — Oran, Algérie.
+Pour toute demande de licence : voir les informations de contact du dépôt.
+
+Les failles de sécurité se signalent selon la procédure décrite dans
+`SECURITY.md` — ne jamais les publier dans un ticket public.

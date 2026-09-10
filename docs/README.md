@@ -97,9 +97,8 @@ Les deux derniers partiront en archive une fois la remédiation terminée.
 [`backend/database/sql/`](../backend/database/sql/) —
 c'est de la donnée applicative, pas de la documentation.
 
-**Point ouvert :** le README affiche un badge « Licence Propriétaire » qui
-pointe vers un fichier `LICENSE` **absent du dépôt**, alors que
-`backend/composer.json` déclare `"license": "MIT"`. Les deux
-affirmations sont contradictoires et la question est juridique, pas
-technique : elle doit être tranchée par le propriétaire du projet, puis le
-fichier `LICENSE` ajouté à la racine.
+**Point soldé (10 sept. 2026) :** la licence est **propriétaire**
+(`LICENSE` à la racine, `SECURITY.md` joint). `backend/composer.json`
+déclare `"license": "proprietary"`, les `package.json` frontend et mobile
+`"license": "UNLICENSED"`. Les dépendances tierces gardent leurs licences
+d'origine (voir `LICENSE` § 4).

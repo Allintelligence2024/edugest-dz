@@ -124,17 +124,15 @@ Ces chemins redeviendront `docs/...` après la fusion prévue au 5.2 — c'est
 un renommage mécanique, pas une raison de laisser des liens cassés
 aujourd'hui.
 
-### Point ouvert : la licence
+### Point ouvert : la licence → tranchée le 10 septembre 2026
 
-Le README affiche un badge « Licence Propriétaire » pointant vers un fichier
-`LICENSE` **absent du dépôt**, tandis que
-`backend/composer.json` déclare `"license": "MIT"`. Les deux
-affirmations sont contradictoires, et l'écart est juridique, pas technique :
-propriétaire et MIT n'autorisent pas les mêmes usages par des tiers. La
-question doit être tranchée par le propriétaire du projet, puis le fichier
-`LICENSE` ajouté. Ce n'est pas une décision que l'outillage peut prendre.
-
-`SECURITY.md`, également listé comme cible du plan, n'existe pas non plus.
+Le README affichait un badge « Licence Propriétaire » pointant vers un
+fichier `LICENSE` **absent du dépôt**, tandis que `backend/composer.json`
+déclarait `"license": "MIT"`. Le propriétaire a tranché : **propriétaire**.
+`LICENSE` rédigé à la racine (+ `SECURITY.md`, également listé comme cible
+du plan), `composer.json` passé à `"proprietary"`, `package.json`
+frontend/mobile à `"UNLICENSED"`. Les dépendances tierces gardent leurs
+licences d'origine (`LICENSE` § 4).
 
 ---
 

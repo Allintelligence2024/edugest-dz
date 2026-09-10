@@ -219,10 +219,12 @@
 >   déclarés comme leurres sans qu'aucune route ne les serve, pendant qu'un
 >   test affirmait « 22 leurres » en comptant le tableau du service.
 > - ✅ **5.5 Versioning API** — `docs/VERSIONING_API.md`.
-> - ⏳ **5.2, 5.3, 5.6** — non entamés. La fusion `edugestdz/` (5.2) attend
->   un commit dédié sans PR en vol.
-> - ⏳ **Coverage backend 45 → 60 %** — le palier de 45 % n'a pas encore été
->   mesuré une seule fois.
+> - ✅ **5.2 Fusion à la racine** (10 sept.) — 2 commits dédiés, 23 fichiers
+>   réécrits, workflows en `docs/fusion-workflows.patch` (cf. journal § 5.2).
+> - ⏳ **5.3, 5.6** — non entamés (Budget découpé : 442 → 273 lignes).
+> - ✅ **Coverage backend mesuré : 60,71 %** — le « palier bloquant » 45 %
+>   ne bloquait rien (`exit 0` inconditionnel) ; rendu réel, maintenu à 45
+>   jusqu'à la mesure post-5.3.
 
 **5.1 Hygiène racine** ✅
 ```
@@ -232,17 +234,23 @@ docs/
   design/               ← les 19 edugest-*.html, maquettes
   business/             ← ETUDE DE MARCHE, CAHIER DE CHARGE
 ```
-Racine finale : `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`, `.gitignore`, `edugestdz/`, `scripts/`.
+Racine visée (après fusion 5.2) : `backend/`, `frontend/`, `mobile/`, `docs/`,
+`scripts/`, `docker-compose*.yml`, outillage ops à plat, plus `README.md`,
+`CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`, `.gitignore`.
+Ancienne cible pré-fusion : le niveau intermédiaire `edugestdz/` a été
+supprimé le 10 septembre 2026.
 
 *Fait.* Racine ramenée de 119 fichiers à 5 : `README.md`, `CHANGELOG.md`,
 `CONTRIBUTING.md`, plus les deux documents de travail en cours
 (`PLAN_REMEDIATION_2026.md`, `REPRISE_SESSION.md`), qui partiront en archive
-à la fin de la remédiation. `LICENSE` et `SECURITY.md` **n'existent pas** :
-le README affiche un badge « Licence Propriétaire » pointant vers un fichier
-absent, alors que `composer.json` déclare `"license": "MIT"`. Contradiction
-juridique, à trancher par le propriétaire du projet.
+à la fin de la remédiation. Licence **tranchée le 10 sept. 2026 :
+propriétaire** — `LICENSE` et `SECURITY.md` ajoutés à la racine,
+`composer.json` aligné (`proprietary`).
 
-**5.2 Fusionner `edugestdz/` dans la racine** (ou l'inverse) — le double niveau + double `.github` est une source constante de confusion.
+**5.2 Fusionner `edugestdz/` dans la racine** ✅ — fait le 10 sept. 2026 en
+2 commits dédiés (`68e4f1d` renommages, `64c53c2` chemins). Détail :
+`docs/SPRINT5_ARCHITECTURE.md` § 5.2. Reste l'application manuelle de
+`docs/fusion-workflows.patch` (workflows non poussables depuis le bac à sable).
 
 **5.3 Découper les contrôleurs > 350 lignes** en Actions/sous-contrôleurs REST (Stock, Entretien, Transport, Budget, Eleve, PaiementEnLigne, Cantine).
 

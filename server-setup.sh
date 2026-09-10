@@ -46,7 +46,7 @@ ufw status
 echo "📥 Clonage du repo..."
 su - $APP_USER -c "
   git clone https://github.com/Allintelligence2024/edugest-dz.git /home/$APP_USER/edugest-dz
-  cd /home/$APP_USER/edugest-dz/edugestdz
+  cd /home/$APP_USER/edugest-dz
 "
 
 # ── 6. Certificat SSL Let's Encrypt (pré-déploiement) ──

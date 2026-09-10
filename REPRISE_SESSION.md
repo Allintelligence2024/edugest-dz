@@ -54,23 +54,27 @@ maintenu à 45 jusqu'à la mesure post-5.3.
 
 ## Ce qu'il reste à faire
 
-1. **Appliquer les 4 patches de workflow** (voir « Action manuelle »). C'est
-   le point bloquant le plus rentable : il éteint le rouge du CD, active les
-   gardes sécurité du Sprint 3 **et** met enfin le frontend sous CI.
-2. Relever la **couverture backend réelle** au premier passage du nouveau
-   palier (45 %), puis ajuster si nécessaire — le pourcentage mesuré est
-   republié en annotation, précisément pour rester lisible.
-3. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
+1. **Appliquer `docs/fusion-workflows.patch`** (voir « Action manuelle »).
+   Sans lui, la CI de la branche est rouge (les jobs cherchent
+   `edugestdz/backend`, qui n'existe plus). Vérifier aussi le *Root
+   Directory* du projet Vercel.
+2. **Licence** : ✅ soldée le 10 sept. — `LICENSE` (propriétaire) +
+   `SECURITY.md` à la racine, `composer.json` → `proprietary`,
+   `package.json` → `UNLICENSED`.
+3. Finir le Sprint 5 : **5.3** découpe des 8 contrôleurs restants
+   (`scripts/controleurs-baseline.txt` + `verifier-controleurs.sh`),
+   **5.6** i18next et icônes lucide.
+4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
-4. Poursuivre le Sprint 5 : **5.2** fusion de `edugestdz/` à la racine (sur
-   un commit dédié, aucune PR en vol), **5.3** découpe des contrôleurs de
-   plus de 350 lignes, **5.6** i18next et icônes lucide.
-5. Poursuivre : couverture frontend vers 40 %, tests mobile, CSRF.
-6. **Trancher la question de la licence** — décision du propriétaire, pas de
-   l'outillage : le README annonce « Propriétaire » et pointe vers un fichier
-   `LICENSE` absent, tandis que `composer.json` déclare `MIT`.
-7. Résorber la liste `DETTE` de `PorteeTenantModelesTest` : six modèles de
-   surveillance et d'examens portent `tenant_id` sans scope.
+5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
+   tests mobile, CSRF (double-submit).
+6. **Sprint 6** (décidé : après le Sprint 5) : scénarios k6 + doc, pentest
+   ciblé (calibration `RiskScoreEngine`, JWT blacklist, kill-switch MPC,
+   chaîne Merkle), observabilité (alertes Sentry sur les middlewares
+   sécurité, instrumentation version mobile), **réparation de
+   `restore-backup.sh`** (format incompatible avec `backup.sh` — constaté,
+   non réparé), conformité 18-07 (registre, rétention/purge, consentement
+   parental), vérité du README.
 
 ---
 
@@ -115,7 +119,7 @@ dans `phpunit.xml` : chaque échec part dans le résumé de job **et** en
 annotation `::error::`.
 
 ```bash
-RID=$(gh run list --branch arena/01a080e0-edugest-dz --workflow "CI — EduGest DZ" --limit 1 --json databaseId -q '.[0].databaseId')
+RID=$(gh run list --branch arena/01a08b2d-edugest-dz --workflow "CI — EduGest DZ" --limit 1 --json databaseId -q '.[0].databaseId')
 JID=$(gh api repos/Allintelligence2024/edugest-dz/actions/runs/$RID/jobs -q '.jobs[0].id')
 gh api repos/Allintelligence2024/edugest-dz/check-runs/$JID/annotations \
   -q '.[] | select(.annotation_level=="failure") | "\(.title) :: \(.message)"'
@@ -143,34 +147,44 @@ Retesté le 2026-09-08, la restriction tient :
 
 Un jeton personnel fourni manuellement ne contourne pas la restriction.
 
+### Éditions parallèles d'un même fichier (outillage, 10 sept.)
+
+Constaté ce sprint : plusieurs appels d'édition parallèles au **même
+fichier** se perdent ou se corrompent (`scripts/resipts/...` vu en vrai),
+malgré un « succès » annoncé. Cause probable : lecture-modification-écriture
+concurrente sur le même instantané. **Règle : un seul appel d'édition par
+fichier et par bloc** — les fichiers différents peuvent aller en parallèle,
+le même fichier s'édite en séquence, et chaque édition se revérifie par
+`grep` avant de continuer.
+
 ---
 
-## Action manuelle requise : 4 patches de workflow
+## Action manuelle requise : `fusion-workflows.patch`
 
-À appliquer depuis un poste disposant d'un accès normal au dépôt. **L'ordre
-compte** : les patches sont empilés sur `.github/workflows/ci.yml`. La
-séquence a été vérifiée (`git apply --check` sur les trois, YAML parsé après
-application).
+Les 4 patches précédents (`ci-secrets`, `pre-deploy-secrets`, `ci-qualite`,
+`deploy.yml.desactive`) sont **appliqués** — cette section les remplace.
+
+À appliquer depuis un poste disposant d'un accès normal au dépôt, sur la
+branche `arena/01a08b2d-edugest-dz` :
 
 ```bash
-git apply docs/ci-secrets.patch
-git apply docs/pre-deploy-secrets.patch
-git apply docs/ci-qualite.patch
-cp    docs/deploy.yml.desactive.patch .github/workflows/deploy.yml
-rm    docs/*.patch
-git add -A && git commit -m "ci: secrets hors du code, gardes sécurité et unification qualité" && git push
+git apply docs/fusion-workflows.patch
+rm docs/fusion-workflows.patch
+git add -A && git commit -m "ci: chemins après fusion 5.2 + seuil couverture réel" && git push
 ```
 
-| Patch | Effet |
-|---|---|
-| `ci-secrets.patch` | Retire les mots de passe littéraux, génère les clés via `openssl rand`, ajoute 4 gardes bloquantes (`rls:status --strict`, `audit:verify`, anti-`localStorage`, anti-secrets). |
-| `pre-deploy-secrets.patch` | Même traitement sur le second workflow, qui portait les mêmes 5 secrets en dur. |
-| `ci-qualite.patch` | **Sprint 4** — ajoute les jobs `frontend` et `qualite`, porte la couverture backend à 45 %. |
-| `deploy.yml.desactive.patch` | Fichier de remplacement : `on: push` devient `on: workflow_dispatch` avec confirmation. Éteint le rouge du CD. |
+Vérifié : `git apply --check` + `patch -p1 --dry-run` + YAML parsé après
+application (voir `docs/SPRINT5_ARCHITECTURE.md` § 5.2).
 
-Après déploiement : `./scripts/generer-secrets.sh` puis `php artisan migrate`
-(deux migrations en attente : `key_version` sur `audit_chain`, table
-`refresh_tokens`).
+| Contenu du patch | Effet |
+|---|---|
+| `ci.yml` : 9 `working-directory`/`hashFiles` | Suit le déménagement `edugestdz/*` → racine. |
+| `pre-deploy-check.yml` : 2 chemins | Idem. |
+| `deploy.yml` : suppression du `cd edugestdz` | Le repo est déjà à la racine après `git pull`. |
+| `ci.yml` : verdict couverture réel | `SEUIL=45` comparé par `awk`, `exit 1` sous le seuil ; `::notice::` au lieu de `::error::` quand ça passe ; motif `grep` du rapport texte tolérant à l'indentation. |
+
+Ne pas oublier, hors dépôt : le *Root Directory* du projet Vercel (repasser
+de `edugestdz` à la racine si c'était le réglage).
 
 ---
 
@@ -224,6 +238,14 @@ Détail complet : `docs/SPRINT3_SECURITE.md`.
    (`.github/workflows/frontend-ci.yml`) n'est lu par personne :
    GitHub ne considère que `.github/` à la racine. Vérifier qu'une garde
    s'exécute avant de la croire.
+
+### Sprint 5 (fin)
+
+9. **Un seuil peut s'exécuter sans protéger.** Le verdict couverture tournait
+   à chaque run, publiait le pourcentage en annotation — et se terminait par
+   `exit 0` inconditionnel. La garde avait toutes les apparences du
+   fonctionnement, sauf l'effet. La question n'est pas « le seuil tourne ? »
+   mais « qu'est-ce qui échoue quand le seuil n'est pas tenu ? ».
 
 ---
 
@@ -281,21 +303,25 @@ Depuis la fusion 5.2 (10 sept.), plus de niveau intermédiaire : `backend/`,
 
 ## Points restés ouverts
 
-- **Couverture backend réelle** : inconnue. Le palier de 45 % n'a pas pu être
-  mesuré (ni PHP local, ni patch poussable) ; le premier passage tranchera.
+- **Couverture backend** : **mesurée à 60,71 %**, seuil 45 % rendu réellement
+  bloquant. Relèvement à 60 % à décider sur mesure post-5.3 (marge actuelle
+  0,7 point — trop fine pour figer).
 - **Baseline PHPStan** : à générer, l'analyse reste non bloquante d'ici là.
 - **Couverture frontend** : cliquet posé à 18 % de lignes (mesure réelle
-  18.85 %), cible 40 % au Sprint 5 — environ 30 pages à couvrir.
-- **Mobile** : aucun test en CI, 38 vulnérabilités transitives Expo,
-  `mobile/src/api/axios.js` non aligné sur la rotation des jetons.
-- **P1-6** : **traité, et le constat de l'audit était inversé.** Sur 63
-  filtres tenant recensés dans les contrôleurs, **un seul** est réellement
-  redondant (`AbsenceJournaliere`) — conservé en défense en profondeur. Les
-  autres sont porteurs : 21 modèles portent `tenant_id` sans aucun scope.
-  Huit ont été corrigés ; `PorteeTenantModelesTest` verrouille l'invariant et
-  garde la liste `DETTE` des six modèles restants (surveillance, examens).
+  18.85 %), cible 40 % — environ 30 pages à couvrir.
+- **Mobile** : 4 fichiers de tests, aucun job en CI, 38 vulnérabilités
+  transitives Expo, `mobile/src/api/axios.js` non aligné sur la rotation
+  des jetons (stocke encore le refresh en SecureStore au lieu du cookie).
+- **Licence** : ✅ soldée le 10 sept. — `LICENSE` (propriétaire) +
+  `SECURITY.md` à la racine, `composer.json` → `proprietary`, `package.json`
+  → `UNLICENSED`.
+- **P1-6 / DETTE tenant** : **soldé.** La liste `DETTE` est vide, les six
+  modèles de surveillance et d'examens sont scopés.
   **Ne jamais retirer un filtre tenant sans vérifier à l'exécution que le
   modèle est scopé** : `User` *importait* le trait sans l'appliquer, ce qui
   suffisait à tromper la relecture comme l'analyse statique.
 - **CSRF** (point 3.1) : non traité. Le cookie de refresh est `SameSite` et
   scopé `/api/v1/auth` ; un double-submit token reste souhaitable.
+- **Restore backup** : `scripts/restore-backup.sh` attend un `.sql.gz`
+  pipé dans `psql` quand `backend/scripts/backup.sh` produit un
+  `--format=custom` (`.dump`). Procédure inopérante — à réparer au Sprint 6.

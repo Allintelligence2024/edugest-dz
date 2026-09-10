@@ -1,5 +1,5 @@
 diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
-index 2150e29..3225e47 100644
+index 2150e29..ec745a7 100644
 --- a/.github/workflows/ci.yml
 +++ b/.github/workflows/ci.yml
 @@ -45,7 +45,7 @@ jobs:
@@ -42,7 +42,28 @@ index 2150e29..3225e47 100644
            echo "## Couverture du backend" >> "$GITHUB_STEP_SUMMARY"
  
            COUV=""
-@@ -232,7 +238,7 @@ jobs:
+@@ -210,12 +216,15 @@ jobs:
+           fi
+ 
+           if [ -n "$COUV" ] && [ "$COUV" != "0.00" ] && [ -f coverage-out.txt ]; then
+-            LIGNE=$(grep -oiE "^(lines|line coverage)[^%]*[0-9]+\.[0-9]+ ?%" coverage-out.txt | tail -1 || true)
+-            echo "Lignes couvertes : ${COUV} % (obj. Sprint 4 : 45 %, rapport texte : ${LIGNE:-inconnue})." \
++            LIGNE=$(grep -oiE "^[[:space:]]*(lines|line coverage)[^%]*[0-9]+\.[0-9]+ ?%" coverage-out.txt | tail -1 || true)
++            echo "Lignes couvertes : ${COUV} % (seuil : ${SEUIL} %, rapport texte : ${LIGNE:-inconnu})." \
+               >> "$GITHUB_STEP_SUMMARY"
+-            echo "::error::couverture_clover :: ${COUV}% (objectif Sprint 4 : 45%)"
+-            echo "::error::couverture_texte :: $(echo "${LIGNE:-rapport non reconnu}" | tr ':' ' ')"
+-            exit 0
++            if awk "BEGIN { exit (${COUV} < ${SEUIL}) }"; then
++              echo "::notice::couverture ${COUV}% (seuil ${SEUIL}%)"
++              exit 0
++            fi
++            echo "::error::couverture ${COUV}% sous le seuil ${SEUIL}%"
++            exit 1
+           fi
+ 
+           # Aucun pourcentage agrégé exploitable : publier la collecte brute,
+@@ -232,7 +241,7 @@ jobs:
      runs-on: ubuntu-latest
      defaults:
        run:
@@ -51,7 +72,7 @@ index 2150e29..3225e47 100644
  
      steps:
        - uses: actions/checkout@v4
-@@ -242,7 +248,7 @@ jobs:
+@@ -242,7 +251,7 @@ jobs:
          with:
            node-version: '22'
            cache: 'npm'
@@ -60,7 +81,7 @@ index 2150e29..3225e47 100644
  
        - name: Install dependencies
          run: npm ci
-@@ -275,16 +281,16 @@ jobs:
+@@ -275,16 +284,16 @@ jobs:
  
        - name: "Audit des dépendances PHP (composer audit) — non bloquant : advisories laravel/framework 11.31 à résoudre par composer update (voir dette Lot A)"
          continue-on-error: true
@@ -80,7 +101,7 @@ index 2150e29..3225e47 100644
          continue-on-error: true
          run: npm audit --audit-level=high
  
-@@ -297,7 +303,7 @@ jobs:
+@@ -297,7 +306,7 @@ jobs:
          continue-on-error: true
  
        - name: Analyse statique backend (PHPStan niveau 6, bloquant avec baseline)
