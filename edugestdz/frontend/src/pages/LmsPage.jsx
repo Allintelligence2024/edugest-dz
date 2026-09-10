@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
 const api = (path, opts) => fetch(`${BASE_URL}/api/v1${path}`, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}`, 'Content-Type':'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
+  headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type':'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
   ...opts,
 }).then(r => r.json());
 

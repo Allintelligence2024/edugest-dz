@@ -13,10 +13,18 @@ use App\Http\Controllers\Api\V1\{
 };
 
 $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
-Route::middleware($protected)->group(function () {
+// ── RBAC (Sprint 2) ────────────────────────────────────────────────────────
+// Modules d'exploitation (logistique, vie scolaire, surveillance). Le
+// middleware `module:` vérifie que le module est SOUSCRIT ; il ne dit rien
+// de QUI peut l'utiliser. On ajoute donc la dimension rôle.
+$exploitation = 'role:admin,gestionnaire';                      // pilotage
+$exploitLect  = 'role:admin,gestionnaire,secretariat';          // + consultation
+$viePedago    = 'role:admin,gestionnaire,secretariat,enseignant';
+
+Route::middleware($protected)->group(function () use ($exploitation, $exploitLect, $viePedago) {
 
     // ── Transport Scolaire (M09) ──
-    Route::prefix('transport')->middleware('module:transport')->group(function () {
+    Route::prefix('transport')->middleware(['module:transport', $exploitLect])->group(function () {
         Route::get('dashboard',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'dashboard']);
         Route::get('circuits',                            [\App\Http\Controllers\Api\V1\TransportController::class, 'indexCircuits']);
         Route::post('circuits',                           [\App\Http\Controllers\Api\V1\TransportController::class, 'storeCircuit']);
@@ -35,7 +43,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Cantine / Restauration (M10) ──
-    Route::prefix('cantine')->middleware('module:cantine')->group(function () {
+    Route::prefix('cantine')->middleware(['module:cantine', $exploitLect])->group(function () {
         Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\CantineController::class, 'dashboard']);
         Route::get('menus',                           [\App\Http\Controllers\Api\V1\CantineController::class, 'indexMenus']);
         Route::get('menus/semaine',                   [\App\Http\Controllers\Api\V1\CantineController::class, 'menuSemaine']);
@@ -55,7 +63,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Stock & Inventaire Mobilier (M11) ──
-    Route::prefix('stock')->middleware('module:stock')->group(function () {
+    Route::prefix('stock')->middleware(['module:stock', $exploitLect])->group(function () {
         Route::get('dashboard',                       [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'dashboard']);
         Route::get('alertes',                         [\App\Http\Controllers\Api\V1\StockInventaireController::class, 'alertes']);
 
@@ -85,7 +93,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Entretien Bâtiment (M14) ──
-    Route::prefix('entretien')->middleware('module:entretien')->group(function () {
+    Route::prefix('entretien')->middleware(['module:entretien', $exploitation])->group(function () {
         Route::get('dashboard',                        [\App\Http\Controllers\Api\V1\EntretienController::class, 'dashboard']);
 
         // Locaux
@@ -113,7 +121,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Pointage par badge RFID/NFC ──
-    Route::prefix('pointage')->middleware('module:pointage')->group(function () {
+    Route::prefix('pointage')->middleware(['module:pointage', $exploitation])->group(function () {
         Route::post('badge', [\App\Http\Controllers\Api\V1\PointageBadgeController::class, 'scan']);
         Route::get('enseignants',            [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'index']);
         Route::post('enseignants',           [\App\Http\Controllers\Api\V1\PointageEnseignantController::class, 'store']);
@@ -124,7 +132,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Surveillance Dahua ──
-    Route::prefix('surveillance')->middleware('module:surveillance')->group(function () {
+    Route::prefix('surveillance')->middleware(['module:surveillance', $exploitation])->group(function () {
         Route::get('/alertes',                  [SurveillanceController::class, 'indexAlertes']);
         Route::post('/alertes/{id}/traiter',    [SurveillanceController::class, 'traiterAlerte']);
         Route::get('/cameras',                  [SurveillanceController::class, 'indexCameras']);
@@ -144,7 +152,7 @@ Route::middleware($protected)->group(function () {
     Route::post('notifications/parent/tout-lire',       [SignalementController::class, 'toutMarquerLu']);
 
     // ── Billets (entrée / retard / sortie / convocation) ──
-    Route::prefix('billets')->middleware('module:billets')->group(function () {
+    Route::prefix('billets')->middleware(['module:billets', $viePedago])->group(function () {
         Route::get('/',                    [\App\Http\Controllers\Api\V1\BilletController::class, 'index']);
         Route::post('/',                   [\App\Http\Controllers\Api\V1\BilletController::class, 'store']);
         Route::get('{id}/pdf',             [\App\Http\Controllers\Api\V1\BilletController::class, 'pdf']);
@@ -152,7 +160,7 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Examens Officiels BEM/BAC ──
-    Route::prefix('examens')->middleware('module:examens')->group(function () {
+    Route::prefix('examens')->middleware(['module:examens', $viePedago])->group(function () {
         Route::get('/',                       [ExamenController::class, 'indexSessions']);
         Route::post('/',                      [ExamenController::class, 'storeSession']);
         Route::get('/{id}',                   [ExamenController::class, 'showSession']);
@@ -186,10 +194,20 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Signalements graves (élève → directeur — confidentiel) ──
-    Route::prefix('signalements-graves')->group(function () {
-        Route::get('/',                    [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index']);
-        Route::post('/',                   [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store']);
-        Route::patch('/{id}/traiter',      [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter']);
+    // Signalements graves : données très sensibles sur les élèves.
+    Route::prefix('signalements-graves')->group(function () use ($viePedago) {
+        // Lecture et traitement : personnel encadrant uniquement.
+        Route::get('/',               [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'index'])
+            ->middleware($viePedago);
+        Route::patch('/{id}/traiter', [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'traiter'])
+            ->middleware($viePedago);
+
+        // Dépôt : un élève DOIT pouvoir signaler (harcèlement, violence).
+        // C'est la finalité même du dispositif ; le réserver au personnel,
+        // comme le faisait la première version du correctif Sprint 2, le
+        // vidait de son sens.
+        Route::post('/',              [\App\Http\Controllers\Api\V1\SignalementGraveController::class, 'store'])
+            ->middleware('role:admin,gestionnaire,secretariat,enseignant,eleve');
     });
 });
 

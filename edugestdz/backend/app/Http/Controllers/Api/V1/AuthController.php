@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\RefreshTokenService;
 use App\Services\TwoFactorService;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{Cache, Hash, Password};
@@ -108,6 +109,10 @@ class AuthController extends Controller
         $token  = JWTAuth::fromUser($user);
         $tenant = $user->tenant;
 
+        // Le refresh token part dans un cookie httpOnly : il n'est jamais
+        // exposé au JavaScript, donc invulnérable au vol par XSS.
+        [, $cookieRefresh] = app(RefreshTokenService::class)->emettre($user, $request);
+
         return response()->json([
             'success'       => true,
             'access_token'  => $token,
@@ -124,7 +129,7 @@ class AuthController extends Controller
                 'commune_id'       => $tenant->commune_id,
                 'telephone'        => $tenant->telephone,
             ] : null,
-        ]);
+        ])->withCookie($cookieRefresh);
     }
 
     public function complete2fa(Request $request): JsonResponse
@@ -175,6 +180,8 @@ class AuthController extends Controller
         $token  = JWTAuth::fromUser($user);
         $tenant = $user->tenant;
 
+        [, $cookieRefresh] = app(RefreshTokenService::class)->emettre($user, $request);
+
         return response()->json([
             'success'       => true,
             'access_token'  => $token,
@@ -191,7 +198,7 @@ class AuthController extends Controller
                 'commune_id'       => $tenant->commune_id,
                 'telephone'        => $tenant->telephone,
             ] : null,
-        ]);
+        ])->withCookie($cookieRefresh);
     }
 
     /**
@@ -204,10 +211,38 @@ class AuthController extends Controller
      *     @OA\Response(response=401, description="Non authentifié",  @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
      * )
      */
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        auth()->logout();
-        return response()->json(['success' => true, 'message' => 'Déconnexion réussie']);
+        $service = app(RefreshTokenService::class);
+
+        // Un logout ne doit jamais renvoyer 500 : si le JWT est absent ou
+        // illisible, on révoque quand même ce qu'on peut et on efface le
+        // cookie. Se déconnecter doit toujours aboutir.
+        try {
+            $userId = auth('api')->id();
+        } catch (\Throwable) {
+            $userId = null;
+        }
+
+        // Révoquer le refresh token présenté, et par sécurité toutes les
+        // sessions de l'utilisateur : un logout doit être sans ambiguïté.
+        if ($cookie = $request->cookie(RefreshTokenService::COOKIE)) {
+            $service->revoquerJeton((string) $cookie, 'logout');
+        }
+
+        if ($userId) {
+            $service->revoquerUtilisateur($userId, 'logout');
+        }
+
+        try {
+            auth('api')->logout();
+        } catch (\Throwable) {
+            // Jeton déjà invalide : la déconnexion est de fait effective.
+        }
+
+        return response()
+            ->json(['success' => true, 'message' => 'Déconnexion réussie'])
+            ->withCookie($service->cookieEfface());
     }
 
     /**
@@ -220,11 +255,60 @@ class AuthController extends Controller
      *     @OA\Response(response=401, description="Token invalide",  @OA\JsonContent(ref="#/components/schemas/ErrorResponse"))
      * )
      */
-    public function refresh(): JsonResponse
+    public function refresh(Request $request): JsonResponse
     {
+        $service = app(RefreshTokenService::class);
+
+        // Le refresh token vient du cookie httpOnly. On accepte encore le
+        // corps de requête pour les clients mobiles, qui utilisent un
+        // stockage sécurisé natif (Expo SecureStore) et non un navigateur.
+        // Lecture défensive : selon la pile de middlewares traversée, un
+        // cookie non chiffré peut n'être visible que dans le sac Symfony et
+        // pas via $request->cookie(), qui suppose un cookie géré par Laravel.
+        // On tente les trois sources plutôt que d'échouer silencieusement.
+        $presente = $request->cookie(RefreshTokenService::COOKIE)
+            ?: $request->cookies->get(RefreshTokenService::COOKIE)
+            ?: $request->input('refresh_token');
+
+        if ($presente) {
+            $rotation = $service->faireTourner((string) $presente, $request);
+
+            if ($rotation === null) {
+                return response()
+                    ->json([
+                        'success' => false,
+                        'error'   => ['code' => 'REFRESH_INVALIDE', 'message' => 'Session expirée, veuillez vous reconnecter'],
+                    ], 401)
+                    ->withCookie($service->cookieEfface());
+            }
+
+            [$user, $nouveauClair, $cookie] = $rotation;
+
+            $reponse = [
+                'success'      => true,
+                'access_token' => JWTAuth::fromUser($user),
+                'token_type'   => 'bearer',
+                'expires_in'   => auth('api')->factory()->getTTL() * 60,
+            ];
+
+            // Les clients non navigateur ont besoin du jeton en clair ;
+            // les navigateurs se contentent du cookie.
+            if (!$request->cookie(RefreshTokenService::COOKIE)) {
+                $reponse['refresh_token'] = $nouveauClair;
+            }
+
+            return response()->json($reponse)->withCookie($cookie);
+        }
+
+        // Repli : rafraîchissement à partir du JWT encore valide.
+        //
+        // Cette route étant devenue publique, il faut viser explicitement le
+        // guard `api` : sans utilisateur résolu par un middleware, auth() sans
+        // argument ne rattacherait aucun jeton et le refresh échouerait pour
+        // les clients qui n'ont pas encore de cookie (mobile, tests).
         try {
-            $token = auth()->refresh();
-        } catch (\Exception) {
+            $token = auth('api')->refresh();
+        } catch (\Throwable) {
             return response()->json(['success' => false, 'error' => ['code' => 'TOKEN_EXPIRED', 'message' => 'Token expiré, veuillez vous reconnecter']], 401);
         }
 
@@ -232,7 +316,7 @@ class AuthController extends Controller
             'success'      => true,
             'access_token' => $token,
             'token_type'   => 'bearer',
-            'expires_in'   => auth()->factory()->getTTL() * 60,
+            'expires_in'   => auth('api')->factory()->getTTL() * 60,
         ]);
     }
 

@@ -23,21 +23,34 @@ Route::prefix('super-admin')->middleware(['auth:api', 'ip.allowlist', 'mfa', 'su
 
 // ── Routes protégées par JWT ──
 $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
-Route::middleware($protected)->group(function () {
+// ── RBAC (Sprint 2) ────────────────────────────────────────────────────────
+// Paramètres établissement, RGPD, journaux d'audit et dossiers du personnel
+// sont des zones de direction : jamais accessibles aux enseignants/parents.
+$directionRoles = 'role:admin,gestionnaire';
+$rhRoles        = 'role:admin,gestionnaire,comptable';
+
+Route::middleware($protected)->group(function () use ($directionRoles, $rhRoles) {
 
     // ── Paramètres ──
-    Route::prefix('parametres')->group(function () {
-        Route::get('/',                      [ParametreController::class, 'index']);
-        Route::patch('/',                    [ParametreController::class, 'update']);
-        Route::post('/logo',                 [ParametreController::class, 'uploadLogo']);
-        Route::post('/tester-smtp',          [ParametreController::class, 'testerSmtp']);
+    Route::prefix('parametres')->group(function () use ($directionRoles) {
+        // Référentiels publics à l'établissement (listes déroulantes) :
+        // tout utilisateur authentifié peut les lire.
         Route::get('wilayas',                [ParametreController::class, 'wilayas']);
         Route::get('communes/{wilayaId}',    [ParametreController::class, 'communes']);
         Route::get('calendrier',             [ParametreController::class, 'calendrier']);
+
+        // Configuration de l'établissement : direction uniquement.
+        Route::middleware($directionRoles)->group(function () {
+            Route::get('/',                  [ParametreController::class, 'index']);
+            Route::patch('/',                [ParametreController::class, 'update']);
+            Route::post('/logo',             [ParametreController::class, 'uploadLogo']);
+            Route::post('/tester-smtp',      [ParametreController::class, 'testerSmtp']);
+        });
     });
 
     // ── RGPD / Loi 18-07 ──
-    Route::prefix('rgpd')->group(function () {
+    // Export/suppression de données personnelles : direction uniquement.
+    Route::prefix('rgpd')->middleware($directionRoles)->group(function () {
         Route::get('/export-tenant',             [ExportRgpdController::class, 'exporterTenant']);
         Route::get('/export-eleve/{eleveId}',    [ExportRgpdController::class, 'exporterEleve']);
         Route::post('/demande-suppression',      [ExportRgpdController::class, 'demanderSuppression']);
@@ -46,13 +59,15 @@ Route::middleware($protected)->group(function () {
     });
 
     // ── Audit Logs ──
-    Route::prefix('audit-logs')->group(function () {
+    // Journal d'audit : direction uniquement (traçabilité sensible).
+    Route::prefix('audit-logs')->middleware($directionRoles)->group(function () {
         Route::get('/',                      [\App\Http\Controllers\Api\V1\AuditLogController::class, 'index']);
         Route::get('{id}',                   [\App\Http\Controllers\Api\V1\AuditLogController::class, 'show']);
     });
 
     // ── Personnel Non-Enseignant (M12) ──
-    Route::prefix('personnel')->middleware('module:personnel')->group(function () {
+    // Dossiers RH, congés, pointage et paie du personnel.
+    Route::prefix('personnel')->middleware(['module:personnel', $rhRoles])->group(function () {
         Route::get('tableau-bord',           [\App\Http\Controllers\Api\V1\PersonnelController::class, 'tableauBord']);
         Route::get('/',                       [\App\Http\Controllers\Api\V1\PersonnelController::class, 'index']);
         Route::post('/',                      [\App\Http\Controllers\Api\V1\PersonnelController::class, 'store']);

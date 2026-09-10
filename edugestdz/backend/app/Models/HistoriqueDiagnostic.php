@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class HistoriqueDiagnostic extends Model
 {
     use HasUuids;
+    use BelongsToTenant;
 
     protected $table = 'historique_diagnostics';
     public $timestamps = false;

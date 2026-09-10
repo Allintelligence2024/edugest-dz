@@ -38,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
 
         \App\Models\AuditChain::observe(\App\Observers\AuditChainObserver::class);
 
+        // Sprint 2 — invalidation du cache de périmètre d'accès dès qu'une
+        // filiation ou une inscription change.
+        \App\Models\ParentEleve::observe(\App\Observers\PerimetreCacheObserver::class);
+        \App\Models\Enseignant::observe(\App\Observers\PerimetreCacheObserver::class);
+        \App\Models\Inscription::observe(\App\Observers\PerimetreCacheObserver::class);
+        \App\Models\Groupe::observe(\App\Observers\PerimetreCacheObserver::class);
+
         Gate::policy(Eleve::class, ElevePolicy::class);
         Gate::policy(Facture::class, FacturePolicy::class);
         Gate::policy(User::class, FluxInfoPolicy::class);

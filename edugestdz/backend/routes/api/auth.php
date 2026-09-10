@@ -18,6 +18,11 @@ Route::prefix('auth')->group(function () {
     Route::post('2fa/challenge',   [TwoFactorController::class, 'challenge']);
     Route::post('2fa/complete',    [AuthController::class, 'complete2fa']);
 
+    // Le rafraîchissement ne peut PAS exiger un JWT valide : il sert
+    // précisément quand celui-ci a expiré. L'authentification est portée par
+    // le refresh token (cookie httpOnly), vérifié dans le contrôleur.
+    Route::post('refresh',         [AuthController::class, 'refresh'])->middleware('throttle:auth');
+
     // Alias for frontend client.js compatibility
     Route::post('password/forgot', function (\Illuminate\Http\Request $request) {
         $request->validate(['email' => 'required|email']);
@@ -32,7 +37,6 @@ $protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription
 Route::middleware($protected)->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout',          [AuthController::class, 'logout']);
-        Route::post('refresh',         [AuthController::class, 'refresh']);
         Route::get('me',               [AuthController::class, 'me']);
         Route::put('me',               [AuthController::class, 'updateProfile']);
         Route::put('change-password',  [AuthController::class, 'changePassword']);

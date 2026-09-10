@@ -1,0 +1,57 @@
+parameters:
+
+    # ── Niveau 6 (objectif Sprint 4) ──────────────────────────────────────
+    #
+    # Le niveau 6 exige que tout soit typé : paramètres, retours, propriétés.
+    # Sur une base Laravel existante il remonte beaucoup de choses ; c'est
+    # attendu et c'est l'intérêt. La marche à suivre est de figer l'existant
+    # dans une baseline puis d'exiger zéro nouvelle erreur :
+    #
+    #   composer analyse -- --generate-baseline
+    #
+    # Tant que la baseline n'est pas générée, l'étape CI correspondante reste
+    # non bloquante (voir docs/ci-qualite.patch). Rendre l'analyse bloquante
+    # sans baseline reviendrait à bloquer la branche principale sur des
+    # défauts hérités, ce qui n'apprend rien à personne.
+    level: 6
+
+    paths:
+        - app
+        - config
+        - database
+        - routes
+
+    # Les tests suivent leurs propres conventions (mocks, closures PHPUnit) ;
+    # les analyser au même niveau produit surtout du bruit.
+    excludePaths:
+        analyse:
+            - app/Console/Commands/*Legacy*.php
+            - database/migrations/*_legacy_*.php
+
+    # Larastan a besoin de connaître le point d'entrée pour résoudre les
+    # facades, les modèles et le conteneur.
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    # Eloquent renvoie des types dynamiques ; sans cela, chaque accès à une
+    # propriété de modèle serait signalé.
+    checkModelProperties: true
+
+    # Le code du dépôt utilise massivement les helpers Laravel : on ne veut
+    # pas d'erreur sur les fonctions globales de vendor.
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        # `config()` et `env()` renvoient mixed par nature : le typage strict
+        # de leur retour n'apporte rien tant que la configuration n'est pas
+        # elle-même typée.
+        - '#Cannot cast mixed to (int|string|float)#'
+        - '#Parameter \#\d+ \$\w+ of function .* expects .*, mixed given#'
+        # Fausse alerte Larastan/PHPStan 2.x : le type réel du retour
+        # correspond exactement au @return déclaré (les deux formes sont
+        # identiques dans le rapport), mais l'analyseur le rejette.
+        - '#Method App\\Services\\BudgetPrevisionnelService::previsionnel\(\) should return .* but returns .*#'
+
+    # Le fichier est volontairement autonome : `includes:` de Larastan est
+    # ajouté par le script d'analyse une fois le paquet installé, afin que ce
+    # fichier reste valide même sans la dépendance.

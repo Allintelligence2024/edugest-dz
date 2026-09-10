@@ -82,6 +82,11 @@ class AuthFlowCompletTest extends TestCase
             ->assertStatus(401);
     }
 
+    /**
+     * Sprint 3 : /auth/refresh accepte désormais deux modes — le cookie
+     * httpOnly (navigateur) et, à défaut, le repli sur un JWT encore valide
+     * conservé pour les clients mobiles. Ce test couvre le second.
+     */
     public function test_refresh_token_valide(): void
     {
         $tenant = Tenant::factory()->create(['statut' => 'actif']);

@@ -48,6 +48,9 @@ Route::prefix('v1')->group(function () {
 
     // ── Health Check + Ping (P9 fix: moved inside v1) ──
     require __DIR__ . '/api/health.php';
+
+    // ── Déclencheurs planifiés (Vercel Cron — remplace schedule:run) ──
+    require __DIR__ . '/api/cron.php';
 });
 
 // ── Fichier (signé, authentifié) — hors v1 ──

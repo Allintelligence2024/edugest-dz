@@ -1,0 +1,256 @@
+<?php
+
+namespace Tests\Feature\Security;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
+use Tests\TestCase;
+
+/**
+ * Sprint 2 — Couverture RBAC.
+ *
+ * Ce test est le filet de sécurité du sprint : il inspecte la table de routage
+ * et échoue dès qu'une route sensible perd son contrôle d'accès par rôle.
+ *
+ * Contexte : avant le Sprint 2, 75 contrôleurs n'étaient protégés que par
+ * `auth:api` + `resolve.tenant`. L'isolation multi-tenant empêchait bien
+ * l'école A de voir l'école B, mais À L'INTÉRIEUR d'une école n'importe quel
+ * compte authentifié (y compris un parent) pouvait appeler /paies, /finance,
+ * /audit-logs ou /personnel. Ce test empêche la régression.
+ */
+class RbacCoverageTest extends TestCase
+{
+    /**
+     * Préfixes d'URI dont TOUTE route doit porter un contrôle de rôle
+     * (`role:`, `permission:` ou `super_admin`).
+     */
+    /**
+     * Routes sensibles publiques par conception : webhooks de prestataires,
+     * dont l'authenticité est vérifiée par signature dans le contrôleur.
+     */
+    private const WEBHOOKS_SIGNES = [
+        'api/v1/surveillance/webhook',
+    ];
+
+    private const PREFIXES_SENSIBLES = [
+        'api/v1/paies',
+        'api/v1/factures',
+        'api/v1/finance',
+        'api/v1/budget',
+        'api/v1/tarifs',
+        'api/v1/plans-fractionnement',
+        'api/v1/personnel',
+        'api/v1/contrats',
+        'api/v1/audit-logs',
+        'api/v1/rgpd',
+        'api/v1/evaluations',
+        'api/v1/entretien',
+        'api/v1/pointage',
+        'api/v1/surveillance',
+        'api/v1/absences-enseignants',
+        'api/v1/super-admin',
+    ];
+
+    /**
+     * Routes publiques par conception : authentification, santé, webhooks de
+     * prestataires (signature vérifiée dans le contrôleur), vitrine
+     * marketplace et déclencheurs cron (protégés par CRON_SECRET).
+     */
+    private const PUBLIQUES_ATTENDUES = [
+        'api/v1/auth',
+        'api/v1/health',
+        'api/v1/cron',
+        'api/v1/marketplace',
+        'api/v1/whatsapp/webhook',
+        'api/v1/google/classroom/callback',
+        'api/v1/surveillance/webhook',
+        'api/v1/paiements/online/callback',
+        'api/v1/paiements/online/retour',
+
+        // NB : les leurres (honeypots) ne sont pas listés ici — ils sont
+        // reconnus par leur nom de route `honeypot.*`, ce qui reste correct
+        // si on en ajoute d'autres.
+
+        // Documentation OpenAPI et callback OAuth de Swagger UI.
+        'api/documentation',
+        'api/oauth2-callback',
+    ];
+
+    /**
+     * Routes authentifiées qui, par conception, ne résolvent pas de tenant :
+     * elles opèrent au-dessus du périmètre d'un établissement.
+     */
+    private const SANS_TENANT_ATTENDUES = [
+        // Réponse à incident : doit rester joignable même quand le tenant est
+        // verrouillé — c'est précisément son rôle. Protégée par ip.allowlist.
+        'api/v1/security/breach',
+
+        // Sert un fichier depuis une URL signée ; le chemin encode déjà le
+        // tenant et la signature est vérifiée dans le contrôleur.
+        'api/fichier',
+    ];
+
+    /** @return list<array{uri:string,methods:string,middleware:list<string>}> */
+    private function routesApi(): array
+    {
+        $resultat = [];
+
+        foreach (Route::getRoutes() as $route) {
+            $uri = $route->uri();
+
+            if (!Str::startsWith($uri, 'api/')) {
+                continue;
+            }
+
+            $resultat[] = [
+                'uri'        => $uri,
+                'nom'        => (string) $route->getName(),
+                'methods'    => implode('|', array_diff($route->methods(), ['HEAD'])),
+                'middleware' => $route->gatherMiddleware(),
+            ];
+        }
+
+        return $resultat;
+    }
+
+    private function aControleDeRole(array $middleware): bool
+    {
+        foreach ($middleware as $m) {
+            if (!is_string($m)) {
+                continue;
+            }
+
+            // `gatherMiddleware()` renvoie l'alias tel qu'écrit sur la route
+            // (« super_admin »), pas la classe résolue : chercher uniquement
+            // « SuperAdmin » ne matchait jamais et signalait les routes
+            // super-admin comme non protégées.
+            if (Str::startsWith($m, ['role:', 'permission:'])
+                || $m === 'super_admin'
+                || Str::contains($m, ['RoleCheck', 'PermissionCheck', 'SuperAdmin'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function estAuthentifiee(array $middleware): bool
+    {
+        foreach ($middleware as $m) {
+            if (is_string($m) && (Str::startsWith($m, 'auth:') || Str::contains($m, 'Authenticate'))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Les alias `role` et `permission` doivent être enregistrés. */
+    public function test_les_middlewares_rbac_sont_enregistres(): void
+    {
+        $kernel = app(\Illuminate\Foundation\Http\Kernel::class);
+
+        $aliases = method_exists($kernel, 'getRouteMiddleware')
+            ? $kernel->getRouteMiddleware()
+            : app(\Illuminate\Routing\Router::class)->getMiddleware();
+
+        $this->assertArrayHasKey('role', $aliases);
+        $this->assertArrayHasKey('permission', $aliases);
+        $this->assertSame(\App\Http\Middleware\RoleCheck::class, $aliases['role']);
+        $this->assertSame(\App\Http\Middleware\PermissionCheck::class, $aliases['permission']);
+    }
+
+    /** Aucune route sensible ne doit se contenter de `auth:api`. */
+    public function test_toutes_les_routes_sensibles_ont_un_controle_de_role(): void
+    {
+        $manquantes = [];
+
+        foreach ($this->routesApi() as $route) {
+            $sensible = Str::startsWith($route['uri'], self::PREFIXES_SENSIBLES);
+
+            // Les webhooks signés n'ont pas d'utilisateur : leur contrôle
+            // d'accès est la vérification de signature, pas un rôle.
+            if (in_array($route['uri'], self::WEBHOOKS_SIGNES, true)) {
+                continue;
+            }
+
+            if ($sensible && !$this->aControleDeRole($route['middleware'])) {
+                $manquantes[] = "{$route['methods']} /{$route['uri']}";
+            }
+        }
+
+        $this->assertSame([], $manquantes, sprintf(
+            "%d route(s) sensible(s) sans contrôle de rôle :\n  - %s",
+            count($manquantes),
+            implode("\n  - ", $manquantes)
+        ));
+    }
+
+    /** Aucune route non déclarée publique ne doit être ouverte sans authentification. */
+    public function test_aucune_route_non_authentifiee_inattendue(): void
+    {
+        $ouvertes = [];
+
+        foreach ($this->routesApi() as $route) {
+            if ($this->estAuthentifiee($route['middleware'])) {
+                continue;
+            }
+
+            if (Str::startsWith($route['uri'], self::PUBLIQUES_ATTENDUES)) {
+                continue;
+            }
+
+            // Les leurres sont volontairement exposés : ils piègent les
+            // scanners, journalisent et bannissent l'IP appelante. Ils sont
+            // identifiés par leur nom de route, pas par un middleware — la
+            // version initiale cherchait un middleware « Honeypot » qui
+            // n'existe pas, d'où 16 faux positifs.
+            if (Str::startsWith($route['nom'], 'honeypot.')) {
+                continue;
+            }
+
+            $ouvertes[] = "{$route['methods']} /{$route['uri']}";
+        }
+
+        $this->assertSame([], $ouvertes, sprintf(
+            "%d route(s) accessible(s) SANS authentification :\n  - %s",
+            count($ouvertes),
+            implode("\n  - ", $ouvertes)
+        ));
+    }
+
+    /** Toute route authentifiée doit aussi résoudre un tenant (sauf exceptions). */
+    public function test_les_routes_authentifiees_resolvent_un_tenant(): void
+    {
+        $sansTenant = [];
+
+        $exemptes = array_merge([
+            'api/v1/auth',        // logout / me / refresh
+            'api/v1/modules',     // catalogue des modules
+            'api/v1/super-admin', // plateforme, hors tenant
+            'api/v1/2fa',
+        ], self::SANS_TENANT_ATTENDUES);
+
+        foreach ($this->routesApi() as $route) {
+            if (!$this->estAuthentifiee($route['middleware'])) {
+                continue;
+            }
+
+            if (Str::startsWith($route['uri'], $exemptes)) {
+                continue;
+            }
+
+            $chaine = implode(',', array_filter($route['middleware'], 'is_string'));
+
+            if (!Str::contains($chaine, ['ResolveTenant', 'resolve.tenant'])) {
+                $sansTenant[] = "{$route['methods']} /{$route['uri']}";
+            }
+        }
+
+        $this->assertSame([], $sansTenant, sprintf(
+            "%d route(s) authentifiée(s) sans résolution de tenant :\n  - %s",
+            count($sansTenant),
+            implode("\n  - ", $sansTenant)
+        ));
+    }
+}

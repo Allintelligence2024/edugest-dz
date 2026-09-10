@@ -20,21 +20,43 @@ return new class extends Migration
             return;
         }
 
+        // Inventaire exhaustif des tables portant une colonne `tenant_id`
+        // (101 tables). La politique RLS reste conditionnelle : elle ne filtre
+        // que si la session pose `app.current_tenant_id`.
         $tables = [
-            'eleves', 'users', 'groupes', 'cours', 'seances',
-            'presences', 'evaluations', 'notes', 'bulletins',
-            'factures', 'paiements', 'absences_journalieres', 'billets',
-            'enseignants', 'contrats', 'personnel_non_enseignant', 'paies',
-            'circuits_transport', 'transport_eleves', 'pointage_bus',
-            'menus_cantine', 'inscriptions_cantine', 'repas_journaliers',
-            'articles_stock', 'mouvements_stock', 'prets_stock',
-            'bons_commande', 'depenses', 'budgets_previsionnels',
-            'locaux', 'interventions_entretien', 'entretiens_preventifs',
-            'cameras_config', 'alertes_surveillance',
-            'lms_cours', 'lms_inscriptions',
-            'tenant_modules', 'whatsapp_messages',
-            'diagnostics_eleves', 'plans_rattrapage', 'convocations_parents',
-            'signalements_comportement', 'notifications_parent',
+            'absences_enseignants', 'absences_journalieres', 'alertes_surveillance',
+            'arrets_bus', 'articles_stock', 'audit_log_exports', 'audit_logs',
+            'avis', 'avis_marketplace', 'badges', 'billets', 'bons_commande',
+            'breach_declarations', 'budget_previsionnel', 'bulletins',
+            'cameras_config', 'campagnes', 'candidats_examen',
+            'circuits_transport', 'conges_personnel', 'consentements_rgpd',
+            'contrats', 'conversations', 'convocations_parents', 'cours',
+            'demandes_rgpd', 'depenses', 'device_tokens', 'devoirs',
+            'diagnostics_eleves', 'eleves', 'emprunts_bibliotheque',
+            'enseignants', 'entretiens_preventifs', 'evaluations', 'factures',
+            'favoris_marketplace', 'feedbacks_pedagogiques', 'field_permissions',
+            'google_classroom_connexions', 'google_course_liaisons',
+            'google_sync_logs', 'groupes', 'historique_diagnostics',
+            'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
+            'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
+            'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
+            'locaux_batiment', 'marketplace_commissions', 'matieres',
+            'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',
+            'notes', 'notifications', 'notifications_inapp',
+            'notifications_parent', 'offres_cours', 'offres_publiques',
+            'paiements', 'paies', 'paies_personnel', 'parametres', 'parents',
+            'personnel_non_enseignant', 'plans_fractionnement',
+            'plans_rattrapage', 'pointage_bus', 'pointage_enseignants',
+            'pointage_personnel', 'predictions_echec', 'presences',
+            'prestataires_entretien', 'prets_materiel',
+            'profils_apprentissage', 'profils_marketplace', 'refresh_tokens',
+            'repas_journaliers', 'reservations', 'reservations_marketplace',
+            'roles', 'salles', 'salles_examen', 'seances', 'security_events',
+            'sessions_examen', 'signalements_comportement',
+            'signalements_graves_eleves', 'stock_cuisine',
+            'super_admin_actions', 'surveillants_examen', 'tenant_modules',
+            'tranches_fractionnement', 'transport_eleves', 'users',
+            'whatsapp_messages',
         ];
 
         foreach ($tables as $table) {
@@ -55,12 +77,17 @@ return new class extends Migration
                 DB::statement("ALTER TABLE {$table} ENABLE ROW LEVEL SECURITY");
 
                 DB::statement("DROP POLICY IF EXISTS tenant_isolation_policy ON {$table}");
+
+                // La colonne tenant_id peut être uuid OU varchar(36) selon les
+                // tables (field_permissions est une chaîne). L'opérateur
+                // varchar = uuid n'existe pas et ferait échouer CREATE POLICY :
+                // on compare donc les deux valeurs en leur type texte.
                 DB::statement("
                     CREATE POLICY tenant_isolation_policy ON {$table}
                     USING (
                         current_setting('app.current_tenant_id', true) IS NULL
                         OR current_setting('app.current_tenant_id', true) = ''
-                        OR tenant_id = current_setting('app.current_tenant_id', true)::uuid
+                        OR tenant_id::text = current_setting('app.current_tenant_id', true)
                     )
                 ");
 
@@ -84,9 +111,39 @@ return new class extends Migration
         }
 
         $tables = [
-            'eleves', 'users', 'groupes', 'cours', 'seances',
-            'presences', 'evaluations', 'notes', 'bulletins',
-            'factures', 'paiements', 'absences_journalieres', 'billets',
+            'absences_enseignants', 'absences_journalieres', 'alertes_surveillance',
+            'arrets_bus', 'articles_stock', 'audit_log_exports', 'audit_logs',
+            'avis', 'avis_marketplace', 'badges', 'billets', 'bons_commande',
+            'breach_declarations', 'budget_previsionnel', 'bulletins',
+            'cameras_config', 'campagnes', 'candidats_examen',
+            'circuits_transport', 'conges_personnel', 'consentements_rgpd',
+            'contrats', 'conversations', 'convocations_parents', 'cours',
+            'demandes_rgpd', 'depenses', 'device_tokens', 'devoirs',
+            'diagnostics_eleves', 'eleves', 'emprunts_bibliotheque',
+            'enseignants', 'entretiens_preventifs', 'evaluations', 'factures',
+            'favoris_marketplace', 'feedbacks_pedagogiques', 'field_permissions',
+            'google_classroom_connexions', 'google_course_liaisons',
+            'google_sync_logs', 'groupes', 'historique_diagnostics',
+            'inscriptions', 'inscriptions_cantine', 'interventions_entretien',
+            'justificatifs_absence', 'lignes_bon_commande', 'lignes_facture',
+            'livres_bibliotheque', 'lms_cours', 'lms_inscriptions',
+            'locaux_batiment', 'marketplace_commissions', 'matieres',
+            'menus_cantine', 'mouvements_stock', 'mouvements_stock_cuisine',
+            'notes', 'notifications', 'notifications_inapp',
+            'notifications_parent', 'offres_cours', 'offres_publiques',
+            'paiements', 'paies', 'paies_personnel', 'parametres', 'parents',
+            'personnel_non_enseignant', 'plans_fractionnement',
+            'plans_rattrapage', 'pointage_bus', 'pointage_enseignants',
+            'pointage_personnel', 'predictions_echec', 'presences',
+            'prestataires_entretien', 'prets_materiel',
+            'profils_apprentissage', 'profils_marketplace', 'refresh_tokens',
+            'repas_journaliers', 'reservations', 'reservations_marketplace',
+            'roles', 'salles', 'salles_examen', 'seances', 'security_events',
+            'sessions_examen', 'signalements_comportement',
+            'signalements_graves_eleves', 'stock_cuisine',
+            'super_admin_actions', 'surveillants_examen', 'tenant_modules',
+            'tranches_fractionnement', 'transport_eleves', 'users',
+            'whatsapp_messages',
         ];
 
         foreach ($tables as $table) {

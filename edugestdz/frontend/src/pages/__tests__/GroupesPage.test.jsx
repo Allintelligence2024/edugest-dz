@@ -82,7 +82,11 @@ describe('GroupesPage', () => {
 
   it('renders niveau filter', () => {
     renderGroupes();
-    expect(screen.getByText('Niveau')).toBeInTheDocument();
-    expect(screen.getByText('Statut')).toBeInTheDocument();
+    // Cible le <select> et non le libellé : « Niveau » et « Statut » sont
+    // aussi des en-têtes de colonne. Tant que FilterBar ne rendait rien,
+    // cette assertion passait sur l'en-tête de tableau — elle validait donc
+    // une barre de filtres absente.
+    expect(screen.getByRole('combobox', { name: 'Niveau' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Statut' })).toBeInTheDocument();
   });
 });

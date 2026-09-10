@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Cache;
 
 class EleveService
 {
+    /** Préfixe de format des jetons QR (permet de faire évoluer le schéma). */
+    private const QR_PREFIX = 'EGQR1';
+
     public function genererNumero(): string
     {
         $tenantId = config('tenant.current_id');
@@ -31,51 +34,150 @@ class EleveService
             $qr   = \QrCode::format('png')->size(300)->generate(json_encode(['token' => $token]));
             $path = "qrcodes/eleves/{$eleve->tenant_id}/{$eleve->id}.png";
             \Storage::disk('public')->put($path, $qr);
-            \Storage::disk('public')->put("qrcodes/eleves/{$eleve->tenant_id}/{$eleve->id}.token", $token);
-            $eleve->update(['qr_code' => $path]);
+            $eleve->forceFill(['qr_code' => $path])->save();
         } catch (\Throwable $e) {
             \Log::warning('QR Code generation skipped: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Génère (et persiste) le jeton QR de présence d'un élève.
+     *
+     * Le jeton est signé par HMAC-SHA256 avec une clé DÉDIÉE (config
+     * security.qr.signing_key), indépendante de APP_KEY : faire tourner
+     * APP_KEY n'invalide pas les badges déjà imprimés.
+     *
+     * Format : "EGQR1.<payload base64url>.<signature base64url>"
+     * Le payload est déterministe (pas de now()) : régénérer le jeton pour un
+     * même élève et une même version produit exactement la même chaîne, ce qui
+     * rend la vérification idempotente.
+     */
     public function genererTokenQR(Eleve $eleve): string
     {
-        $payload = json_encode([
-            'eleve'  => $eleve->id,
-            'tenant' => $eleve->tenant_id,
-            'nom'    => "{$eleve->nom} {$eleve->prenom}",
-            'iat'    => now()->timestamp,
-        ]);
+        $version = (int) ($eleve->qr_version ?: 1);
 
-        return \Hash::make($payload . config('app.key') . $eleve->id);
+        $payload = [
+            'v' => $version,
+            'e' => (string) $eleve->id,
+            't' => (string) $eleve->tenant_id,
+        ];
+
+        $body      = $this->b64url(json_encode($payload, JSON_UNESCAPED_UNICODE));
+        $signature = $this->b64url(hash_hmac('sha256', $body, $this->qrSigningKey(), true));
+        $token     = self::QR_PREFIX . '.' . $body . '.' . $signature;
+
+        // On stocke l'empreinte du jeton, jamais le jeton lui-même :
+        // une fuite de la base ne permet pas de fabriquer un badge valide.
+        $hash = hash('sha256', $token);
+
+        if ($eleve->qr_token_hash !== $hash || $eleve->qr_generated_at === null) {
+            $eleve->forceFill([
+                'qr_token_hash'   => $hash,
+                'qr_version'      => $version,
+                'qr_generated_at' => now(),
+            ])->save();
+        }
+
+        return $token;
     }
 
+    /**
+     * Révoque le badge courant d'un élève (perte/vol) en incrémentant sa
+     * version : l'ancien jeton ne correspondra plus à aucune empreinte.
+     */
+    public function revoquerTokenQR(Eleve $eleve): string
+    {
+        $eleve->forceFill([
+            'qr_version'    => (int) ($eleve->qr_version ?: 1) + 1,
+            'qr_token_hash' => null,
+        ])->save();
+
+        return $this->genererTokenQR($eleve->refresh());
+    }
+
+    /**
+     * Vérifie un jeton QR et retourne son payload, ou null si invalide.
+     *
+     * Coût : O(1) — un seul index scan sur (tenant_id, qr_token_hash).
+     */
     public function verifierTokenQR(string $token): ?array
     {
-        if (!str_starts_with($token, '$2y$') && !str_starts_with($token, '$2a$')) {
+        $parts = explode('.', $token);
+
+        if (count($parts) !== 3 || $parts[0] !== self::QR_PREFIX) {
             return null;
         }
 
-        // Parcourt les tokens stockés (en production, utiliser cache/index)
-        $eleves = Eleve::where('tenant_id', config('tenant.current_id'))
-            ->whereNotNull('qr_code')
-            ->get();
+        [, $body, $signature] = $parts;
 
-        foreach ($eleves as $eleve) {
-            if (\Hash::check(
-                json_encode([
-                    'eleve'  => $eleve->id,
-                    'tenant' => $eleve->tenant_id,
-                    'nom'    => "{$eleve->nom} {$eleve->prenom}",
-                    'iat'    => $eleve->updated_at->timestamp,
-                ]) . config('app.key') . $eleve->id,
-                $token
-            )) {
-                return ['eleve' => $eleve->id, 'tenant' => $eleve->tenant_id, 'nom' => "{$eleve->nom} {$eleve->prenom}"];
-            }
+        // 1. Vérification cryptographique de la signature (temps constant).
+        $attendu = $this->b64url(hash_hmac('sha256', $body, $this->qrSigningKey(), true));
+
+        if (!hash_equals($attendu, $signature)) {
+            return null;
         }
 
-        return null;
+        $payload = json_decode($this->b64urlDecode($body), true);
+
+        if (!is_array($payload) || empty($payload['e']) || empty($payload['t'])) {
+            return null;
+        }
+
+        // 2. Le jeton doit appartenir au tenant courant : une signature valide
+        //    d'un autre établissement ne donne aucun accès ici.
+        $tenantCourant = config('tenant.current_id');
+
+        if ($tenantCourant !== null && (string) $payload['t'] !== (string) $tenantCourant) {
+            return null;
+        }
+
+        // 3. Lookup indexé sur l'empreinte : garantit que le jeton est bien
+        //    celui actuellement actif (révocation par qr_version).
+        $eleve = Eleve::withoutGlobalScope('tenant')
+            ->where('tenant_id', $payload['t'])
+            ->where('qr_token_hash', hash('sha256', $token))
+            ->first();
+
+        if (!$eleve) {
+            return null;
+        }
+
+        // 4. Expiration éventuelle du badge.
+        $ttlDays = config('security.qr.ttl_days');
+
+        if ($ttlDays && $eleve->qr_generated_at
+            && now()->greaterThan($eleve->qr_generated_at->copy()->addDays((int) $ttlDays))) {
+            return null;
+        }
+
+        return [
+            'eleve'  => $eleve->id,
+            'tenant' => $eleve->tenant_id,
+            'nom'    => "{$eleve->nom} {$eleve->prenom}",
+        ];
+    }
+
+    private function qrSigningKey(): string
+    {
+        $key = (string) config('security.qr.signing_key');
+
+        // APP_KEY Laravel est préfixée "base64:" — on la décode pour disposer
+        // des 32 octets d'entropie réels.
+        if (str_starts_with($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7)) ?: $key;
+        }
+
+        return $key;
+    }
+
+    private function b64url(string $raw): string
+    {
+        return rtrim(strtr(base64_encode($raw), '+/', '-_'), '=');
+    }
+
+    private function b64urlDecode(string $encoded): string
+    {
+        return (string) base64_decode(strtr($encoded, '-_', '+/'));
     }
 
     public function calculerMoyenne(?string $eleveId, ?string $groupeId = null, ?string $trimestre = null): float

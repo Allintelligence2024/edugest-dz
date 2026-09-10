@@ -8,34 +8,22 @@ use Illuminate\Support\Str;
 
 class HoneypotService
 {
-    private array $routesLeurres = [
-        '/api/v1/phpinfo',
-        '/api/v1/server-status',
-        '/api/v1/actuator',
-        '/api/v1/metrics',
-        '/api/v1/.env',
-        '/api/v1/admin',
-        '/api/v1/debug',
-        '/api/v1/backup',
-        '/api/v1/config',
-        '/api/v1/dump',
-        '/api/v1/.git/config',
-        '/api/v1/swagger.json',
-        '/api/v1/graphql',
-        '/api/v1/health/check',
-        '/api/v1/ping',
-        '/api/v1/test',
-        '/api/v1/api-docs',
-        '/api/v1/robots.txt',
-        '/api/v1/sitemap.xml',
-        '/api/v1/cron',
-        '/api/v1/deploy',
-        '/api/v1/websocket',
-    ];
-
+    /**
+     * Chemins des leurres, préfixés /api.
+     *
+     * Lus depuis config('security.honeypot.routes'), qui est la source
+     * unique : le fichier de routes enregistre exactement la même liste.
+     * Avant cette centralisation, ce service portait sa propre copie en dur
+     * et les deux avaient divergé de six entrées.
+     *
+     * @return list<string>
+     */
     public function getRoutesLeurres(): array
     {
-        return $this->routesLeurres;
+        return array_values(array_map(
+            static fn (string $chemin): string => '/api' . $chemin,
+            config('security.honeypot.routes', [])
+        ));
     }
 
     public function declencherRouteLeurre(): JsonResponse

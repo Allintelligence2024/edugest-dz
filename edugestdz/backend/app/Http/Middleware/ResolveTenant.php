@@ -14,14 +14,17 @@ class ResolveTenant
         // ── Récupérer l'utilisateur connecté ──
         $user = Auth::user();
 
+        // 403 et non 404 : un 404 indiquerait à un attaquant que la
+        // ressource n'existe pas, alors que la vraie raison est un défaut
+        // d'habilitation. On ne divulgue pas d'information d'existence.
         if (!$user || !$user->tenant_id) {
             return response()->json([
                 'success' => false,
                 'error'   => [
-                    'code'    => 'TENANT_NOT_FOUND',
-                    'message' => 'Centre introuvable'
+                    'code'    => 'TENANT_FORBIDDEN',
+                    'message' => 'Accès à cet établissement non autorisé'
                 ]
-            ], 404);
+            ], 403);
         }
 
         // ── Charger le tenant ──
@@ -31,10 +34,10 @@ class ResolveTenant
             return response()->json([
                 'success' => false,
                 'error'   => [
-                    'code'    => 'TENANT_NOT_FOUND',
-                    'message' => 'Centre introuvable'
+                    'code'    => 'TENANT_FORBIDDEN',
+                    'message' => 'Accès à cet établissement non autorisé'
                 ]
-            ], 404);
+            ], 403);
         }
 
         // ── Mettre le tenant en contexte global ──

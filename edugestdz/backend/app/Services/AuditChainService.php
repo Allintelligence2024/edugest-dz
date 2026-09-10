@@ -21,15 +21,18 @@ class AuditChainService
                 'timestamp' => now()->toIso8601String(),
             ]);
 
-            $payloadJson = json_encode($fullPayload);
+            $payloadJson = $this->encoderPayload($fullPayload);
             $dataHash = hash('sha256', $payloadJson);
-            $signature = hash_hmac('sha256', $nouveauNumero . ':' . $previousHash . ':' . $dataHash, config('app.key'));
+
+            $keyVersion = $this->versionCourante();
+            $signature  = $this->signer($nouveauNumero, $previousHash, $dataHash, $keyVersion);
 
             return AuditChain::create([
                 'bloc_numero' => $nouveauNumero,
                 'previous_hash' => $previousHash,
                 'data_hash' => $dataHash,
                 'signature' => $signature,
+                'key_version' => $keyVersion,
                 'payload' => $fullPayload,
                 'causer_id' => $causerId,
                 'causer_type' => $causerType,
@@ -67,11 +70,23 @@ class AuditChainService
                     ];
                 }
 
-                $expectedDataHash = hash('sha256', json_encode($bloc->payload));
+                $expectedDataHash = hash('sha256', $this->encoderPayload($bloc->payload));
                 if ($bloc->data_hash !== $expectedDataHash) {
                     $results['invalides'][] = [
                         'bloc_numero' => $bloc->bloc_numero,
                         'raison' => 'data_hash invalide (payload modifie)',
+                    ];
+                }
+
+                // Vérification de la SIGNATURE HMAC — absente jusqu'ici :
+                // sans elle, un attaquant ayant un accès en écriture à la base
+                // pouvait recalculer previous_hash et data_hash de façon
+                // cohérente et réécrire l'historique sans être détecté. Seule
+                // la signature, qui dépend d'un secret hors base, l'en empêche.
+                if (!$this->signatureValide($bloc)) {
+                    $results['invalides'][] = [
+                        'bloc_numero' => $bloc->bloc_numero,
+                        'raison' => 'signature HMAC invalide (bloc forge ou cle incorrecte)',
                     ];
                 }
 
@@ -87,5 +102,138 @@ class AuditChainService
     public function obtenirDernierBloc(): ?AuditChain
     {
         return AuditChain::orderByDesc('bloc_numero')->first();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SIGNATURE & ROTATION DE CLÉ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    /**
+     * Encodage canonique du payload.
+     *
+     * json_encode ne garantit pas un ordre stable si le tableau est
+     * reconstruit differemment (ex. relecture depuis JSONB PostgreSQL, qui
+     * réordonne les clés). On trie donc récursivement avant de hacher, sans
+     * quoi la vérification produirait de faux positifs.
+     */
+    public function encoderPayload(mixed $payload): string
+    {
+        // Le payload peut arriver sous trois formes : tableau PHP (écriture),
+        // tableau décodé par le cast Eloquent, ou chaîne JSON brute (bloc
+        // genesis inséré par la migration). On ramène tout à une structure
+        // PHP avant normalisation.
+        if (is_string($payload)) {
+            $decode  = json_decode($payload, true);
+            $payload = json_last_error() === JSON_ERROR_NONE ? $decode : $payload;
+        }
+
+        // Aller-retour JSON avant tri : garantit que le hachage calculé à
+        // l'écriture est identique à celui recalculé après relecture depuis
+        // PostgreSQL. Sans cette normalisation, la moindre différence de
+        // représentation introduite par le stockage (entiers, flottants,
+        // échappement unicode) produirait un « payload modifié » fantôme sur
+        // des blocs pourtant intacts.
+        $aplati  = json_decode(json_encode($payload), true);
+        $payload = $aplati ?? $payload;
+
+        $normalise = $this->trierRecursivement($payload);
+
+        return json_encode(
+            $normalise,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION
+        );
+    }
+
+    private function trierRecursivement(mixed $valeur): mixed
+    {
+        if (!is_array($valeur)) {
+            return $valeur;
+        }
+
+        $trie = array_map(fn ($v) => $this->trierRecursivement($v), $valeur);
+
+        // Uniquement pour les tableaux associatifs : préserver l'ordre des
+        // listes indexées, qui est signifiant.
+        if (!array_is_list($trie)) {
+            ksort($trie);
+        }
+
+        return $trie;
+    }
+
+    /** Version de clé utilisée pour signer les nouveaux blocs. */
+    public function versionCourante(): int
+    {
+        return (int) config('security.audit.key_version', 1);
+    }
+
+    /**
+     * Clé HMAC d'une version donnée.
+     *
+     * Volontairement distincte de APP_KEY : une rotation d'APP_KEY ne doit
+     * jamais invalider la chaîne d'audit.
+     */
+    private function cle(int $version): ?string
+    {
+        $cles = config('security.audit.keys', []);
+        $cle  = $cles[$version] ?? null;
+
+        if (!$cle) {
+            return null;
+        }
+
+        if (str_starts_with($cle, 'base64:')) {
+            $cle = base64_decode(substr($cle, 7)) ?: $cle;
+        }
+
+        return $cle;
+    }
+
+    public function signer(int $blocNumero, string $previousHash, string $dataHash, int $keyVersion): string
+    {
+        $cle = $this->cle($keyVersion);
+
+        if ($cle === null) {
+            throw new \RuntimeException(
+                "Cle de signature d'audit introuvable pour la version {$keyVersion}. "
+                . 'Definir AUDIT_CHAIN_KEY dans l\'environnement.'
+            );
+        }
+
+        return hash_hmac(
+            'sha256',
+            $blocNumero . ':' . $previousHash . ':' . $dataHash,
+            $cle
+        );
+    }
+
+    /** La signature d'un bloc correspond-elle a la cle de SA version ? */
+    public function signatureValide(AuditChain $bloc): bool
+    {
+        // Le bloc genesis est cree par la migration avec un simple sha256.
+        if ((int) $bloc->bloc_numero === 0) {
+            return true;
+        }
+
+        $version = (int) ($bloc->key_version ?: 1);
+        $cle     = $this->cle($version);
+
+        if ($cle === null) {
+            Log::warning('AuditChain: cle absente pour la version demandee', [
+                'bloc_numero' => $bloc->bloc_numero,
+                'key_version' => $version,
+            ]);
+
+            return false;
+        }
+
+        $attendue = $this->signer(
+            (int) $bloc->bloc_numero,
+            $bloc->previous_hash,
+            $bloc->data_hash,
+            $version
+        );
+
+        return hash_equals($attendue, (string) $bloc->signature);
     }
 }
