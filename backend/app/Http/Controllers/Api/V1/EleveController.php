@@ -6,10 +6,9 @@ use App\Http\Controllers\Api\BaseApiController;
 use App\Http\Requests\Eleve\StoreEleveRequest;
 use App\Http\Requests\Eleve\UpdateEleveRequest;
 use App\Http\Resources\EleveDetailResource;
-use App\Models\{Eleve, ParentEleve};
-use App\Services\{EleveService};
+use App\Models\Eleve;
+use App\Services\{EleveDossierService, EleveSuiviService};
 use Illuminate\Http\{Request, JsonResponse};
-use Illuminate\Support\Facades\{DB, Storage};
 use Maatwebsite\Excel\Facades\Excel;
 
 class EleveController extends BaseApiController
@@ -25,7 +24,8 @@ class EleveController extends BaseApiController
     protected ?string $colonnePerimetreEleve = 'id';
 
     public function __construct(
-        private EleveService $eleveService
+        private EleveDossierService $dossier,
+        private EleveSuiviService $suivi,
     ) {}
 
     /**
@@ -126,33 +126,10 @@ class EleveController extends BaseApiController
      */
     public function store(StoreEleveRequest $request): JsonResponse
     {
-        $eleve = DB::transaction(function () use ($request) {
-            $numero = $this->eleveService->genererNumero();
-
-            $eleve = Eleve::create([
-                ...$request->validated(),
-                'numero_inscription' => $numero,
-                'tenant_id'          => config('tenant.current_id'),
-            ]);
-
-            if ($request->has('parents')) {
-                foreach ($request->parents as $index => $parentData) {
-                    $parent = ParentEleve::firstOrCreate(
-                        ['telephone_1' => $parentData['telephone_1'], 'tenant_id' => config('tenant.current_id')],
-                        [...$parentData, 'tenant_id' => config('tenant.current_id')]
-                    );
-                    $eleve->parents()->attach($parent->id, ['est_principal' => $index === 0]);
-                }
-            }
-
-            $this->eleveService->genererQRCode($eleve);
-            return $eleve;
-        });
-
-        cache()->forget("eleves_stats_" . config('tenant.current_id'));
+        $eleve = $this->dossier->store($request)['eleve'];
 
         return $this->created(
-            $eleve->load(['wilaya', 'commune', 'parents']),
+            $eleve,
             "Élève {$eleve->nom} {$eleve->prenom} inscrit avec succès"
         );
     }
@@ -171,39 +148,17 @@ class EleveController extends BaseApiController
      */
     public function show(string $id): JsonResponse
     {
-        $eleve = Eleve::with([
-            'wilaya:id,nom_fr',
-            'commune:id,nom_fr',
-            'inscriptions' => fn($q) => $q->where('statut', 'validée')
-                ->with('groupe:id,nom,matiere_id'),
-            'parents:id,nom,prenom,telephone_1,email,lien',
-            'notes' => fn($q) => $q->whereNotNull('note')
-                ->latest()->limit(50)
-                ->with('evaluation:id,type_eval,trimestre,note_sur,coefficient,date_evaluation'),
-            'absencesJournalieres' => fn($q) => $q->latest()->limit(20),
-            'diagnosticEleve:id,eleve_id,score_risque,niveau_global,matieres_en_danger',
-            'factures' => fn($q) => $q->whereIn('statut', ['émise', 'en_retard', 'partiellement_payée'])
-                ->with('paiements'),
-        ])
-        ->withCount([
-            'presences',
-            'presences as presences_presentes' => fn($q) => $q->whereIn('statut', ['présent', 'retard']),
-            'factures as factures_impayees'    => fn($q) => $q->whereNotIn('statut', ['payée', 'annulée']),
-        ])
-        ->findOrFail($id);
+        $eleve = Eleve::findOrFail($id);
 
-        // Le scope tenant garantit déjà l'isolation inter-établissements ;
-        // ici on vérifie le périmètre INTRA-tenant (parent -> ses enfants,
-        // enseignant -> ses groupes).
         if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
             return $reponse;
         }
 
-        $stats = $this->eleveService->getStatsAcademiques($eleve);
+        $result = $this->suivi->show($eleve);
 
         return $this->success([
-            'eleve'       => new EleveDetailResource($eleve),
-            'statistiques'=> $stats,
+            'eleve'       => new EleveDetailResource($result['eleve']),
+            'statistiques'=> $result['statistiques'],
         ]);
     }
 
@@ -222,13 +177,11 @@ class EleveController extends BaseApiController
      */
     public function update(UpdateEleveRequest $request, string $id): JsonResponse
     {
-        $eleve = Eleve::findOrFail($id);
-        $eleve->update($request->validated());
-
-        cache()->forget("eleves_stats_" . config('tenant.current_id'));
+        $eleve  = Eleve::findOrFail($id);
+        $result = $this->dossier->update($eleve, $request->validated());
 
         return $this->success(
-            $eleve->fresh(['wilaya', 'commune', 'parents']),
+            $result['eleve'],
             'Élève mis à jour avec succès'
         );
     }
@@ -247,39 +200,22 @@ class EleveController extends BaseApiController
      */
     public function destroy(string $id): JsonResponse
     {
-        $eleve = Eleve::findOrFail($id);
+        $eleve  = Eleve::findOrFail($id);
+        $result = $this->dossier->destroy($eleve);
 
-        $impayes = $eleve->factures()
-            ->whereNotIn('statut', ['payée', 'annulée'])
-            ->count();
-
-        if ($impayes > 0) {
-            return $this->error(
-                "Impossible de supprimer : {$impayes} facture(s) impayée(s)",
-                'HAS_UNPAID_INVOICES', 422
-            );
+        if (isset($result['error'])) {
+            return $this->error($result['error'], 'HAS_UNPAID_INVOICES', 422);
         }
 
-        $nom = "{$eleve->nom} {$eleve->prenom}";
-        $eleve->update(['statut' => 'inactif']);
-        $eleve->delete();
-
-        return $this->success(null, "{$nom} a été archivé");
+        return $this->success(null, $result['message']);
     }
 
     public function uploadPhoto(Request $request, string $id): JsonResponse
     {
-        $request->validate(['photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048']);
+        $eleve  = Eleve::findOrFail($id);
+        $result = $this->dossier->uploadPhoto($eleve, $request);
 
-        $eleve = Eleve::findOrFail($id);
-        if ($eleve->photo_url) {
-            Storage::disk('public')->delete($eleve->photo_url);
-        }
-
-        $path = $request->file('photo')->store("photos/eleves/{$eleve->tenant_id}", 'public');
-        $eleve->update(['photo_url' => $path]);
-
-        return $this->success(['photo_url' => Storage::url($path)], 'Photo mise à jour');
+        return $this->success(['photo_url' => $result['photo_url']], 'Photo mise à jour');
     }
 
     public function notes(Request $request, string $id): JsonResponse
@@ -290,33 +226,12 @@ class EleveController extends BaseApiController
             return $reponse;
         }
 
-        $notes = $eleve->notes()
-            ->with(['evaluation' => fn($q) => $q->with('groupe.matiere:id,nom_fr,couleur,coefficient')])
-            ->when($request->trimestre, fn($q) => $q->whereHas('evaluation', fn($eq) => $eq->where('trimestre', $request->trimestre)))
-            ->when($request->groupe_id, fn($q) => $q->whereHas('evaluation', fn($eq) => $eq->where('groupe_id', $request->groupe_id)))
-            ->get();
-
-        $parMatiere = $notes->groupBy(fn($n) => $n->evaluation->groupe->matiere->nom_fr)
-            ->map(fn($groupNotes, $matiere) => [
-                'matiere'     => $matiere,
-                'couleur'     => $groupNotes->first()->evaluation->groupe->matiere->couleur ?? '#1E5EBC',
-                'coefficient' => $groupNotes->first()->evaluation->groupe->matiere->coefficient,
-                'notes'       => $groupNotes->map(fn($n) => [
-                    'id'       => $n->id,
-                    'note'     => $n->note,
-                    'note_sur' => $n->evaluation->note_sur,
-                    'appreciation' => $n->appreciation,
-                    'type'     => $n->evaluation->type_eval,
-                    'date'     => $n->evaluation->date_evaluation,
-                    'absent'   => $n->absent,
-                ])->values(),
-                'moyenne' => $groupNotes->whereNotNull('note')->avg(fn($n) => ($n->note / $n->evaluation->note_sur) * 20),
-            ])->values();
+        $result = $this->suivi->notes($eleve, $request);
 
         return $this->success([
-            'notes'            => $parMatiere,
-            'moyenne_generale' => $this->eleveService->calculerMoyenne($eleve->id, $request->groupe_id, $request->trimestre),
-            'taux_presence'    => $this->eleveService->calculerTauxPresence($eleve->id),
+            'notes'            => $result['notes'],
+            'moyenne_generale' => $result['moyenne_generale'],
+            'taux_presence'    => $result['taux_presence'],
         ]);
     }
 
@@ -328,24 +243,9 @@ class EleveController extends BaseApiController
             return $reponse;
         }
 
-        $presences = $eleve->presences()
-            ->with(['seance' => fn($q) => $q->with([
-                'cours.groupe.matiere:id,nom_fr,couleur',
-                'cours.enseignant:id,nom,prenom',
-            ])])
-            ->when($request->mois, fn($q) => $q->whereMonth('created_at', $request->mois))
-            ->when($request->annee, fn($q) => $q->whereYear('created_at', $request->annee))
-            ->orderByDesc('created_at')
-            ->paginate(20);
+        $result = $this->suivi->presences($eleve, $request);
 
-        $statsPresence = [
-            'total'   => $eleve->presences()->count(),
-            'presents'=> $eleve->presences()->whereIn('statut', ['présent','retard'])->count(),
-            'absents' => $eleve->presences()->where('statut', 'absent')->count(),
-            'taux'    => $this->eleveService->calculerTauxPresence($eleve->id),
-        ];
-
-        return $this->paginatedResponse($presences, 'Présences récupérées', ['stats' => $statsPresence]);
+        return $this->paginatedResponse($result['paginator'], 'Présences récupérées', ['stats' => $result['stats']]);
     }
 
     public function paiements(string $id): JsonResponse
@@ -356,23 +256,11 @@ class EleveController extends BaseApiController
             return $reponse;
         }
 
-        $totalPaye  = $eleve->paiements()
-            ->where('statut', 'confirmé')->sum('montant');
-        $totalDette = max(0, $eleve->factures()
-            ->whereNotIn('statut', ['payée', 'annulée'])->sum('total_ttc')
-            - $eleve->paiements()
-                ->whereHas('facture', fn($q) => $q->whereNotIn('statut', ['payée', 'annulée']))
-                ->where('statut', 'confirmé')
-                ->sum('montant'));
+        $result = $this->suivi->paiements($eleve);
 
         return $this->success([
-            'factures'  => $eleve->factures()->with('paiements', 'lignes')->orderByDesc('date_emission')->get(),
-            'financier' => [
-                'total_paye'  => $totalPaye,
-                'total_dette' => $totalDette,
-                'nb_factures' => $eleve->factures()->count(),
-                'nb_impayes'  => $eleve->factures()->whereNotIn('statut', ['payée', 'annulée'])->count(),
-            ],
+            'factures'  => $result['factures'],
+            'financier' => $result['financier'],
         ]);
     }
 
@@ -383,59 +271,35 @@ class EleveController extends BaseApiController
         if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
             return $reponse;
         }
-        return $this->success(
-            $eleve->bulletins()->with('groupe')->orderByDesc('created_at')->get()
-        );
+
+        $result = $this->suivi->bulletins($eleve);
+
+        return $this->success($result['bulletins']);
     }
 
     public function statistiques(string $id): JsonResponse
     {
-        $eleve = Eleve::withCount([
-            'inscriptions',
-            'presences as total_presences' => fn($q) => $q->whereIn('statut', ['présent', 'retard']),
-        ])->findOrFail($id);
+        $eleve = Eleve::findOrFail($id);
 
         if ($reponse = $this->verifierPerimetreEleve($eleve->id)) {
             return $reponse;
         }
 
-        return $this->success($eleve);
+        $result = $this->suivi->statistiques($eleve);
+
+        return $this->success($result['eleve']);
     }
 
     public function inscrire(Request $request, string $id): JsonResponse
     {
-        $validated = $request->validate([
-            'groupe_id'      => 'required|uuid|exists:groupes,id',
-            'annee_scolaire' => 'nullable|string|regex:/^\d{4}-\d{4}$/',
-            'date_inscription'=> 'nullable|date',
-        ]);
-
         $eleve  = Eleve::findOrFail($id);
-        $groupe = \App\Models\Groupe::findOrFail($validated['groupe_id']);
+        $result = $this->dossier->inscrire($eleve, $request->all());
 
-        $dejaInscrit = $eleve->inscriptions()
-            ->where('groupe_id', $groupe->id)
-            ->where('statut', 'validée')
-            ->exists();
-
-        if ($dejaInscrit) {
-            return $this->error("L'élève est déjà inscrit dans ce groupe", 'ALREADY_ENROLLED', 409);
+        if (isset($result['error'])) {
+            return $this->error($result['error'], $result['code'], 409);
         }
 
-        $nbInscrits = $groupe->inscriptions()->where('statut', 'validée')->count();
-        if ($nbInscrits >= $groupe->capacite_max) {
-            return $this->error("Le groupe est complet ({$groupe->capacite_max} max)", 'GROUP_FULL', 409);
-        }
-
-        $inscription = $eleve->inscriptions()->create([
-            'tenant_id'       => config('tenant.current_id'),
-            'groupe_id'       => $groupe->id,
-            'date_inscription'=> $validated['date_inscription'] ?? now()->toDateString(),
-            'statut'          => 'validée',
-            'inscrit_par'     => auth('api')->id(),
-        ]);
-
-        return $this->created($inscription->load('groupe'), "Inscription au groupe {$groupe->nom} validée");
+        return $this->created($result['inscription'], $result['message']);
     }
 
     public function import(Request $request): JsonResponse

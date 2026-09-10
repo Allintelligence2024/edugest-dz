@@ -8369,3 +8369,75 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Eleve\>\:\:create\(\) expects array\<model property of App\\Models\\Eleve, mixed\>, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/EleveDossierService.php
+
+		-
+			message: '#^Parameter \#2 \$values of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\ParentEleve\>\:\:firstOrCreate\(\) expects array\<model property of App\\Models\\ParentEleve, mixed\>, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/EleveDossierService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$absent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$appreciation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$evaluation\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$note\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/EleveSuiviService.php
