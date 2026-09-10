@@ -291,7 +291,120 @@ edugest-dz/
 
 | Point | Raison |
 |-------|--------|
-| **5.3** Découpe des contrôleurs > 350 lignes | Budget fait (442 → 273, 3 services). Restent 8 contrôleurs, voir `scripts/controleurs-baseline.txt`. |
-| **5.6** i18next + icônes lucide | Non entamé. |
+| **5.3** Découpe des contrôleurs > 350 lignes | ✅ Fait le 10 sept. — 9/9 (Budget, Stock, Entretien, Transport, Cantine, Lms, PaiementEnLigne, Eleve, Auth), `scripts/controleurs-baseline.txt` vide. |
+| **5.6** i18next + icônes lucide | Phase 1 faite le 10 sept. (socle i18next, § 5.6 ci-dessous). Restent : phase 2 (emoji → lucide, 515 occ. / 55 fichiers, garde-fou en place) et phase 3 (littéraux → `t()`, 96 fichiers). |
 | Coverage backend 45 → 60 % | **Mesuré : 60,71 %** (run `main`, annotation clover). Seuil rendu réellement bloquant à 45 ; relèvement à 60 à décider sur mesure post-5.3. |
 | Tests mobile (auth, présence, paiement) | Report du Sprint 4, toujours ouvert. |
+
+---
+
+## 5.6 — i18next, phase 1 : le socle (10 sept.)
+
+Le point 5.6 demandait « migrer vers i18next + remplacer les emoji JSX par
+lucide ». Mesure avant découpage, comme d'habitude :
+
+| Mesure (10 sept., outillage `grep`/python, pas à la main) | Valeur |
+|---|---|
+| Dicts `src/lang/{fr,ar,en,dz}.json` | 208 clés chacun (+1 en dz), 4 placeholders `{name,from,to,total}` |
+| Appels `t(` en production | **7**, sans paramètres — le reste du front est en français codé en dur |
+| Fichiers avec littéraux français accentués | **96 / 154** js/jsx |
+| Emoji en dur hors tests | **515 occurrences / 55 fichiers** (541 / 65 avec les tests), 101 distincts |
+| `lucide-react` | déjà en dépendance (`^0.460.0`), `i18next` absent |
+
+La migration complète (socle + 55 fichiers d'emoji + 96 fichiers de
+littéraux) ne tient pas dans un lot relisable. Découpage assumé :
+
+- **Phase 1 (ce lot)** : socle i18next + façade compatible + garde-fou.
+- **Phase 2** : emoji → `lucide-react` (+ `aria-label`), table ci-dessous.
+- **Phase 3** : littéraux français → `t()` + traductions ar/en/dz.
+- Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
+  scope, noté pour le Sprint 6.
+
+### Ce qui a été fait (phase 1)
+
+- `frontend/src/i18n.js` (nouveau) : init i18next 26 + react-i18next 17,
+  ressources = les 4 JSON existants, `fallbackLng: fr`, `useSuspense: false`,
+  RTL via `document.dir`/`lang` (init + `languageChanged`), persistance
+  `localStorage`, helpers `formatNumber`/`formatDate` (Intl).
+- `frontend/src/context/I18nContext.jsx` : réécrit en **façade à API
+  inchangée** (`{ lang, t, changeLang, isRTL, LANG_META }`, + les 2 helpers).
+  Zéro composant modifié, y compris les 12 tests de pages qui montent le
+  provider. Écart sémantique documenté : `t(clé, { count })` déclenche
+  désormais les pluriels CLDR (aucun appelant actuel).
+- Placeholders `{x}` → `{{x}}` dans les 4 JSON (16 remplacements, diff 8+/8-,
+  format préservé). Vérifié : `I18nContext` est le seul importeur des
+  `lang/` côté frontend.
+- Darija : pluriels = règle arabe CLDR, réutilisée via
+  `pluralResolver.getRule('ar')` (pas de CLDR réécrit à la main) ; chiffres
+  latins (`ar-DZ-u-nu-latn`, usage algérien). Les deux choix sont gardés par
+  `src/i18n.test.js` (9 tests : init, interpolation, repli fr, clé manquante,
+  RTL, pluriels fr, pluriels dz 6 formes, formatters, `baseLang`).
+- `src/emoji-guard.test.js` : **cliquet bloquant** (plafonds 515 occ. /
+  55 fichiers). Mis en test vitest plutôt qu'en lint parce que le job CI
+  `lint` est `continue-on-error` : en lint, le garde ne garderait rien.
+- `package.json` + `package-lock.json` : `i18next ^26.4.2`, `react-i18next
+  ^17.0.13` (pairs vérifiés : react-i18next 17 exige i18next ≥ 26.2).
+  Lock régénéré (`--package-lock-only`, +67 lignes, `resolved`+`integrity`
+  vérifiés) pour que `npm ci` reste vert.
+- Vérifié sans `node_modules` : esbuild (5 fichiers syntaxiquement valides),
+  compteur du garde rejoué à l'identique (515/55), AST PHP du correctif
+  tenant (paragraphe suivant). Build + tests : CI après application du patch
+  workflows.
+
+Correctif embarqué (bug réel, trouvé pendant le Lot C) : `tenants` n'a pas
+de colonne `nom` (migration `0001` : `nom_etablissement` uniquement), donc
+`complete2fa` et `me` renvoyaient `"nom": null`. Passés à
+`nom_etablissement`, comme `login` ; idem la ligne console de
+`RelancesEcheanceCommand`. Non-régression : le frontend ne lit `tenant.nom`
+nulle part (`grep` vide). Fausse alerte refermée au passage : `complete2fa`
+**a** sa route (`POST auth/2fa/complete`, groupe public) — mon `grep -o ",
+'[a-zA-Z]*'"` l'avait manquée à cause du `2` (`[a-zA-Z]` sans chiffres).
+Leçon : ce pattern d'audit est à bannir, utiliser `[a-zA-Z0-9_]*`.
+
+### Phase 2 — table emoji → lucide (propositions à valider)
+
+Top occurrences mesurées. Noms lucide récents ; le build CI tranchera les
+renommages (`BarChart3`→`ChartColumn`, etc.). `aria-label` en français sur
+chaque icône porteuse de sens.
+
+| Occ. | Emoji | Proposition lucide | Note |
+|---|---|---|---|
+| 60 | ✅ | `CircleCheck` | succès, `aria-label="Valide"` |
+| 26 | ➕ | `Plus` | |
+| 17 | 🏫 | `School` | |
+| 16 | ❌ | `CircleX` | |
+| 15 | ⚠️ | `TriangleAlert` | |
+| 15 | 👨 | contextuel | parent/enseignant → `User`, selon écran |
+| 14 | ✕ | `X` | fermer/retirer (ne pas confondre avec ❌) |
+| 14 | 📊 | `ChartColumn` | (ancien `BarChart3`) |
+| 14 | ✏️ | `Pencil` | |
+| 11 | 📋 | `ClipboardList` | |
+| 11 | 🎓 | `GraduationCap` | |
+| 11 | 💰 | `Wallet` | (ou `Banknote` selon contexte) |
+| 11 | 👦 | contextuel | élève → avatar/`Smile`, selon écran |
+| 11 | 💾 | `Save` | |
+| 10 | 📚 | `BookOpen` | |
+| 10 | 🚨 | `Siren` | |
+| 9 | 🎉 | `PartyPopper` | |
+| 9 | 🔴 | `Circle` + `fill` | pastille statut (ou span CSS) |
+| 8 | 🗑️ | `Trash2` | |
+| 7 | 🔔 | `Bell` | |
+| 7 | ✓ | `Check` | (distinct de ✅ : coche simple) |
+| 7 | 🔄 | `RefreshCw` | |
+| 7 | 👤 | `User` | |
+| 6 | 📝 | `NotebookPen` | (repli : `FileText`) |
+| 6 | 📄 | `FileText` | |
+| 6 | 📍 | `MapPin` | |
+| 6 | 📱 | `Smartphone` | |
+| 5 | 🔍 | `Search` | |
+| 9 | ★ ☆ ⭐ | `Star` (+ `fill`) | notation ; ★ plein, ☆ vide |
+| 5 | 📅 | `CalendarDays` | (repli : `Calendar`) |
+| 5 | 👥 | `Users` | |
+
+Suite du top : ⚙️ `Settings`, 👁️ `Eye`, 👷 `HardHat`, ℹ️ `Info`,
+📦 `Package`, 💳 `CreditCard`, 👩 contextuel, 📷 `Camera`, 🔓 `LockOpen`,
+🎫 `Ticket`, 🍽️ `UtensilsCrossed`, 📧 `Mail`, ☀️/🌙 `Sun`/`Moon`,
+▾ `ChevronDown`. Cas spécial : **drapeaux 🇫🇷🇩🇿🇬🇧** (sélecteur de langue) —
+lucide n'a pas de drapeaux ; trancher en phase 2 (codes `FR/AR/EN/DZ`
+recommandés, ou images). Règle de fin : baisser les plafonds du garde-fou au
+fur et à mesure, fichier par fichier.

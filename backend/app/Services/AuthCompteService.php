@@ -24,7 +24,7 @@ class AuthCompteService
                 'data'    => $this->session->formatUser($user),
                 'tenant'  => $user->tenant ? [
                     'id'               => $user->tenant->id,
-                    'nom'              => $user->tenant->nom,
+                    'nom'              => $user->tenant->nom_etablissement,
                     'slug'             => $user->tenant->slug,
                     'statut'           => $user->tenant->statut,
                 ] : null,

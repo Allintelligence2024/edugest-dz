@@ -97,7 +97,7 @@ class RelancesEcheanceCommand extends Command
                 }
             }
 
-            $this->info("Tenant {$tenant->nom}: {$factures->count()} factures traitées");
+            $this->info("Tenant {$tenant->nom_etablissement}: {$factures->count()} factures traitées");
         }
 
         $this->info("Terminé. Relances: {$totalRelances}, Erreurs: {$totalErreurs}");

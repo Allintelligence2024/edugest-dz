@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import fr from '../lang/fr.json';
-import ar from '../lang/ar.json';
-import en from '../lang/en.json';
-import dz from '../lang/dz.json';
+import { createContext, useContext, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { baseLang, RTL_LANGS, formatDate, formatNumber } from '../i18n';
 
-const LANGUAGES = { fr, ar, en, dz };
-const RTL_LANGS  = ['ar', 'dz'];
+// Façade ascendante : l'API historique ({ lang, t, changeLang, isRTL,
+// LANG_META }) est inchangée, seul le moteur passe sur i18next.
+// Note : t(key, { count }) déclenche désormais les pluriels CLDR.
+const I18nContext = createContext(null);
 
 export const LANG_META = {
   fr: { label: 'Français',  flag: '🇫🇷', dir: 'ltr' },
@@ -14,44 +14,28 @@ export const LANG_META = {
   dz: { label: 'الدارجة', flag: '🇩🇿', dir: 'rtl' },
 };
 
-const I18nContext = createContext(null);
+const SUPPORTED = Object.keys(LANG_META);
 
 export function I18nProvider({ children }) {
-  const [lang, setLang] = useState(() => {
-    return localStorage.getItem('lang') || 'fr';
-  });
+  const { t: xt, i18n } = useTranslation();
+  const lang = baseLang(i18n.language);
 
-  useEffect(() => {
-    const dir = RTL_LANGS.includes(lang) ? 'rtl' : 'ltr';
-    document.documentElement.dir  = dir;
-    document.documentElement.lang = lang;
-  }, [lang]);
+  const t = useCallback((key, params = {}) => xt(key, params), [xt]);
 
-  const t = useCallback((key, params = {}) => {
-    const translations = LANGUAGES[lang] || LANGUAGES.fr;
-    let text = translations[key] || LANGUAGES.fr[key] || key;
-    Object.entries(params).forEach(([k, v]) => {
-      text = text.replace(`{${k}}`, String(v));
-    });
-    return text;
-  }, [lang]);
-
-  const changeLang = useCallback((newLang) => {
-    if (!LANGUAGES[newLang]) return;
-    setLang(newLang);
-    localStorage.setItem('lang', newLang);
-    const dir = RTL_LANGS.includes(newLang) ? 'rtl' : 'ltr';
-    document.documentElement.dir  = dir;
-    document.documentElement.lang = newLang;
-  }, []);
-
-  const isRTL = RTL_LANGS.includes(lang);
-
-  return (
-    <I18nContext.Provider value={{ lang, t, changeLang, isRTL, LANG_META }}>
-      {children}
-    </I18nContext.Provider>
+  const changeLang = useCallback(
+    (newLang) => {
+      if (!SUPPORTED.includes(newLang)) return Promise.resolve();
+      return i18n.changeLanguage(newLang);
+    },
+    [i18n]
   );
+
+  const value = useMemo(
+    () => ({ lang, t, changeLang, isRTL: RTL_LANGS.includes(lang), LANG_META, formatDate, formatNumber }),
+    [lang, t, changeLang]
+  );
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

@@ -17,8 +17,11 @@ successifs vérifiés le 10 sept.).
 Sprints 1–4 terminés. **Sprint 5 presque terminé** : P1-6, 5.1, 5.4, 5.5
 livrés (voir `docs/SPRINT5_ARCHITECTURE.md`), **5.2 fusionné le 10 sept.**
 (`68e4f1d` + `64c53c2`, workflows en `docs/fusion-workflows.patch`),
-Budget découpé (442 → 273 lignes). Restent **5.3** (8 contrôleurs) et
-**5.6** (i18next + lucide). Décision prise avec le propriétaire : finir le
+**5.3 fait le 10 sept.** (9/9 contrôleurs, baseline garde-fou vide) et
+**5.6 phase 1 faite** (socle i18next + garde-fou emoji, journal § 5.6).
+Correctif au passage : `tenant.nom` (colonne inexistante, `null` renvoyé)
+→ `nom_etablissement` dans `complete2fa`, `me` et `RelancesEcheanceCommand`.
+Reste **5.6 phases 2-3**. Décision prise avec le propriétaire : finir le
 Sprint 5 puis faire le Sprint 6 (production readiness), licence
 **propriétaire**, k6 en scénarios + documentation.
 
@@ -61,9 +64,9 @@ maintenu à 45 jusqu'à la mesure post-5.3.
 2. **Licence** : ✅ soldée le 10 sept. — `LICENSE` (propriétaire) +
    `SECURITY.md` à la racine, `composer.json` → `proprietary`,
    `package.json` → `UNLICENSED`.
-3. Finir le Sprint 5 : **5.3** découpe des 8 contrôleurs restants
-   (`scripts/controleurs-baseline.txt` + `verifier-controleurs.sh`),
-   **5.6** i18next et icônes lucide.
+3. Finir le Sprint 5 : **5.3** ✅ (9/9, garde-fou vide) ; **5.6** phase 2
+   (emoji → lucide, table § 5.6 du journal, garde-fou `emoji-guard.test.js`)
+   et phase 3 (littéraux français → `t()`, 96 fichiers mesurés).
 4. Générer la **baseline PHPStan** sur un poste disposant de PHP, puis rendre
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),

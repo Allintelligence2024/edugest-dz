@@ -198,7 +198,7 @@ class AuthSessionService
                 'user'          => $this->formatUser($user),
                 'tenant'        => $tenant ? [
                     'id'               => $tenant->id,
-                    'nom'              => $tenant->nom,
+                    'nom'              => $tenant->nom_etablissement,
                     'slug'             => $tenant->slug,
                     'statut'           => $tenant->statut,
                     'date_expiration'  => $tenant->date_expiration,

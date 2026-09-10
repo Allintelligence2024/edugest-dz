@@ -221,7 +221,8 @@
 > - ✅ **5.5 Versioning API** — `docs/VERSIONING_API.md`.
 > - ✅ **5.2 Fusion à la racine** (10 sept.) — 2 commits dédiés, 23 fichiers
 >   réécrits, workflows en `docs/fusion-workflows.patch` (cf. journal § 5.2).
-> - ⏳ **5.3, 5.6** — non entamés (Budget découpé : 442 → 273 lignes).
+> - ✅ **5.3** — fait le 10 sept. (9/9 contrôleurs découpés, garde-fou vide).
+> - ⏳ **5.6** — phase 1 faite le 10 sept. (socle i18next + garde-fou emoji, journal § 5.6) ; restent phases 2 (emoji → lucide) et 3 (littéraux → `t()`).
 > - ✅ **Coverage backend mesuré : 60,71 %** — le « palier bloquant » 45 %
 >   ne bloquait rien (`exit 0` inconditionnel) ; rendu réel, maintenu à 45
 >   jusqu'à la mesure post-5.3.
