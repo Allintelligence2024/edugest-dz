@@ -1,14 +1,32 @@
 import { useState, useEffect } from 'react';
 import { getAccessToken } from '../api/tokenStore';
 
+import {
+  AlertTriangle,
+  BarChart3,
+  BookOpen,
+  Bot,
+  CalendarDays,
+  CheckCircle,
+  Circle,
+  ClipboardList,
+  FileText,
+  GraduationCap,
+  NotebookPen,
+  Presentation,
+  Printer,
+  School,
+  User,
+} from 'lucide-react';
+
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
 const api = (path, opts) => fetch(`${BASE_URL}/api/v1${path}`, {
   headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type':'application/json', 'X-Tenant-ID': localStorage.getItem('tenantId') ?? '' },
   ...opts,
 }).then(r => r.json());
 
-const STATUTS = { brouillon:'⚪ Brouillon', planifie:'🔵 Planifié', en_cours:'🟡 En cours', termine:'🟢 Terminé', annule:'🔴 Annulé' };
-const TYPES   = { BEM:'📋 BEM', BAC:'🎓 BAC', autre:'📄 Autre' };
+const STATUTS = { brouillon: <><Circle size={10} aria-hidden="true" /> Brouillon</>, planifie: <><Circle size={10} fill="#60a5fa" color="#60a5fa" aria-hidden="true" /> Planifié</>, en_cours: <><Circle size={10} fill="#fbbf24" color="#fbbf24" aria-hidden="true" /> En cours</>, termine: <><Circle size={10} fill="#4ade80" color="#4ade80" aria-hidden="true" /> Terminé</>, annule: <><Circle size={10} fill="#f87171" color="#f87171" aria-hidden="true" /> Annulé</> };
+const TYPES   = { BEM: <><ClipboardList size={14} aria-hidden="true" /> BEM</>, BAC: <><GraduationCap size={14} aria-hidden="true" /> BAC</>, autre: <><FileText size={14} aria-hidden="true" /> Autre</> };
 
 export default function ExamensPage() {
   const [sessions, setSessions] = useState([]);
@@ -20,6 +38,7 @@ export default function ExamensPage() {
   const [form, setForm] = useState({ type:'BAC', annee_scolaire:'2025/2026', session:'principale', date_debut:'', date_fin:'', wilaya:'Oran', nom_centre:'', max_candidats_par_salle:20, nb_surveillants_par_salle:3 });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [msgOk, setMsgOk] = useState(true);
 
   useEffect(() => { loadSessions(); }, []);
 
@@ -41,20 +60,20 @@ export default function ExamensPage() {
     setSaving(true);
     const res = await api('/examens', { method:'POST', body: JSON.stringify(form) });
     setSaving(false);
-    if (res.success) { setShowNew(false); loadSessions(); setMsg('✅ Session créée'); }
-    else setMsg('❌ ' + res.message);
+    if (res.success) { setShowNew(false); loadSessions(); setMsg('Session créée'); setMsgOk(true); }
+    else { setMsg(res.message); setMsgOk(false); }
     setTimeout(() => setMsg(''), 3000);
   };
 
   const affecterCandidats = async (id) => {
     const res = await api(`/examens/${id}/affecter-candidats`, { method:'POST' });
-    alert(res.message ?? (res.success ? '✅ Affectation terminée' : '❌ Erreur'));
+    alert(res.message ?? (res.success ? 'Affectation terminée' : 'Erreur'));
     if (res.success) loadDashboard(id);
   };
 
   const affecterSurveillants = async (id) => {
     const res = await api(`/examens/${id}/affecter-surveillants`, { method:'POST' });
-    alert(res.message ?? (res.success ? '✅ Affectation terminée' : '❌ Erreur'));
+    alert(res.message ?? (res.success ? 'Affectation terminée' : 'Erreur'));
     if (res.success) loadDashboard(id);
   };
 
@@ -70,7 +89,7 @@ export default function ExamensPage() {
     <div style={{ padding:'24px', background:'#070B14', minHeight:'100vh' }}>
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
         <div>
-          <h1 style={{ fontSize:'22px', fontWeight:900, color:'#fff' }}>📝 Examens Officiels BEM/BAC</h1>
+          <h1 style={{ fontSize:'22px', fontWeight:900, color:'#fff' }}><NotebookPen size={22} aria-hidden='true' />Examens Officiels BEM/BAC</h1>
           <p style={{ fontSize:'12px', color:'#64748B' }}>Calendrier · Salles · Surveillants · Convocations PDF</p>
         </div>
         <button onClick={() => setShowNew(true)} style={{ background:'linear-gradient(135deg,#2563EB,#1d4ed8)', color:'#fff', border:'none', borderRadius:'9px', padding:'10px 18px', fontSize:'12px', fontWeight:700, cursor:'pointer' }}>
@@ -78,11 +97,11 @@ export default function ExamensPage() {
         </button>
       </div>
 
-      {msg && <div style={{ background:msg.includes('✅')?'#0d2515':'#450a0a', border:`1px solid ${msg.includes('✅')?'#16a34a':'#b91c1c'}`, borderRadius:'9px', padding:'10px 16px', marginBottom:'16px', fontSize:'12px', color:msg.includes('✅')?'#4ade80':'#f87171' }}>{msg}</div>}
+      {msg && <div style={{ background:msgOk?'#0d2515':'#450a0a', border:`1px solid ${msgOk?'#16a34a':'#b91c1c'}`, borderRadius:'9px', padding:'10px 16px', marginBottom:'16px', fontSize:'12px', color:msgOk?'#4ade80':'#f87171' }}>{msg}</div>}
 
       <div style={{ display:'flex', gap:'4px', marginBottom:'20px' }}>
-        {[['sessions','📋 Sessions'],selected&&['dashboard','📊 Dashboard'],selected&&['epreuves','🗓️ Épreuves'],selected&&['salles','🏫 Salles'],selected&&['candidats','👦 Candidats'],selected&&['surveillants','👨‍🏫 Surveillants']].filter(Boolean).map(([id,label]) => (
-          <button key={id} onClick={() => setTab(id)} style={{ background:tab===id?'#1e3a5f':'#111318', color:tab===id?'#60a5fa':'#64748B', border:`1px solid ${tab===id?'#3b82f6':'#1E2D40'}`, borderRadius:'8px', padding:'8px 14px', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>{label}</button>
+        {[['sessions', <ClipboardList size={12} aria-hidden="true" />, 'Sessions'],selected&&['dashboard', <BarChart3 size={12} aria-hidden="true" />, 'Dashboard'],selected&&['epreuves', <CalendarDays size={12} aria-hidden="true" />, 'Épreuves'],selected&&['salles', <School size={12} aria-hidden="true" />, 'Salles'],selected&&['candidats', <User size={12} aria-hidden="true" />, 'Candidats'],selected&&['surveillants', <Presentation size={12} aria-hidden="true" />, 'Surveillants']].filter(Boolean).map(([id,icon,label]) => (
+          <button key={id} onClick={() => setTab(id)} style={{ background:tab===id?'#1e3a5f':'#111318', color:tab===id?'#60a5fa':'#64748B', border:`1px solid ${tab===id?'#3b82f6':'#1E2D40'}`, borderRadius:'8px', padding:'8px 14px', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>{icon} {label}</button>
         ))}
       </div>
 
@@ -92,7 +111,7 @@ export default function ExamensPage() {
           : sessions.length === 0 ? <div style={{ color:'#64748B', textAlign:'center', padding:'40px' }}>Aucune session. Créer une session BEM ou BAC.</div>
           : sessions.map(s => (
             <div key={s.id} style={{ background:'#0D1117', border:'1px solid #1E2D40', borderRadius:'12px', padding:'16px 20px', display:'flex', alignItems:'center', gap:'16px' }}>
-              <div style={{ fontSize:'28px' }}>{s.type === 'BAC' ? '🎓' : '📋'}</div>
+              <div style={{ fontSize:'28px' }}>{s.type === 'BAC' ? <GraduationCap size={28} aria-hidden='true' /> : <ClipboardList size={28} aria-hidden='true' />}</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:800, fontSize:'14px', color:'#fff' }}>{TYPES[s.type] ?? s.type} — {s.annee_scolaire}</div>
                 <div style={{ fontSize:'11px', color:'#64748B' }}>
@@ -101,9 +120,9 @@ export default function ExamensPage() {
                 </div>
                 <div style={{ display:'flex', gap:'8px', marginTop:'6px' }}>
                   {S(STATUTS[s.statut] ?? s.statut, s.statut==='termine'?'#10B981':s.statut==='en_cours'?'#F59E0B':'#60a5fa')}
-                  {S(`👦 ${s.candidats_count??0} candidats`, '#60a5fa')}
-                  {S(`🏫 ${s.salles_count??0} salles`, '#7C3AED')}
-                  {S(`📚 ${s.epreuves_count??0} épreuves`, '#10B981')}
+                  {S(<><User size={10} aria-hidden="true" /> {s.candidats_count??0} candidats</>, '#60a5fa')}
+                  {S(<><School size={10} aria-hidden="true" /> {s.salles_count??0} salles</>, '#7C3AED')}
+                  {S(<><BookOpen size={10} aria-hidden="true" /> {s.epreuves_count??0} épreuves</>, '#10B981')}
                 </div>
               </div>
               <button onClick={() => loadDashboard(s.id)} style={{ background:'#2563EB', color:'#fff', border:'none', borderRadius:'8px', padding:'8px 14px', fontSize:'11px', fontWeight:700, cursor:'pointer' }}>
@@ -118,13 +137,13 @@ export default function ExamensPage() {
         <div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', marginBottom:'20px' }}>
             {[
-              ['👦 Candidats',  dashboard.nb_candidats_total,    '#2563EB'],
-              ['✅ Affectés',   dashboard.nb_candidats_affectes, '#10B981'],
-              ['🏫 Salles',     dashboard.nb_salles,             '#7C3AED'],
-              ['👨‍🏫 Surveillants', dashboard.nb_surveillants,  '#F59E0B'],
-            ].map(([label, val, color]) => (
+              [<User size={12} aria-hidden="true" />, 'Candidats',  dashboard.nb_candidats_total,    '#2563EB'],
+              [<CheckCircle size={12} aria-hidden="true" />, 'Affectés',   dashboard.nb_candidats_affectes, '#10B981'],
+              [<School size={12} aria-hidden="true" />, 'Salles',     dashboard.nb_salles,             '#7C3AED'],
+              [<Presentation size={12} aria-hidden="true" />, 'Surveillants', dashboard.nb_surveillants,  '#F59E0B'],
+            ].map(([icon, label, val, color]) => (
               <div key={label} style={{ background:'#0D1117', border:`1px solid #1E2D40`, borderTop:`2px solid ${color}`, borderRadius:'12px', padding:'16px' }}>
-                <div style={{ fontSize:'10px', color:'#64748B', marginBottom:'8px' }}>{label}</div>
+                <div style={{ fontSize:'10px', color:'#64748B', marginBottom:'8px' }}>{icon} {label}</div>
                 <div style={{ fontSize:'26px', fontWeight:900, color:'#fff' }}>{val ?? 0}</div>
               </div>
             ))}
@@ -132,20 +151,20 @@ export default function ExamensPage() {
 
           {dashboard.alertes?.length > 0 && dashboard.alertes.map((a,i) => (
             <div key={i} style={{ background:a.type==='danger'?'#450a0a':'#1f1008', border:`1px solid ${a.type==='danger'?'#b91c1c':'#c2410c'}`, borderRadius:'9px', padding:'10px 14px', marginBottom:'8px', fontSize:'11px', color:a.type==='danger'?'#f87171':'#fb923c' }}>
-              ⚠️ {a.msg}
+              <AlertTriangle size={11} aria-hidden='true' /> {a.msg}
             </div>
           ))}
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px', marginTop:'16px' }}>
             <button onClick={() => affecterCandidats(selected.id)} style={{ background:'#2563EB', color:'#fff', border:'none', borderRadius:'9px', padding:'12px', fontSize:'12px', fontWeight:700, cursor:'pointer' }}>
-              🤖 Affecter candidats aux salles
-            </button>
+              <Bot size={12} aria-hidden='true' />Affecter candidats aux salles
+                          </button>
             <button onClick={() => affecterSurveillants(selected.id)} style={{ background:'#7C3AED', color:'#fff', border:'none', borderRadius:'9px', padding:'12px', fontSize:'12px', fontWeight:700, cursor:'pointer' }}>
-              👨‍🏫 Affecter surveillants
-            </button>
+              <Presentation size={12} aria-hidden='true' />Affecter surveillants
+                          </button>
             <button onClick={() => imprimerConvocations(selected.id)} style={{ background:'#10B981', color:'#fff', border:'none', borderRadius:'9px', padding:'12px', fontSize:'12px', fontWeight:700, cursor:'pointer' }}>
-              🖨️ Imprimer toutes les convocations PDF
-            </button>
+              <Printer size={12} aria-hidden='true' />Imprimer toutes les convocations PDF
+                          </button>
           </div>
         </div>
       )}
@@ -153,7 +172,7 @@ export default function ExamensPage() {
       {showNew && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }} onClick={() => setShowNew(false)}>
           <div style={{ background:'#111318', border:'1px solid #1E2D40', borderRadius:'16px', padding:'24px', width:'520px', maxWidth:'90%' }} onClick={e=>e.stopPropagation()}>
-            <h3 style={{ color:'#fff', fontWeight:800, marginBottom:'20px' }}>📝 Nouvelle Session d'Examen</h3>
+            <h3 style={{ color:'#fff', fontWeight:800, marginBottom:'20px' }}><NotebookPen size={16} aria-hidden='true' />Nouvelle Session d'Examen</h3>
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
               {[
                 { label:'Type *', key:'type', type:'select', opts:{BEM:'BEM',BAC:'BAC',autre:'Autre'} },
@@ -182,7 +201,7 @@ export default function ExamensPage() {
             <div style={{ display:'flex', gap:'10px', marginTop:'20px' }}>
               <button onClick={() => setShowNew(false)} style={{ flex:1, background:'#1E293B', border:'1px solid #1E2D40', color:'#94A3B8', borderRadius:'8px', padding:'10px', cursor:'pointer', fontWeight:700 }}>Annuler</button>
               <button onClick={createSession} disabled={saving || !form.date_debut || !form.date_fin} style={{ flex:2, background:'linear-gradient(135deg,#2563EB,#1d4ed8)', color:'#fff', border:'none', borderRadius:'8px', padding:'10px', cursor:'pointer', fontWeight:700 }}>
-                {saving ? 'Création...' : '✅ Créer la session'}
+                {saving ? 'Création...' : <><CheckCircle size={16} aria-hidden='true' />Créer la session</>}
               </button>
             </div>
           </div>

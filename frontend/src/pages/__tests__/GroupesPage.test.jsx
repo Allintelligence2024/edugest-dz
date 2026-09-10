@@ -56,22 +56,22 @@ describe('GroupesPage', () => {
 
   it('renders groupes list', () => {
     renderGroupes();
-    expect(screen.getByText('👥 Groupes')).toBeInTheDocument();
+    expect(screen.getByText('Groupes')).toBeInTheDocument();
     expect(screen.getByText('Groupe A')).toBeInTheDocument();
     expect(screen.getByText((content) => content.startsWith('Maths'))).toBeInTheDocument();
   });
 
   it('has add button', () => {
     renderGroupes();
-    const addBtn = screen.getByText('➕ Nouveau groupe');
+    const addBtn = screen.getByText('Nouveau groupe');
     expect(addBtn).toBeInTheDocument();
   });
 
   it('opens modal on add button click', async () => {
     renderGroupes();
-    const addBtn = screen.getByText('➕ Nouveau groupe');
+    const addBtn = screen.getByText('Nouveau groupe');
     await userEvent.click(addBtn);
-    const modalTitles = screen.getAllByText('➕ Nouveau groupe');
+    const modalTitles = screen.getAllByText('Nouveau groupe');
     expect(modalTitles.length).toBeGreaterThanOrEqual(2);
   });
 

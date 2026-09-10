@@ -3,6 +3,8 @@ import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@context/AuthContext';
 import { api } from '@api/client';
 
+import { Eye, EyeOff, GraduationCap, Hourglass, LockOpen, Timer, XCircle } from 'lucide-react';
+
 export default function LoginPage() {
   const { login, isAuthenticated, homeRoute, sessionExpired } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ export default function LoginPage() {
       <div style={{ width:'100%', maxWidth:'400px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ fontSize:'40px', marginBottom:'8px' }}>🎓</div>
+          <div style={{ fontSize:'40px', marginBottom:'8px' }}><GraduationCap size={40} aria-hidden='true' /></div>
           <h1 style={{ fontSize:'26px', fontWeight:900, color:'var(--text)', letterSpacing:'-0.5px' }}>
             EduGest <span style={{ color:'var(--accent)' }}>DZ</span>
           </h1>
@@ -61,8 +63,8 @@ export default function LoginPage() {
             borderRadius:'10px', padding:'12px 14px', marginBottom:'16px',
             color:'#ca8a04', fontSize:'13px', fontWeight:600,
           }}>
-            ⏱️ Votre session a expiré. Veuillez vous reconnecter.
-          </div>
+            <Timer size={13} aria-hidden='true' />Votre session a expiré. Veuillez vous reconnecter.
+                      </div>
         )}
 
         <div style={{
@@ -79,7 +81,7 @@ export default function LoginPage() {
               borderRadius:'10px', padding:'12px 14px', marginBottom:'16px',
               color:'#f87171', fontSize:'13px'
             }}>
-              ❌ {error}
+              <XCircle size={13} aria-hidden='true' /> {error}
             </div>
           )}
 
@@ -123,7 +125,7 @@ export default function LoginPage() {
                 <button type="button" onClick={() => setShowPass(s => !s)}
                   style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)',
                     background:'none', border:'none', cursor:'pointer', color:'var(--muted)', fontSize:'16px' }}>
-                  {showPass ? '🙈' : '👁️'}
+                  {showPass ? <EyeOff size={16} aria-label='Masqué' /> : <Eye size={16} aria-label='Voir' />}
                 </button>
               </div>
               <div style={{ textAlign:'right', marginTop:'6px' }}>
@@ -143,7 +145,7 @@ export default function LoginPage() {
                 transition:'all 0.2s',
               }}
             >
-              {loading ? '⏳ Connexion...' : '🔓 Se connecter'}
+              {loading ? <><Hourglass size={14} aria-hidden='true' />Connexion...</> : <><LockOpen size={14} aria-hidden='true' />Se connecter</>}
             </button>
           </form>
 

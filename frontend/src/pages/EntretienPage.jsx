@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { Calendar, CheckCircle, HardHat, MapPin, Siren, Ticket, Wallet, Wrench } from 'lucide-react';
+
 const PRIORITE_COLORS = { urgente: 'bg-red-100 text-red-800', haute: 'bg-orange-100 text-orange-800', normale: 'bg-blue-100 text-blue-800', basse: 'bg-gray-100 text-gray-600' };
 const STATUT_COLORS = { signale: 'bg-yellow-100 text-yellow-800', en_cours: 'bg-blue-100 text-blue-800', en_attente: 'bg-gray-100 text-gray-600', resolu: 'bg-green-100 text-green-800' };
 
@@ -19,7 +21,7 @@ export default function EntretienPage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">🔧 Entretien Bâtiment</h1>
+      <h1 className="text-2xl font-bold text-text"><Wrench size={24} aria-hidden='true' />Entretien Bâtiment</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée d&apos;entretien disponible.</p>
         <p className="text-xs text-muted2">Créez vos premiers tickets d&apos;intervention.</p>
@@ -33,7 +35,7 @@ export default function EntretienPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🔧 Entretien Bâtiment</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><Wrench size={24} aria-hidden='true' />Entretien Bâtiment</h1>
           <p className="text-gray-500 mt-1">Tickets d&apos;intervention · Préventif · Prestataires</p>
         </div>
         <button className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 font-medium">
@@ -43,7 +45,7 @@ export default function EntretienPage() {
 
       {(stats?.tickets_urgents ?? 0) > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-          <span className="text-2xl">🚨</span>
+          <span className="text-2xl"><Siren size={24} aria-hidden='true' /></span>
           <div className="flex-1">
             <p className="font-medium text-red-800">{stats.tickets_urgents} ticket(s) urgents en attente d&apos;intervention</p>
             {(stats?.locaux_critique ?? 0) > 0 && <p className="text-sm text-red-600">{stats.locaux_critique} local(aux) en état critique</p>}
@@ -53,10 +55,10 @@ export default function EntretienPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Tickets ouverts', value: stats?.tickets_ouverts ?? 0, icon: '🎫', color: 'orange' },
-          { label: 'Résolus ce mois', value: stats?.resolus_ce_mois ?? 0, icon: '✅', color: 'green' },
-          { label: 'Coût du mois', value: `${Number(stats?.cout_mois ?? 0).toLocaleString()} DA`, icon: '💰', color: 'blue' },
-          { label: 'Préventifs < 30j', value: stats?.preventifs_30j ?? 0, icon: '📅', color: (stats?.preventifs_retard ?? 0) > 0 ? 'red' : 'gray' },
+          { label: 'Tickets ouverts', value: stats?.tickets_ouverts ?? 0, icon: <Ticket size={24} aria-hidden="true" />, color: 'orange' },
+          { label: 'Résolus ce mois', value: stats?.resolus_ce_mois ?? 0, icon: <CheckCircle size={24} aria-hidden="true" />, color: 'green' },
+          { label: 'Coût du mois', value: `${Number(stats?.cout_mois ?? 0).toLocaleString()} DA`, icon: <Wallet size={24} aria-hidden="true" />, color: 'blue' },
+          { label: 'Préventifs < 30j', value: stats?.preventifs_30j ?? 0, icon: <Calendar size={24} aria-hidden="true" />, color: (stats?.preventifs_retard ?? 0) > 0 ? 'red' : 'gray' },
         ].map((k, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
             <div className="text-2xl mb-1">{k.icon}</div>
@@ -81,8 +83,8 @@ export default function EntretienPage() {
                 </div>
                 <p className="font-medium text-gray-900">{t.titre}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  📍 {t.local?.nom ?? '—'}
-                  {t.prestataire && ` · 👷 ${t.prestataire.nom}`}
+                  <MapPin size={14} aria-hidden='true' /> {t.local?.nom ?? '—'}
+                  {t.prestataire && <>· <HardHat size={14} aria-hidden='true' /> {t.prestataire.nom}</>}
                 </p>
               </div>
               <div className="flex gap-2 ml-4">

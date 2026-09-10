@@ -32,18 +32,18 @@ describe('FilterBar', () => {
 
   it('shows reset button when a filter has value', () => {
     render(<FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} />);
-    expect(screen.getByText('🔄 Réinitialiser')).toBeInTheDocument();
+    expect(screen.getByText('Réinitialiser')).toBeInTheDocument();
   });
 
   it('calls onReset when reset button is clicked', async () => {
     const onReset = vi.fn();
     render(<FilterBar filters={filters} values={{ niveau: '1AS' }} onChange={vi.fn()} onReset={onReset} />);
-    await userEvent.click(screen.getByText('🔄 Réinitialiser'));
+    await userEvent.click(screen.getByText('Réinitialiser'));
     expect(onReset).toHaveBeenCalledOnce();
   });
 
   it('does not show reset when all values are empty', () => {
     render(<FilterBar filters={filters} values={{}} onChange={vi.fn()} />);
-    expect(screen.queryByText('🔄 Réinitialiser')).not.toBeInTheDocument();
+    expect(screen.queryByText('Réinitialiser')).not.toBeInTheDocument();
   });
 });

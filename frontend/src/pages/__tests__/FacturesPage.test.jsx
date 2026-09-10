@@ -60,8 +60,8 @@ describe('FacturesPage', () => {
 
   it('affiche l’en-tête de facturation', () => {
     renderPage();
-    expect(screen.getByText('💰 Facturation')).toBeInTheDocument();
-    expect(screen.getByText('➕ Nouvelle facture')).toBeInTheDocument();
+    expect(screen.getByText('Facturation')).toBeInTheDocument();
+    expect(screen.getByText('Nouvelle facture')).toBeInTheDocument();
   });
 
   it('charge les factures et la synthèse financière', async () => {

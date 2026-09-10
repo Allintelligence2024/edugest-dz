@@ -55,7 +55,7 @@ describe('EnseignantsListPage', () => {
 
   it('affiche l’en-tête et le bouton de création', () => {
     renderPage();
-    expect(screen.getByText('👨‍🏫 Enseignants')).toBeInTheDocument();
+    expect(screen.getByText('Enseignants')).toBeInTheDocument();
   });
 
   it('charge la liste des enseignants', async () => {

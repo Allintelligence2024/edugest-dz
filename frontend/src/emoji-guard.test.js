@@ -5,9 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 // Garde-fou 5.6-phase-2 : les emoji JSX doivent migrer vers lucide-react
 // (table de correspondance : docs/SPRINT5_ARCHITECTURE.md § 5.6).
-// En attendant, leur nombre ne doit pas augmenter (cliquet).
-const PLAFOND_OCCURRENCES = 515;
-const PLAFOND_FICHIERS = 55;
+// Phase 2 terminée : 0 emoji / 0 fichier. Le cliquet est verrouillé à 0,
+// toute régression (nouvel emoji en dur) fait échouer la CI.
+const PLAFOND_OCCURRENCES = 0;
+const PLAFOND_FICHIERS = 0;
 
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u2600-\u27BF\u2B00-\u2BFF\uFE0F]/u;
 const RACINE = path.dirname(fileURLToPath(import.meta.url));

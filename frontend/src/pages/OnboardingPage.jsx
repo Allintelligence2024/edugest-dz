@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@api/client';
 import { useAuth } from '@context/AuthContext';
 
+import { Bell, BookOpen, Check, CheckCircle, ClipboardList, GraduationCap, Hourglass, Presentation, XCircle } from 'lucide-react';
+
 const ETAPES = [
   {
-    id:    1, emoji: '📚', titre: 'Votre première matière',
+    id:    1, emoji: <BookOpen size={48} aria-hidden="true" />, titre: 'Votre première matière',
     desc:  'Commencez par créer les matières enseignées dans votre établissement.',
     action:'Créer une matière', url:'/matieres',
     champs:[
@@ -15,7 +17,7 @@ const ETAPES = [
     ],
   },
   {
-    id:    2, emoji: '👩‍🏫', titre: 'Votre premier enseignant',
+    id:    2, emoji: <Presentation size={48} aria-hidden="true" />, titre: 'Votre premier enseignant',
     desc:  'Ajoutez l\'enseignant qui donnera les premiers cours.',
     action:'Ajouter un enseignant', url:'/enseignants',
     champs:[
@@ -27,7 +29,7 @@ const ETAPES = [
     ],
   },
   {
-    id:    3, emoji: '📋', titre: 'Votre premier groupe',
+    id:    3, emoji: <ClipboardList size={48} aria-hidden="true" />, titre: 'Votre premier groupe',
     desc:  'Créez un groupe de niveau pour regrouper vos élèves.',
     action:'Créer un groupe', url:'/groupes',
     champs:[
@@ -37,7 +39,7 @@ const ETAPES = [
     ],
   },
   {
-    id:    4, emoji: '👨‍🎓', titre: 'Votre premier élève',
+    id:    4, emoji: <GraduationCap size={48} aria-hidden="true" />, titre: 'Votre premier élève',
     desc:  'Inscrivez le premier élève de votre établissement.',
     action:'Inscrire un élève', url:'/eleves',
     champs:[
@@ -49,7 +51,7 @@ const ETAPES = [
     ],
   },
   {
-    id:    5, emoji: '🔔', titre: 'Tester les notifications',
+    id:    5, emoji: <Bell size={48} aria-hidden="true" />, titre: 'Tester les notifications',
     desc:  'Envoyez-vous une notification de test pour confirmer que tout fonctionne.',
     action:'Envoyer la notification test',
     champs:[],
@@ -84,12 +86,12 @@ export default function OnboardingPage() {
       if (etape.id === 5) {
         await api('/onboarding/tester-notification', { method:'POST' });
         marquerOnboardingComplete();
-        setSuccess('🎉 Notification envoyée ! Votre installation est terminée.');
+        setSuccess('Notification envoyée ! Votre installation est terminée.');
         setTimeout(() => navigate('/dashboard'), 2000);
       } else {
         await api(etape.url, { method:'POST', body: JSON.stringify(form) });
         await api('/onboarding/avancer', { method:'POST', body: JSON.stringify({ etape: etape.id }) });
-        setSuccess(`✅ ${etape.emoji} ${etape.titre} créé(e) avec succès !`);
+        setSuccess(`${etape.titre} créé(e) avec succès !`);
         setTimeout(() => {
           setSuccess('');
           setForm({});
@@ -113,7 +115,7 @@ export default function OnboardingPage() {
       <div style={{ width:'100%', maxWidth:'600px' }}>
 
         <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ fontSize:'48px', marginBottom:'8px' }}>🎓</div>
+          <div style={{ fontSize:'48px', marginBottom:'8px' }}><GraduationCap size={48} aria-hidden='true' /></div>
           <h1 style={{ fontSize:'26px', fontWeight:900, color:'var(--text)' }}>
             Bienvenue sur <span style={{ color:'var(--accent)' }}>EduGest DZ</span>
           </h1>
@@ -138,7 +140,7 @@ export default function OnboardingPage() {
                   background: done ? 'rgba(16,185,129,0.2)' : i === etapeIdx ? 'rgba(37,99,235,0.2)' : 'var(--surface2)',
                   border: `2px solid ${done ? 'var(--green)' : i === etapeIdx ? 'var(--accent)' : 'var(--border)'}`,
                 }}>
-                  {done ? '✓' : e.emoji}
+                  {done ? <Check size={14} aria-hidden='true' /> : e.emoji}
                 </div>
                 <div style={{ fontSize:'10px', color: i === etapeIdx ? 'var(--text)' : 'var(--muted)', fontWeight: i === etapeIdx ? 700 : 400, maxWidth:'70px' }}>
                   {e.titre.split(' ').slice(0,2).join(' ')}
@@ -159,12 +161,12 @@ export default function OnboardingPage() {
 
           {error && (
             <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'12px', marginBottom:'16px', color:'#f87171', fontSize:'13px' }}>
-              ❌ {error}
+              <XCircle size={13} aria-hidden='true' /> {error}
             </div>
           )}
           {success && (
             <div style={{ background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px', padding:'12px', marginBottom:'16px', color:'var(--green)', fontSize:'13px', fontWeight:600 }}>
-              {success}
+              <CheckCircle size={14} aria-hidden="true" /> {success}
             </div>
           )}
 
@@ -194,11 +196,9 @@ export default function OnboardingPage() {
 
           {etape.id === 5 && (
             <div style={{ textAlign:'center', padding:'20px 0' }}>
-              <div style={{ fontSize:'64px', marginBottom:'16px' }}>🔔</div>
-              <p style={{ color:'var(--muted)', fontSize:'13px', lineHeight:'1.7' }}>
-                Cliquez pour recevoir votre première notification EduGest DZ.<br/>
-                Elle apparaîtra dans votre cloche 🔔 en haut à droite.
-              </p>
+              <div style={{ fontSize:'64px', marginBottom:'16px' }}><Bell size={64} aria-hidden='true' /></div>
+              <p style={{ color:'var(--muted)', fontSize:'13px', lineHeight:'1.7' }}>Cliquez pour recevoir votre première notification EduGest DZ.<br/>Elle apparaîtra dans votre cloche <Bell size={13} aria-hidden='true' />en haut à droite.
+                              </p>
             </div>
           )}
 
@@ -210,7 +210,7 @@ export default function OnboardingPage() {
                 border:'none', borderRadius:'12px', padding:'14px', fontSize:'15px',
                 fontWeight:800, cursor: loading ? 'not-allowed' : 'pointer',
               }}>
-              {loading ? '⏳ En cours...' : `${etape.action} →`}
+              {loading ? <><Hourglass size={15} aria-hidden='true' />En cours...</> : `${etape.action} →`}
             </button>
 
             {etapeIdx < ETAPES.length - 1 && (

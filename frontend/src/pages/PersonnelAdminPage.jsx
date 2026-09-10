@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlarmClock, BarChart3, CheckCircle, HardHat, Wallet, XCircle } from 'lucide-react';
+
 const POSTE_LABELS = { femme_menage: 'Femme de ménage', surveillant: 'Surveillant(e)', chauffeur: 'Chauffeur', secretaire: 'Secrétaire', technicien: 'Technicien', agent_securite: 'Agent sécurité', autre: 'Autre' };
 
 export default function PersonnelAdminPage() {
@@ -18,7 +20,7 @@ export default function PersonnelAdminPage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">👷 Personnel Non-Enseignant</h1>
+      <h1 className="text-2xl font-bold text-text"><HardHat size={24} aria-hidden='true' />Personnel Non-Enseignant</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée de personnel disponible.</p>
         <p className="text-xs text-muted2">Ajoutez vos agents pour commencer le suivi des présences.</p>
@@ -33,21 +35,21 @@ export default function PersonnelAdminPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">👷 Personnel Non-Enseignant</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><HardHat size={24} aria-hidden='true' />Personnel Non-Enseignant</h1>
           <p className="text-gray-500 mt-1">Présences du {data?.date}</p>
         </div>
         <div className="flex gap-2">
-          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm">💰 Calculer paies</button>
+          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm"><Wallet size={14} aria-hidden='true' />Calculer paies</button>
           <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-medium">+ Nouvel agent</button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total agents', value: stats?.total ?? 0, color: 'purple', icon: '👷' },
-          { label: 'Présents', value: stats?.presents ?? 0, color: 'green', icon: '✅' },
-          { label: 'Absents', value: stats?.absents ?? 0, color: 'red', icon: '❌' },
-          { label: 'Taux présence', value: stats?.total ? `${Math.round(((stats?.presents ?? 0) / stats.total) * 100)}%` : '—', color: 'blue', icon: '📊' },
+          { label: 'Total agents', value: stats?.total ?? 0, color: 'purple', icon: <HardHat size={24} aria-hidden="true" /> },
+          { label: 'Présents', value: stats?.presents ?? 0, color: 'green', icon: <CheckCircle size={24} aria-hidden="true" /> },
+          { label: 'Absents', value: stats?.absents ?? 0, color: 'red', icon: <XCircle size={24} aria-hidden="true" /> },
+          { label: 'Taux présence', value: stats?.total ? `${Math.round(((stats?.presents ?? 0) / stats.total) * 100)}%` : '—', color: 'blue', icon: <BarChart3 size={24} aria-hidden="true" /> },
         ].map((k, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
             <div className="text-2xl mb-1">{k.icon}</div>
@@ -80,7 +82,7 @@ export default function PersonnelAdminPage() {
                     <td className="px-4 py-3 text-gray-600">{POSTE_LABELS[agent.poste] ?? agent.poste}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${a.statut === 'present' ? 'bg-green-100 text-green-800' : a.statut === 'retard' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'}`}>
-                        {a.statut === 'present' ? '✅ Présent' : a.statut === 'retard' ? '⏰ Retard' : '❌ Absent'}
+                        {a.statut === 'present' ? <><CheckCircle size={16} aria-hidden='true' />Présent</> : a.statut === 'retard' ? <><AlarmClock size={16} aria-hidden='true' />Retard</> : <><XCircle size={16} aria-hidden='true' />Absent</>}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{a.heure_arrivee ? a.heure_arrivee.slice(0, 5) : '—'}</td>

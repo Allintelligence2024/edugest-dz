@@ -60,8 +60,8 @@ describe('ElevesListPage', () => {
 
   it('affiche l’en-tête et le bouton de création', () => {
     renderPage();
-    expect(screen.getByText('👨‍🎓 Élèves')).toBeInTheDocument();
-    expect(screen.getByText('➕ Nouvel élève')).toBeInTheDocument();
+    expect(screen.getByText('Élèves')).toBeInTheDocument();
+    expect(screen.getByText('Nouvel élève')).toBeInTheDocument();
   });
 
   it('charge la liste des élèves depuis l’API', async () => {

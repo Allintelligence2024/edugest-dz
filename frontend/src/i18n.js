@@ -50,14 +50,20 @@ function persistLang(lng) {
   }
 }
 
-// Le darija ('dz') suit les règles plurielles de l'arabe (CLDR). On réutilise
-// la règle compilée d'i18next pour 'ar' plutôt que de la réécrire.
+// Le darija ('dz') suit les règles plurielles de l'arabe (CLDR). i18next ≥ 25
+// a supprimé `addRule` : les pluriels passent par `Intl.PluralRules`, où 'dz'
+// désigne… le dzongkha (une seule catégorie « other », zéro/one/two/few/many
+// perdus). On délègue donc 'dz' vers la règle compilée de l'arabe.
 function wireDzPlurals() {
   try {
     const resolver = i18n.services?.pluralResolver;
-    if (typeof resolver?.getRule === 'function' && typeof resolver?.addRule === 'function') {
-      resolver.addRule('dz', resolver.getRule('ar'));
-    }
+    if (!resolver || typeof resolver.getRule !== 'function' || resolver.__dzWired) return;
+    const getRuleOrig = resolver.getRule.bind(resolver);
+    resolver.getRule = (code, options) =>
+      typeof code === 'string' && code.replace('_', '-').split('-')[0] === 'dz'
+        ? getRuleOrig('ar', options)
+        : getRuleOrig(code, options);
+    resolver.__dzWired = true;
   } catch {
     // Pluriels dz par défaut — le test i18n.test.js garde le câblage nominal.
   }

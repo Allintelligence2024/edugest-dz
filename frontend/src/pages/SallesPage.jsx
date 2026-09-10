@@ -7,6 +7,8 @@ import FilterBar from '@components/common/FilterBar';
 import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 
+import { CheckCircle, Hourglass, PartyPopper, Pencil, Plus, Save, School, Trash2, X } from 'lucide-react';
+
 const FILTERS = [
   { key: 'statut', label: 'Statut', options: [{value:'disponible',label:'Disponible'},{value:'occupée',label:'Occupée'},{value:'maintenance',label:'Maintenance'}] },
 ];
@@ -14,7 +16,7 @@ const FILTERS = [
 const COLUMNS = [
   { key: 'nom', label: 'Salle', sortable: true, render: (v, r) => (
     <div className="flex items-center gap-3">
-      <div className="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 font-bold">🏫</div>
+      <div className="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600 font-bold"><School size={16} aria-hidden='true' /></div>
       <span className="font-semibold">{v}</span>
     </div>
   )},
@@ -57,8 +59,8 @@ export default function SallesPage() {
 
   const actions = (row) => (
     <div className="flex items-center gap-1">
-      <button onClick={() => { setEditingSalle(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier">✏️</button>
-      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer">🗑️</button>
+      <button onClick={() => { setEditingSalle(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier"><Pencil size={14} aria-hidden='true' /></button>
+      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer"><Trash2 size={14} aria-hidden='true' /></button>
     </div>
   );
 
@@ -66,12 +68,12 @@ export default function SallesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">🏫 Salles</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><School size={24} aria-hidden='true' />Salles</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Gérez les salles et leurs disponibilités</p>
         </div>
         <button onClick={() => { setEditingSalle(null); setShowModal(true); }} className="btn btn-primary gap-2">
-          ➕ Nouvelle salle
-        </button>
+          <Plus size={16} aria-hidden='true' />Nouvelle salle
+                  </button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -129,7 +131,7 @@ function SalleModal({ salle, onClose, onSuccess }) {
     };
     try {
       if (isEdit) { await api.put(`/salles/${salle.id}`, payload); toast.success('Salle mise à jour'); }
-      else { await api.post('/salles', payload); toast.success('Salle créée 🎉'); }
+      else { await api.post('/salles', payload); toast.success('Salle créée', { icon: <PartyPopper size={18} aria-hidden="true" /> }); }
       onSuccess();
     } catch (err) { toast.error(err?.error?.message || 'Erreur'); }
     finally { setIsLoading(false); }
@@ -140,8 +142,8 @@ function SalleModal({ salle, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-md p-5 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">{isEdit ? '✏️ Modifier la salle' : '➕ Nouvelle salle'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg">✕</button>
+          <h2 className="text-lg font-bold">{isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier la salle</> : <><Plus size={18} aria-hidden='true' />Nouvelle salle</>}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg"><X size={16} aria-label='Fermer' /></button>
         </div>
         <div className="space-y-3">
           <div>
@@ -171,7 +173,7 @@ function SalleModal({ salle, onClose, onSuccess }) {
             <input value={form.equipements} onChange={e => setForm(f => ({...f, equipements: e.target.value}))} className="input" placeholder="Tableau blanc, Projecteur, Climatisation..." />
           </div>
           <button onClick={submit} disabled={isLoading || !form.nom || !form.capacite} className="btn btn-primary w-full">
-            {isLoading ? '⏳ Enregistrement...' : isEdit ? '💾 Enregistrer' : '✅ Créer la salle'}
+            {isLoading ? <><Hourglass size={16} aria-hidden='true' />Enregistrement...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer la salle</>}
           </button>
         </div>
       </div>

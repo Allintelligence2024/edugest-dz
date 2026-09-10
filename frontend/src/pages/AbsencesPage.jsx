@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlarmClock, CheckCircle, PartyPopper, Smartphone, XCircle } from 'lucide-react';
+
 export default function AbsencesPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,16 +24,16 @@ export default function AbsencesPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">✅ Absences Journalières</h1>
+        <h1 className="text-2xl font-bold text-gray-900"><CheckCircle size={24} aria-hidden='true' />Absences Journalières</h1>
         <p className="text-gray-500 mt-1">{data?.date || today}</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Élèves absents', value: stats.absents ?? 0, color: 'red', icon: '❌' },
+          { label: 'Élèves absents', value: stats.absents ?? 0, color: 'red', icon: <XCircle size={24} aria-hidden="true" /> },
           { label: 'En retard', value: stats.retards ?? 0, color: 'orange', icon: '⏰' },
-          { label: 'Présents', value: stats.presents ?? 0, color: 'green', icon: '✅' },
-          { label: 'SMS envoyés', value: absences.filter(a => a.sms_parent_envoye).length, color: 'blue', icon: '📱' },
+          { label: 'Présents', value: stats.presents ?? 0, color: 'green', icon: <CheckCircle size={24} aria-hidden="true" /> },
+          { label: 'SMS envoyés', value: absences.filter(a => a.sms_parent_envoye).length, color: 'blue', icon: <Smartphone size={24} aria-hidden="true" /> },
         ].map((k, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
             <div className="text-2xl mb-1">{k.icon}</div>
@@ -47,7 +49,7 @@ export default function AbsencesPage() {
         </div>
         {absentsEtRetards.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="text-4xl mb-3">🎉</div>
+            <div className="text-4xl mb-3"><PartyPopper size={36} aria-hidden='true' /></div>
             <p className="text-gray-500 font-medium">Tous les élèves sont présents !</p>
           </div>
         ) : (
@@ -67,12 +69,12 @@ export default function AbsencesPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   {a.sms_parent_envoye ? (
-                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">📱 SMS envoyé</span>
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full"><Smartphone size={12} aria-hidden='true' />SMS envoyé</span>
                   ) : (
                     <span className="text-xs text-gray-400">SMS non envoyé</span>
                   )}
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${a.statut === 'absent' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}`}>
-                    {a.statut === 'absent' ? '❌ Absent' : '⏰ Retard'}
+                    {a.statut === 'absent' ? <><XCircle size={16} aria-hidden='true' />Absent</> : <><AlarmClock size={16} aria-hidden='true' />Retard</>}
                   </span>
                   <button className="text-blue-600 hover:text-blue-800 text-xs font-medium">Justifier</button>
                 </div>

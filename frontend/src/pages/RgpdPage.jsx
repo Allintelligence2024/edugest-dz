@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '@api/client';
 
+import { Archive, Lock, Package } from 'lucide-react';
+
+
 export default function RgpdPage() {
   const [demandes,    setDemandes]    = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -50,8 +53,8 @@ export default function RgpdPage() {
 
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px' }}>
         {[
-          { emoji:'📦', titre:'Export complet', desc:'Toutes les données de votre école au format JSON', action: exporterTenant, btn:'Demander l\'export', couleur:'var(--accent)' },
-          { emoji:'🗂️', titre:'Archivage annuel', desc:'Clôturer l\'année scolaire et archiver les données',
+          { emoji: <Package size={28} aria-hidden="true" />, titre:'Export complet', desc:'Toutes les données de votre école au format JSON', action: exporterTenant, btn:'Demander l\'export', couleur:'var(--accent)' },
+          { emoji: <Archive size={28} aria-hidden="true" />, titre:'Archivage annuel', desc:'Clôturer l\'année scolaire et archiver les données',
             content: (
               <div style={{ marginTop:'10px' }}>
                 <input value={annee} onChange={e => setAnnee(e.target.value)} placeholder="2024-2025"
@@ -62,7 +65,7 @@ export default function RgpdPage() {
               </div>
             )
           },
-          { emoji:'🔒', titre:'Politique de données', desc:'Afficher la politique de confidentialité aux parents', content:(
+          { emoji: <Lock size={28} aria-hidden="true" />, titre:'Politique de données', desc:'Afficher la politique de confidentialité aux parents', content:(
               <div style={{ marginTop:'10px', fontSize:'12px', color:'var(--muted)', lineHeight:'1.6' }}>
                 <p>Données stockées en Algérie (après VPS Hostarts)</p>
                 <p>Chiffrement AES-256 en transit et au repos</p>

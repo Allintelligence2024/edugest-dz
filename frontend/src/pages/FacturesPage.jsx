@@ -4,6 +4,8 @@ import FactureModal from '@components/finance/FactureModal';
 import PaiementModal from '@components/finance/PaiementModal';
 import EmptyState from '@components/ui/EmptyState';
 
+import { Plus, Wallet } from 'lucide-react';
+
 const STATUT_BADGE = {
   émise:          { bg: '#EEF4FF', text: '#1E5EBC' },
   envoyée:        { bg: '#FFF8EC', text: '#F39C12' },
@@ -46,12 +48,12 @@ export default function FacturesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">💰 Facturation</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><Wallet size={24} aria-hidden='true' />Facturation</h1>
           <p className="text-neutral-500 text-sm mt-1">Gérez les factures et paiements</p>
         </div>
         <button onClick={() => setShowFactureModal(true)} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
-          ➕ Nouvelle facture
-        </button>
+          <Plus size={14} aria-hidden='true' />Nouvelle facture
+                  </button>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -88,13 +90,13 @@ export default function FacturesPage() {
             ) : factures.length === 0 ? (
               <tr><td colSpan={7}>
                 <EmptyState
-                  icon="💰"
+                  icon={<Wallet size={48} aria-hidden="true" />}
                   title="Aucune facture"
                   description="Créez votre première facture pour gérer la facturation de vos élèves."
                   action={
                     <button onClick={() => setShowFactureModal(true)} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
-                      ➕ Nouvelle facture
-                    </button>
+                      <Plus size={14} aria-hidden='true' />Nouvelle facture
+                                          </button>
                   }
                 />
               </td></tr>

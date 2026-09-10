@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useI18n, LANG_META } from '@context/I18nContext';
 import { useTheme } from '@context/ThemeContext';
 
+import { Check, Moon, Sun } from 'lucide-react';
+
 export default function LanguageThemeSelector({ compact = false }) {
   const { lang, changeLang, t } = useI18n();
   const { isDark, toggleTheme }  = useTheme();
@@ -28,7 +30,7 @@ export default function LanguageThemeSelector({ compact = false }) {
         onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--eg-blue)'}
         onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--eg-border)'}
       >
-        {isDark ? '☀️' : '🌙'}
+        {isDark ? <Sun size={16} aria-hidden='true' /> : <Moon size={16} aria-hidden='true' />}
       </button>
 
       <div style={{ position: 'relative' }}>
@@ -99,7 +101,7 @@ export default function LanguageThemeSelector({ compact = false }) {
                   <span style={{ fontSize: '18px' }}>{meta.flag}</span>
                   <span>{meta.label}</span>
                   {lang === code && (
-                    <span style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--eg-green)' }}>✓</span>
+                    <span style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--eg-green)' }}><Check size={12} aria-hidden='true' /></span>
                   )}
                 </button>
               ))}

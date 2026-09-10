@@ -1,10 +1,12 @@
+import { AlertTriangle, Star } from 'lucide-react';
+
 export default function DiagBadge({ niveau, score, size = 'default' }) {
   const BADGES = {
     risque:        { label: 'À risque',        bg: 'var(--red)',     color: 'var(--red-light)',     icon: '●' },
     moyen:         { label: 'Moyen',           bg: 'var(--orange)',  color: 'var(--orange-light)',  icon: '●' },
     bon:           { label: 'Bon',             bg: 'var(--green)',   color: 'var(--green-light)',   icon: '●' },
-    excellent:     { label: 'Excellent',       bg: 'var(--accent)',  color: 'var(--accent-light)',  icon: '★' },
-    alerte:        { label: 'Alerte',          bg: 'var(--red)',     color: 'var(--red-light)',     icon: '⚠' },
+    excellent:     { label: 'Excellent',       bg: 'var(--accent)',  color: 'var(--accent-light)',  icon: <Star size={10} fill="currentColor" aria-hidden="true" /> },
+    alerte:        { label: 'Alerte',          bg: 'var(--red)',     color: 'var(--red-light)',     icon: <AlertTriangle size={10} aria-hidden="true" /> },
     critique:      { label: 'Critique',        bg: 'var(--red)',     color: 'var(--red-light)',     icon: '●' },
     'non_evalue':  { label: 'Non évalué',     bg: 'var(--muted2)',  color: 'var(--muted)',         icon: '—' },
   };

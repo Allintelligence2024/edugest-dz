@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { messageApi } from '@api/message.api';
 import toast from 'react-hot-toast';
 
+import { Paperclip } from 'lucide-react';
+
 export default function MessagesPage() {
   const [conversations, setConversations] = useState([]);
   const [selectedConv, setSelectedConv] = useState(null);
@@ -102,7 +104,7 @@ export default function MessagesPage() {
                   <div className="bg-neutral-50 rounded-xl px-4 py-2.5 max-w-[70%]">
                     <p className="text-xs text-neutral-400 mb-1">{msg.expediteur?.prenom} {msg.expediteur?.nom}</p>
                     <p className="text-sm text-neutral-700">{msg.message}</p>
-                    {msg.fichier_url && <a href={msg.fichier_url} target="_blank" className="text-primary-600 text-xs underline mt-1 block">📎 {msg.fichier_nom}</a>}
+                    {msg.fichier_url && <a href={msg.fichier_url} target="_blank" className="text-primary-600 text-xs underline mt-1 block"><Paperclip size={12} aria-hidden='true' /> {msg.fichier_nom}</a>}
                   </div>
                 </div>
               ))}

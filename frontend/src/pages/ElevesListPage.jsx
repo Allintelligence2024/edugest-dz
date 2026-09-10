@@ -11,6 +11,8 @@ import EleveDetailDrawer from '@components/eleves/EleveDetailDrawer';
 import EmptyState from '@components/ui/EmptyState';
 import Avatar from '@components/ui/Avatar';
 
+import { Eye, GraduationCap, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+
 const FILTERS = [
   { key: 'niveau_scolaire', label: 'Niveau', options: ['1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2AS','3AS','universitaire','autre'] },
   { key: 'statut', label: 'Statut', options: ['actif','inactif','suspendu'] },
@@ -65,10 +67,10 @@ export default function ElevesListPage() {
 
   const actions = (row) => (
     <div className="flex items-center gap-1">
-      <button onClick={() => setSelectedEleve(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Détails">👁️</button>
-      <button onClick={() => { setEditingEleve(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier">✏️</button>
-      <button onClick={() => handleToggleStatut(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Changer statut">🔄</button>
-      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer">🗑️</button>
+      <button onClick={() => setSelectedEleve(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Détails"><Eye size={14} aria-hidden='true' /></button>
+      <button onClick={() => { setEditingEleve(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier"><Pencil size={14} aria-hidden='true' /></button>
+      <button onClick={() => handleToggleStatut(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Changer statut"><RefreshCw size={14} aria-hidden='true' /></button>
+      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer"><Trash2 size={14} aria-hidden='true' /></button>
     </div>
   );
 
@@ -76,12 +78,12 @@ export default function ElevesListPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">👨‍🎓 Élèves</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><GraduationCap size={24} aria-hidden='true' />Élèves</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Gérez les élèves inscrits dans votre établissement</p>
         </div>
         <button onClick={() => { setEditingEleve(null); setShowModal(true); }} className="btn btn-primary gap-2">
-          ➕ Nouvel élève
-        </button>
+          <Plus size={16} aria-hidden='true' />Nouvel élève
+                  </button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -94,13 +96,13 @@ export default function ElevesListPage() {
 
         {!isLoading && (!data?.data || data.data.length === 0) && !search && Object.keys(filters).length === 0 ? (
           <EmptyState
-            icon="👨‍🎓"
+            icon={<GraduationCap size={48} aria-hidden="true" />}
             title="Aucun élève inscrit"
             description="Commencez par ajouter votre premier élève pour gérer son suivi."
             action={
               <button onClick={() => { setEditingEleve(null); setShowModal(true); }} className="btn btn-primary gap-2">
-                ➕ Ajouter un élève
-              </button>
+                <Plus size={16} aria-hidden='true' />Ajouter un élève
+                              </button>
             }
           />
         ) : (

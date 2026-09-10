@@ -44,7 +44,7 @@ describe('AbsencesPage', () => {
 
   it('affiche les compteurs renvoyés par l’API', async () => {
     renderPage();
-    await waitFor(() => expect(screen.getByText('✅ Absences Journalières')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Absences Journalières')).toBeInTheDocument());
 
     expect(screen.getByText('Élèves absents')).toBeInTheDocument();
     expect(screen.getByText('En retard')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('AbsencesPage', () => {
     renderPage();
 
     // Une panne de l'API ne doit pas laisser un écran de chargement infini.
-    await waitFor(() => expect(screen.getByText('✅ Absences Journalières')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Absences Journalières')).toBeInTheDocument());
     expect(screen.getByText(/Absents & Retards du jour \(0\)/)).toBeInTheDocument();
   });
 });

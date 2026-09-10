@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useModules } from '@context/ModulesContext';
 
+import { Lock } from 'lucide-react';
+
 export default function ModuleProtectedRoute({ moduleKey, children }) {
   const { isActive, loading } = useModules();
   const navigate = useNavigate();
@@ -18,7 +20,7 @@ export default function ModuleProtectedRoute({ moduleKey, children }) {
     return (
       <div style={{ minHeight:'50vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
         <div style={{ textAlign:'center', maxWidth:'400px' }}>
-          <div style={{ fontSize:'48px', marginBottom:'12px' }}>🔒</div>
+          <div style={{ fontSize:'48px', marginBottom:'12px' }}><Lock size={48} aria-hidden='true' /></div>
           <h2 style={{ fontSize:'18px', fontWeight:800, color:'var(--text)', marginBottom:'8px' }}>
             Module indisponible
           </h2>

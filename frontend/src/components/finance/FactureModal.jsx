@@ -3,6 +3,18 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 
+import {
+  Calendar,
+  CheckCircle,
+  ClipboardList,
+  GraduationCap,
+  Hourglass,
+  Plus,
+  Tag,
+  Trash2,
+  X,
+} from 'lucide-react';
+
 export default function FactureModal({ isOpen, onClose, onSuccess }) {
   const [eleves, setEleves] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,12 +62,12 @@ export default function FactureModal({ isOpen, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
         <div className="flex items-center justify-between p-6 border-b border-neutral-100">
-          <h2 className="text-xl font-bold text-neutral-800">➕ Nouvelle facture</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500">✕</button>
+          <h2 className="text-xl font-bold text-neutral-800"><Plus size={20} aria-hidden='true' />Nouvelle facture</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500"><X size={16} aria-label='Fermer' /></button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">👨‍🎓 Élève *</label>
+            <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><GraduationCap size={14} aria-hidden='true' />Élève *</label>
             <select {...register('eleve_id', { required: 'Élève requis' })} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none ${errors.eleve_id ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`}>
               <option value="">Sélectionner un élève</option>
               {eleves.map(e => <option key={e.id} value={e.id}>{e.nom} {e.prenom} — {e.numero_inscription}</option>)}
@@ -63,17 +75,17 @@ export default function FactureModal({ isOpen, onClose, onSuccess }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📅 Date échéance *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Calendar size={14} aria-hidden='true' />Date échéance *</label>
               <input type="date" {...register('date_echeance', { required: true })} className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">🏷️ Remise (%)</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Tag size={14} aria-hidden='true' />Remise (%)</label>
               <input type="number" {...register('remise_pct')} className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500" />
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-semibold text-neutral-700">📋 Lignes de facture</label>
+              <label className="text-sm font-semibold text-neutral-700"><ClipboardList size={14} aria-hidden='true' />Lignes de facture</label>
               <button type="button" onClick={() => append({ description: '', prix_unitaire: 0, quantite: 1, total: 0, type_ligne: 'cours' })} className="text-xs px-3 py-1.5 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors">+ Ajouter une ligne</button>
             </div>
             <div className="space-y-2">
@@ -90,7 +102,7 @@ export default function FactureModal({ isOpen, onClose, onSuccess }) {
                   </div>
                   <input type="hidden" {...register(`lignes.${index}.type_ligne`)} value="cours" />
                   {fields.length > 1 && (
-                    <button type="button" onClick={() => remove(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">🗑️</button>
+                    <button type="button" onClick={() => remove(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} aria-label='Supprimer' /></button>
                   )}
                 </div>
               ))}
@@ -99,7 +111,7 @@ export default function FactureModal({ isOpen, onClose, onSuccess }) {
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border-2 border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50">Annuler</button>
             <button type="submit" disabled={isLoading} className="flex-1 py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 disabled:opacity-60 flex items-center justify-center gap-2">
-              {isLoading ? <><span className="animate-spin">⏳</span> Création...</> : '✅ Créer la facture'}
+              {isLoading ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> Création...</> : <><CheckCircle size={14} aria-hidden='true' />Créer la facture</>}
             </button>
           </div>
         </form>

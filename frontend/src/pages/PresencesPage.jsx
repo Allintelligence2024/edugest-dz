@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 
+import { ArrowLeft, Check, CheckCircle, ClipboardList, Hourglass, Save } from 'lucide-react';
+
 export default function PresencesPage() {
   const [seances, setSeances] = useState([]);
   const [selectedSeance, setSelectedSeance] = useState(null);
@@ -49,7 +51,7 @@ export default function PresencesPage() {
     setIsSaving(true);
     try {
       await api.post(`/seances/${selectedSeance.id}/presences`, { presences });
-      toast.success(`✅ Présences enregistrées pour ${selectedSeance.matiere}`);
+      toast.success(`Présences enregistrées pour ${selectedSeance.matiere}`, { icon: <CheckCircle size={18} aria-hidden="true" /> });
       loadSeances();
     } catch (err) {
       toast.error(err?.error?.message || 'Erreur lors de l\'enregistrement');
@@ -74,7 +76,7 @@ export default function PresencesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-800">📋 Gestion des présences</h1>
+        <h1 className="text-2xl font-bold text-neutral-800"><ClipboardList size={24} aria-hidden='true' />Gestion des présences</h1>
         <p className="text-neutral-500 text-sm mt-1">Sélectionnez une séance pour enregistrer les présences</p>
       </div>
 
@@ -105,7 +107,7 @@ export default function PresencesPage() {
         <div className="col-span-2 bg-white rounded-2xl border border-neutral-200 p-4">
           {!selectedSeance ? (
             <div className="text-center py-16 text-neutral-400">
-              <p className="text-4xl mb-3">👈</p>
+              <p className="text-4xl mb-3"><ArrowLeft size={36} aria-hidden='true' /></p>
               <p>Sélectionnez une séance à gauche</p>
             </div>
           ) : (
@@ -116,7 +118,7 @@ export default function PresencesPage() {
                   <p className="text-sm text-neutral-500">{selectedSeance.groupe}</p>
                 </div>
                 <button onClick={savePresences} disabled={isSaving} className="px-6 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 disabled:opacity-60 flex items-center gap-2">
-                  {isSaving ? <><span className="animate-spin">⏳</span> Sauvegarde...</> : '💾 Enregistrer'}
+                  {isSaving ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> Sauvegarde...</> : <><Save size={14} aria-hidden='true' />Enregistrer</>}
                 </button>
               </div>
 
@@ -154,7 +156,7 @@ export default function PresencesPage() {
                           return (
                             <td key={statut} className="p-3 text-center">
                               <button onClick={() => togglePresence(inscription.id, statut)} className={`w-6 h-6 rounded-full border-2 transition-all ${isSelected ? `${st.border} ${st.bg}` : 'border-neutral-200 hover:border-neutral-400'}`}>
-                                {isSelected && <span className="block text-xs">✓</span>}
+                                {isSelected && <span className="block text-xs"><Check size={12} aria-hidden='true' /></span>}
                               </button>
                             </td>
                           );

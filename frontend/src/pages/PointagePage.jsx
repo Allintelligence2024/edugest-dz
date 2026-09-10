@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, CheckCircle, XCircle, AlertCircle, Search } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Presentation, Search, XCircle } from 'lucide-react';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -96,7 +96,7 @@ export default function PointagePage() {
                 width:'40px', height:'40px', borderRadius:'10px',
                 background:'#1e293b', display:'flex', alignItems:'center',
                 justifyContent:'center', fontSize:'16px', flexShrink:0,
-              }}>👨‍🏫</div>
+              }}><Presentation size={16} aria-hidden='true' /></div>
 
               <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:'13px', color:'#f1f5f9' }}>

@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, TrendingUp, Users, AlertTriangle, Download, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle,
+  Download,
+  FileText,
+  RefreshCw,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import KpiCard from '@components/ui/KpiCard';
 import Card from '@components/ui/Card';
 import Badge from '@components/ui/Badge';
@@ -286,7 +294,7 @@ export default function AnalyticsPage() {
             </div>
           ) : (finances?.impayes_urgents ?? []).length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-2xl mb-2">✅</p>
+              <p className="text-2xl mb-2"><CheckCircle size={24} aria-hidden='true' /></p>
               <p className="text-xs text-muted">Aucun impayé critique</p>
             </div>
           ) : (

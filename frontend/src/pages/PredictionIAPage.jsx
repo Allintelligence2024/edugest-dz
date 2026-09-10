@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Cpu, RefreshCw, TrendingDown, AlertTriangle, Users, Activity, Brain, ChevronDown } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  Brain,
+  CheckCircle,
+  ChevronDown,
+  Circle,
+  Cpu,
+  HelpCircle,
+  RefreshCw,
+  Search,
+  Siren,
+  TrendingDown,
+  Trophy,
+  Users,
+} from 'lucide-react';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -20,10 +36,10 @@ const RISQUE_COLORS = {
 };
 
 const RISQUE_ICONS = {
-  critique: '🚨',
-  eleve:    '🔴',
-  modere:   '⚠️',
-  faible:   '✅',
+  critique: <Siren size={22} aria-hidden="true" />,
+  eleve:    <Circle size={22} fill="#f87171" color="#f87171" aria-hidden="true" />,
+  modere:   <AlertTriangle size={22} aria-hidden="true" />,
+  faible:   <CheckCircle size={22} aria-hidden="true" />,
 };
 
 export default function PredictionIAPage() {
@@ -104,7 +120,7 @@ export default function PredictionIAPage() {
         padding: '12px 16px', marginBottom: '8px',
         display: 'flex', alignItems: 'center', gap: '12px',
       }}>
-        <div style={{ fontSize: '22px' }}>{RISQUE_ICONS[p.niveau_risque] ?? '❓'}</div>
+        <div style={{ fontSize: '22px' }}>{RISQUE_ICONS[p.niveau_risque] ?? <HelpCircle size={22} aria-hidden='true' />}</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 800, fontSize: '13px', color: r.color }}>
             {p.prenom} {p.nom}
@@ -165,14 +181,14 @@ export default function PredictionIAPage() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '4px', marginBottom: '20px' }}>
         {[
-          ['dashboard', '📊 Tableau de bord'],
-          ['classement', '🏆 Classement risque'],
-          ['faible', '✅ Risque faible'],
-          ['modere', '⚠️ Risque modéré'],
-          ['eleve', '🔴 Risque élevé'],
-          ['critique', '🚨 Critique'],
-          ...(detail ? [['detail', '🔍 Détail élève']] : []),
-        ].map(([id, label]) => (
+          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, 'Tableau de bord'],
+          ['classement', <Trophy size={12} aria-hidden="true" />, 'Classement risque'],
+          ['faible', <CheckCircle size={12} aria-hidden="true" />, 'Risque faible'],
+          ['modere', <AlertTriangle size={12} aria-hidden="true" />, 'Risque modéré'],
+          ['eleve', <Circle size={12} fill="#f87171" color="#f87171" aria-hidden="true" />, 'Risque élevé'],
+          ['critique', <Siren size={12} aria-hidden="true" />, 'Critique'],
+          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, 'Détail élève']] : []),
+        ].map(([id, icon, label]) => (
           <button key={id} onClick={() => {
             if (id === 'faible' || id === 'modere' || id === 'eleve' || id === 'critique') {
               setFiltreNiveau(id);
@@ -188,7 +204,7 @@ export default function PredictionIAPage() {
             border: `1px solid ${tab === id || (tab === 'classement' && filtreNiveau === id) ? '#3b82f6' : '#1e293b'}`,
             borderRadius: '8px', padding: '8px 14px', fontSize: '11px',
             fontWeight: 700, cursor: 'pointer',
-          }}>{label}</button>
+          }}>{icon} {label}</button>
         ))}
       </div>
 
@@ -238,8 +254,8 @@ export default function PredictionIAPage() {
           {/* Top 5 critiques */}
           <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px' }}>
             <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: '12px' }}>
-              🚨 Top 5 élèves les plus à risque
-            </div>
+              <Siren size={13} aria-hidden='true' />Top 5 élèves les plus à risque
+                          </div>
             {predictions.slice(0, 5).map(p => (
               <PredictionCard key={p.eleve_id} p={p} />
             ))}

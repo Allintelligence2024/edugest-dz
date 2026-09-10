@@ -1,5 +1,23 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, Star, TrendingDown, TrendingUp, Users, RefreshCw, BookOpen, Phone } from 'lucide-react';
+import {
+  AlertTriangle,
+  BarChart3,
+  BookOpen,
+  CheckCircle,
+  Circle,
+  Lightbulb,
+  Medal,
+  Microscope,
+  Phone,
+  RefreshCw,
+  Search,
+  Siren,
+  Smartphone,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -21,11 +39,11 @@ const post = (path, body) => fetch(`${BASE_URL}/api/v1${path}`, {
 }).then(r => r.json());
 
 const NIVEAUX = {
-  critique:  { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', emoji: '🚨', label: 'CRITIQUE' },
-  danger:    { color: '#f87171', bg: '#350808', border: '#991b1b', emoji: '🔴', label: 'DANGER' },
-  vigilance: { color: '#fb923c', bg: '#1f1008', border: '#c2410c', emoji: '⚠️', label: 'VIGILANCE' },
-  normal:    { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', emoji: '✅', label: 'NORMAL' },
-  excellent: { color: '#4ade80', bg: '#0d2515', border: '#16a34a', emoji: '⭐', label: 'EXCELLENT' },
+  critique:  { color: '#ef4444', bg: '#450a0a', border: '#b91c1c', icon: Siren, label: 'CRITIQUE' },
+  danger:    { color: '#f87171', bg: '#350808', border: '#991b1b', icon: Circle, fill: '#f87171', label: 'DANGER' },
+  vigilance: { color: '#fb923c', bg: '#1f1008', border: '#c2410c', icon: AlertTriangle, label: 'VIGILANCE' },
+  normal:    { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', icon: CheckCircle, label: 'NORMAL' },
+  excellent: { color: '#4ade80', bg: '#0d2515', border: '#16a34a', icon: Star, fill: 'currentColor', label: 'EXCELLENT' },
 };
 
 export default function DiagnosticPage() {
@@ -66,7 +84,7 @@ export default function DiagnosticPage() {
   const analyserTous = async () => {
     setAnalysing(true);
     const res = await post('/diagnostic/analyser-tous', {});
-    alert(`✅ Analyse terminée : ${res?.data?.total} élèves analysés`);
+    alert(`Analyse terminée : ${res?.data?.total} élèves analysés`);
     setAnalysing(false);
     loadData();
   };
@@ -105,7 +123,7 @@ export default function DiagnosticPage() {
         padding: '12px 16px', marginBottom: '8px',
         display: 'flex', alignItems: 'center', gap: '12px',
       }}>
-        <div style={{ fontSize: '22px' }}>{n.emoji}</div>
+        <div style={{ fontSize: '22px' }}><n.icon size={22} fill={n.fill} color={n.fill} aria-hidden="true" /></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 800, fontSize: '13px', color: n.color }}>
             {d.eleve?.prenom} {d.eleve?.nom}
@@ -138,8 +156,8 @@ export default function DiagnosticPage() {
             <button onClick={() => convoquer(d.eleve_id)}
               style={{ background: '#450a0a', color: '#f87171', border: 'none',
                 borderRadius: '6px', padding: '5px 10px', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }}>
-              📱 Convoquer
-            </button>
+              <Smartphone size={10} aria-hidden='true' />Convoquer
+                          </button>
           )}
         </div>
       </div>
@@ -151,8 +169,8 @@ export default function DiagnosticPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>
-            🔬 Diagnostic de Niveau
-          </h1>
+            <Microscope size={22} aria-hidden='true' />Diagnostic de Niveau
+                      </h1>
           <p style={{ fontSize: '12px', color: '#64748b' }}>
             Early Warning System — surveillance continue du niveau académique
           </p>
@@ -170,12 +188,12 @@ export default function DiagnosticPage() {
 
       <div style={{ display: 'flex', gap: '4px', marginBottom: '20px' }}>
         {[
-          ['dashboard', '📊 Vue globale'],
-          ['liste', '👥 Tous les élèves'],
-          ['critique', '🚨 Critiques'],
-          ['excellence', '⭐ Excellents'],
-          ...(detail ? [['detail', '🔍 Détail élève']] : []),
-        ].map(([id, label]) => (
+          ['dashboard', <BarChart3 size={12} aria-hidden="true" />, 'Vue globale'],
+          ['liste', <Users size={12} aria-hidden="true" />, 'Tous les élèves'],
+          ['critique', <Siren size={12} aria-hidden="true" />, 'Critiques'],
+          ['excellence', <Star size={12} fill="currentColor" aria-hidden="true" />, 'Excellents'],
+          ...(detail ? [['detail', <Search size={12} aria-hidden="true" />, 'Détail élève']] : []),
+        ].map(([id, icon, label]) => (
           <button key={id} onClick={() => {
             setTab(id);
             if (id === 'critique') { setFiltreNiveau('critique'); setFiltreAction(''); }
@@ -187,7 +205,7 @@ export default function DiagnosticPage() {
             border: `1px solid ${tab === id ? '#3b82f6' : '#1e293b'}`,
             borderRadius: '8px', padding: '8px 14px', fontSize: '11px',
             fontWeight: 700, cursor: 'pointer',
-          }}>{label}</button>
+          }}>{icon} {label}</button>
         ))}
       </div>
 
@@ -208,8 +226,8 @@ export default function DiagnosticPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '11px', color: '#f87171', fontWeight: 800, marginBottom: '12px' }}>
-                🔴 TOP 5 ÉLÈVES À RISQUE
-              </div>
+                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />TOP 5 ÉLÈVES À RISQUE
+                              </div>
               {dashboard.top_risque?.map((e, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
                   alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' }}>
@@ -226,8 +244,8 @@ export default function DiagnosticPage() {
 
             <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800, marginBottom: '12px' }}>
-                ⭐ TOP 5 MEILLEURS ÉLÈVES
-              </div>
+                <Star size={11} fill="currentColor" aria-hidden='true' />TOP 5 MEILLEURS ÉLÈVES
+                              </div>
               {dashboard.top_excellence?.length === 0 && (
                 <div style={{ color: '#475569', fontSize: '12px', textAlign: 'center', padding: '20px' }}>
                   Aucun élève excellent détecté
@@ -237,7 +255,7 @@ export default function DiagnosticPage() {
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between',
                   alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1e293b' }}>
                   <span style={{ fontSize: '12px', color: '#e2e8f0' }}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⭐'} {e.eleve}
+                    {i === 0 ? <Medal size={12} color="#FFD700" aria-hidden='true' /> : i === 1 ? <Medal size={12} color="#C0C0C0" aria-hidden='true' /> : i === 2 ? <Medal size={12} color="#CD7F32" aria-hidden='true' /> : <Star size={12} aria-hidden='true' />} {e.eleve}
                   </span>
                   <span style={{ fontSize: '11px', color: '#4ade80', fontWeight: 800 }}>
                     {e.moyenne}/20
@@ -274,7 +292,7 @@ export default function DiagnosticPage() {
                 border: `1px solid ${filtreNiveau === key ? val.border : '#1e293b'}`,
                 borderRadius: '20px', padding: '5px 12px', fontSize: '10px',
                 fontWeight: 700, cursor: 'pointer',
-              }}>{val.emoji} {val.label}</button>
+              }}><val.icon size={12} fill={val.fill} color={val.fill} aria-hidden="true" /> {val.label}</button>
             ))}
           </div>
 
@@ -324,8 +342,8 @@ export default function DiagnosticPage() {
           {detail.recommandations?.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginBottom: '8px' }}>
-                💡 RECOMMANDATIONS
-              </div>
+                <Lightbulb size={11} aria-hidden='true' />RECOMMANDATIONS
+                              </div>
               {detail.recommandations.map((r, i) => (
                 <div key={i} style={{
                   display: 'flex', gap: '10px', alignItems: 'center',
@@ -350,8 +368,8 @@ export default function DiagnosticPage() {
           {detail.diagnostic?.matieres_en_danger?.length > 0 && (
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', color: '#f87171', fontWeight: 800, marginBottom: '8px' }}>
-                🔴 MATIÈRES EN DIFFICULTÉ
-              </div>
+                <Circle size={11} fill="#f87171" color="#f87171" aria-hidden='true' />MATIÈRES EN DIFFICULTÉ
+                              </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {detail.diagnostic.matieres_en_danger.map(m => (
                   <div key={m.matiere} style={{
@@ -369,8 +387,8 @@ export default function DiagnosticPage() {
           {detail.historique?.length > 0 && (
             <div>
               <div style={{ fontSize: '11px', color: '#60a5fa', fontWeight: 800, marginBottom: '8px' }}>
-                📈 HISTORIQUE DE PROGRESSION
-              </div>
+                <TrendingUp size={11} aria-hidden='true' />HISTORIQUE DE PROGRESSION
+                              </div>
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
                 {detail.historique.slice(0, 8).reverse().map((h, i) => (
                   <div key={i} style={{

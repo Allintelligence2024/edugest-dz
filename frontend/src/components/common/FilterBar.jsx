@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { RefreshCw } from 'lucide-react';
+
 /**
  * Barre de filtres déroulants.
  *
@@ -77,8 +79,8 @@ export default function FilterBar({ filters = [], values = {}, onChange, onReset
       {Object.values(values).some((v) => v) && (
         <button onClick={onReset}
                 className="text-sm text-neutral-500 hover:text-primary-600 flex items-center gap-1 transition-colors">
-          🔄 Réinitialiser
-        </button>
+          <RefreshCw size={14} aria-hidden='true' />Réinitialiser
+                  </button>
       )}
     </div>
   );

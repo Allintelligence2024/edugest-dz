@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '@api/client';
 
+import { MapPin, School, Star } from 'lucide-react';
+
 const SearchIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
@@ -107,7 +109,7 @@ export default function MarketplacePageCentres() {
           justifyContent:'center', fontSize:'20px', flexShrink:0,
         }}>
           {centre.logo_url ? <img src={centre.logo_url} alt="" style={{ width:'100%', borderRadius:'10px' }} />
-            : <span>&#127979;</span>}
+            : <span><School size={16} aria-hidden='true' /></span>}
         </div>
         <div style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
@@ -171,21 +173,21 @@ export default function MarketplacePageCentres() {
           <select value={filtres.wilaya}
             onChange={e => setFiltres(f => ({ ...f, wilaya: e.target.value }))}
             style={selectStyle}>
-            <option value="">&#128205; Toutes les wilayas</option>
+            <option value="">Toutes les wilayas</option>
             {WILAYAS_DZ.map(w => <option key={w} value={w}>{w}</option>)}
           </select>
 
           <select value={filtres.matiere}
             onChange={e => setFiltres(f => ({ ...f, matiere: e.target.value }))}
             style={selectStyle}>
-            <option value="">&#128218; Toutes les matières</option>
+            <option value="">Toutes les matières</option>
             {MATIERES.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
 
           <select value={filtres.niveau}
             onChange={e => setFiltres(f => ({ ...f, niveau: e.target.value }))}
             style={selectStyle}>
-            <option value="">&#127891; Tous les niveaux</option>
+            <option value="">Tous les niveaux</option>
             {NIVEAUX.map(n => <option key={n} value={n}>{n}</option>)}
           </select>
 
@@ -232,8 +234,8 @@ export default function MarketplacePageCentres() {
         <div>
           <div style={{ fontSize:'11px', color:'var(--accent)', fontWeight:700,
             textTransform:'uppercase', letterSpacing:'1.5px', marginBottom:'12px' }}>
-            &#11088; Centres vérifiés — Mis en avant
-          </div>
+            <Star size={11} aria-hidden='true' />Centres vérifiés — Mis en avant
+                      </div>
           <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'10px' }}>
             {featured.map(c => (
               <CentreCard key={c.id || c.tenant_id} centre={c}
@@ -260,7 +262,7 @@ export default function MarketplacePageCentres() {
                   {selectedCentre.verifie && <CheckCircleIcon />}
                 </h2>
                 <div style={{ fontSize:'11px', color:'var(--muted)' }}>
-                  &#128205; {selectedCentre.wilaya} {selectedCentre.commune && `· ${selectedCentre.commune}`}
+                  <MapPin size={11} aria-hidden='true' /> {selectedCentre.wilaya} {selectedCentre.commune && `· ${selectedCentre.commune}`}
                 </div>
                 <Stars note={selectedCentre.note_moyenne} />
               </div>

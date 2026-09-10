@@ -3,6 +3,8 @@ import { useLocation, Link } from 'react-router-dom';
 import LanguageThemeSelector from '@components/LanguageThemeSelector';
 import { getAccessToken } from '../api/tokenStore';
 
+import { AlertTriangle, Bell, CheckCircle, ClipboardList, CreditCard, FileText, NotebookPen, Search, Settings } from 'lucide-react';
+
 const PAGE_TITLES = {
   '/':                 { title: 'Tableau de bord',     crumb: [] },
   '/eleves':           { title: 'Gestion des Élèves',  crumb: ['Élèves'] },
@@ -116,7 +118,7 @@ export default function Header({ user }) {
         fontSize: '12px', color: '#64748B', cursor: 'text',
         minWidth: '200px', maxWidth: '260px',
       }}>
-        <span>🔍</span>
+        <span><Search size={16} aria-hidden='true' /></span>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -143,7 +145,7 @@ export default function Header({ user }) {
             position: 'relative',
           }}
         >
-          🔔
+          <Bell size={16} aria-hidden='true' />
           {notifCount > 0 && (
             <span style={{
               position: 'absolute', top: '5px', right: '6px',
@@ -172,8 +174,8 @@ export default function Header({ user }) {
             </div>
             {notifications.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: '#64748B', fontSize: '12px' }}>
-                ✅ Aucune notification non lue
-              </div>
+                <CheckCircle size={12} aria-hidden='true' />Aucune notification non lue
+                              </div>
             ) : (
               notifications.map((n, i) => (
                 <div key={n.id || i} style={{
@@ -182,7 +184,7 @@ export default function Header({ user }) {
                   background: !n.lu ? '#2563eb08' : 'transparent',
                 }}>
                   <span style={{ fontSize: '18px' }}>
-                    {{ note:'📝', bulletin:'📄', absence:'⚠️', signalement:'📋', paiement:'💳' }[n.type] || '🔔'}
+                    {{ note: <NotebookPen size={18} aria-hidden="true" />, bulletin: <FileText size={18} aria-hidden="true" />, absence: <AlertTriangle size={18} aria-hidden="true" />, signalement: <ClipboardList size={18} aria-hidden="true" />, paiement: <CreditCard size={18} aria-hidden="true" /> }[n.type] || <Bell size={18} aria-hidden="true" />}
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: '#E2E8F0', marginBottom: '2px' }}>{n.titre}</div>
@@ -202,7 +204,7 @@ export default function Header({ user }) {
         borderRadius: '9px', display: 'flex', alignItems: 'center',
         justifyContent: 'center', fontSize: '16px', textDecoration: 'none',
       }}>
-        ⚙️
+        <Settings size={16} aria-label='Paramètres' />
       </Link>
 
     </header>

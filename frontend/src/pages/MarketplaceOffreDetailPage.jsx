@@ -4,13 +4,17 @@ import { api } from '@api/client';
 import { useAuth } from '@context/AuthContext';
 import { toast } from 'react-hot-toast';
 
+import { MapPin, Star } from 'lucide-react';
+
 function StarRating({ note }) {
   if (!note) return <span style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>Aucun avis</span>;
   const full = Math.floor(note);
-  const stars = Array.from({ length: 5 }, (_, i) => i < full ? '★' : '☆');
+  const full5 = Array.from({ length: 5 }, (_, i) => (
+    <Star key={i} size={18} fill={i < full ? 'currentColor' : 'none'} aria-hidden="true" />
+  ));
   return (
     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-      <span style={{ color: 'var(--orange)', fontSize: '1.125rem' }}>{stars.join('')}</span>
+      <span style={{ color: 'var(--orange)', fontSize: '1.125rem' }}>{full5}</span>
       <span style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>{note.toFixed(1)}/5</span>
     </span>
   );
@@ -150,7 +154,7 @@ export default function MarketplaceOffreDetailPage() {
 
               {offre.wilaya && (
                 <p style={{ fontSize: '0.875rem', color: 'var(--muted)' }}>
-                  &#128205; {offre.wilaya.nom_fr}{offre.adresse ? ` — ${offre.adresse}` : ''}
+                  <MapPin size={14} aria-hidden='true' /> {offre.wilaya.nom_fr}{offre.adresse ? ` — ${offre.adresse}` : ''}
                 </p>
               )}
             </div>
@@ -167,7 +171,7 @@ export default function MarketplaceOffreDetailPage() {
                     <div key={avis.id} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                         <span style={{ color: 'var(--orange)', fontSize: '0.875rem' }}>
-                          {Array.from({ length: 5 }, (_, i) => i < avis.note ? '★' : '☆').join('')}
+                          {Array.from({ length: 5 }, (_, i) => (<Star key={i} size={14} fill={i < avis.note ? 'currentColor' : 'none'} aria-hidden="true" />))}
                         </span>
                         <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
                           {new Date(avis.created_at).toLocaleDateString('fr-DZ')}

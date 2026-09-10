@@ -2,6 +2,8 @@ import React from 'react';
 import { paieApi } from '@api/paie.api';
 import toast from 'react-hot-toast';
 
+import { Check } from 'lucide-react';
+
 export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
   const p = paie;
   const baseImposable = Math.max(0, (Number(p.salaire_base) || 0) - (Number(p.cnas) || 0));
@@ -62,7 +64,7 @@ export default function PaieDetailDrawer({ paie, onClose, onRefresh }) {
             <p className="text-neutral-500">Barème IRG 2026 appliqué</p>
             <p className="text-neutral-500">CNAS : 9% du brut</p>
             {Number(p.irg) === 0 && (
-              <p className="text-green-600 font-medium">✓ Exonéré IRG (SMIG ≤ 20 000 DA)</p>
+              <p className="text-green-600 font-medium"><Check size={16} aria-hidden='true' />Exonéré IRG (SMIG ≤ 20 000 DA)</p>
             )}
           </div>
 

@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { paiementApi } from '@api/facture.api';
 import toast from 'react-hot-toast';
 
+import { Banknote, CreditCard, FileText, Landmark, Smartphone } from 'lucide-react';
+
+
 const MODES_PAIEMENT = [
-  { value: 'especes', label: 'Espèces', icon: '💵' },
-  { value: 'cib', label: 'CIB', icon: '💳' },
-  { value: 'dahabia', label: 'Dahabia', icon: '💳' },
-  { value: 'baridimob', label: 'BaridiMob', icon: '📱' },
-  { value: 'virement', label: 'Virement', icon: '🏦' },
-  { value: 'cheque', label: 'Chèque', icon: '📄' },
+  { value: 'especes', label: 'Espèces', icon: <Banknote size={20} aria-hidden="true" /> },
+  { value: 'cib', label: 'CIB', icon: <CreditCard size={20} aria-hidden="true" /> },
+  { value: 'dahabia', label: 'Dahabia', icon: <CreditCard size={20} aria-hidden="true" /> },
+  { value: 'baridimob', label: 'BaridiMob', icon: <Smartphone size={20} aria-hidden="true" /> },
+  { value: 'virement', label: 'Virement', icon: <Landmark size={20} aria-hidden="true" /> },
+  { value: 'cheque', label: 'Chèque', icon: <FileText size={20} aria-hidden="true" /> },
 ];
 
 export default function PaiementModal({ facture, onClose, onSuccess }) {

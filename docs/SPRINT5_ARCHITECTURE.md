@@ -292,7 +292,7 @@ edugest-dz/
 | Point | Raison |
 |-------|--------|
 | **5.3** Découpe des contrôleurs > 350 lignes | ✅ Fait le 10 sept. — 9/9 (Budget, Stock, Entretien, Transport, Cantine, Lms, PaiementEnLigne, Eleve, Auth), `scripts/controleurs-baseline.txt` vide. |
-| **5.6** i18next + icônes lucide | Phase 1 faite le 10 sept. (socle i18next, § 5.6 ci-dessous). Restent : phase 2 (emoji → lucide, 515 occ. / 55 fichiers, garde-fou en place) et phase 3 (littéraux → `t()`, 96 fichiers). |
+| **5.6** i18next + icônes lucide | Phases 1 et 2 faites le 10 sept. (socle i18next + emoji → lucide, § 5.6 ci-dessous : 515 occurrences / 55 fichiers → **0**, garde-fou verrouillé à 0/0, tests 134/134). Reste : phase 3 (littéraux → `t()`, 96 fichiers). |
 | Coverage backend 45 → 60 % | **Mesuré : 60,71 %** (run `main`, annotation clover). Seuil rendu réellement bloquant à 45 ; relèvement à 60 à décider sur mesure post-5.3. |
 | Tests mobile (auth, présence, paiement) | Report du Sprint 4, toujours ouvert. |
 
@@ -314,8 +314,9 @@ lucide ». Mesure avant découpage, comme d'habitude :
 La migration complète (socle + 55 fichiers d'emoji + 96 fichiers de
 littéraux) ne tient pas dans un lot relisable. Découpage assumé :
 
-- **Phase 1 (ce lot)** : socle i18next + façade compatible + garde-fou.
-- **Phase 2** : emoji → `lucide-react` (+ `aria-label`), table ci-dessous.
+- **Phase 1 (fait)** : socle i18next + façade compatible + garde-fou.
+- **Phase 2 (fait le 10 sept.)** : emoji → `lucide-react` (+ `aria-label`),
+  table ci-dessous — détail dans « Ce qui a été fait (phase 2) ».
 - **Phase 3** : littéraux français → `t()` + traductions ar/en/dz.
 - Mobile (`mobile/src/context/I18nContext.js`, ses propres `lang/`) : hors
   scope, noté pour le Sprint 6.
@@ -340,8 +341,9 @@ littéraux) ne tient pas dans un lot relisable. Découpage assumé :
   `src/i18n.test.js` (9 tests : init, interpolation, repli fr, clé manquante,
   RTL, pluriels fr, pluriels dz 6 formes, formatters, `baseLang`).
 - `src/emoji-guard.test.js` : **cliquet bloquant** (plafonds 515 occ. /
-  55 fichiers). Mis en test vitest plutôt qu'en lint parce que le job CI
-  `lint` est `continue-on-error` : en lint, le garde ne garderait rien.
+  55 fichiers à la création ; **verrouillés à 0/0 par la phase 2**). Mis en
+  test vitest plutôt qu'en lint parce que le job CI `lint` est
+  `continue-on-error` : en lint, le garde ne garderait rien.
 - `package.json` + `package-lock.json` : `i18next ^26.4.2`, `react-i18next
   ^17.0.13` (pairs vérifiés : react-i18next 17 exige i18next ≥ 26.2).
   Lock régénéré (`--package-lock-only`, +67 lignes, `resolved`+`integrity`
@@ -361,7 +363,7 @@ nulle part (`grep` vide). Fausse alerte refermée au passage : `complete2fa`
 '[a-zA-Z]*'"` l'avait manquée à cause du `2` (`[a-zA-Z]` sans chiffres).
 Leçon : ce pattern d'audit est à bannir, utiliser `[a-zA-Z0-9_]*`.
 
-### Phase 2 — table emoji → lucide (propositions à valider)
+### Phase 2 — table emoji → lucide (appliquée le 10 sept.)
 
 Top occurrences mesurées. Noms lucide récents ; le build CI tranchera les
 renommages (`BarChart3`→`ChartColumn`, etc.). `aria-label` en français sur
@@ -408,3 +410,47 @@ Suite du top : ⚙️ `Settings`, 👁️ `Eye`, 👷 `HardHat`, ℹ️ `Info`,
 lucide n'a pas de drapeaux ; trancher en phase 2 (codes `FR/AR/EN/DZ`
 recommandés, ou images). Règle de fin : baisser les plafonds du garde-fou au
 fur et à mesure, fichier par fichier.
+
+### Ce qui a été fait (phase 2, 10 sept.)
+
+**515 occurrences / 55 fichiers `.jsx` → 0.** Recensement par la regex du
+garde-fou (`emoji-guard.test.js`), pas à la main. Codemod jscodeshift
+(mapping ≈ 100 clusters graphèmes, fusion d'imports) puis passes manuelles
+outillées pour les cas non mécanisables.
+
+Décisions de conversion :
+
+- **Accessibilité** : icône seule (bouton sans texte) → `aria-label` en
+  français sur l'icône ; icône suivie d'un texte adjacent → `aria-hidden="true"`
+  (le texte porte le sens). Recherche/effacement de la `SearchBar` : label
+  déplacé sur le bouton (`aria-label="Effacer la recherche"`, icône masquée).
+- **Tailles** : `text-4xl+`→36, `text-2xl`→24, `xl/lg`→18, défaut→16,
+  `xs/sm` et cellules de tableaux→14 px ; `fontSize` CSS explicite → même
+  valeur en px.
+- **ZWJ** : enseignants 👨‍🏫/👩‍🏫→`Presentation`, élèves 👨‍🎓→`GraduationCap`,
+  famille 👨‍👩‍👦→`Users`. ⏳ statique→`Hourglass`, animé→`LoaderCircle`.
+- **Podium** 🥇🥈🥉→`Medal` colorée (or `#FFD700`, argent `#C0C0C0`,
+  bronze `#CD7F32`). **Pastilles** 🔴🔵🟡🟢⚪→`Circle` + `fill`/`color` par
+  site. **Notation** ★→`Star` avec `fill` conditionnel.
+- **Drapeaux** du sélecteur de langue → codes `FR/AR/EN/DZ` (décision
+  ci-dessus) dans `LANG_META` de `I18nContext.jsx`.
+- Noms vérifiés contre le `lucide-react` **0.460.0 verrouillé** (les alias
+  historiques `CheckCircle`, `BarChart3`, `AlertTriangle`… y vivent encore) ;
+  0 dépendance ajoutée.
+- Refactors induits : `msg.includes('✅')` → état booléen dans 4 pages ;
+  toasts 🎉 → `toast.success(msg, { icon: <PartyPopper/> })` (API `icon:`
+  de react-hot-toast v2) ; icônes des cartes `<option>` retirées (HTML
+  interdit dans `<option>`).
+
+Vérifications : esbuild sur les 154 `.jsx` → 0 erreur ; `vitest run` →
+**134/134 verts** (23 assertions dans 9 fichiers de tests cherchaient le
+texte avec emoji — adaptées, ex. `getByText('Élèves')`, ou
+`getByRole('heading', …)` pour distinguer le bouton du titre de modal) ;
+ESLint sans nouvelle alerte (−8 `no-unused-vars` au passage). Garde-fou
+emoji **verrouillé à 0/0** : toute régression casse la CI.
+
+Bonus i18next : correctif des **pluriels darija** — i18next ≥ 25 a supprimé
+`PluralResolver.addRule` (l'appel silencieux ne faisait rien, et 'dz' désigne
+le dzongkha côté `Intl.PluralRules`, une seule catégorie) → délégation
+`getRule('dz')` → règle de l'arabe dans `i18n.js`. Le test « pluriels darija =
+règles arabes », rouge depuis la phase 1, repasse au vert.

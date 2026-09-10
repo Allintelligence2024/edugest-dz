@@ -7,6 +7,20 @@ import FilterBar from '@components/common/FilterBar';
 import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 
+import {
+  CheckCircle,
+  Eye,
+  Hourglass,
+  PartyPopper,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Save,
+  Trash2,
+  Users,
+  X,
+} from 'lucide-react';
+
 const FILTERS = [
   { key: 'niveau', label: 'Niveau', options: ['1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2AS','3AS','universitaire'] },
   { key: 'statut', label: 'Statut', options: ['actif','inactif'] },
@@ -77,10 +91,10 @@ export default function GroupesPage() {
 
   const actions = (row) => (
     <div className="flex items-center gap-1">
-      <button onClick={() => setDetailGroupe(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm">👁️</button>
-      <button onClick={() => { setEditingGroupe(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm">✏️</button>
-      <button onClick={() => handleToggleStatut(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm">🔄</button>
-      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500">🗑️</button>
+      <button onClick={() => setDetailGroupe(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm"><Eye size={14} aria-label='Voir' /></button>
+      <button onClick={() => { setEditingGroupe(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm"><Pencil size={14} aria-label='Modifier' /></button>
+      <button onClick={() => handleToggleStatut(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm"><RefreshCw size={14} aria-label='Actualiser' /></button>
+      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500"><Trash2 size={14} aria-label='Supprimer' /></button>
     </div>
   );
 
@@ -88,10 +102,10 @@ export default function GroupesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">👥 Groupes</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><Users size={24} aria-hidden='true' />Groupes</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Organisez les groupes de cours par matière et niveau</p>
         </div>
-        <button onClick={() => { setEditingGroupe(null); setShowModal(true); }} className="btn btn-primary gap-2">➕ Nouveau groupe</button>
+        <button onClick={() => { setEditingGroupe(null); setShowModal(true); }} className="btn btn-primary gap-2"><Plus size={16} aria-hidden='true' />Nouveau groupe</button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -136,7 +150,7 @@ function GroupeModal({ groupe, matieres, enseignants, onClose, onSuccess }) {
     setIsLoading(true);
     try {
       if (isEdit) { await api.put(`/groupes/${groupe.id}`, form); toast.success('Groupe mis à jour'); }
-      else { await api.post('/groupes', form); toast.success('Groupe créé 🎉'); }
+      else { await api.post('/groupes', form); toast.success('Groupe créé', { icon: <PartyPopper size={18} aria-hidden="true" /> }); }
       onSuccess();
     } catch (err) { toast.error(err?.error?.message || 'Erreur'); }
     finally { setIsLoading(false); }
@@ -147,8 +161,8 @@ function GroupeModal({ groupe, matieres, enseignants, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-md p-5 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">{isEdit ? '✏️ Modifier le groupe' : '➕ Nouveau groupe'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg">✕</button>
+          <h2 className="text-lg font-bold">{isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier le groupe</> : <><Plus size={18} aria-hidden='true' />Nouveau groupe</>}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg"><X size={16} aria-label='Fermer' /></button>
         </div>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -195,7 +209,7 @@ function GroupeModal({ groupe, matieres, enseignants, onClose, onSuccess }) {
             <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} className="input resize-none h-20" placeholder="Description du groupe..." />
           </div>
           <button onClick={submit} disabled={isLoading || !form.nom || !form.matiere_id || !form.niveau} className="btn btn-primary w-full">
-            {isLoading ? '⏳ Enregistrement...' : isEdit ? '💾 Enregistrer' : '✅ Créer le groupe'}
+            {isLoading ? <><Hourglass size={16} aria-hidden='true' />Enregistrement...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer le groupe</>}
           </button>
         </div>
       </div>
@@ -219,13 +233,13 @@ function GroupeDetailDrawer({ groupe, onClose }) {
         <div className="bg-gradient-to-r from-primary-700 to-primary-500 p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl">👥</div>
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl"><Users size={24} aria-hidden='true' /></div>
               <div>
                 <h2 className="text-xl font-bold text-white">{groupe.nom}</h2>
                 <p className="text-primary-100 text-sm">{groupe.matiere?.nom_fr} • {groupe.niveau}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-white p-2 hover:bg-white/20 rounded-lg">✕</button>
+            <button onClick={onClose} className="text-white p-2 hover:bg-white/20 rounded-lg"><X size={16} aria-label='Fermer' /></button>
           </div>
           <div className="flex gap-4 mt-4">
             {[
@@ -251,7 +265,7 @@ function GroupeDetailDrawer({ groupe, onClose }) {
           )}
           <section>
             <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Élèves inscrits ({eleves.length})</h3>
-            {isLoading ? <div className="flex justify-center py-6"><div className="animate-spin">⏳</div></div>
+            {isLoading ? <div className="flex justify-center py-6"><div className="animate-spin"><Hourglass size={16} aria-label='En cours' /></div></div>
               : eleves.length === 0 ? <p className="text-sm text-neutral-400 italic">Aucun élève inscrit</p>
               : <div className="space-y-1.5">{eleves.map(e => (
                   <div key={e.id} className="flex items-center gap-2 p-2.5 bg-neutral-50 rounded-lg">

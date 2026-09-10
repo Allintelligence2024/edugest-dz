@@ -8,10 +8,10 @@ import { baseLang, RTL_LANGS, formatDate, formatNumber } from '../i18n';
 const I18nContext = createContext(null);
 
 export const LANG_META = {
-  fr: { label: 'Français',  flag: '🇫🇷', dir: 'ltr' },
-  ar: { label: 'العربية',  flag: '🇩🇿', dir: 'rtl' },
-  en: { label: 'English',  flag: '🇬🇧', dir: 'ltr' },
-  dz: { label: 'الدارجة', flag: '🇩🇿', dir: 'rtl' },
+  fr: { label: 'Français',  flag: 'FR', dir: 'ltr' },
+  ar: { label: 'العربية',  flag: 'AR', dir: 'rtl' },
+  en: { label: 'English',  flag: 'EN', dir: 'ltr' },
+  dz: { label: 'الدارجة', flag: 'DZ', dir: 'rtl' },
 };
 
 const SUPPORTED = Object.keys(LANG_META);

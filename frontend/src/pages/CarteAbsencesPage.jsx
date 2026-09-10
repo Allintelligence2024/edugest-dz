@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { BarChart3, Map, MapPin, Square } from 'lucide-react';
+
+
 const WILAYAS_POSITIONS = [
   { id: 1, code: '01', nom: 'Adrar', x: 150, y: 80 },
   { id: 2, code: '02', nom: 'Chlef', x: 280, y: 180 },
@@ -152,10 +155,10 @@ export default function CarteAbsencesPage() {
       {resume && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total absences', value: resume.total_absences, icon: '📊' },
-            { label: 'Élèves avec wilaya', value: resume.eleves_avec_wilaya, icon: '📍' },
-            { label: 'Wilayas concernées', value: resume.wilayas_concernees, icon: '🗺️' },
-            { label: 'Wilayas sans données', value: 58 - resume.wilayas_concernees, icon: '⬜' },
+            { label: 'Total absences', value: resume.total_absences, icon: <BarChart3 size={24} aria-hidden="true" /> },
+            { label: 'Élèves avec wilaya', value: resume.eleves_avec_wilaya, icon: <MapPin size={24} aria-hidden="true" /> },
+            { label: 'Wilayas concernées', value: resume.wilayas_concernees, icon: <Map size={24} aria-hidden="true" /> },
+            { label: 'Wilayas sans données', value: 58 - resume.wilayas_concernees, icon: <Square size={24} aria-hidden="true" /> },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
               <div className="text-2xl mb-1">{kpi.icon}</div>

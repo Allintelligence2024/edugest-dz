@@ -6,6 +6,8 @@ import SearchBar from '@components/common/SearchBar';
 import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 
+import { BookOpen, CheckCircle, Hourglass, PartyPopper, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+
 const COLUMNS = [
   { key: 'couleur', label: '', render: v => <div className="w-5 h-5 rounded-lg" style={{ backgroundColor: v || '#1E5EBC' }} /> },
   { key: 'nom_fr', label: 'Matière (FR)', sortable: true, render: (v, r) => <span className="font-semibold">{v}</span> },
@@ -43,8 +45,8 @@ export default function MatieresPage() {
 
   const actions = (row) => (
     <div className="flex items-center gap-1">
-      <button onClick={() => { setEditingMatiere(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier">✏️</button>
-      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer">🗑️</button>
+      <button onClick={() => { setEditingMatiere(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier"><Pencil size={14} aria-hidden='true' /></button>
+      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer"><Trash2 size={14} aria-hidden='true' /></button>
     </div>
   );
 
@@ -52,12 +54,12 @@ export default function MatieresPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">📚 Matières</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><BookOpen size={24} aria-hidden='true' />Matières</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Gérez les matières enseignées dans votre établissement</p>
         </div>
         <button onClick={() => { setEditingMatiere(null); setShowModal(true); }} className="btn btn-primary gap-2">
-          ➕ Nouvelle matière
-        </button>
+          <Plus size={16} aria-hidden='true' />Nouvelle matière
+                  </button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -111,7 +113,7 @@ function MatiereModal({ matiere, onClose, onSuccess }) {
     setIsLoading(true);
     try {
       if (isEdit) { await api.put(`/matieres/${matiere.id}`, form); toast.success('Matière mise à jour'); }
-      else { await api.post('/matieres', form); toast.success('Matière créée 🎉'); }
+      else { await api.post('/matieres', form); toast.success('Matière créée', { icon: <PartyPopper size={18} aria-hidden="true" /> }); }
       onSuccess();
     } catch (err) { toast.error(err?.error?.message || 'Erreur'); }
     finally { setIsLoading(false); }
@@ -122,8 +124,8 @@ function MatiereModal({ matiere, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-md p-5 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">{isEdit ? '✏️ Modifier la matière' : '➕ Nouvelle matière'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg">✕</button>
+          <h2 className="text-lg font-bold">{isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier la matière</> : <><Plus size={18} aria-hidden='true' />Nouvelle matière</>}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg"><X size={16} aria-label='Fermer' /></button>
         </div>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -158,7 +160,7 @@ function MatiereModal({ matiere, onClose, onSuccess }) {
             <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} className="input resize-none h-20" placeholder="Description de la matière..." />
           </div>
           <button onClick={submit} disabled={isLoading || !form.nom_fr} className="btn btn-primary w-full">
-            {isLoading ? '⏳ Enregistrement...' : isEdit ? '💾 Enregistrer' : '✅ Créer la matière'}
+            {isLoading ? <><Hourglass size={16} aria-hidden='true' />Enregistrement...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer la matière</>}
           </button>
         </div>
       </div>

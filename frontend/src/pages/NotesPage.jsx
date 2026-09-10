@@ -6,6 +6,8 @@ import SearchBar from '@components/common/SearchBar';
 import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 
+import { BarChart3, Check, CheckCircle, Hourglass, NotebookPen, PartyPopper, Plus, Trash2, X } from 'lucide-react';
+
 const MATIERE_COLORS = { mathématiques: 'bg-blue-100 border-blue-300 text-blue-700', physique: 'bg-purple-100 border-purple-300 text-purple-700', français: 'bg-green-100 border-green-300 text-green-700', anglais: 'bg-cyan-100 border-cyan-300 text-cyan-700', arabe: 'bg-amber-100 border-amber-300 text-amber-700', svt: 'bg-emerald-100 border-emerald-300 text-emerald-700', histoire: 'bg-orange-100 border-orange-300 text-orange-700', philosophie: 'bg-rose-100 border-rose-300 text-rose-700', informatique: 'bg-indigo-100 border-indigo-300 text-indigo-700', default: 'bg-neutral-100 border-neutral-300 text-neutral-700' };
 
 export default function NotesPage() {
@@ -27,7 +29,7 @@ export default function NotesPage() {
   React.useEffect(() => { loadMatieres(); }, [loadMatieres]);
 
   const handleAddNote = async (noteData) => {
-    try { await api.post('/notes', noteData); toast.success('Note enregistrée 🎉'); load(); }
+    try { await api.post('/notes', noteData); toast.success('Note enregistrée', { icon: <PartyPopper size={18} aria-hidden="true" /> }); load(); }
     catch (err) { toast.error(err?.error?.message || 'Erreur'); }
   };
 
@@ -55,7 +57,7 @@ export default function NotesPage() {
     { key: 'type', label: 'Type', render: v => <span className="text-xs text-neutral-400 uppercase">{v || 'devoir'}</span> },
     { key: 'date', label: 'Date', render: v => <span className="text-sm text-neutral-500">{new Date(v).toLocaleDateString('fr-DZ')}</span> },
     { key: 'id', label: '', render: (v, r) => (
-      <button onClick={() => handleDeleteNote(v)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 text-sm">🗑️</button>
+      <button onClick={() => handleDeleteNote(v)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 text-sm"><Trash2 size={14} aria-label='Supprimer' /></button>
     )},
   ];
 
@@ -63,10 +65,10 @@ export default function NotesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">📊 Notes & Évaluations</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><BarChart3 size={24} aria-hidden='true' />Notes & Évaluations</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Suivez les notes et les moyennes des élèves</p>
         </div>
-        <button onClick={() => setShowDetail('new')} className="btn btn-primary gap-2">➕ Nouvelle note</button>
+        <button onClick={() => setShowDetail('new')} className="btn btn-primary gap-2"><Plus size={16} aria-hidden='true' />Nouvelle note</button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -102,7 +104,7 @@ function NoteModal({ eleve, matieres, onClose, onSuccess }) {
   const submit = async () => {
     setIsLoading(true);
     try {
-      if (form.eleve_id) { await api.post('/notes', form); toast.success('Note enregistrée 🎉'); onSuccess(); }
+      if (form.eleve_id) { await api.post('/notes', form); toast.success('Note enregistrée', { icon: <PartyPopper size={18} aria-hidden="true" /> }); onSuccess(); }
       else toast.error('Sélectionnez un élève');
     } catch (err) { toast.error(err?.error?.message || 'Erreur'); }
     finally { setIsLoading(false); }
@@ -113,8 +115,8 @@ function NoteModal({ eleve, matieres, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-md p-5 animate-slide-up">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">📝 Nouvelle note</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg">✕</button>
+          <h2 className="text-lg font-bold"><NotebookPen size={18} aria-hidden='true' />Nouvelle note</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg"><X size={16} aria-label='Fermer' /></button>
         </div>
         <div className="space-y-3">
           <div>
@@ -128,7 +130,7 @@ function NoteModal({ eleve, matieres, onClose, onSuccess }) {
                 ))}
               </div>
             )}
-            {form.eleve_id && <p className="text-xs text-green-600 mt-1">✓ Élève sélectionné</p>}
+            {form.eleve_id && <p className="text-xs text-green-600 mt-1"><Check size={12} aria-hidden='true' />Élève sélectionné</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -169,7 +171,7 @@ function NoteModal({ eleve, matieres, onClose, onSuccess }) {
             <textarea value={form.appreciation} onChange={e => setForm(f => ({...f, appreciation: e.target.value}))} className="input resize-none h-20" placeholder="Commentaire..." />
           </div>
           <button onClick={submit} disabled={isLoading || !form.eleve_id || !form.matiere_id} className="btn btn-primary w-full">
-            {isLoading ? '⏳ Enregistrement...' : '✅ Enregistrer la note'}
+            {isLoading ? <><Hourglass size={16} aria-hidden='true' />Enregistrement...</> : <><CheckCircle size={16} aria-hidden='true' />Enregistrer la note</>}
           </button>
         </div>
       </div>

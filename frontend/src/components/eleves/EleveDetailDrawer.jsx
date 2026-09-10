@@ -3,12 +3,14 @@ import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 import MatchingSuggestions from '@components/eleves/MatchingSuggestions';
 
+import { BarChart3, Bot, Cake, CheckCircle, Globe, Hourglass, MapPin, Pencil, Phone, School, User, Wallet, X, XCircle } from 'lucide-react';
+
 const TABS = [
-  { id: 'profil', label: '👤 Profil' },
-  { id: 'notes', label: '📊 Notes' },
-  { id: 'presences', label: '✅ Présences' },
-  { id: 'paiements', label: '💰 Paiements' },
-  { id: 'matching', label: '🤖 Suggestions IA' },
+  { id: 'profil', label: 'Profil', icon: <User size={12} aria-hidden="true" /> },
+  { id: 'notes', label: 'Notes', icon: <BarChart3 size={12} aria-hidden="true" /> },
+  { id: 'presences', label: 'Présences', icon: <CheckCircle size={12} aria-hidden="true" /> },
+  { id: 'paiements', label: 'Paiements', icon: <Wallet size={12} aria-hidden="true" /> },
+  { id: 'matching', label: 'Suggestions IA', icon: <Bot size={12} aria-hidden="true" /> },
 ];
 
 export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
@@ -43,7 +45,7 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
         <div className="bg-gradient-to-r from-primary-700 to-primary-500 p-5 flex-shrink-0">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-xl bg-white/20 overflow-hidden flex-shrink-0 flex items-center justify-center text-2xl">
-              {e?.photo_url ? <img src={e.photo_url} className="w-full h-full object-cover" alt="" /> : <span>👤</span>}
+              {e?.photo_url ? <img src={e.photo_url} className="w-full h-full object-cover" alt="" /> : <span><User size={16} aria-hidden='true' /></span>}
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-xl font-bold text-white truncate">{e?.nom} {e?.prenom}</h2>
@@ -53,8 +55,8 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
-              <button onClick={onEdit} className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white text-sm" title="Modifier">✏️</button>
-              <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white text-xl">✕</button>
+              <button onClick={onEdit} className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white text-sm" title="Modifier"><Pencil size={14} aria-hidden='true' /></button>
+              <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white text-xl"><X size={20} aria-label='Fermer' /></button>
             </div>
           </div>
 
@@ -63,7 +65,7 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0
                         ${activeTab === tab.id ? 'bg-white text-primary-700' : 'text-primary-100 hover:bg-white/20'}`}>
-                {tab.label}
+                {tab.icon} {tab.label}
               </button>
             ))}
           </div>
@@ -77,9 +79,9 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
               <section>
                 <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Informations personnelles</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {[['🎂 Date naissance', e?.date_naissance], ['📍 Wilaya', e?.wilaya?.nom_fr || '—'], ['🏫 École origine', e?.ecole_origine || '—'], ['🌍 Nationalité', e?.nationalite || 'Algérienne']].map(([k, v]) => (
+                  {[[<Cake size={12} aria-hidden="true" />, 'Date naissance', e?.date_naissance], [<MapPin size={12} aria-hidden="true" />, 'Wilaya', e?.wilaya?.nom_fr || '—'], [<School size={12} aria-hidden="true" />, 'École origine', e?.ecole_origine || '—'], [<Globe size={12} aria-hidden="true" />, 'Nationalité', e?.nationalite || 'Algérienne']].map(([icon, k, v]) => (
                     <div key={k} className="bg-neutral-50 rounded-xl p-3">
-                      <div className="text-xs text-neutral-400">{k}</div>
+                      <div className="text-xs text-neutral-400">{icon} {k}</div>
                       <div className="text-sm font-medium text-neutral-800 mt-0.5">{v}</div>
                     </div>
                   ))}
@@ -101,7 +103,7 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
                 <div className="space-y-2">{e?.parents?.map(p => (
                   <div key={p.id} className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-100">
                     <div className="w-9 h-9 bg-neutral-200 rounded-lg flex items-center justify-center text-neutral-600 font-bold flex-shrink-0">
-                      {p.lien === 'père' ? '👨' : p.lien === 'mère' ? '👩' : '👤'}
+                      {p.lien === 'père' ? <User size={16} aria-hidden='true' /> : p.lien === 'mère' ? <User size={16} aria-hidden='true' /> : <User size={16} aria-hidden='true' />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold">{p.nom} {p.prenom}</div>
@@ -128,8 +130,8 @@ export default function EleveDetailDrawer({ isOpen, eleve, onClose, onEdit }) {
         </div>
 
         <div className="p-4 border-t border-neutral-200 flex gap-2 flex-shrink-0">
-          <a href={`tel:${e?.parents?.[0]?.telephone_1}`} className="btn btn-secondary flex-1 text-sm">📞 Appeler</a>
-          <button onClick={onEdit} className="btn btn-primary flex-1 text-sm">✏️ Modifier</button>
+          <a href={`tel:${e?.parents?.[0]?.telephone_1}`} className="btn btn-secondary flex-1 text-sm"><Phone size={14} aria-hidden='true' />Appeler</a>
+          <button onClick={onEdit} className="btn btn-primary flex-1 text-sm"><Pencil size={14} aria-hidden='true' />Modifier</button>
         </div>
       </div>
     </>
@@ -150,7 +152,7 @@ function NotesList({ eleveId }) {
     });
   }, [eleveId]);
 
-  if (!notes) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl">⏳</div></div>;
+  if (!notes) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl"><Hourglass size={24} aria-label='En cours' /></div></div>;
 
   return (
     <div className="space-y-4">
@@ -187,15 +189,15 @@ function PresencesList({ eleveId }) {
     api.get(`/eleves/${eleveId}/presences`, { params: { mois: new Date().getMonth() + 1, annee: new Date().getFullYear() } }).then(r => setData(r));
   }, [eleveId]);
 
-  if (!data) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl">⏳</div></div>;
+  if (!data) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl"><Hourglass size={24} aria-label='En cours' /></div></div>;
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: 'Taux', value: `${data.stats?.taux_presence ?? 0}%`, icon: '📊' },
-          { label: 'Présences', value: data.stats?.presents ?? 0, icon: '✅' },
-          { label: 'Absences', value: data.stats?.absents ?? 0, icon: '❌' },
+          { label: 'Taux', value: `${data.stats?.taux_presence ?? 0}%`, icon: <BarChart3 size={20} aria-hidden="true" /> },
+          { label: 'Présences', value: data.stats?.presents ?? 0, icon: <CheckCircle size={20} aria-hidden="true" /> },
+          { label: 'Absences', value: data.stats?.absents ?? 0, icon: <XCircle size={20} aria-hidden="true" /> },
         ].map(s => (
           <div key={s.label} className="bg-neutral-50 rounded-xl p-3 text-center">
             <div className="text-xl mb-0.5">{s.icon}</div>
@@ -207,7 +209,7 @@ function PresencesList({ eleveId }) {
       <div className="space-y-1.5 max-h-64 overflow-y-auto">
         {data.data?.map((p, i) => (
           <div key={i} className={`flex items-center gap-3 p-2.5 rounded-lg ${p.statut === 'présent' ? 'bg-green-100' : 'bg-red-100'}`}>
-            <span>{p.statut === 'présent' ? '✅' : '❌'}</span>
+            <span>{p.statut === 'présent' ? <CheckCircle size={16} aria-hidden='true' /> : <XCircle size={16} aria-hidden='true' />}</span>
             <div className="flex-1 text-xs">
               <span className="font-medium">{p.seance?.cours?.groupe?.matiere?.nom_fr ?? 'Cours'}</span>
               <span className="text-neutral-500 ml-2">{p.seance?.date_seance}</span>
@@ -227,7 +229,7 @@ function PaiementsList({ eleveId }) {
     api.get(`/eleves/${eleveId}/paiements`).then(r => setData(r));
   }, [eleveId]);
 
-  if (!data) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl">⏳</div></div>;
+  if (!data) return <div className="flex justify-center py-8"><div className="animate-spin text-2xl"><Hourglass size={24} aria-label='En cours' /></div></div>;
 
   return (
     <div className="space-y-4">

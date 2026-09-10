@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlarmClock, ClipboardList, DoorOpen, LockOpen, Printer, Smartphone, Ticket } from 'lucide-react';
+
 const TYPE_COLORS = {
   retard: 'bg-yellow-100 text-yellow-800 border-yellow-200',
   sortie_autorisee: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -8,7 +10,7 @@ const TYPE_COLORS = {
   entree_exceptionnelle: 'bg-green-100 text-green-800 border-green-200',
 };
 
-const TYPE_ICONS = { retard: '⏰', sortie_autorisee: '🚪', convocation: '📋', entree_exceptionnelle: '🔓' };
+const TYPE_ICONS = { retard: <AlarmClock size={24} aria-hidden="true" />, sortie_autorisee: <DoorOpen size={24} aria-hidden="true" />, convocation: <ClipboardList size={24} aria-hidden="true" />, entree_exceptionnelle: <LockOpen size={24} aria-hidden="true" /> };
 
 export default function BilletsPage() {
   const [billets, setBillets] = useState([]);
@@ -39,7 +41,7 @@ export default function BilletsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🎫 Billets</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><Ticket size={24} aria-hidden='true' />Billets</h1>
           <p className="text-gray-500 mt-1">Retards · Sorties · Convocations · Entrées exceptionnelles</p>
         </div>
         <button onClick={() => setShowForm(true)} className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 font-medium">
@@ -55,10 +57,10 @@ export default function BilletsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Type de billet</label>
               <select value={form.type} onChange={e => setForm({...form, type: e.target.value})}
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
-                <option value="retard">⏰ Billet de retard</option>
-                <option value="sortie_autorisee">🚪 Autorisation de sortie</option>
-                <option value="convocation">📋 Convocation parent</option>
-                <option value="entree_exceptionnelle">🔓 Entrée exceptionnelle</option>
+                <option value="retard">Billet de retard</option>
+                <option value="sortie_autorisee">Autorisation de sortie</option>
+                <option value="convocation">Convocation parent</option>
+                <option value="entree_exceptionnelle">Entrée exceptionnelle</option>
               </select>
             </div>
             <div>
@@ -90,11 +92,11 @@ export default function BilletsPage() {
           {billets.map((b, i) => (
             <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{TYPE_ICONS[b.type] || '🎫'}</span>
+                <span className="text-2xl">{TYPE_ICONS[b.type] || <Ticket size={24} aria-hidden='true' />}</span>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded border text-xs font-medium ${TYPE_COLORS[b.type]}`}>{b.type_label || b.type}</span>
-                    {b.parent_prevenu && <span className="text-xs text-green-600">📱 Parent prévenu</span>}
+                    {b.parent_prevenu && <span className="text-xs text-green-600"><Smartphone size={12} aria-hidden='true' />Parent prévenu</span>}
                   </div>
                   <p className="font-medium text-gray-900 mt-0.5">{b.eleve?.prenom} {b.eleve?.nom} · <span className="text-gray-500 font-normal text-sm">{b.eleve?.niveau_scolaire}</span></p>
                   {b.motif && <p className="text-xs text-gray-500 mt-0.5">{b.motif}</p>}
@@ -105,7 +107,7 @@ export default function BilletsPage() {
                   <p className="text-xs text-gray-500">{b.date_billet}</p>
                   {b.heure && <p className="text-xs text-gray-400">{b.heure.slice(0, 5)}</p>}
                 </div>
-                <button className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded">🖨️ Imprimer</button>
+                <button className="text-blue-600 hover:text-blue-800 text-xs font-medium bg-blue-50 px-2 py-1 rounded"><Printer size={12} aria-hidden='true' />Imprimer</button>
               </div>
             </div>
           ))}

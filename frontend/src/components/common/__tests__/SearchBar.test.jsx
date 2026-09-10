@@ -38,7 +38,7 @@ describe('SearchBar', () => {
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'hello' } });
     vi.advanceTimersByTime(0);
 
-    const clearBtn = screen.getByText('✕');
+    const clearBtn = screen.getByRole('button', { name: 'Effacer la recherche' });
     fireEvent.click(clearBtn);
 
     expect(onSearch).toHaveBeenCalledWith('');

@@ -5,6 +5,8 @@ import CoursModal from '@components/planning/CoursModal';
 import PlanningFilters from '@components/planning/PlanningFilters';
 import EmptyState from '@components/ui/EmptyState';
 
+import { Calendar, Plus } from 'lucide-react';
+
 const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const HEURES = Array.from({ length: 14 }, (_, i) => {
   const h = String(i + 8).padStart(2, '0');
@@ -66,12 +68,12 @@ export default function PlanningPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text">📅 Planning hebdomadaire</h1>
+          <h1 className="text-2xl font-bold text-text"><Calendar size={24} aria-hidden='true' />Planning hebdomadaire</h1>
           <p className="text-muted text-sm mt-1">{dateRange.label}</p>
         </div>
         <button onClick={() => { setEditingCours(null); setCoursModalOpen(true); }} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
-          ➕ Nouveau cours
-        </button>
+          <Plus size={14} aria-hidden='true' />Nouveau cours
+                  </button>
       </div>
 
       <PlanningFilters filtres={filtres} onChange={setFiltres} />
@@ -79,13 +81,13 @@ export default function PlanningPage() {
       <div className="bg-surface rounded-2xl border border-border overflow-hidden">
         {semaine.length === 0 && Object.keys(filtres).length === 0 ? (
           <EmptyState
-            icon="📅"
+            icon={<Calendar size={48} aria-hidden="true" />}
             title="Aucun cours planifié"
             description="Aucun cours n'est prévu pour cette semaine. Créez un cours pour commencer."
             action={
               <button onClick={() => { setEditingCours(null); setCoursModalOpen(true); }} className="px-5 py-2.5 bg-primary-600 text-white rounded-xl font-semibold text-sm hover:bg-primary-700 transition-colors">
-                ➕ Nouveau cours
-              </button>
+                <Plus size={14} aria-hidden='true' />Nouveau cours
+                              </button>
             }
           />
         ) : (

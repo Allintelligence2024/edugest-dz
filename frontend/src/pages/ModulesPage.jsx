@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useModules } from '@context/ModulesContext';
 
+import { Circle, Info, Settings, Users } from 'lucide-react';
+
 const CATEGORIES = {
   core:        { label: 'Fonctions de base',    color: '#2563EB' },
   pedagogie:   { label: 'Pédagogie',            color: '#7C3AED' },
@@ -22,6 +24,7 @@ export default function ModulesPage() {
   const { modules, loading, isActive, activerModule, desactiverModule, recharger } = useModules();
   const [saving, setSaving]       = useState({});
   const [msg, setMsg]             = useState('');
+  const [msgOk, setMsgOk] = useState(true);
   const [showRaison, setShowRaison] = useState(null);
   const [raison, setRaison]       = useState('');
 
@@ -30,7 +33,7 @@ export default function ModulesPage() {
       setSaving(s => ({ ...s, [moduleKey]: true }));
       const res = await activerModule(moduleKey);
       setSaving(s => ({ ...s, [moduleKey]: false }));
-      setMsg(res.success ? `✅ ${moduleKey} activé` : `❌ ${res.message}`);
+      setMsg(res.success ? `${moduleKey} activé` : res.message); setMsgOk(res.success);
       setTimeout(() => setMsg(''), 3000);
     } else {
       setShowRaison(moduleKey);
@@ -44,7 +47,7 @@ export default function ModulesPage() {
     setSaving(s => ({ ...s, [showRaison]: false }));
     setShowRaison(null);
     setRaison('');
-    setMsg(res.success ? `✅ ${showRaison} désactivé` : `❌ ${res.message}`);
+    setMsg(res.success ? `${showRaison} désactivé` : res.message); setMsgOk(res.success);
     setTimeout(() => setMsg(''), 3000);
   };
 
@@ -58,8 +61,8 @@ export default function ModulesPage() {
     <div style={{ padding: '24px', background: '#070B14', minHeight: '100vh' }}>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>
-          ⚙️ Gestion des Modules
-        </h1>
+          <Settings size={22} aria-hidden='true' />Gestion des Modules
+                  </h1>
         <p style={{ fontSize: '12px', color: '#64748B' }}>
           Activez ou désactivez les modules selon les besoins de votre établissement.
           Les modules désactivés n'apparaissent plus dans la navigation.
@@ -67,13 +70,13 @@ export default function ModulesPage() {
       </div>
 
       {msg && (
-        <div style={{ background: msg.includes('✅') ? '#0d2515' : '#450a0a', border: `1px solid ${msg.includes('✅') ? '#16a34a' : '#b91c1c'}`, borderRadius: '9px', padding: '10px 16px', marginBottom: '16px', fontSize: '12px', color: msg.includes('✅') ? '#4ade80' : '#f87171' }}>
+        <div style={{ background: msgOk ? '#0d2515' : '#450a0a', border: `1px solid ${msgOk ? '#16a34a' : '#b91c1c'}`, borderRadius: '9px', padding: '10px 16px', marginBottom: '16px', fontSize: '12px', color: msgOk ? '#4ade80' : '#f87171' }}>
           {msg}
         </div>
       )}
 
       <div style={{ background: '#1e3a5f22', border: '1px solid #2563eb44', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', fontSize: '11px', color: '#93C5FD', display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <span style={{ fontSize: '18px' }}>ℹ️</span>
+        <span style={{ fontSize: '18px' }}><Info size={18} aria-hidden='true' /></span>
         <span>
           Les modules <strong>obligatoires</strong> (Dashboard, Élèves, Planning, Notes, Bulletins, Factures)
           ne peuvent pas être désactivés. Tous les autres peuvent être activés/désactivés à tout moment
@@ -147,13 +150,13 @@ export default function ModulesPage() {
                       </p>
                       {module.pour_qui && (
                         <div style={{ fontSize: '9px', color: '#475569', fontStyle: 'italic' }}>
-                          👥 {module.pour_qui}
+                          <Users size={9} aria-hidden='true' /> {module.pour_qui}
                         </div>
                       )}
                       {!module.actif && !module.obligatoire && (
                         <div style={{ marginTop: '8px', padding: '6px 8px', background: '#1E2D40', borderRadius: '6px', fontSize: '9px', color: '#64748B' }}>
-                          🔴 Module désactivé — cliquer pour réactiver
-                        </div>
+                          <Circle size={9} fill="#f87171" color="#f87171" aria-hidden='true' />Module désactivé — cliquer pour réactiver
+                                                  </div>
                       )}
                     </div>
                   );
@@ -189,8 +192,8 @@ export default function ModulesPage() {
               </button>
               <button onClick={confirmerDesactivation}
                 style={{ flex: 2, background: '#EF4444', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
-                🔴 Désactiver le module
-              </button>
+                <Circle size={16} fill="#f87171" color="#f87171" aria-hidden='true' />Désactiver le module
+                              </button>
             </div>
           </div>
         </div>

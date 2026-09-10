@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { api } from '@api/client';
 
+import { ClipboardList, Star } from 'lucide-react';
+
 const STATUT_STYLES = {
   en_attente: { bg: 'rgba(245,158,11,0.15)', color: 'var(--orange)' },
   confirmee: { bg: 'rgba(6,182,212,0.15)', color: 'var(--teal)' },
@@ -107,7 +109,7 @@ export default function MesReservationsPage() {
         </div>
       ) : reservations.length === 0 ? (
         <div style={{ ...cardStyle, textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>
-          <p style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>&#128203;</p>
+          <p style={{ fontSize: '3rem', marginBottom: '0.75rem' }}><ClipboardList size={48} aria-hidden='true' /></p>
           <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Aucune réservation</p>
           <Link to="/marketplace" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.875rem' }}>
             Découvrir les offres
@@ -186,7 +188,7 @@ export default function MesReservationsPage() {
                   </button>
                 )}
                 {res.statut === 'terminee' && res.avis && (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--orange)' }}>&#11088; Avis laissé</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--orange)' }}><Star size={12} aria-hidden='true' />Avis laissé</span>
                 )}
               </div>
             </div>
@@ -210,13 +212,13 @@ export default function MesReservationsPage() {
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text)', marginBottom: '4px' }}>Note</label>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {[1,2,3,4,5].map(n => (
-                    <button key={n} onClick={() => setAvisNote(n)}
+                    <button key={n} onClick={() => setAvisNote(n)} aria-label={`Noter ${n} sur 5`}
                       style={{
                         fontSize: '1.875rem', background: 'none', border: 'none', cursor: 'pointer',
                         color: n <= avisNote ? 'var(--orange)' : 'var(--border)',
                         transition: 'color 0.15s',
                       }}>
-                      &#9733;
+                      <Star size={30} aria-hidden="true" />
                     </button>
                   ))}
                 </div>

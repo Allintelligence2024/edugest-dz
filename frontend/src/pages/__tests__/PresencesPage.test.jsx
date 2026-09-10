@@ -51,7 +51,7 @@ describe('PresencesPage', () => {
 
   it('affiche l’en-tête et invite à choisir une séance', async () => {
     renderPage();
-    expect(screen.getByText('📋 Gestion des présences')).toBeInTheDocument();
+    expect(screen.getByText('Gestion des présences')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('Sélectionnez une séance à gauche')).toBeInTheDocument());
   });
 
@@ -73,16 +73,16 @@ describe('PresencesPage', () => {
 
     await waitFor(() => expect(screen.getByText(/BENZEMA/)).toBeInTheDocument());
     expect(screen.getByText(/HAKIMI/)).toBeInTheDocument();
-    expect(screen.getByText('💾 Enregistrer')).toBeInTheDocument();
+    expect(screen.getByText('Enregistrer')).toBeInTheDocument();
   });
 
   it('enregistre les présences saisies', async () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Mathématiques')).toBeInTheDocument());
     await userEvent.click(screen.getByText('Mathématiques'));
-    await waitFor(() => expect(screen.getByText('💾 Enregistrer')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Enregistrer')).toBeInTheDocument());
 
-    await userEvent.click(screen.getByText('💾 Enregistrer'));
+    await userEvent.click(screen.getByText('Enregistrer'));
 
     await waitFor(() => expect(api.post).toHaveBeenCalledWith(
       '/seances/s1/presences',

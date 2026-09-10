@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { X } from 'lucide-react';
+
 export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
 
@@ -10,7 +12,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
         {title && (
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">{title}</h2>
-            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg" data-testid="modal-close-btn">✕</button>
+            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg" data-testid="modal-close-btn"><X size={16} aria-label='Fermer' /></button>
           </div>
         )}
         {children}

@@ -5,6 +5,8 @@ import * as yup from 'yup';
 import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 
+import { Camera, Check, CheckCircle, Hourglass, PartyPopper, Pencil, Plus, Save, Trash2, User, X } from 'lucide-react';
+
 const schema = yup.object({
   nom: yup.string().min(2).required('Nom requis'),
   prenom: yup.string().min(2).required('Prénom requis'),
@@ -21,9 +23,9 @@ const NIVEAUX = [
 ];
 
 const STEPS = [
-  { id: 'eleve', label: '👤 Élève', icon: '1' },
-  { id: 'parents', label: '👨‍👩‍👦 Parents', icon: '2' },
-  { id: 'recap', label: '✅ Récap', icon: '3' },
+  { id: 'eleve', label: 'Élève', icon: '1' },
+  { id: 'parents', label: 'Parents', icon: '2' },
+  { id: 'recap', label: 'Récap', icon: '3' },
 ];
 
 export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
@@ -83,7 +85,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
         toast.success('Élève mis à jour !');
       } else {
         const res = await api.post('/eleves', rest);
-        toast.success(`Élève ${res.data?.nom} créé ! 🎉`);
+        toast.success(`Élève ${res.data?.nom} créé !`, { icon: <PartyPopper size={18} aria-hidden="true" /> });
       }
       onSuccess();
     } catch (err) {
@@ -103,9 +105,9 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
         <div className="p-5 border-b border-neutral-100 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-neutral-800">
-              {isEdit ? `✏️ Modifier — ${eleve.nom} ${eleve.prenom}` : '➕ Nouvel élève'}
+              {isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier — {eleve.nom} {eleve.prenom}</> : <><Plus size={18} aria-hidden='true' />Nouvel élève</>}
             </h2>
-            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400">✕</button>
+            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg text-neutral-400"><X size={16} aria-label='Fermer' /></button>
           </div>
           <div className="flex items-center">
             {STEPS.map((s, i) => (
@@ -114,7 +116,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                         className={`flex items-center gap-2 text-sm font-medium transition-colors ${i === step ? 'text-primary-700' : i < step ? 'text-green-600 cursor-pointer' : 'text-neutral-300 cursor-default'}`}>
                   <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all
                     ${i === step ? 'border-primary-600 bg-primary-600 text-white' : i < step ? 'border-green-500 bg-green-500 text-white' : 'border-neutral-200 text-neutral-400'}`}>
-                    {i < step ? '✓' : s.icon}
+                    {i < step ? <Check size={16} aria-hidden='true' /> : s.icon}
                   </span>
                   <span className="hidden sm:block">{s.label}</span>
                 </button>
@@ -131,10 +133,10 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
               <div className="flex items-center gap-4">
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <div className="w-20 h-20 rounded-2xl bg-neutral-100 overflow-hidden border-2 border-dashed border-neutral-300 flex items-center justify-center">
-                    {photoPreview ? <img src={photoPreview} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl">👤</span>}
+                    {photoPreview ? <img src={photoPreview} className="w-full h-full object-cover" alt="" /> : <span className="text-3xl"><User size={30} aria-hidden='true' /></span>}
                   </div>
                   <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-600 text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-700 transition-colors text-xs">
-                    📷<input type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
+                    <Camera size={12} aria-hidden='true' /><input type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
                   </label>
                 </div>
                 <div className="flex-1">
@@ -169,7 +171,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                 <div>
                   <label className="label">Sexe *</label>
                   <div className="flex gap-2">
-                    {[{ v:'M', l:'👦 M' },{ v:'F', l:'👧 F' }].map(s => (
+                    {[{ v:'M', l: <><User size={14} aria-hidden="true" /> M</> },{ v:'F', l: <><User size={14} aria-hidden="true" /> F</> }].map(s => (
                       <label key={s.v} className={`flex-1 flex items-center justify-center py-2.5 rounded-xl border-2 cursor-pointer transition-all text-sm font-semibold
                         ${watch('sexe') === s.v ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-neutral-200 text-neutral-500 hover:border-neutral-300'}`}>
                         <input type="radio" {...register('sexe')} value={s.v} className="sr-only" />{s.l}
@@ -225,14 +227,14 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
                 <p className="text-sm font-semibold text-neutral-700">Contacts parents/tuteurs ({parentFields.length})</p>
                 {parentFields.length < 3 && (
                   <button type="button" onClick={() => addParent({ lien: 'mère' })}
-                          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1">➕ Ajouter un contact</button>
+                          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"><Plus size={14} aria-hidden='true' />Ajouter un contact</button>
                 )}
               </div>
               {parentFields.map((field, i) => (
                 <div key={field.id} className="bg-neutral-50 rounded-xl p-4 space-y-3 relative">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Contact {i + 1} {i === 0 ? '(Principal)' : ''}</span>
-                    {i > 0 && <button type="button" onClick={() => removeParent(i)} className="text-red-400 hover:text-red-600 text-xs">🗑️ Supprimer</button>}
+                    {i > 0 && <button type="button" onClick={() => removeParent(i)} className="text-red-400 hover:text-red-600 text-xs"><Trash2 size={12} aria-hidden='true' />Supprimer</button>}
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
@@ -278,12 +280,12 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
           {step === 2 && (
             <div className="space-y-4">
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2">✅ Récapitulatif</h3>
+                <h3 className="font-bold text-green-800 mb-3 flex items-center gap-2"><CheckCircle size={16} aria-hidden='true' />Récapitulatif</h3>
                 <div className="flex items-center gap-3 mb-4">
-                  {photoPreview ? <img src={photoPreview} className="w-16 h-16 rounded-xl object-cover" alt="" /> : <div className="w-16 h-16 rounded-xl bg-primary-100 flex items-center justify-center text-2xl">👤</div>}
+                  {photoPreview ? <img src={photoPreview} className="w-16 h-16 rounded-xl object-cover" alt="" /> : <div className="w-16 h-16 rounded-xl bg-primary-100 flex items-center justify-center text-2xl"><User size={24} aria-hidden='true' /></div>}
                   <div>
                     <div className="text-lg font-bold text-neutral-800">{watch('nom')} {watch('prenom')}</div>
-                    <div className="text-sm text-neutral-500">{watch('niveau_scolaire')} • {watch('sexe') === 'M' ? '👦' : '👧'}</div>
+                    <div className="text-sm text-neutral-500">{watch('niveau_scolaire')} • {watch('sexe')}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -311,7 +313,7 @@ export default function EleveModal({ isOpen, eleve, onClose, onSuccess }) {
           ) : (
             <button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading}
                     className="btn btn-primary flex-1">
-              {isLoading ? <><span className="animate-spin">⏳</span> Création...</> : isEdit ? '💾 Enregistrer' : '✅ Créer l\'élève'}
+              {isLoading ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> Création...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer l'élève</>}
             </button>
           )}
         </div>

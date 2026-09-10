@@ -5,6 +5,24 @@ import * as yup from 'yup';
 import { toast } from 'react-hot-toast';
 import api from '@api/axiosInstance';
 
+import {
+  AlertTriangle,
+  BookOpen,
+  Calendar,
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  Hourglass,
+  Pencil,
+  Plus,
+  Presentation,
+  Repeat,
+  Save,
+  School,
+  Wallet,
+  X,
+} from 'lucide-react';
+
 const schema = yup.object({
   enseignant_id: yup.string().required('Enseignant requis'),
   groupe_id:     yup.string().required('Groupe requis'),
@@ -107,7 +125,7 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
 
   const onSubmit = async (data) => {
     if (conflits.length > 0) {
-      const ok = window.confirm('⚠️ Des conflits ont été détectés. Voulez-vous forcer la création ?');
+      const ok = window.confirm('Des conflits ont été détectés. Voulez-vous forcer la création ?');
       if (!ok) return;
       data.forcer = true;
     }
@@ -135,20 +153,20 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up">
         <div className="flex items-center justify-between p-6 border-b border-neutral-100">
-          <h2 className="text-xl font-bold text-neutral-800">{cours ? '✏️ Modifier le cours' : '➕ Nouveau cours'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500">✕</button>
+          <h2 className="text-xl font-bold text-neutral-800">{cours ? <><Pencil size={20} aria-hidden='true' />Modifier le cours</> : <><Plus size={20} aria-hidden='true' />Nouveau cours</>}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg transition-colors text-neutral-500"><X size={16} aria-label='Fermer' /></button>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           {conflits.length > 0 && (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
-              <p className="text-sm font-semibold text-orange-700 flex items-center gap-2">⚠️ {conflits.length} conflit(s) détecté(s)</p>
+              <p className="text-sm font-semibold text-orange-700 flex items-center gap-2"><AlertTriangle size={14} aria-hidden='true' /> {conflits.length}conflit(s) détecté(s)</p>
               {conflits.map((c, i) => (
                 <p key={i} className="text-xs text-orange-600 mt-1 ml-6">• {c.message}</p>
               ))}
             </div>
           )}
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">👨‍🏫 Enseignant *</label>
+            <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Presentation size={14} aria-hidden='true' />Enseignant *</label>
             <select {...register('enseignant_id')} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none transition-colors ${errors.enseignant_id ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`}>
               <option value="">Sélectionner un enseignant</option>
               {enseignants.map(e => <option key={e.id} value={e.id}>{e.nom} {e.prenom}</option>)}
@@ -156,7 +174,7 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
             {errors.enseignant_id && <p className="text-xs text-danger-600 mt-1">{errors.enseignant_id.message}</p>}
           </div>
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📚 Groupe *</label>
+            <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><BookOpen size={14} aria-hidden='true' />Groupe *</label>
             <select {...register('groupe_id')} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none ${errors.groupe_id ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`}>
               <option value="">Sélectionner un groupe</option>
               {groupes.map(g => <option key={g.id} value={g.id}>{g.nom} — {g.niveau_scolaire}</option>)}
@@ -164,13 +182,13 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📅 Jour *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Calendar size={14} aria-hidden='true' />Jour *</label>
               <select {...register('jour_semaine', { valueAsNumber: true })} className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500">
                 {JOURS_OPTIONS.map(j => <option key={j.value} value={j.value}>{j.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">🏫 Salle</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><School size={14} aria-hidden='true' />Salle</label>
               <select {...register('salle_id')} className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500">
                 <option value="">Aucune salle</option>
                 {salles.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}
@@ -179,17 +197,17 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">🕐 Heure début *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Clock size={14} aria-hidden='true' />Heure début *</label>
               <input type="time" {...register('heure_debut')} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none ${errors.heure_debut ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`} />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">🕑 Heure fin *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Clock size={14} aria-hidden='true' />Heure fin *</label>
               <input type="time" {...register('heure_fin')} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none ${errors.heure_fin ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">🔁 Récurrence *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Repeat size={14} aria-hidden='true' />Récurrence *</label>
               <select {...register('recurrence')} className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500">
                 <option value="hebdo">Hebdomadaire</option>
                 <option value="bimensuel">Bimensuel</option>
@@ -198,18 +216,18 @@ export default function CoursModal({ isOpen, onClose, initialData, cours, onSucc
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">📆 Date début *</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><CalendarDays size={14} aria-hidden='true' />Date début *</label>
               <input type="date" {...register('date_debut')} className={`w-full px-3 py-2.5 rounded-xl border-2 text-sm outline-none ${errors.date_debut ? 'border-danger-400' : 'border-neutral-200 focus:border-primary-500'}`} />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">💰 Tarif par séance (DA)</label>
+            <label className="block text-sm font-semibold text-neutral-700 mb-1.5"><Wallet size={14} aria-hidden='true' />Tarif par séance (DA)</label>
             <input type="number" {...register('tarif_seance')} placeholder="0" className="w-full px-3 py-2.5 rounded-xl border-2 border-neutral-200 text-sm outline-none focus:border-primary-500" />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border-2 border-neutral-200 text-neutral-700 font-semibold text-sm hover:bg-neutral-50 transition-colors">Annuler</button>
             <button type="submit" disabled={isLoading || checkingConflits} className="flex-1 py-3 rounded-xl bg-primary-600 text-white font-semibold text-sm hover:bg-primary-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              {isLoading ? <><span className="animate-spin">⏳</span> Sauvegarde...</> : <>{cours ? '💾 Modifier' : '✅ Créer le cours'}</>}
+              {isLoading ? <><span className="animate-spin"><Hourglass size={16} aria-hidden='true' /></span> Sauvegarde...</> : <>{cours ? <><Save size={16} aria-hidden='true' />Modifier</> : <><CheckCircle size={16} aria-hidden='true' />Créer le cours</>}</>}
             </button>
           </div>
         </form>

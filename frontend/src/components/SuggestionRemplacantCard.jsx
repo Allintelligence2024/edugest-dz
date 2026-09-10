@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { Check } from 'lucide-react';
+
 function getScoreBadge(score) {
   if (score >= 70) return { bg: '#EDFAF3', text: '#229A54', label: 'Excellent' };
   if (score >= 40) return { bg: '#FFF8EC', text: '#E08E0B', label: 'Bon' };
@@ -10,7 +12,7 @@ function getScoreBadge(score) {
 function CheckIcon({ ok }) {
   return (
     <span style={{ color: ok ? '#229A54' : '#ccc', marginRight: 4 }}>
-      {ok ? '✓' : '—'}
+      {ok ? <Check size={16} aria-label='OK' /> : '—'}
     </span>
   );
 }

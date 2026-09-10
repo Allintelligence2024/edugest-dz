@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlertTriangle, Circle, FileText, Package, RefreshCw, Wallet } from 'lucide-react';
+
 const CAT_LABELS = {
   mobilier: 'Mobilier', fourniture_bureau: 'Fournitures bureau',
   equipement_pedagogique: 'Équip. pédagogique', equipement_informatique: 'Informatique',
@@ -22,7 +24,7 @@ export default function StockInventairePage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">📦 Stock & Inventaire</h1>
+      <h1 className="text-2xl font-bold text-text"><Package size={24} aria-hidden='true' />Stock & Inventaire</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée de stock disponible.</p>
         <p className="text-xs text-muted2">Ajoutez vos articles pour commencer l&apos;inventaire.</p>
@@ -36,18 +38,18 @@ export default function StockInventairePage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📦 Stock & Inventaire</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><Package size={24} aria-hidden='true' />Stock & Inventaire</h1>
           <p className="text-gray-500 mt-1">Mobilier, équipements et fournitures</p>
         </div>
         <div className="flex gap-2">
-          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium">📄 Rapport annuel</button>
+          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium"><FileText size={14} aria-hidden='true' />Rapport annuel</button>
           <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium">+ Ajouter article</button>
         </div>
       </div>
 
       {(stats?.articles_en_alerte ?? 0) > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-          <span className="text-xl">⚠️</span>
+          <span className="text-xl"><AlertTriangle size={20} aria-hidden='true' /></span>
           <div className="flex-1">
             <p className="font-medium text-amber-800">{stats.articles_en_alerte} article(s) sous le seuil minimum</p>
             {(stats?.prets_en_retard ?? 0) > 0 && <p className="text-sm text-amber-600">{stats.prets_en_retard} prêt(s) en retard</p>}
@@ -58,10 +60,10 @@ export default function StockInventairePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Articles recensés', value: stats?.total_articles ?? 0, icon: '📦', color: 'indigo' },
-          { label: 'Valeur totale', value: `${Number(stats?.valeur_totale_da ?? 0).toLocaleString()} DA`, icon: '💰', color: 'green' },
-          { label: 'En alerte stock', value: stats?.articles_en_alerte ?? 0, icon: '🔴', color: 'red' },
-          { label: 'Prêts en cours', value: stats?.prets_en_retard ?? 0, icon: '🔄', color: 'orange' },
+          { label: 'Articles recensés', value: stats?.total_articles ?? 0, icon: <Package size={24} aria-hidden="true" />, color: 'indigo' },
+          { label: 'Valeur totale', value: `${Number(stats?.valeur_totale_da ?? 0).toLocaleString()} DA`, icon: <Wallet size={24} aria-hidden="true" />, color: 'green' },
+          { label: 'En alerte stock', value: stats?.articles_en_alerte ?? 0, icon: <Circle size={24} fill="#f87171" color="#f87171" aria-hidden="true" />, color: 'red' },
+          { label: 'Prêts en cours', value: stats?.prets_en_retard ?? 0, icon: <RefreshCw size={24} aria-hidden="true" />, color: 'orange' },
         ].map((k, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
             <div className="text-2xl mb-1">{k.icon}</div>

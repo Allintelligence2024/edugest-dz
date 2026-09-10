@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const [showPwd, setShowPwd]     = useState(false);
   const [saving, setSaving]       = useState(false);
   const [msg, setMsg]             = useState('');
+  const [msgOk, setMsgOk] = useState(true);
 
   const [form, setForm] = useState({ nom:'', prenom:'', email:'', telephone:'' });
   const [pwdForm, setPwdForm] = useState({ current_password:'', new_password:'', new_password_confirmation:'' });
@@ -29,19 +30,19 @@ export default function ProfilePage() {
   const saveProfil = async () => {
     setSaving(true);
     const r = await api('/auth/me', { method:'PUT', body: JSON.stringify(form) });
-    setMsg(r.success ? 'Profil mis à jour' : 'Erreur : ' + r.message);
+    setMsg(r.success ? 'Profil mis à jour' : 'Erreur : ' + r.message); setMsgOk(!!r.success);
     setSaving(false);
     setTimeout(() => setMsg(''), 3000);
   };
 
   const savePassword = async () => {
-    if (pwdForm.new_password !== pwdForm.new_password_confirmation) { setMsg('Mots de passe différents'); return; }
+    if (pwdForm.new_password !== pwdForm.new_password_confirmation) { setMsg('Mots de passe différents'); setMsgOk(false); return; }
     setSaving(true);
     const r = await api('/auth/password', {
       method:'PUT',
       body: JSON.stringify({ current_password: pwdForm.current_password, new_password: pwdForm.new_password, new_password_confirmation: pwdForm.new_password_confirmation }),
     });
-    setMsg(r.success ? 'Mot de passe modifié' : (r.error?.message ?? r.message ?? 'Erreur'));
+    setMsg(r.success ? 'Mot de passe modifié' : (r.error?.message ?? r.message ?? 'Erreur')); setMsgOk(!!r.success);
     setSaving(false);
     setPwdForm({ current_password:'', new_password:'', new_password_confirmation:'' });
     setTimeout(() => setMsg(''), 3000);
@@ -74,10 +75,10 @@ export default function ProfilePage() {
       </div>
 
       {msg && (
-        <div style={{ background: msg.includes('✅') ? '#0d2515' : '#1a0808',
-          border:`1px solid ${msg.includes('✅') ? '#16a34a' : '#b91c1c'}`,
+        <div style={{ background: msgOk ? '#0d2515' : '#1a0808',
+          border:`1px solid ${msgOk ? '#16a34a' : '#b91c1c'}`,
           borderRadius:'8px', padding:'10px 14px', marginBottom:'16px', fontSize:'12px',
-          color: msg.includes('✅') ? '#4ade80' : '#f87171' }}>
+          color: msgOk ? '#4ade80' : '#f87171' }}>
           {msg}
         </div>
       )}

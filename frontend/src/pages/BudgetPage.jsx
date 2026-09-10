@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlertTriangle, BarChart3, FileText, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
+
 export default function BudgetPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ export default function BudgetPage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">📊 Budget Annuel</h1>
+      <h1 className="text-2xl font-bold text-text"><BarChart3 size={24} aria-hidden='true' />Budget Annuel</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée budget disponible.</p>
         <p className="text-xs text-muted2">Saisissez vos recettes et dépenses pour commencer.</p>
@@ -30,21 +32,21 @@ export default function BudgetPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📊 Budget Annuel</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><BarChart3 size={24} aria-hidden='true' />Budget Annuel</h1>
           <p className="text-gray-500 mt-1">Recettes · Dépenses · Prévisionnel</p>
         </div>
         <div className="flex gap-2">
-          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm">📄 Bilan annuel</button>
+          <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm"><FileText size={14} aria-hidden='true' />Bilan annuel</button>
           <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-medium">+ Saisir dépense</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: 'Recettes du mois', value: `${fmt(data?.recettes)} DA`, icon: '📈', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
-          { label: 'Dépenses du mois', value: `${fmt(data?.depenses)} DA`, icon: '📉', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-          { label: 'Résultat net', value: `${fmt(data?.resultat_net)} DA`, icon: '💰', bg: (data?.resultat_net ?? 0) >= 0 ? 'bg-blue-50' : 'bg-red-50', text: (data?.resultat_net ?? 0) >= 0 ? 'text-blue-700' : 'text-red-700', border: 'border-blue-200' },
-          { label: 'Impayés', value: `${fmt(data?.impayes)} DA`, icon: '⚠️', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+          { label: 'Recettes du mois', value: `${fmt(data?.recettes)} DA`, icon: <TrendingUp size={24} aria-hidden="true" />, bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+          { label: 'Dépenses du mois', value: `${fmt(data?.depenses)} DA`, icon: <TrendingDown size={24} aria-hidden="true" />, bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+          { label: 'Résultat net', value: `${fmt(data?.resultat_net)} DA`, icon: <Wallet size={24} aria-hidden="true" />, bg: (data?.resultat_net ?? 0) >= 0 ? 'bg-blue-50' : 'bg-red-50', text: (data?.resultat_net ?? 0) >= 0 ? 'text-blue-700' : 'text-red-700', border: 'border-blue-200' },
+          { label: 'Impayés', value: `${fmt(data?.impayes)} DA`, icon: <AlertTriangle size={24} aria-hidden="true" />, bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
         ].map((k, i) => (
           <div key={i} className={`${k.bg} border ${k.border} rounded-xl p-5`}>
             <div className="text-2xl mb-2">{k.icon}</div>

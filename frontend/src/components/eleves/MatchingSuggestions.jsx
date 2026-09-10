@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { matchingApi } from '@api/matching.api';
 
+import { MapPin, Search, Star } from 'lucide-react';
+
 export default function MatchingSuggestions({ eleveId, onAssign }) {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,9 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
 
   const scoreToStars = (score) => {
     const stars = Math.round(score * 5);
-    return '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star key={i} size={10} fill={i < stars ? 'currentColor' : 'none'} aria-hidden="true" />
+    ));
   };
 
   const scorePercent = (score) => `${Math.round(score * 100)}%`;
@@ -53,7 +57,7 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
   if (!suggestions.length) {
     return (
       <div className="text-center py-8">
-        <div className="text-4xl mb-2">🔍</div>
+        <div className="text-4xl mb-2"><Search size={36} aria-hidden='true' /></div>
         <p className="text-neutral-500 text-sm">Aucun enseignant trouvé</p>
       </div>
     );
@@ -107,7 +111,7 @@ export default function MatchingSuggestions({ eleveId, onAssign }) {
                     )}
                     {ens.wilaya?.nom_fr && (
                       <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                        📍 {ens.wilaya.nom_fr}
+                        <MapPin size={16} aria-hidden='true' /> {ens.wilaya.nom_fr}
                       </span>
                     )}
                     {ens.experience_annees != null && (

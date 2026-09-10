@@ -7,6 +7,22 @@ import FilterBar from '@components/common/FilterBar';
 import DataTable from '@components/common/DataTable';
 import Pagination from '@components/common/Pagination';
 
+import {
+  CheckCircle,
+  Eye,
+  Hourglass,
+  Mail,
+  MapPin,
+  PartyPopper,
+  Pencil,
+  Phone,
+  Plus,
+  Presentation,
+  Save,
+  Trash2,
+  X,
+} from 'lucide-react';
+
 const FILTERS = [
   { key: 'statut', label: 'Statut', options: [{value:'actif',label:'Actif'},{value:'inactif',label:'Inactif'}] },
   { key: 'type_contrat', label: 'Contrat', options: [{value:'CDI',label:'CDI'},{value:'CDD',label:'CDD'},{value:'vacataire',label:'Vacataire'}] },
@@ -63,9 +79,9 @@ export default function EnseignantsListPage() {
 
   const actions = (row) => (
     <div className="flex items-center gap-1">
-      <button onClick={() => setDetailEnseignant(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Détails">👁️</button>
-      <button onClick={() => { setEditingEnseignant(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier">✏️</button>
-      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer">🗑️</button>
+      <button onClick={() => setDetailEnseignant(row)} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Détails"><Eye size={14} aria-hidden='true' /></button>
+      <button onClick={() => { setEditingEnseignant(row); setShowModal(true); }} className="p-1.5 hover:bg-neutral-100 rounded-lg text-sm" title="Modifier"><Pencil size={14} aria-hidden='true' /></button>
+      <button onClick={() => handleDelete(row)} className="p-1.5 hover:bg-red-50 rounded-lg text-sm text-red-500" title="Supprimer"><Trash2 size={14} aria-hidden='true' /></button>
     </div>
   );
 
@@ -73,12 +89,12 @@ export default function EnseignantsListPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-800">👨‍🏫 Enseignants</h1>
+          <h1 className="text-2xl font-bold text-neutral-800"><Presentation size={24} aria-hidden='true' />Enseignants</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Gérez les enseignants de votre établissement</p>
         </div>
         <button onClick={() => { setEditingEnseignant(null); setShowModal(true); }} className="btn btn-primary gap-2">
-          ➕ Nouvel enseignant
-        </button>
+          <Plus size={16} aria-hidden='true' />Nouvel enseignant
+                  </button>
       </div>
 
       <div className="card p-4 space-y-4">
@@ -153,7 +169,7 @@ function EnseignantModal({ enseignant, onClose, onSuccess }) {
     setIsLoading(true);
     try {
       if (isEdit) { await api.put(`/enseignants/${enseignant.id}`, form); toast.success('Enseignant mis à jour'); }
-      else { await api.post('/enseignants', form); toast.success('Enseignant créé 🎉'); }
+      else { await api.post('/enseignants', form); toast.success('Enseignant créé', { icon: <PartyPopper size={18} aria-hidden="true" /> }); }
       onSuccess();
     } catch (err) { toast.error(err?.error?.message || 'Erreur'); }
     finally { setIsLoading(false); }
@@ -164,8 +180,8 @@ function EnseignantModal({ enseignant, onClose, onSuccess }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-modal w-full max-w-2xl p-5 animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">{isEdit ? '✏️ Modifier l\'enseignant' : '➕ Nouvel enseignant'}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg">✕</button>
+          <h2 className="text-lg font-bold">{isEdit ? <><Pencil size={18} aria-hidden='true' />Modifier l'enseignant</> : <><Plus size={18} aria-hidden='true' />Nouvel enseignant</>}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-lg"><X size={16} aria-label='Fermer' /></button>
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -265,7 +281,7 @@ function EnseignantModal({ enseignant, onClose, onSuccess }) {
           </div>
 
           <button onClick={submit} disabled={isLoading || !form.nom || !form.prenom || !form.email || !form.type_contrat} className="btn btn-primary w-full">
-            {isLoading ? '⏳ Enregistrement...' : isEdit ? '💾 Enregistrer' : '✅ Créer l\'enseignant'}
+            {isLoading ? <><Hourglass size={16} aria-hidden='true' />Enregistrement...</> : isEdit ? <><Save size={16} aria-hidden='true' />Enregistrer</> : <><CheckCircle size={16} aria-hidden='true' />Créer l'enseignant</>}
           </button>
         </div>
       </div>
@@ -281,13 +297,13 @@ function EnseignantDetailDrawer({ enseignant, onClose }) {
         <div className="bg-gradient-to-r from-primary-700 to-primary-500 p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl">👨‍🏫</div>
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl"><Presentation size={24} aria-hidden='true' /></div>
               <div>
                 <h2 className="text-xl font-bold text-white">{enseignant.nom} {enseignant.prenom}</h2>
                 <p className="text-primary-100 text-sm">{enseignant.matricule} • {enseignant.type_contrat}</p>
               </div>
             </div>
-            <button onClick={onClose} className="text-white p-2 hover:bg-white/20 rounded-lg">✕</button>
+            <button onClick={onClose} className="text-white p-2 hover:bg-white/20 rounded-lg"><X size={16} aria-label='Fermer' /></button>
           </div>
           <div className="flex gap-4 mt-4">
             {[
@@ -306,9 +322,9 @@ function EnseignantDetailDrawer({ enseignant, onClose }) {
           <section>
             <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Contact</h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400">📧</span> {enseignant.email}</div>
-              <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400">📞</span> {enseignant.telephone || '—'}</div>
-              {enseignant.adresse && <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400">📍</span> {enseignant.adresse}</div>}
+              <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400"><Mail size={16} aria-hidden='true' /></span> {enseignant.email}</div>
+              <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400"><Phone size={16} aria-hidden='true' /></span> {enseignant.telephone || '—'}</div>
+              {enseignant.adresse && <div className="flex items-center gap-2 text-sm"><span className="text-neutral-400"><MapPin size={16} aria-hidden='true' /></span> {enseignant.adresse}</div>}
             </div>
           </section>
           {enseignant.diplome && (

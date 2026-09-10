@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '@api/client';
 
+import { Hourglass, Key, Mail, XCircle } from 'lucide-react';
+
 export default function MotDePasseOubliePage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
@@ -28,14 +30,14 @@ export default function MotDePasseOubliePage() {
     <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
       <div style={{ width:'100%', maxWidth:'400px' }}>
         <div style={{ textAlign:'center', marginBottom:'32px' }}>
-          <div style={{ fontSize:'40px' }}>🔑</div>
+          <div style={{ fontSize:'40px' }}><Key size={40} aria-label='Clé' /></div>
           <h1 style={{ fontSize:'22px', fontWeight:800, color:'var(--text)', marginTop:'8px' }}>Mot de passe oublié</h1>
         </div>
 
         <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'20px', padding:'32px' }}>
           {sent ? (
             <div style={{ textAlign:'center' }}>
-              <div style={{ fontSize:'48px', marginBottom:'16px' }}>📧</div>
+              <div style={{ fontSize:'48px', marginBottom:'16px' }}><Mail size={48} aria-label='E-mail' /></div>
               <h3 style={{ color:'var(--green)', fontWeight:700, marginBottom:'8px' }}>Email envoyé !</h3>
               <p style={{ color:'var(--muted)', fontSize:'13px', lineHeight:'1.6' }}>
                 Si un compte existe avec cet email, vous recevrez un lien de réinitialisation dans les prochaines minutes.
@@ -51,7 +53,7 @@ export default function MotDePasseOubliePage() {
               </p>
               {error && (
                 <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'10px 14px', marginBottom:'16px', color:'#f87171', fontSize:'13px' }}>
-                  ❌ {error}
+                  <XCircle size={13} aria-hidden='true' /> {error}
                 </div>
               )}
               <input
@@ -62,7 +64,7 @@ export default function MotDePasseOubliePage() {
               />
               <button type="submit" disabled={loading}
                 style={{ width:'100%', background:'var(--accent)', color:'white', border:'none', borderRadius:'10px', padding:'12px', fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
-                {loading ? '⏳ Envoi...' : '📧 Envoyer le lien'}
+                {loading ? <><Hourglass size={14} aria-hidden='true' />Envoi...</> : <><Mail size={14} aria-hidden='true' />Envoyer le lien</>}
               </button>
               <div style={{ textAlign:'center', marginTop:'16px' }}>
                 <Link to="/login" style={{ fontSize:'12px', color:'var(--muted)', textDecoration:'none' }}>← Retour à la connexion</Link>

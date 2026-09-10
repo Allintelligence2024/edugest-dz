@@ -1,6 +1,9 @@
 import React from 'react';
 
-export default function DataTable({ columns, data, isLoading, emptyIcon = '📋', emptyMessage = 'Aucune donnée',
+import { ClipboardList } from 'lucide-react';
+
+
+export default function DataTable({ columns, data, isLoading, emptyIcon = <ClipboardList size={48} aria-hidden="true" />, emptyMessage = 'Aucune donnée',
                                      onRowClick, selectedId, rowClassName = '' }) {
   if (isLoading) {
     return (

@@ -1,5 +1,27 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertTriangle, Camera, CheckCircle, Clock, Shield, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  Camera,
+  CheckCircle,
+  Clock,
+  Construction,
+  EyeOff,
+  Globe,
+  Info,
+  MapPin,
+  OctagonX,
+  RefreshCw,
+  Save,
+  Settings,
+  Shield,
+  Siren,
+  Smartphone,
+  User,
+  Video,
+  WifiOff,
+  XCircle,
+} from 'lucide-react';
 import { getAccessToken } from '../api/tokenStore';
 
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/api\/v1\/?$/, '');
@@ -13,22 +35,22 @@ const api = (path, opts) => fetch(`${BASE_URL}/api/v1${path}`, {
 }).then(r => r.json());
 
 const NIVEAUX = {
-  critical: { color: '#f87171', bg: '#450a0a', border: '#b91c1c', label: '🚨 CRITIQUE' },
-  warning:  { color: '#fb923c', bg: '#1f1008', border: '#c2410c', label: '⚠️ Alerte'  },
-  info:     { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', label: 'ℹ️ Info'    },
+  critical: { color: '#f87171', bg: '#450a0a', border: '#b91c1c', label: 'CRITIQUE', icon: <Siren size={10} aria-hidden="true" /> },
+  warning:  { color: '#fb923c', bg: '#1f1008', border: '#c2410c', label: 'Alerte', icon: <AlertTriangle size={10} aria-hidden="true" /> },
+  info:     { color: '#60a5fa', bg: '#0c1a30', border: '#1d4ed8', label: 'Info', icon: <Info size={10} aria-hidden="true" /> },
 };
 
 const TYPES_LABELS = {
-  VideoMotion:        '📹 Mouvement détecté',
-  AlarmLocal:         '🚨 Alarme locale',
-  CrossLineDetection: '🚧 Franchissement ligne',
-  IntrusionDetection: '⛔ Intrusion détectée',
-  FaceDetection:      '👤 Visage détecté',
-  VideoLoss:          '📵 Perte signal vidéo',
-  VideoBlind:         '🙈 Sabotage caméra',
-  DiskFull:           '💾 Disque plein',
-  DiskError:          '❌ Erreur disque',
-  NetworkAbort:       '🌐 Perte réseau',
+  VideoMotion:        <><Video size={13} aria-hidden="true" /> Mouvement détecté</>,
+  AlarmLocal:         <><Siren size={13} aria-hidden="true" /> Alarme locale</>,
+  CrossLineDetection: <><Construction size={13} aria-hidden="true" /> Franchissement ligne</>,
+  IntrusionDetection: <><OctagonX size={13} aria-hidden="true" /> Intrusion détectée</>,
+  FaceDetection:      <><User size={13} aria-hidden="true" /> Visage détecté</>,
+  VideoLoss:          <><WifiOff size={13} aria-hidden="true" /> Perte signal vidéo</>,
+  VideoBlind:         <><EyeOff size={13} aria-hidden="true" /> Sabotage caméra</>,
+  DiskFull:           <><Save size={13} aria-hidden="true" /> Disque plein</>,
+  DiskError:          <><XCircle size={13} aria-hidden="true" /> Erreur disque</>,
+  NetworkAbort:       <><Globe size={13} aria-hidden="true" /> Perte réseau</>,
 };
 
 export default function SurveillancePage() {
@@ -126,26 +148,26 @@ export default function SurveillancePage() {
           background: n.color + '22', display: 'flex', alignItems: 'center',
           justifyContent: 'center', fontSize: '18px', flexShrink: 0,
         }}>
-          {alerte.niveau === 'critical' ? '🚨' : alerte.niveau === 'warning' ? '⚠️' : 'ℹ️'}
+          {alerte.niveau === 'critical' ? <Siren size={18} aria-hidden='true' /> : alerte.niveau === 'warning' ? <AlertTriangle size={18} aria-hidden='true' /> : <Info size={18} aria-hidden='true' />}
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
             <span style={{ fontWeight: 800, fontSize: '13px', color: n.color }}>{typeLabel}</span>
-            <span style={{ background: n.color + '22', color: n.color, fontSize: '9px', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{n.label}</span>
+            <span style={{ background: n.color + '22', color: n.color, fontSize: '9px', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{n.icon} {n.label}</span>
           </div>
           <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-            📍 {alerte.camera?.nom ?? 'Caméra inconnue'}
+            <MapPin size={11} aria-hidden='true' /> {alerte.camera?.nom ?? 'Caméra inconnue'}
             {alerte.camera?.localisation && ` — ${alerte.camera.localisation}`}
           </div>
           <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
-            🕐 {date} à {heure}
-            {alerte.sms_envoye && ' · 📱 SMS envoyé'}
-            {alerte.push_envoye && ' · 🔔 Push envoyé'}
+            <Clock size={10} aria-hidden='true' /> {date}à {heure}
+            {alerte.sms_envoye && <> · <Smartphone size={10} aria-hidden="true" /> SMS envoyé</>}
+            {alerte.push_envoye && <> · <Bell size={10} aria-hidden="true" /> Push envoyé</>}
           </div>
           {alerte.note_admin && (
             <div style={{ fontSize: '10px', color: '#4ade80', marginTop: '4px', fontStyle: 'italic' }}>
-              ✅ {alerte.note_admin}
+              <CheckCircle size={10} aria-hidden='true' /> {alerte.note_admin}
             </div>
           )}
         </div>
@@ -155,11 +177,11 @@ export default function SurveillancePage() {
             background: '#14532d', color: '#4ade80', border: 'none',
             borderRadius: '8px', padding: '8px 12px', fontSize: '11px',
             fontWeight: 700, cursor: 'pointer', flexShrink: 0,
-          }}>✅ Traiter</button>
+          }}><CheckCircle size={11} aria-hidden='true' />Traiter</button>
         ) : (
           <div style={{ color: '#4ade80', fontSize: '10px', fontWeight: 700, flexShrink: 0 }}>
-            ✅ Traité
-          </div>
+            <CheckCircle size={10} aria-hidden='true' />Traité
+                      </div>
         )}
       </div>
     );
@@ -193,14 +215,14 @@ export default function SurveillancePage() {
       </div>
 
       <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
-        {[['alertes', '🔔 Alertes'], ['cameras', '📷 Caméras'], ['config', '⚙️ Config DVR']].map(([id, label]) => (
+        {[['alertes', <Bell size={12} aria-hidden="true" />, 'Alertes'], ['cameras', <Camera size={12} aria-hidden="true" />, 'Caméras'], ['config', <Settings size={12} aria-hidden="true" />, 'Config DVR']].map(([id, icon, label]) => (
           <button key={id} onClick={() => setTab(id)} style={{
             background: tab === id ? '#1e3a5f' : '#111318',
             color: tab === id ? '#60a5fa' : '#64748b',
             border: `1px solid ${tab === id ? '#3b82f6' : '#1e293b'}`,
             borderRadius: '8px', padding: '8px 16px', fontSize: '11px',
             fontWeight: 700, cursor: 'pointer',
-          }}>{label}</button>
+          }}>{icon} {label}</button>
         ))}
       </div>
 
@@ -210,9 +232,9 @@ export default function SurveillancePage() {
             <select value={filtreNiveau} onChange={e => setFiltreNiveau(e.target.value)}
               style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '8px', color: '#e2e8f0', padding: '8px 12px', fontSize: '11px' }}>
               <option value="">Tous les niveaux</option>
-              <option value="critical">🚨 Critiques</option>
-              <option value="warning">⚠️ Alertes</option>
-              <option value="info">ℹ️ Info</option>
+              <option value="critical">Critiques</option>
+              <option value="warning">Alertes</option>
+              <option value="info">Info</option>
             </select>
             <select value={filtreTraite} onChange={e => setFiltreTraite(e.target.value)}
               style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '8px', color: '#e2e8f0', padding: '8px 12px', fontSize: '11px' }}>
@@ -226,8 +248,8 @@ export default function SurveillancePage() {
             <div style={{ color: '#475569', textAlign: 'center', padding: '40px' }}>Chargement...</div>
           ) : alertes.length === 0 ? (
             <div style={{ background: '#0d2515', border: '1px solid #16a34a', borderRadius: '10px', padding: '24px', textAlign: 'center', color: '#4ade80' }}>
-              ✅ Aucune alerte {filtreTraite === 'false' ? 'non traitée' : ''} — Système opérationnel
-            </div>
+              <CheckCircle size={16} aria-hidden='true' />Aucune alerte {filtreTraite === 'false' ? 'non traitée' : ''}— Système opérationnel
+                          </div>
           ) : (
             alertes.map(a => <AlerteCard key={a.id} alerte={a} />)
           )}
@@ -281,8 +303,8 @@ export default function SurveillancePage() {
       {tab === 'config' && (
         <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '12px', padding: '20px' }}>
           <h3 style={{ color: '#f59e0b', fontWeight: 800, marginBottom: '16px', fontSize: '14px' }}>
-            ⚙️ Configuration DVR/NVR Dahua
-          </h3>
+            <Settings size={14} aria-hidden='true' />Configuration DVR/NVR Dahua
+                      </h3>
           <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '2' }}>
             <p style={{ marginBottom: '16px' }}>
               Pour recevoir les alertes Dahua dans EduGest, configurer le <strong style={{ color: '#60a5fa' }}>webhook HTTP</strong> sur votre DVR :
@@ -312,7 +334,7 @@ export default function SurveillancePage() {
           onClick={() => setShowAddCamera(false)}>
           <div style={{ background: '#111318', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', width: '500px', maxWidth: '90%' }}
             onClick={e => e.stopPropagation()}>
-            <h3 style={{ color: '#fff', fontWeight: 800, marginBottom: '16px' }}>📷 Ajouter une caméra Dahua</h3>
+            <h3 style={{ color: '#fff', fontWeight: 800, marginBottom: '16px' }}><Camera size={16} aria-hidden='true' />Ajouter une caméra Dahua</h3>
 
             {[
               { label: 'Nom de la caméra *', key: 'nom', placeholder: 'Entrée principale' },
@@ -356,7 +378,7 @@ export default function SurveillancePage() {
               </button>
               <button onClick={ajouterCamera} disabled={saving || !newCamera.nom || !newCamera.serial_no}
                 style={{ flex: 2, background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px', cursor: 'pointer', fontWeight: 700 }}>
-                {saving ? 'Enregistrement...' : '✅ Enregistrer'}
+                {saving ? 'Enregistrement...' : <><CheckCircle size={16} aria-hidden='true' />Enregistrer</>}
               </button>
             </div>
           </div>
@@ -366,7 +388,7 @@ export default function SurveillancePage() {
       {webhookInfo && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001 }}>
           <div style={{ background: '#0d2515', border: '1px solid #16a34a', borderRadius: '16px', padding: '24px', width: '500px', maxWidth: '90%' }}>
-            <h3 style={{ color: '#4ade80', fontWeight: 800, marginBottom: '16px' }}>✅ Caméra enregistrée !</h3>
+            <h3 style={{ color: '#4ade80', fontWeight: 800, marginBottom: '16px' }}><CheckCircle size={16} aria-hidden='true' />Caméra enregistrée !</h3>
             <p style={{ color: '#94a3b8', fontSize: '12px', marginBottom: '16px' }}>
               Configurez maintenant le webhook sur votre DVR Dahua :
             </p>

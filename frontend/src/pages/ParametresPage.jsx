@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import api, { getApiUrl, getToken } from '@api/client';
 
+import { Construction, School } from 'lucide-react';
+
 const JOURS = ['Samedi','Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 export default function ParametresPage() {
@@ -112,7 +114,7 @@ export default function ParametresPage() {
                     {(logoPreview || params?.logo_url) ? (
                       <img src={logoPreview || params.logo_url} alt="Logo" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                     ) : (
-                      <span style={{ fontSize:'24px' }}>🏫</span>
+                      <span style={{ fontSize:'24px' }}><School size={24} aria-hidden='true' /></span>
                     )}
                   </div>
                   <div>
@@ -184,7 +186,7 @@ export default function ParametresPage() {
 
           {['contact','tarifs','niveaux'].includes(onglet) && (
             <div style={{ textAlign:'center', padding:'40px', color:'var(--muted)' }}>
-              <div style={{ fontSize:'32px', marginBottom:'12px' }}>🚧</div>
+              <div style={{ fontSize:'32px', marginBottom:'12px' }}><Construction size={32} aria-hidden='true' /></div>
               <p style={{ fontWeight:700, color:'var(--text)' }}>Section {onglet} — À remplir</p>
               <p style={{ fontSize:'13px', marginTop:'4px' }}>Configurer les champs de cette section selon les besoins spécifiques.</p>
             </div>

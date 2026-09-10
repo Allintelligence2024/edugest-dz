@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlertTriangle, Bus, GraduationCap } from 'lucide-react';
+
 export default function TransportPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ export default function TransportPage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">🚌 Transport Scolaire</h1>
+      <h1 className="text-2xl font-bold text-text"><Bus size={24} aria-hidden='true' />Transport Scolaire</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée de transport disponible.</p>
         <p className="text-xs text-muted2">Configurez vos circuits de ramassage pour commencer.</p>
@@ -30,7 +32,7 @@ export default function TransportPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🚌 Transport Scolaire</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><Bus size={24} aria-hidden='true' />Transport Scolaire</h1>
           <p className="text-gray-500 mt-1">Gestion des circuits de ramassage</p>
         </div>
         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
@@ -40,9 +42,9 @@ export default function TransportPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Circuits actifs', value: stats?.nb_circuits ?? 0, color: 'blue', icon: '🚌' },
-          { label: 'Élèves transportés', value: stats?.nb_eleves_total ?? 0, color: 'green', icon: '👦' },
-          { label: 'Alertes maintenance', value: stats?.alertes_maintenance ?? 0, color: stats?.alertes_maintenance > 0 ? 'red' : 'gray', icon: '⚠️' },
+          { label: 'Circuits actifs', value: stats?.nb_circuits ?? 0, color: 'blue', icon: <Bus size={30} aria-hidden="true" /> },
+          { label: 'Élèves transportés', value: stats?.nb_eleves_total ?? 0, color: 'green', icon: <GraduationCap size={30} aria-hidden="true" /> },
+          { label: 'Alertes maintenance', value: stats?.alertes_maintenance ?? 0, color: stats?.alertes_maintenance > 0 ? 'red' : 'gray', icon: <AlertTriangle size={30} aria-hidden="true" /> },
         ].map((k, i) => (
           <div key={i} className="bg-white rounded-xl shadow-sm border p-5">
             <div className="flex items-center gap-3">

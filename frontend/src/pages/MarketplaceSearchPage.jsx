@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '@api/client';
 
+import { MapPin, Search, Star } from 'lucide-react';
+
 const TYPE_COURS_OPTIONS = [
   { value: 'presentiel', label: 'Présentiel' },
   { value: 'en_ligne', label: 'En ligne' },
@@ -13,8 +15,10 @@ const NIVEAUX = ['1AP','2AP','3AP','4AP','5AP','1AM','2AM','3AM','4AM','1AS','2A
 function StarRating({ note }) {
   if (!note) return <span style={{ color: 'var(--muted)', fontSize: '0.875rem' }}>—</span>;
   const full = Math.floor(note);
-  const stars = Array.from({ length: 5 }, (_, i) => i < full ? '★' : '☆');
-  return <span style={{ color: 'var(--orange)', fontSize: '0.875rem' }}>{stars.join('')} {note.toFixed(1)}</span>;
+  const full5 = Array.from({ length: 5 }, (_, i) => (
+    <Star key={i} size={14} fill={i < full ? 'currentColor' : 'none'} aria-hidden="true" />
+  ));
+  return <span style={{ color: 'var(--orange)', fontSize: '0.875rem', display: 'inline-flex', gap: '1px', alignItems: 'center' }}>{full5} {note.toFixed(1)}</span>;
 }
 
 export default function MarketplaceSearchPage() {
@@ -128,7 +132,7 @@ export default function MarketplaceSearchPage() {
           </div>
         ) : offres.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--muted)' }}>
-            <p style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>&#128269;</p>
+            <p style={{ fontSize: '3rem', marginBottom: '0.75rem' }}><Search size={48} aria-hidden='true' /></p>
             <p style={{ fontSize: '1.125rem' }}>Aucune offre trouvée</p>
           </div>
         ) : (
@@ -168,7 +172,7 @@ export default function MarketplaceSearchPage() {
                     }}>
                       {offre.type_cours === 'en_ligne' ? 'En ligne' : offre.type_cours === 'presentiel' ? 'Présentiel' : 'Mixte'}
                     </span>
-                    {offre.wilaya && <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>&#128205; {offre.wilaya.nom_fr}</span>}
+                    {offre.wilaya && <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}><MapPin size={12} aria-hidden='true' /> {offre.wilaya.nom_fr}</span>}
                   </div>
 
                   <p style={{ fontSize: '0.875rem', color: 'var(--text2)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', marginBottom: '0.75rem' }}>

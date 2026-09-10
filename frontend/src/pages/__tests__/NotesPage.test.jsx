@@ -66,8 +66,8 @@ describe('NotesPage', () => {
 
   it('affiche l’en-tête des notes', () => {
     renderPage();
-    expect(screen.getByText('📊 Notes & Évaluations')).toBeInTheDocument();
-    expect(screen.getByText('➕ Nouvelle note')).toBeInTheDocument();
+    expect(screen.getByText('Notes & Évaluations')).toBeInTheDocument();
+    expect(screen.getByText('Nouvelle note')).toBeInTheDocument();
   });
 
   it('charge les notes et les matières', async () => {
@@ -99,7 +99,9 @@ describe('NotesPage', () => {
 
   it('ouvre le formulaire de saisie d’une note', async () => {
     renderPage();
-    await userEvent.click(screen.getByText('➕ Nouvelle note'));
-    await waitFor(() => expect(screen.getByText('📝 Nouvelle note')).toBeInTheDocument());
+    await userEvent.click(screen.getByText('Nouvelle note'));
+    // Le bouton d'entête porte déjà « Nouvelle note » : on vise le titre du
+    // modal (h2) pour le distinguer du bouton.
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2, name: 'Nouvelle note' })).toBeInTheDocument());
   });
 });

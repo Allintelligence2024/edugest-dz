@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '@api/axiosInstance';
 
+import { AlertTriangle, BarChart3, CheckCircle, GraduationCap, UtensilsCrossed, Wallet } from 'lucide-react';
+
 export default function CantinePage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ export default function CantinePage() {
 
   if (!data) return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold text-text">🍽️ Cantine / Restauration</h1>
+      <h1 className="text-2xl font-bold text-text"><UtensilsCrossed size={24} aria-hidden='true' />Cantine / Restauration</h1>
       <div className="text-center py-16">
         <p className="text-sm text-muted mb-4">Aucune donnée cantine disponible.</p>
         <p className="text-xs text-muted2">Configurez vos menus et inscriptions pour commencer.</p>
@@ -36,7 +38,7 @@ export default function CantinePage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">🍽️ Cantine / Restauration</h1>
+          <h1 className="text-2xl font-bold text-gray-900"><UtensilsCrossed size={24} aria-hidden='true' />Cantine / Restauration</h1>
           <p className="text-gray-500 mt-1">{data?.date}</p>
         </div>
         <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 font-medium">
@@ -57,10 +59,10 @@ export default function CantinePage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Inscrits', value: data?.inscrits_actifs ?? 0, icon: '👦', color: 'blue' },
-              { label: 'Présents aujourd\'hui', value: data?.presents_aujourdhui ?? 0, icon: '✅', color: 'green' },
-              { label: 'Taux présence', value: `${data?.taux_presence ?? 0}%`, icon: '📊', color: 'purple' },
-              { label: 'CA ce mois', value: `${Number(data?.ca_mois ?? 0).toLocaleString()} DA`, icon: '💰', color: 'orange' },
+              { label: 'Inscrits', value: data?.inscrits_actifs ?? 0, icon: <GraduationCap size={24} aria-hidden="true" />, color: 'blue' },
+              { label: 'Présents aujourd\'hui', value: data?.presents_aujourdhui ?? 0, icon: <CheckCircle size={24} aria-hidden="true" />, color: 'green' },
+              { label: 'Taux présence', value: `${data?.taux_presence ?? 0}%`, icon: <BarChart3 size={24} aria-hidden="true" />, color: 'purple' },
+              { label: 'CA ce mois', value: `${Number(data?.ca_mois ?? 0).toLocaleString()} DA`, icon: <Wallet size={24} aria-hidden="true" />, color: 'orange' },
             ].map((k, i) => (
               <div key={i} className="bg-white rounded-xl shadow-sm border p-4">
                 <div className="text-2xl mb-1">{k.icon}</div>
@@ -72,7 +74,7 @@ export default function CantinePage() {
 
           {data?.menu_du_jour && (
             <div className="bg-white rounded-xl shadow-sm border p-5">
-              <h3 className="font-semibold text-gray-900 mb-3">🍽️ Menu du jour</h3>
+              <h3 className="font-semibold text-gray-900 mb-3"><UtensilsCrossed size={16} aria-hidden='true' />Menu du jour</h3>
               <div className="flex gap-6 flex-wrap">
                 <div><span className="text-xs text-gray-500">Plat principal</span><p className="font-medium">{data.menu_du_jour.plat_principal}</p></div>
                 {data.menu_du_jour.accompagnement && <div><span className="text-xs text-gray-500">Accompagnement</span><p className="font-medium">{data.menu_du_jour.accompagnement}</p></div>}
@@ -96,7 +98,7 @@ export default function CantinePage() {
 
           {(data?.alertes_stock ?? 0) > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl"><AlertTriangle size={24} aria-hidden='true' /></span>
               <div>
                 <p className="font-medium text-red-800">{data.alertes_stock} article(s) en alerte de stock</p>
                 <p className="text-sm text-red-600">Vérifiez le stock cuisine avant le prochain repas</p>
