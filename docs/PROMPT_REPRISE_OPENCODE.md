@@ -2,6 +2,13 @@
 
 > Copier tout ce qui suit la ligne de séparation dans OpenCode, à la racine du
 > dépôt `edugest-dz`.
+>
+> ⚠️ **État au 2026-09-10 : partiellement obsolète.** La PR #82 est mergée,
+> les patches de workflows sont appliqués, la fusion 5.2 est faite
+> (`edugestdz/*` → racine, lot F ci-dessous soldé), la couverture backend
+> est mesurée (60,71 %) et la licence est tranchée (propriétaire).
+> Les lots B–E et G restent d'actualité. Lire `REPRISE_SESSION.md` avant
+> ce prompt.
 
 ---
 

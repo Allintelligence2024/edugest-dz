@@ -1,24 +1,28 @@
 # Reprise de session — EduGest DZ
 
-> Document de passation. Dernière mise à jour : 2026-09-08.
+> Document de passation. Dernière mise à jour : 2026-09-10.
 
 ---
 
 ## Où en est le travail
 
-Branche : **`arena/01a080e0-edugest-dz`**.
-Pull request : **[#82](https://github.com/Allintelligence2024/edugest-dz/pull/82)** — Sprints 4 et 5, ouverte.
+Branche : **`arena/01a08b2d-edugest-dz`**.
 
-**La PR #81 (sprints 1 à 3) a été mergée** dans `main` le 2026-09-08, commit
-`addd705`. La CI backend qui restait à relever au moment de la passation
-précédente est **verte** sur `main`. Il n'y a plus rien à vérifier de ce côté.
+Les PR #81 (sprints 1–3) et **#82 (sprints 4–5, mergée le 2026-09-08)**
+sont dans `main`. Les 4 patches de workflows de la passation précédente
+sont appliqués (gardes Sprint 3, jobs `frontend`/`qualite`, palier 45 %).
+**La CI est verte sur `main`** (backend, frontend, qualité — 5 runs
+successifs vérifiés le 10 sept.).
 
-Sprints 1, 2, 3 livrés. Sprint 4 terminé — voir
-`docs/SPRINT4_QUALITE.md`. **Sprint 5 entamé** : P1-6 (reporté du
-Sprint 4), 5.1 hygiène racine, 5.4 honeypot en configuration, 5.5 versioning
-de l'API — voir `docs/SPRINT5_ARCHITECTURE.md`.
+Sprints 1–4 terminés. **Sprint 5 presque terminé** : P1-6, 5.1, 5.4, 5.5
+livrés (voir `docs/SPRINT5_ARCHITECTURE.md`), **5.2 fusionné le 10 sept.**
+(`68e4f1d` + `64c53c2`, workflows en `docs/fusion-workflows.patch`),
+Budget découpé (442 → 273 lignes). Restent **5.3** (8 contrôleurs) et
+**5.6** (i18next + lucide). Décision prise avec le propriétaire : finir le
+Sprint 5 puis faire le Sprint 6 (production readiness), licence
+**propriétaire**, k6 en scénarios + documentation.
 
-Deux enseignements de ce sprint méritent d'être lus avant de continuer :
+Trois enseignements cumulés méritent d'être lus avant de continuer :
 
 1. **La prémisse d'un point d'audit peut être fausse.** P1-6 demandait de
    supprimer des « checks tenant redondants » ; ils n'étaient pas redondants,
@@ -27,23 +31,24 @@ Deux enseignements de ce sprint méritent d'être lus avant de continuer :
 2. **Un test peut mesurer l'intention au lieu du réel.** Un test vert
    affirmait « 22 routes leurres » en comptant un tableau PHP, pendant que le
    routeur n'en servait que 16.
+3. **Un inventaire à la main est un inventaire faux.** La fusion 5.2 annonçait
+   « 13 références dans 6 fichiers » ; le `grep` en a trouvé 23 fichiers, et
+   deux faux positifs (images Docker, archives) que la main aurait réécrits.
 
 ### État de la CI
 
 | Job | État |
 |---|---|
-| CI backend (`main`) | **vert** |
-| CI backend (PR #82) | **vert** |
-| Pre-Deploy Smoke Tests | **vert** |
-| Vercel | **vert** |
-| Frontend (Vitest, local) | **122/122 vert** — *pas encore exécuté en CI, voir plus bas* |
-| CD — Deploy Production | **rouge** — attendu, voir plus bas |
+| CI (`main` : backend, frontend, qualité) | **vert** (5 runs OK au 10 sept.) |
+| CI (branche `arena/01a08b2d`) | **rouge attendu** tant que `fusion-workflows.patch` n'est pas appliqué |
+| Pre-Deploy Smoke Tests | **vert** (dernier connu) |
+| Vercel | **vert** (dernier connu — ⚠️ vérifier le *Root Directory* après fusion) |
+| CD — Deploy Production | **désactivé** (`workflow_dispatch` manuel) — le rouge a disparu avec le patch |
 
-**`CD — Deploy Production` échoue sur `main`** à l'étape « Deploy via SSH » :
-le workflow déploie encore vers un serveur SSH abandonné au profit de Vercel.
-C'est exactement ce que corrige `deploy.yml.desactive.patch`, non poussable
-depuis le bac à sable. Ce rouge est connu et sans conséquence, mais il pollue
-le tableau de bord ; l'application des patches le fait disparaître.
+**Couverture backend enfin mesurée : 60,71 %** (annotation clover du run
+`main`). Au passage, le « palier bloquant » 45 % ne bloquait rien (`exit 0`
+inconditionnel) : rendu réellement bloquant dans `fusion-workflows.patch`,
+maintenu à 45 jusqu'à la mesure post-5.3.
 
 ---
 
@@ -226,14 +231,13 @@ Détail complet : `docs/SPRINT3_SECURITE.md`.
 
 ### Arborescence
 
-Dossier intermédiaire `edugestdz/` : `backend`, `frontend`,
-`mobile`. **Les seuls workflows actifs sont ceux de `.github/` à la
-racine** — ceux de `.github/` sont inertes (P1-8).
-
-Depuis le Sprint 5, la racine ne contient plus que 5 fichiers ; les 114 autres
-sont classés sous `docs/` (voir `docs/README.md`). La documentation **de
-référence** reste sous `docs/` ; `docs/` racine contient l'archive,
-les maquettes et les études. La fusion des deux est le point 5.2.
+Depuis la fusion 5.2 (10 sept.), plus de niveau intermédiaire : `backend/`,
+`frontend/`, `mobile/`, `docs/`, `scripts/` vivent à la racine, avec les
+`docker-compose*.yml`, `vercel.json`, `Makefile` et les scripts ops
+(`install.sh`, `deploy.sh`, `update.sh`, `server-setup.sh`, `setup-vpn.sh`).
+`docs/` mêle référence (fichiers à plat) et archive (`archive/`, `design/`,
+`business/`, `guides/`) — voir `docs/README.md`. Le workflow inerte
+(`frontend-ci.yml`) a été supprimé avec la fusion (P1-8 soldé).
 
 ### Conventions établies
 

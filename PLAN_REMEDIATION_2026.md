@@ -294,5 +294,5 @@ juridique, à trancher par le propriétaire du projet.
 ## 5. Ce que le plan ne fait pas (décisions à valider)
 
 - **Réécriture d'historique git** (`filter-repo`) : casse tous les clones et PR ouvertes. Nécessite une fenêtre coordonnée. Le repo pèse 132 MB avec 56 MB de `.git` — supportable à court terme.
-- **Fusion `edugestdz/` ↔ racine** : gros diff, à faire sur un commit dédié quand aucune PR n'est en vol.
+- ~~**Fusion `edugestdz/` ↔ racine**~~ ✅ faite le 10 sept. 2026, en deux commits dédiés, aucune PR en vol.
 - **Cookies httpOnly** : impose que frontend et API partagent un domaine (ou CORS `credentials` + domaine parent commun). À valider contre le déploiement Vercel/Railway actuel.

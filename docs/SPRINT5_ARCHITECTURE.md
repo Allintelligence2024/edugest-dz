@@ -215,12 +215,85 @@ Sprint 6, et conditionne tout retrait.
 
 ---
 
+## 5.2 — Fusion de `edugestdz/` à la racine
+
+Faite le 2026-09-10, sur la branche `arena/01a08b2d-edugest-dz`, en deux
+commits dédiés — aucune PR en vol sur nos branches (la #82 est mergée, la
+#80 est un vestige de juillet sur `develop`) :
+
+1. `68e4f1d` — renommages purs : 1 052 `git mv`, zéro contenu modifié.
+   L'historique est préservé fichier par fichier.
+2. `64c53c2` — réécriture des références de chemins dans 23 fichiers.
+
+Le découpage en deux commits rend la relecture possible : le premier se
+vérifie d'un `git show --find-renames --stat`, le second contient toute la
+partie discutable.
+
+### Ce qui a été vérifié avant de bouger
+
+- **Collisions** : `docs/`, `scripts/` et `.github/` existaient des deux
+  côtés — aucun nom de fichier en commun, fusion directe.
+- **Chemins relatifs** : `docker-compose*.yml`, `vercel.json` et le
+  `Makefile` ne naviguent qu'en relatif (`./backend`, `frontend/…`) : ils
+  fonctionnent inchangés à la racine puisque leurs cibles ont déménagé avec
+  eux.
+- **Inventaire par `grep`, pas à la main.** Le prompt de reprise annonçait
+  « 13 références dans 6 fichiers » ; la mesure donne **23 fichiers**, dont
+  `ci.yml` seul porte 9 occurrences. Le même inventaire a évité deux faux
+  positifs : les noms d'images Docker (`edugestdz/backend:latest`) et les
+  documents d'archive, volontairement inchangés.
+- **Liens du README** : revérifiés par script après réécriture — seul
+  `LICENSE` reste mort, et c'est le commit suivant.
+
+### Deux suppressions, les deux justifiées
+
+- `edugestdz/.github/workflows/frontend-ci.yml` — le workflow inerte du
+  P1-8. Son contenu (lint + Vitest + couverture) est repris et dépassé par
+  le job `frontend` de `.github/workflows/ci.yml`.
+- `docs/ci-qualite.patch` — appliqué puis oublié : la procédure
+  d'application manuelle prévoyait `rm docs/*.patch`, trois patchs sur
+  quatre avaient été retirés. Celui-ci restait comme poids mort.
+
+### Point de vigilance : les workflows
+
+`.github/workflows/` n'est pas poussable depuis le bac à sable (permission
+`workflows` manquante, retestée à chaque sprint). Les 11 chemins des trois
+workflows sont donc livrés en `docs/fusion-workflows.patch`, vérifié par
+`git apply --check` et YAML parsé après application. **La CI est rouge
+entre la fusion et l'application du patch** : les jobs cherchent
+`edugestdz/backend` qui n'existe plus. C'est la même procédure que les
+quatre patchs précédents, à appliquer depuis un poste normal :
+
+```bash
+git apply docs/fusion-workflows.patch
+rm docs/fusion-workflows.patch
+git add -A && git commit -m "ci: chemins après fusion 5.2" && git push
+```
+
+Second point de vigilance, hors dépôt : si le projet Vercel a son
+*Root Directory* réglé sur `edugestdz`, le tableau de bord doit être
+repassé sur la racine — `vercel.json` a déménagé mais le réglage distant,
+lui, ne se versionne pas.
+
+### Racine après fusion
+
+```
+edugest-dz/
+  backend/ frontend/ mobile/ docs/ scripts/
+  docker/ nginx/ backups/
+  docker-compose{,.prod,.selfhosted}.yml  vercel.json  Makefile
+  install.sh deploy.sh update.sh server-setup.sh setup-vpn.sh run.ps1
+  README.md CHANGELOG.md CONTRIBUTING.md
+  PLAN_REMEDIATION_2026.md REPRISE_SESSION.md   ← archive en fin de remédiation
+```
+
+---
+
 ## Non entamé
 
 | Point | Raison |
 |-------|--------|
-| **5.2** Fusion de `edugestdz/` à la racine | Doit se faire sur un commit dédié, sans PR en vol : un `git mv` de cette ampleur rend tout diff illisible et tout rebase pénible. |
-| **5.3** Découpe des contrôleurs > 350 lignes | Non entamé. |
+| **5.3** Découpe des contrôleurs > 350 lignes | Budget fait (442 → 273, 3 services). Restent 8 contrôleurs, voir `scripts/controleurs-baseline.txt`. |
 | **5.6** i18next + icônes lucide | Non entamé. |
-| Coverage backend 45 → 60 % | Le palier de 45 % n'a **jamais été mesuré** : la mesure part avec le patch CI en attente d'application manuelle. Viser 60 % avant d'avoir lu 45 % serait inventer un chiffre. |
+| Coverage backend 45 → 60 % | **Mesuré : 60,71 %** (run `main`, annotation clover). Seuil rendu réellement bloquant à 45 ; relèvement à 60 à décider sur mesure post-5.3. |
 | Tests mobile (auth, présence, paiement) | Report du Sprint 4, toujours ouvert. |
