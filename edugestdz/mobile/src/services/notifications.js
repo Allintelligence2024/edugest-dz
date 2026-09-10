@@ -13,6 +13,25 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const SCREEN_MAP = {
+  absences:    'Absences',
+  notes:       'Notes',
+  factures:    'Paiements',
+  planning:    'Planning',
+  messages:    'Messages',
+  presences:   'Presences',
+  bulletins:   'Bulletins',
+  notifications: 'Notifications',
+  marketplace: 'Marketplace',
+  profil:      'Profile',
+};
+
+function resolveScreen(screenKey) {
+  if (!screenKey) return { screen: 'Dashboard', params: {} };
+  const mapped = SCREEN_MAP[screenKey.toLowerCase()] || screenKey;
+  return { screen: mapped, params: {} };
+}
+
 export async function registerForPushNotifications() {
   if (!Device.isDevice) {
     console.warn('Push notifications require a physical device');
@@ -59,8 +78,17 @@ export function useNotificationHandler(navigationRef) {
   useEffect(() => {
     const handleNotification = async (response) => {
       const data = response.notification?.request?.content?.data;
-      if (data?.screen && navigationRef?.current) {
-        navigationRef.current.navigate(data.screen, data.params || {});
+      if (!navigationRef?.current) return;
+
+      try {
+        const { screen, params } = resolveScreen(data?.screen);
+        navigationRef.current.navigate(screen, { ...params, ...(data?.params || {}) });
+      } catch {
+        try {
+          navigationRef.current.navigate('Dashboard');
+        } catch {
+          console.warn('Navigation fallback failed');
+        }
       }
     };
 

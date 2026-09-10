@@ -21,7 +21,6 @@ class CompletionTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected string $token;
     protected Tenant $tenant;
     protected User $admin;
 
@@ -39,8 +38,16 @@ class CompletionTest extends TestCase
             'statut'    => 'actif',
         ]);
 
-        $this->token = auth('api')->login($this->admin);
         config(['tenant.current_id' => $this->tenant->id]);
+    }
+
+    protected function login(int $roleId = null): string
+    {
+        $user = $roleId
+            ? User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $roleId])
+            : $this->admin;
+
+        return auth('api')->login($user);
     }
 
     // ── Enums ─────────────────────────────────────────────────
@@ -138,7 +145,7 @@ class CompletionTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->getJson('/api/v1/notifications/in-app')
             ->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -161,7 +168,7 @@ class CompletionTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->patchJson("/api/v1/notifications/in-app/{$notifId}/lu")
             ->assertStatus(200)
             ->assertJsonPath('success', true);
@@ -186,19 +193,16 @@ class CompletionTest extends TestCase
             'updated_at' => now(),
         ]);
 
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->patchJson("/api/v1/notifications/in-app/{$notifId}/lu")
             ->assertStatus(200);
 
         $this->assertDatabaseHas('notifications_inapp', ['id' => $notifId, 'lu' => false]);
     }
 
-    public function test_notifications_sans_auth_retourne_vide(): void
+    public function test_notifications_sans_auth_retourne_401(): void
     {
-        $response = $this->getJson('/api/v1/notifications/in-app');
-        $content = $response->getData(true);
-        $this->assertTrue($content['success'] ?? false);
-        $this->assertEmpty($content['data'] ?? []);
+        $this->withHeaders([])->getJson('/api/v1/notifications/in-app')->assertStatus(401);
     }
 
     // ── Policies ──────────────────────────────────────────────────
@@ -231,7 +235,7 @@ class CompletionTest extends TestCase
 
     public function test_seances_orphelines_accessible(): void
     {
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->getJson('/api/v1/remplacements/seances-orphelines')
             ->assertStatus(200)
             ->assertJsonPath('success', true);
@@ -239,7 +243,7 @@ class CompletionTest extends TestCase
 
     public function test_export_excel_eleves_accessible(): void
     {
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->get('/api/v1/eleves/export/excel')
             ->assertStatus(200);
     }
@@ -264,7 +268,7 @@ class CompletionTest extends TestCase
 
     public function test_tenant_actif_passe_normalement(): void
     {
-        $this->withHeaders(['Authorization' => "Bearer {$this->token}"])
+        $this->withHeaders(['Authorization' => "Bearer {$this->login()}"])
             ->getJson('/api/v1/eleves')
             ->assertStatus(200);
     }

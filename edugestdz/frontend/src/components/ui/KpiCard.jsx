@@ -14,6 +14,7 @@ export default function KpiCard({ label, value, sub, icon: Icon, color, variant 
       style={{
         background: 'var(--surface)',
         border: '1px solid var(--border)',
+        borderTop: `2px solid ${c}`,
         borderRadius: '0.75rem',
         padding: '1.25rem',
         display: 'flex',
@@ -27,7 +28,7 @@ export default function KpiCard({ label, value, sub, icon: Icon, color, variant 
           style={{
             width: '48px',
             height: '48px',
-            borderRadius: '0.75rem',
+            borderRadius: '9px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react-native'
-import ParentDashboardScreen from '../../../screens/parent/ParentDashboardScreen'
+import ParentDashboardScreen from '../../../screens/parent/DashboardScreen'
 
 jest.mock('../../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -16,15 +16,11 @@ jest.mock('../../../context/I18nContext', () => ({
   useI18n: () => ({
     t: (key) => {
       const labels = {
-        dashboardTitle: 'Tableau de bord',
-        welcomeMessage: 'Bienvenue',
-        myChildren: 'Mes enfants',
-        recentGrades: 'Notes récentes',
-        attendance: 'Assiduité',
-        payments: 'Paiements',
-        schedule: 'Emploi du temps',
-        noData: 'Aucune donnée disponible',
-        logout: 'Déconnexion',
+        welcome: 'Bienvenue',
+        nextCourse: 'Prochain cours',
+        average: 'Moyenne',
+        monthPresences: 'Présences du mois',
+        lastPayment: 'Dernier paiement',
       }
       return labels[key] || key
     },
@@ -64,28 +60,11 @@ describe('ParentDashboardScreen', () => {
     expect(getByText(/Lycée El Mokrani/)).toBeTruthy()
   })
 
-  it('renders dashboard sections', () => {
+  it('renders stat cards', () => {
     const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Mes enfants/)).toBeTruthy()
-  })
-
-  it('renders logout button', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText('Déconnexion')).toBeTruthy()
-  })
-
-  it('renders attendance section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Assiduité/)).toBeTruthy()
-  })
-
-  it('renders payments section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Paiements/)).toBeTruthy()
-  })
-
-  it('renders schedule section', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Emploi du temps/)).toBeTruthy()
+    expect(getByText('Prochain cours')).toBeTruthy()
+    expect(getByText('Moyenne')).toBeTruthy()
+    expect(getByText('Présences du mois')).toBeTruthy()
+    expect(getByText('Dernier paiement')).toBeTruthy()
   })
 })
