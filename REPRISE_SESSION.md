@@ -80,13 +80,13 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    l'étape bloquante.
 5. Poursuivre : couverture frontend vers 40 % (cliquet actuel 18 %),
    tests mobile, CSRF (double-submit).
-6. **Sprint 6** (décidé : après le Sprint 5) : scénarios k6 + doc, pentest
-   ciblé (calibration `RiskScoreEngine`, JWT blacklist, kill-switch MPC,
-   chaîne Merkle), observabilité (alertes Sentry sur les middlewares
-   sécurité, instrumentation version mobile), **réparation de
-   `restore-backup.sh`** (format incompatible avec `backup.sh` — constaté,
-   non réparé), conformité 18-07 (registre, rétention/purge, consentement
-   parental), vérité du README.
+6. **Sprint 6** (décidé : après le Sprint 5, amorcé le 10 sept.) :
+   scénarios k6 + doc, pentest ciblé (calibration `RiskScoreEngine`, JWT
+   blacklist, kill-switch MPC, chaîne Merkle), observabilité (alertes
+   Sentry sur les middlewares sécurité, instrumentation version mobile),
+   ~~réparation de `restore-backup.sh`~~ (✅ le 10 sept. — journal
+   `docs/SPRINT6_EXPLOITATION.md` § 1), conformité 18-07 (registre,
+   rétention/purge, consentement parental), vérité du README.
 
 ---
 
@@ -334,6 +334,9 @@ Depuis la fusion 5.2 (10 sept.), plus de niveau intermédiaire : `backend/`,
   suffisait à tromper la relecture comme l'analyse statique.
 - **CSRF** (point 3.1) : non traité. Le cookie de refresh est `SameSite` et
   scopé `/api/v1/auth` ; un double-submit token reste souhaitable.
-- **Restore backup** : `scripts/restore-backup.sh` attend un `.sql.gz`
-  pipé dans `psql` quand `backend/scripts/backup.sh` produit un
-  `--format=custom` (`.dump`). Procédure inopérante — à réparer au Sprint 6.
+- **Restore backup** : **soldé le 10 sept.** `scripts/restore-backup.sh`
+  réécrit — détection du format par signature (`.sql.gz` du sidecar et
+  `.dump` de `backup.sh`), bon conteneur `edugestdz_postgres`, écrasement
+  explicite du schéma, fail-fast, relance des services même en échec ;
+  `backup.sh` passe en bash et nomme ses fichiers `.dump` sans tromperie
+  (détail et scénarios de test : `docs/SPRINT6_EXPLOITATION.md` § 1).
