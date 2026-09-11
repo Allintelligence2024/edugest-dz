@@ -59,7 +59,11 @@ class ConfigurerTenantPiloteCommand extends Command
         return 0;
     }
 
-    /** Miroir de ModuleController::actifs (toutes clés sauf actif=false explicite). */
+    /**
+     * Miroir de ModuleController::actifs (toutes clés sauf actif=false explicite).
+     *
+     * @return list<string>
+     */
     private function clesActives(string $tenantId): array
     {
         $desactives = TenantModule::where('tenant_id', $tenantId)
