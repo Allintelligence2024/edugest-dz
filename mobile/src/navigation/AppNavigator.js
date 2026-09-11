@@ -20,8 +20,9 @@ import ParentBulletins  from '../screens/parent/BulletinsScreen';
 import ParentProfile    from '../screens/parent/ProfileScreen';
 
 // Parent (nouveaux M3)
-import MarketplaceScreen from '../screens/parent/MarketplaceScreen';
 import ParentNotifications from '../screens/parent/NotificationsScreen';
+// PILOTE-30OCT (P0-C2) : Marketplace gelée — écran conservé (tests), onglet retiré.
+// import MarketplaceScreen from '../screens/parent/MarketplaceScreen';
 
 // Enseignant
 import EnseignantDashboard  from '../screens/enseignant/DashboardScreen';
@@ -37,9 +38,10 @@ import AdminAbsences    from '../screens/admin/AbsencesScreen';
 
 // Admin (nouveaux M3)
 import AdminPointageScreen from '../screens/admin/AdminPointageScreen';
-import AdminMarketplaceScreen from '../screens/admin/AdminMarketplaceScreen';
-import AdminIAScreen from '../screens/admin/AdminIAScreen';
 import AdminSignalementsScreen from '../screens/admin/AdminSignalementsScreen';
+// PILOTE-30OCT (P0-C2) : Marketplace + IA gelés — écrans conservés (tests), onglets retirés.
+// import AdminMarketplaceScreen from '../screens/admin/AdminMarketplaceScreen';
+// import AdminIAScreen from '../screens/admin/AdminIAScreen';
 
 const AuthStack      = createNativeStackNavigator();
 const ParentTab      = createBottomTabNavigator();
@@ -88,7 +90,7 @@ function ParentTabs() {
       <ParentTab.Screen name="Notes"        component={ParentNotes}      options={{ title: 'Notes' }} />
       <ParentTab.Screen name="Presences"    component={ParentPresences}  options={{ title: 'Présences' }} />
       <ParentTab.Screen name="Paiements"    component={ParentPaiements}  options={{ title: 'Paiements' }} />
-      <ParentTab.Screen name="Marketplace"  component={MarketplaceScreen} options={{ title: 'Centres' }} />
+      {/* PILOTE-30OCT (P0-C2) : onglet Marketplace retiré (module gelé). */}
       <ParentTab.Screen name="Notifications" component={ParentNotifications} options={{ title: 'Notifications',
         tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{focused ? '🔔' : '🔕'}</Text>,
       }} />
@@ -131,8 +133,7 @@ function AdminTabs() {
       <AdminTab.Screen name="Pointage"  component={AdminPointageScreen} options={{ title: 'Pointage' }} />
       <AdminTab.Screen name="Eleves"    component={AdminEleves}        options={{ title: 'Élèves' }} />
       <AdminTab.Screen name="Absences"  component={AdminAbsences}      options={{ title: 'Absences' }} />
-      <AdminTab.Screen name="Marketplace" component={AdminMarketplaceScreen} options={{ title: 'Marketplace' }} />
-      <AdminTab.Screen name="IA"        component={AdminIAScreen}      options={{ title: 'IA' }} />
+      {/* PILOTE-30OCT (P0-C2) : onglets Marketplace + IA retirés (modules gelés). */}
       <AdminTab.Screen name="Signalements" component={AdminSignalementsScreen} options={{ title: 'Signalements' }} />
     </AdminTab.Navigator>
   );
@@ -163,6 +164,10 @@ export default function AppNavigator() {
 
   const role = user?.role || user?.role_nom || '';
   if (role === 'enseignant') return <EnseignantNavigator />;
-  if (['admin', 'admin_centre', 'secretaire', 'super_admin'].includes(role)) return <AdminTabs />;
+  // PILOTE-30OCT (P0-C2) : 'secretariat' = rôle seedé (RolePermissionSeeder) ;
+  // 'secretaire' conservé par compatibilité. Sans ça, la secrétaire pilote
+  // tombait sur les onglets parent. Connu post-pilote : 'gestionnaire' et
+  // 'comptable' tombent aussi sur ParentTabs (routage rôles à refaire).
+  if (['admin', 'admin_centre', 'secretaire', 'secretariat', 'super_admin'].includes(role)) return <AdminTabs />;
   return <ParentTabs />;
 }
