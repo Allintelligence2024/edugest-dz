@@ -126,16 +126,16 @@ maintenu à 45 jusqu'à la mesure post-5.3.
    branche (pré-patch) pointent vers `edugestdz/*`, dossier supprimé par
    les sprints 4-6. Le correctif existe (`docs/fusion-workflows.patch`,
    appliqué proprement en local puis rejeté au push : le jeton GitHub App
-   du sandbox n'a pas la permission `workflows`). Trois voies, au choix du
-   propriétaire : (A) appliquer le patch depuis un poste autorisé sur la
-   branche (`git apply docs/fusion-workflows.patch` + commit + push),
-   attendre la CI de branche (~7 min, première validation complète des
-   tests backend), puis merger normalement ; (B) merger directement en
-   UI avec « Merge without waiting for requirements » (admin override) —
-   la CI de main validera après fusion, au risque d'un main rouge
-   temporaire ; (C) accorder la permission `workflows` à l'app GitHub
-   Arena et redemander à l'agent, qui appliquera le patch, surveillera
-   la CI et mergera. **Restes Sprint 6 après clôture (10 sept., soir)** :
+   du sandbox n'a pas la permission `workflows`). **Décision du propriétaire (10 sept., soir) :
+   option B — merge immédiat en UI avec « Merge without waiting for
+   requirements »**, suivi de l'application du patch SUR MAIN depuis un
+   poste autorisé (`git checkout main && git pull && git apply
+   docs/fusion-workflows.patch && git add .github && git commit -m "ci:
+   appliquer fusion-workflows.patch" && git push`) — sans quoi la CI de
+   main reste rouge (workflows pré-patch). La CI de main validera alors
+   l'ensemble, y compris les 16 tests backend jamais exécutés
+   localement ; en cas d'échec, corrections en fast-follow depuis cette
+   branche (nouvelle PR). **Restes Sprint 6 après clôture (10 sept., soir)** :
    ~~application C2/C3~~ (✅ C2 `jwt.blacklist` sur toutes les routes
    authentifiées ; C3 code hors-bande + endpoint
    `POST /security/zero-trust/verify` + 5 tests — **brancher
