@@ -91,7 +91,7 @@
 - [ ] **P0-B4 Premiers appels.** 5 appels minimum avant lundi 15. Objectif : 3 visites planifiées. Journal : `PILOTE_BUSINESS.md` § 5.
 
 ### Critères de sortie Phase 0
-- [x] Layout `edugestdz/` vérifié et documenté, CI verte (à confirmer au push).
+- [x] Layout `edugestdz/` vérifié et documenté, CI backend+frontend vertes (PR #91, run 34608953990 ; `qualité` rouge pré-existant Larastan identique à main — hors scope P0, voir Modifications).
 - [x] Tenant pilote = 10 menus + RGPD (captures à faire en P4 sur données réelles).
 - [ ] Liste 10 écoles + script + décision hébergement écrits.
 - [ ] 5 appels passés, 3 visites planifiées.
@@ -290,3 +290,4 @@ Features. 2e école. Optimisations prématurées.
 - **2026-09-11 (P0-C1) :** « résidu edugestdz/ à supprimer » ANNULÉ après vérification : ce sont des symlinks documentés (shim CI, voir `edugestdz/README.md`), pas un doublon. Rien supprimé. Leçon : vérifier (`git ls-files -s`, `diff -r`) avant de détruire.
 - **2026-09-11 (P0-C2) :** critère « 7 menus max » ajusté à « 10 menus + RGPD (liste explicitée) » : 7 exigeait un filtrage par rôle (gros chantier), le gating par modules donne 10. Listes web + mobile + procédure tenant (`POST /modules/bulk`) écrites. Connus acceptés : fail-open `estActif()`/`ModulesContext`, routage mobile gestionnaire/comptable.
 - **2026-09-11 (P2-C1) :** ajouté seed du rôle `eleve` (inexistant dans `RolePermissionSeeder`) + routage mobile explicite gestionnaire/comptable.
+- **2026-09-11 (CI) :** job `qualité` rouge sur main ET sur PR #91, à l'identique (Larastan : relations manquantes `SignalementComportement.eleve/auteur`, `Seance.salle`, `LmsInscription.eleve`, `Inscription.presences/notes` + baseline désynchronisée). Pré-existant, backend uniquement, hors scope pilote. Règle adaptée : le « vert » pilote = backend ✅ + frontend ✅ + Pre-Deploy ✅. Réparer `qualité` = chantier post-pilote (génération baseline sur poste avec PHP).
