@@ -18,7 +18,7 @@
 set -euo pipefail
 
 SEUIL="${SEUIL_LIGNES:-350}"
-REP_CONTROLEURS="edugestdz/backend/app/Http/Controllers"
+REP_CONTROLEURS="backend/app/Http/Controllers"
 BASELINE="scripts/controleurs-baseline.txt"
 
 cd "$(dirname "$0")/.."

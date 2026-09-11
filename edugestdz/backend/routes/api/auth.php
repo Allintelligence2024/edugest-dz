@@ -33,7 +33,10 @@ Route::prefix('auth')->group(function () {
 });
 
 // ── Auth Protected ──
-$protected = ['auth:api', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
+// Pentest Sprint 6 (C2) : jwt.blacklist rend enfin effectifs le verrouillage
+// d'urgence (global_tokens_invalidated_at) et la révocation de jetons —
+// le middleware est fail-open : sans incident, coût = 1 lecture cache.
+$protected = ['auth:api', 'jwt.blacklist', 'resolve.tenant', 'tenant.verify', 'check.subscription', 'zero.trust'];
 Route::middleware($protected)->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout',          [AuthController::class, 'logout']);

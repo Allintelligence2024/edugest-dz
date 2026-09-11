@@ -20,7 +20,7 @@ use Tests\TestCase;
  * Principe : un utilisateur du tenant A ne doit JAMAIS
  * voir, modifier ou supprimer une ressource du tenant B.
  *
- * Chemin cible : edugestdz/backend/tests/Feature/Api/TenantIsolationTest.php
+ * Chemin cible : backend/tests/Feature/Api/TenantIsolationTest.php
  */
 class TenantIsolationTest extends TestCase
 {

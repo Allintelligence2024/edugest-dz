@@ -35,7 +35,7 @@ optimize:
 	php artisan event:cache
 
 backup:
-	@sh scripts/backup.sh
+	@bash scripts/backup.sh
 
 smoke:
 	@sh scripts/smoke-test.sh

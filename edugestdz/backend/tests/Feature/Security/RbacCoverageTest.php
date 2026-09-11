@@ -49,6 +49,13 @@ class RbacCoverageTest extends TestCase
         'api/v1/surveillance',
         'api/v1/absences-enseignants',
         'api/v1/super-admin',
+        // Pentest Sprint 6 : le kill-switch (DoS global) et le dashboard
+        // sécurité étaient absents de cette liste — c'est précisément
+        // pour ça que le garde-fou n'a jamais signalé leur absence de
+        // rôle. trusted-devices reste hors liste : chacun gère SES
+        // appareils, tous rôles confondus.
+        'api/v1/kill-switch',
+        'api/v1/security/dashboard',
     ];
 
     /**

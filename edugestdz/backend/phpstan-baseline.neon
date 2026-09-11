@@ -825,7 +825,17 @@ parameters:
 		-
 			message: '#^Relation ''eleve'' is not found in App\\Models\\DiagnosticEleve model\.$#'
 			identifier: larastan.relationExistence
-			count: 2
+			count: 3
+			path: app/Http/Controllers/Api/V1/DiagnosticController.php
+		-
+			message: '#^Relation ''enseignant'' is not found in App\\Models\\PlanRattrapage model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/DiagnosticController.php
+		-
+			message: '#^Relation ''eleve'' is not found in App\\Models\\PlanRattrapage model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
 			path: app/Http/Controllers/Api/V1/DiagnosticController.php
 
 		-
@@ -1077,13 +1087,13 @@ parameters:
 		-
 			message: '#^Relation ''candidats'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-
 			message: '#^Relation ''epreuves'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-
@@ -1095,7 +1105,7 @@ parameters:
 		-
 			message: '#^Relation ''salles'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-
@@ -8147,3 +8157,339 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: routes/web.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$article_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantite\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/BonCommandeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantite_stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\PretMateriel\>\:\:create\(\) expects array\<model property of App\\Models\\PretMateriel, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PretMaterielService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EntretienService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EntretienPreventifService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\TransportEleve\>\:\:create\(\) expects array\<model property of App\\Models\\TransportEleve, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/TransportEnrollmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/InscriptionCantineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/InscriptionCantineService.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Services/StockCuisineService.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>prix_unitaire" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PointageCantineService.php
+
+		-
+			message: '#^Relation ''enseignant'' is not found in App\\Models\\LmsCours model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Relation ''chapitres'' is not found in App\\Models\\LmsCours model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsCours\>\:\:create\(\) expects array\<model property of App\\Models\\LmsCours, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsCoursService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsChapitre\>\:\:create\(\) expects array\<model property of App\\Models\\LmsChapitre, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsContenuService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsLecon\>\:\:create\(\) expects array\<model property of App\\Models\\LmsLecon, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsContenuService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsQuiz\>\:\:create\(\) expects array\<model property of App\\Models\\LmsQuiz, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsQuizService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\LmsQuestion\>\:\:create\(\) expects array\<model property of App\\Models\\LmsQuestion, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsQuizService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LmsInscription\:\:\$cours\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Relation ''cours'' is not found in App\\Models\\LmsInscription model\.$#'
+			identifier: larastan.relationExistence
+			count: 3
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\LmsInscription\:\:\$progressions\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LmsInscriptionService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of method Illuminate\\Database\\Eloquent\\Model\:\:update\(\) expects array\<model property of App\\Models\\LmsDevoir, mixed\>, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/LmsDevoirService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$numero_facture\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$parents\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prenom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_ttc\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:paiements\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Parameter \#1 \$num of function number_format expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PaiementConfirmationService.php
+
+		-
+			message: '#^Parameter \#1 \$attributes of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Eleve\>\:\:create\(\) expects array\<model property of App\\Models\\Eleve, mixed\>, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/EleveDossierService.php
+
+		-
+			message: '#^Parameter \#2 \$values of static method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\ParentEleve\>\:\:firstOrCreate\(\) expects array\<model property of App\\Models\\ParentEleve, mixed\>, array\<mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/EleveDossierService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$absent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$appreciation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$evaluation\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$note\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/EleveSuiviService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Auth\\AuthManager\:\:factory\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\StatefulGuard\:\:factory\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\StatefulGuard\:\:refresh\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Call to an undefined static method Tymon\\JWTAuth\\Facades\\JWTAuth\:\:fromUser\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 3
+			path: app/Services/AuthSessionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$tenant\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AuthCompteService.php

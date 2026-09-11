@@ -15,7 +15,7 @@
 set -euo pipefail
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BACKEND="${RACINE}/edugestdz/backend"
+BACKEND="${RACINE}/backend"
 
 cd "${BACKEND}"
 

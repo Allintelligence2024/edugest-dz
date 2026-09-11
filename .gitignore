@@ -53,3 +53,6 @@ coverage/
 *.zip
 *.tar.gz
 *.7z
+
+# ── Campagnes k6 : rapports publiés localement, pas versionnés ──
+tests/k6/results/

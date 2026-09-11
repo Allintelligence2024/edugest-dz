@@ -74,7 +74,7 @@ security(niveau2): MFA obligatoire pour les admins
 
 ```bash
 git clone https://github.com/Allintelligence2024/edugest-dz.git
-cd edugestdz
+cd edugest-dz
 cp backend/.env.example backend/.env
 docker compose up -d
 docker compose exec app composer install

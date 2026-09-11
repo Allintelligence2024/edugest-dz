@@ -158,6 +158,11 @@ class KillSwitchService
                 'action' => $vote->action,
                 'error'  => $e->getMessage(),
             ]);
+            SentryObservabilite::capturer(
+                'KillSwitch: échec d\'activation après approbation',
+                'error',
+                ['action' => $vote->action, 'error' => $e->getMessage()]
+            );
             // Re-lancer pour que l'appelant sache que ça a échoué
             throw $e;
         }
@@ -199,6 +204,14 @@ class KillSwitchService
                 'KillSwitch: impossible de vérifier (Redis + BDD down) — LAISSER PASSER',
                 ['error' => $e->getMessage()]
             );
+            // Sprint 6 § 4 : le fail-open est un choix assumé, mais il doit
+            // être VU — Redis et la BDD down en même temps, c'est le symptôme
+            // d'un incident en cours.
+            SentryObservabilite::capturer(
+                'KillSwitch: vérification impossible (Redis + BDD indisponibles) — fail-open',
+                'error',
+                ['error' => $e->getMessage()]
+            );
             return false; // fail-open intentionnel
         }
     }
@@ -223,6 +236,11 @@ class KillSwitchService
                 ]);
         } catch (\Throwable $e) {
             Log::error('KillSwitch: impossible de désactiver en BDD', ['error' => $e->getMessage()]);
+            SentryObservabilite::capturer(
+                'KillSwitch: impossible de désactiver en BDD — état incohérent possible',
+                'error',
+                ['error' => $e->getMessage()]
+            );
         }
 
         Log::warning('KillSwitch: désactivé', ['admin' => $adminId]);

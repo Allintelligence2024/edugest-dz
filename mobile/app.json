@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "EduGest DZ",
+    "slug": "edugestdz-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#08090f"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "dz.edugest.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scanner les QR codes de présence",
+        "NSFaceIDUsageDescription": "Connexion rapide par Face ID"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#08090f"
+      },
+      "package": "dz.edugest.app",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3b82f6",
+          "sounds": []
+        }
+      ],
+      "sentry-expo"
+    ],
+    "extra": {
+      "apiBaseUrl": "https://app.edugest.dz/api/v1",
+      "eas": {
+        "projectId": "VOTRE_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

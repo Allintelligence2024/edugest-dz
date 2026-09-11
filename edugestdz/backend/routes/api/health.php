@@ -71,9 +71,19 @@ Route::get('/health', function () {
     }
 
     // 6. Kill Switch status
-    $killActive = \Cache::has('kill_switch_active');
+    // Pentest Sprint 6 : la clé lue ici ('kill_switch_active', souligné)
+    // n'existait nulle part — le service écrit 'kill_switch:active'
+    // (deux-points). Le health annonçait donc toujours « inactive », même
+    // kill-switch actif. On interroge le service, qui gère aussi le
+    // fallback BDD si Redis est indisponible.
+    $killActive = app(\App\Services\KillSwitchService::class)->estActif();
     $checks['kill_switch'] = ['status' => $killActive ? 'ACTIVE' : 'inactive'];
-    if ($killActive) $allOk = false;
+    // Volontairement SANS impact sur $allOk : un kill switch actif est un
+    // état administratif délibéré, pas une défaillance d'infrastructure.
+    // Les sondes de disponibilité (UptimeRobot…) doivent continuer de voir
+    // le service vivant (200) pendant l'interruption — sinon elles masquent
+    // la reprise. L'état reste visible dans le payload via checks.kill_switch.
+    // Comportement couvert par SecurityNiveau6Test::test_kill_switch_middleware_excludes_health.
 
     // 7. Migrations status
     try {

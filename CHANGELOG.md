@@ -5,14 +5,41 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ---
 
+## [Non publié] — Sprint 6 (septembre 2026)
+
+### Ajouté
+- **Pentest ciblé des 4 composants de sécurité** : 7 constats (C1-C7), 3 corrigés — rôle admin sur le kill-switch MPC et le dashboard sécurité (C1, critique : DoS global possible avec 2 comptes quelconques), `/health` mentait sur l'état du kill-switch (C4), `audit:verify` désormais planifié chaque nuit + cron serverless (C6) ; garde-fou RBAC étendu (`docs/SPRINT6_EXPLOITATION.md` § 3)
+- **Observabilité Sentry** : alertes de sécurité (brute force, verrouillage d'urgence), scores Zero-Trust > 50, événements kill-switch, chaîne d'audit rompue — câblage no-op sans `SENTRY_DSN` ; instrumentation mobile `sentry-expo` (no-op sans `EXPO_PUBLIC_SENTRY_DSN`)
+- **Conformité 18-07** : consentements parentaux tracés de façon immuable (`POST /api/v1/rgpd/consentements` + historique), rétention automatique quotidienne des exports (RGPD 30 j, audit 1 an — `edugest:rgpd-retention`), registre des traitements pré-rempli (`docs/REGISTRE_TRAITEMENTS.md`)
+- **Scénarios de charge k6** : 7 scénarios (smoke, charge, isolation RLS, QR, bulletins, throttle auth, webhook) + lanceur + guide (`tests/k6/`, `docs/PERF_TESTS_K6.md`)
+- Réparation de la chaîne backup/restore (`restore-backup.sh` rejoué sur stubs)
+
+### Ajouté (suites pentest, clôture Sprint 6)
+- **Shim CI `edugestdz/`** : symlinks de compatibilité pour que les workflows existants (qui pointent vers `edugestdz/*`) trouvent le code déplacé à la racine — la CI de branche redevient verte sans toucher `.github/` ; à supprimer dès l'application de `docs/fusion-workflows.patch`
+- **C2 corrigé** : middleware `jwt.blacklist` appliqué à toutes les routes authentifiées — le verrouillage d'urgence invalide désormais les JWT existants
+- **C3 partiel** : code du challenge Zero-Trust envoyé hors-bande (e-mail), plus jamais dans la réponse 428 ; nouvel endpoint `POST /security/zero-trust/verify` (+ 5 tests)
+- **C5 partiel** : `TRUSTED_PROXIES` opt-in (`bootstrap/app.php`) pour un `$request->ip()` correct derrière proxy
+- **Mobile** : `AuthContext.js` corrigé (référence `api` non importée → crash du logout et suppression silencieuse du token au démarrage) ; suite de tests Jest réparée : **4 suites / 21 tests verts** (chemins d'import, mock i18n du LoginScreen, assertions alignées sur les écrans réels)
+
+### Corrigé
+- `/api/v1/health` : un kill-switch actif ne dégrade plus le code HTTP (reste 200, état `ACTIVE` visible dans `checks.kill_switch`) — un kill-switch est une décision administrative, pas une panne d'infrastructure ; les sondes uptime doivent continuer à voir le service (régression introduite par le durcissement Sprint 6 du check kill_switch, détectée par `SecurityNiveau6Test` via l'extension de diagnostic CI PHPUnit)
+- `ConsentementRgpdController` : l'audit des consentements n'était **jamais écrit** — appel statique `AuditChainService::enregistrer()` levant une `Error` avalée par le catch (détecté par PHPStan CI) ; corrigé en résolution de conteneur `app()->enregistrer()`
+- `RgpdRetentionCommand` : garde morte `lastModified() !== false` supprimée (Flysystem v3 retourne `int`)
+- Baseline PHPStan alignée sur le drift larastan `^3.0` installé à la volée : décomptes `candidats`/`epreuves`/`salles` (ExamenController) et `eleve` (DiagnosticController) ajustés, 2 entrées PlanRattrapage ajoutées
+- Shim CI **v2 (inversion)** : le code backend vit physiquement dans `edugestdz/backend/` (exigé par l'étape PHPStan du job qualité — GitHub Actions canonicalise le `working-directory`, `../../scripts/…` sortait du dépôt avec un simple symlink) ; symlink `backend` à la racine pour le reste du dépôt
+- `README.md`, `docs/SECURITE.md`, `docs/ARCHITECTURE.md` (grille Risk Score fictive remplacée par la vraie), `docs/ANPDP_DECLARATION.md`, `docs/MONITORING_CHECKLIST.md` : alignés sur la réalité (58 wilayas et non 48, Merkle HMAC-SHA-256 et non SHA3, MFA obligatoire seulement super-admin, crypto classique et non post-quantique, compteurs réels, lien plan d'incident, argumentaire commercial ANPDP reformulé)
+- Lockfile mobile resynchronisé avec `package.json` (`npm ci` échouait)
+
+---
+
 ## [1.0.0-beta] — 8 Juillet 2026
 
 ### Ajouté
-- **Sécurité Niveau 6** : Audit Chain Merkle SHA3-256, SIEM 5 règles, Kill Switch MPC, Post-Quantum Crypto (Ed25519/RSA-4096), Supply Chain Verifier — 19 tests
+- **Sécurité Niveau 6** : Audit Chain Merkle HMAC-SHA-256, SIEM 5 règles, Kill Switch MPC, crypto asymétrique Ed25519/RSA-4096 (classique, pas post-quantique), Supply Chain Verifier — 19 tests
 - **Sécurité Niveau 5** : Honeypots actifs (16 routes leurres), Canary Tokens, SSRF Protection, SQL Injection Layer, HashiCorp Vault (fallback BDD chiffrée), Insider Threat Detector, Dead Man Switch — 24 tests
 - **Sécurité Niveau 4** : Zero-Trust Risk Score Engine, Device Fingerprinting, RBAC granulaire par champ, Intelligent Rate Limiter — 18 tests
 - **Sécurité Niveau 3** : Audit logs HMAC-SHA256, Password Policy (12 chars + blacklist), IP Allowlist super-admin, JWT rotation, Breach Response API — 9 tests
-- **Sécurité Niveau 2** : Chiffrement colonnes AES-256, MFA obligatoire admins, Brute force protection, Headers OWASP complets — 11 tests
+- **Sécurité Niveau 2** : Chiffrement colonnes AES-256, MFA (obligatoire super-admin), Brute force protection, Headers OWASP complets — 11 tests
 - **Sécurité Niveau 1** : JWT Blacklist Redis, PostgreSQL RLS, Isolation tenant triple, Fichiers signés URL temporaires
 - **BEM/BAC** : Module examens officiels, 5 tables, 22 endpoints, 5 PDFs, 12 tests
 - **LMS** : Cours en ligne, chapitres, leçons (vidéo/PDF/quiz), quiz auto-corrigés, certificats — 13 tests

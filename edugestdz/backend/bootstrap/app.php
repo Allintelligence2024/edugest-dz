@@ -18,6 +18,24 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->throttleApi();
 
+        // Pentest Sprint 6 (C5) : derrière un reverse proxy (nginx du compose,
+        // Vercel…), $request->ip() renvoyait l'IP PRIVÉE du proxy — +10 points
+        // de risque systématiques pour 100 % du trafic légitime, throttles par
+        // IP inopérants, empreinte device faussée. Opt-in par environnement :
+        // TRUSTED_PROXIES='*' (tout le trafic arrive via le proxy) ou une liste
+        // d'IP/CIDR séparés par des virgules. Vide (défaut) = rien n'est
+        // trusté, comportement inchangé.
+        $proxiesTrust = (string) env('TRUSTED_PROXIES', '');
+        if ($proxiesTrust !== '') {
+            // Argument positionnel : ne pas dépendre du nom du paramètre
+            // (at:) qui varie selon les versions 11.x.
+            $middleware->trustProxies(
+                $proxiesTrust === '*'
+                    ? '*'
+                    : array_map('trim', explode(',', $proxiesTrust))
+            );
+        }
+
         $middleware->api(prepend: [
             \App\Http\Middleware\KillSwitchMiddleware::class,
             \App\Http\Middleware\LicenceCheck::class,
@@ -104,6 +122,19 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         $schedule->command('edugest:audit-export')
                  ->dailyAt('02:00')
+                 ->withoutOverlapping();
+
+        // Pentest Sprint 6 : la chaîne Merkle d'audit était vérifiée
+        // nulle part — une altération non détectée équivaut à une absence
+        // de chaîne (cf. VerifierAuditChainCommand).
+        $schedule->command('audit:verify')
+                 ->dailyAt('03:30')
+                 ->withoutOverlapping();
+
+        // Sprint 6 § 5 : rétention 18-07 — purge quotidienne des exports
+        // RGPD (30 j) et d'audit (1 an) expirés (cf. RgpdRetentionCommand).
+        $schedule->command('edugest:rgpd-retention')
+                 ->dailyAt('04:10')
                  ->withoutOverlapping();
 
         $schedule->command('edugest:deadman-switch')

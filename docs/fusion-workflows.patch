@@ -1,0 +1,146 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 2150e29..ec745a7 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -45,7 +45,7 @@ jobs:
+ 
+     defaults:
+       run:
+-        working-directory: edugestdz/backend
++        working-directory: backend
+ 
+     steps:
+       - uses: actions/checkout@v4
+@@ -66,7 +66,7 @@ jobs:
+         uses: actions/cache@v4
+         with:
+           path: ${{ steps.composer-cache.outputs.dir }}
+-          key: ${{ runner.os }}-composer-${{ hashFiles('edugestdz/backend/composer.lock') }}
++          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+           restore-keys: ${{ runner.os }}-composer-
+ 
+       - name: Install dependencies
+@@ -151,7 +151,7 @@ jobs:
+             exit 1
+           fi
+           echo "OK — aucun jeton persisté côté navigateur"
+-        working-directory: edugestdz
++        working-directory: .
+ 
+       - name: "Sécurité — aucun secret en dur"
+         run: |
+@@ -192,6 +192,12 @@ jobs:
+             done
+           }
+ 
++          # Seuil opposable. Mesuré à 60,71 % le 2026-09-10 (annotation du run
++          # main) : le palier reste à 45 tant que le refactor 5.3, qui ajoute
++          # du code, n'est pas stabilisé. Le relever à 60 avec 0,7 point de
++          # marge serait un seuil d'intention, pas un seuil tenu.
++          SEUIL=45
++
+           echo "## Couverture du backend" >> "$GITHUB_STEP_SUMMARY"
+ 
+           COUV=""
+@@ -210,12 +216,15 @@ jobs:
+           fi
+ 
+           if [ -n "$COUV" ] && [ "$COUV" != "0.00" ] && [ -f coverage-out.txt ]; then
+-            LIGNE=$(grep -oiE "^(lines|line coverage)[^%]*[0-9]+\.[0-9]+ ?%" coverage-out.txt | tail -1 || true)
+-            echo "Lignes couvertes : ${COUV} % (obj. Sprint 4 : 45 %, rapport texte : ${LIGNE:-inconnue})." \
++            LIGNE=$(grep -oiE "^[[:space:]]*(lines|line coverage)[^%]*[0-9]+\.[0-9]+ ?%" coverage-out.txt | tail -1 || true)
++            echo "Lignes couvertes : ${COUV} % (seuil : ${SEUIL} %, rapport texte : ${LIGNE:-inconnu})." \
+               >> "$GITHUB_STEP_SUMMARY"
+-            echo "::error::couverture_clover :: ${COUV}% (objectif Sprint 4 : 45%)"
+-            echo "::error::couverture_texte :: $(echo "${LIGNE:-rapport non reconnu}" | tr ':' ' ')"
+-            exit 0
++            if awk "BEGIN { exit (${COUV} < ${SEUIL}) }"; then
++              echo "::notice::couverture ${COUV}% (seuil ${SEUIL}%)"
++              exit 0
++            fi
++            echo "::error::couverture ${COUV}% sous le seuil ${SEUIL}%"
++            exit 1
+           fi
+ 
+           # Aucun pourcentage agrégé exploitable : publier la collecte brute,
+@@ -232,7 +241,7 @@ jobs:
+     runs-on: ubuntu-latest
+     defaults:
+       run:
+-        working-directory: edugestdz/frontend
++        working-directory: frontend
+ 
+     steps:
+       - uses: actions/checkout@v4
+@@ -242,7 +251,7 @@ jobs:
+         with:
+           node-version: '22'
+           cache: 'npm'
+-          cache-dependency-path: edugestdz/frontend/package-lock.json
++          cache-dependency-path: frontend/package-lock.json
+ 
+       - name: Install dependencies
+         run: npm ci
+@@ -275,16 +284,16 @@ jobs:
+ 
+       - name: "Audit des dépendances PHP (composer audit) — non bloquant : advisories laravel/framework 11.31 à résoudre par composer update (voir dette Lot A)"
+         continue-on-error: true
+-        working-directory: edugestdz/backend
++        working-directory: backend
+         run: composer audit --no-interaction
+ 
+       - name: Audit des dépendances npm du frontend (bloquant)
+-        working-directory: edugestdz/frontend
++        working-directory: frontend
+         run: npm audit --audit-level=high
+ 
+       - name: Audit des dépendances npm du mobile (non bloquant)
+         if: always()
+-        working-directory: edugestdz/mobile
++        working-directory: mobile
+         continue-on-error: true
+         run: npm audit --audit-level=high
+ 
+@@ -297,7 +306,7 @@ jobs:
+         continue-on-error: true
+ 
+       - name: Analyse statique backend (PHPStan niveau 6, bloquant avec baseline)
+-        working-directory: edugestdz/backend
++        working-directory: backend
+         run: ../../scripts/analyse-statique.sh --no-progress
+ 
+       - name: "Garde-fou — contrôleurs ≤350 lignes (baseline Lot C)"
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index a65266c..8487cba 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -49,7 +49,6 @@ jobs:
+             echo "📥 Pull des dernières modifications..."
+             git pull origin main
+ 
+-            cd edugestdz
+ 
+             echo "🚀 Déploiement..."
+             chmod +x deploy.sh
+diff --git a/.github/workflows/pre-deploy-check.yml b/.github/workflows/pre-deploy-check.yml
+index cda9029..2033bdb 100644
+--- a/.github/workflows/pre-deploy-check.yml
++++ b/.github/workflows/pre-deploy-check.yml
+@@ -43,7 +43,7 @@ jobs:
+ 
+     defaults:
+       run:
+-        working-directory: edugestdz/backend
++        working-directory: backend
+ 
+     steps:
+       - uses: actions/checkout@v4
+@@ -63,7 +63,7 @@ jobs:
+         uses: actions/cache@v4
+         with:
+           path: ${{ steps.composer-cache.outputs.dir }}
+-          key: ${{ runner.os }}-composer-${{ hashFiles('edugestdz/backend/composer.lock') }}
++          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+           restore-keys: ${{ runner.os }}-composer-
+ 
+       - name: Install dependencies
