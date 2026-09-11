@@ -6,4 +6,11 @@
 - Bloqué : rien.
 - CI Phase 0 (PR #91, run 34608953990) : backend ✅, frontend ✅, qualité ❌ pré-existant (Larastan main, hors scope P0). Pre-Deploy ✅.
 - Demain : P0-B1/B2/B3 (liste + 5 appels + décision hébergement).
+
+## 2026-09-11 (J1 — soir : 3 fixes + P1-C1)
+- Fait : rôle eleve seedé + test ; $lectureDossier (+parent) + 6 tests dossier ; commande tenant:configurer-pilote + 4 tests ; patch CI ; écran notes prof réécrit + 3 tests mobile (24/24 local) ; PHP 5/5 syntaxe OK.
+- École/business : pilote intéressé signalé — démo à préparer (parent notes/factures + prof saisie).
+- Bloqué : rien. CI backend (10 nouveaux tests) en cours sur PR #91.
+- Demain : fin P1 (bulletins parent P1-C2, paiements P1-C4, dashboard P1-C3, vérifs P1-C5) + P0 business.
+- Humeur/runway (1-5) : _à remplir_
 - Humeur/runway (1-5) : _à remplir_

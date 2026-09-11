@@ -1,0 +1,12 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -1,8 +1,8 @@
+ name: CI — EduGest DZ
+
+ on:
+   push:
+-    branches: [main, develop]
++    branches: [main, develop, 'arena/**']
+   pull_request:
+     branches: [main]
+

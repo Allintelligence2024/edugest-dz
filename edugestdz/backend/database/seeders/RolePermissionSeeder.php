@@ -124,6 +124,32 @@ class RolePermissionSeeder extends Seeder
                     )
                 )),
             ],
+            [
+                // PILOTE-30OCT : rôle élève — lecture seule de SON dossier.
+                // Le scope « moi uniquement » est imposé au contrôleur
+                // (PerimetreAccesService, P2-C1) ; ici on ne déclare que des
+                // permissions de lecture, résolues par nom (pas d'IDs en dur).
+                'id'       => 8,
+                'tenant_id'=> null,
+                'nom'      => 'eleve',
+                'label_fr' => 'Élève',
+                'label_ar' => 'تلميذ',
+                'is_system'=> true,
+                'permissions' => array_values(array_filter(
+                    range(1, $permissionId),
+                    fn ($id) => in_array(
+                        $permissions[$id - 1]['nom'],
+                        [
+                            'matieres.lister',
+                            'planning.consulter',
+                            'evaluations.lister',
+                            'bulletins.lister',
+                            'bulletins.consulter_pdf',
+                        ],
+                        true
+                    )
+                )),
+            ],
         ];
 
         foreach ($roles as $r) {

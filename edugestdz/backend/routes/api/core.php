@@ -24,6 +24,7 @@ $protected = ['auth:api', 'jwt.blacklist', 'resolve.tenant', 'tenant.verify', 'c
 // fiches. Les enseignants gardent un accès en LECTURE (besoin pédagogique).
 $gestionEleves = 'role:admin,gestionnaire,secretariat';
 $lectureEleves = 'role:admin,gestionnaire,secretariat,comptable,enseignant';
+$lectureDossier = 'role:admin,gestionnaire,secretariat,comptable,enseignant,parent'; // dossier élève : parent admis, filiation imposée par verifierPerimetreEleve
 $gestionRh     = 'role:admin,gestionnaire';
 
 Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEleves, $gestionRh) {
@@ -39,9 +40,9 @@ Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEl
         ->except(['index', 'show'])
         ->middleware($gestionEleves);
 
-    Route::prefix('eleves')->group(function () use ($gestionEleves, $lectureEleves) {
+    Route::prefix('eleves')->group(function () use ($gestionEleves, $lectureEleves, $lectureDossier) {
         // Consultation du dossier pédagogique.
-        Route::middleware($lectureEleves)->group(function () {
+        Route::middleware($lectureDossier)->group(function () {
             Route::get('{id}/notes',        [EleveController::class, 'notes']);
             Route::get('{id}/presences',    [EleveController::class, 'presences']);
             Route::get('{id}/bulletins',    [EleveController::class, 'bulletins']);
@@ -50,7 +51,7 @@ Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEl
 
         // Données financières de l'élève : hors périmètre enseignant.
         Route::get('{id}/paiements',        [EleveController::class, 'paiements'])
-            ->middleware('role:admin,gestionnaire,secretariat,comptable');
+            ->middleware('role:admin,gestionnaire,secretariat,comptable,parent');
 
         // Écriture et exports en masse : administratif uniquement.
         Route::middleware($gestionEleves)->group(function () {
