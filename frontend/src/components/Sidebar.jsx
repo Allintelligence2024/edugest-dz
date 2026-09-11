@@ -60,6 +60,16 @@ const MODULE_MAP = {
   '/personnel-admin': 'personnel', '/entretien': 'entretien',
   '/surveillance': 'surveillance', '/modules': 'modules',
   '/marketplace': 'marketplace', '/centres': 'marketplace', '/mes-reservations': 'marketplace',
+  // PILOTE-30OCT (P0-C2) : masqués du tenant pilote. Fail-closed : ces clés
+  // n'existent pas dans TenantModule::MODULES donc jamais dans /modules/actifs,
+  // donc isActive() = false. Réactivation propre = ajouter le module backend
+  // (TenantModule::MODULES + ModuleCheck::ROUTE_MAP), sans toucher cette table.
+  '/messages': 'communication', '/campagnes': 'communication',
+  '/notifications': 'communication', '/feedback-enseignant': 'feedback',
+  '/audit-logs': 'audit',
+  // IA prédictive interdite d'exposition pilote (coefficients non validés,
+  // mineurs) : suit le module 'diagnostic' (inactif pilote → masqué).
+  '/prediction-ia': 'diagnostic',
 };
 
 const ROLE_MAP = { '/super-admin': 'super_admin', '/rgpd': 'admin' };

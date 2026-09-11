@@ -1,54 +1,102 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import { useI18n } from '../../context/I18nContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { planningApi } from '../../api/endpoints';
-import { withCache } from '../../services/cache';
-import { colors } from '../../theme/colors';
-import { spacing, fontSizes } from '../../theme/spacing';
+import { useEnfants } from '../../context/EnfantContext';
+import { colors, spacing, fontSizes } from '../../theme';
 
+function cap(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+/**
+ * PILOTE P1-C5 — Planning parent : GET /planning?eleve_id={id} (scopé inscriptions
+ * validées côté backend) → data.[{date, jour, seances:[cours]}] groupé par jour.
+ */
 export default function PlanningScreen() {
-  const { t } = useI18n();
-  const [seances, setSeances] = useState([]);
+  const { enfantActif, loading: loadingEnfant } = useEnfants();
+  const [jours, setJours] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const data = await withCache('parent_planning', () => planningApi.list({ per_page: 20 }));
-        setSeances(data?.data || []);
-      } catch {} finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const charger = useCallback(async () => {
+    if (!enfantActif) return;
+    setLoading(true);
+    try {
+      const res = await planningApi.list({ eleve_id: enfantActif.id });
+      setJours(res?.data ?? []);
+    } catch (e) {
+      console.error(e);
+      setJours([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [enfantActif?.id]);
 
-  if (loading) return <ActivityIndicator style={styles.center} size="large" color={colors.primary} />;
+  useEffect(() => {
+    if (!loadingEnfant) {
+      if (enfantActif) charger();
+      else setLoading(false);
+    }
+  }, [loadingEnfant, enfantActif?.id, charger]);
+
+  if (loadingEnfant || loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!enfantActif) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Aucun enfant rattaché à ce compte.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('planning')}</Text>
-      <FlatList
-        data={seances}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.coursName}>{item.cours?.matiere?.nom || 'Cours'}</Text>
-            <Text style={styles.detail}>{item.date} — {item.heure_debut} à {item.heure_fin}</Text>
-            <Text style={styles.detail}>{item.salle?.nom || ''}</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.enfant}>📅 Semaine de {enfantActif.prenom}</Text>
+      {jours.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Aucun cours cette semaine.</Text>
+        </View>
+      ) : (
+        jours.map((j) => (
+          <View key={j.date} testID={`jour-${j.date}`} style={styles.jourCard}>
+            <Text style={styles.jourTitre}>{cap(j.jour)} <Text style={styles.jourDate}>{j.date}</Text></Text>
+            {(j.seances ?? []).map((s) => (
+              <View key={s.id} style={styles.seance}>
+                <Text style={styles.heure}>
+                  {(s.heure_debut ?? '').slice(0, 5)} — {(s.heure_fin ?? '').slice(0, 5)}
+                </Text>
+                <Text style={styles.matiere}>
+                  {s.groupe?.matiere?.nom_fr ?? s.groupe?.nom ?? 'Cours'}
+                </Text>
+                <Text style={styles.detail}>
+                  {s.enseignant ? `👩‍🏫 ${s.enseignant.prenom} ${s.enseignant.nom}` : ''}
+                  {s.salle?.nom ? `  📍 ${s.salle.nom}` : ''}
+                </Text>
+              </View>
+            ))}
           </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>{t('noData')}</Text>}
-      />
-    </View>
+        ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.md },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: fontSizes.xl, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  card: { backgroundColor: colors.surface, borderRadius: 12, padding: spacing.md, marginBottom: spacing.sm, borderLeftWidth: 4, borderLeftColor: colors.primary },
-  coursName: { fontSize: fontSizes.md, fontWeight: '600', color: colors.text },
-  detail: { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: spacing.xs },
-  empty: { textAlign: 'center', color: colors.textLight, marginTop: spacing.xl },
+  container:  { flex: 1, backgroundColor: colors.background, padding: spacing.md },
+  center:     { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  enfant:     { fontSize: fontSizes.md, fontWeight: '600', color: colors.text, marginBottom: spacing.sm },
+  empty:      { alignItems: 'center', paddingTop: 60 },
+  emptyText:  { fontSize: fontSizes.md, color: colors.textSecondary },
+  jourCard:   { backgroundColor: colors.card, borderRadius: 14, padding: spacing.md, marginBottom: spacing.sm },
+  jourTitre:  { fontSize: fontSizes.md, fontWeight: '700', color: colors.primary, marginBottom: 8 },
+  jourDate:   { fontSize: fontSizes.xs, fontWeight: '400', color: colors.textSecondary },
+  seance:     { borderTopWidth: 1, borderTopColor: colors.border, paddingVertical: 8 },
+  heure:      { fontSize: fontSizes.sm, fontWeight: '700', color: colors.text },
+  matiere:    { fontSize: fontSizes.md, fontWeight: '600', color: colors.text, marginTop: 2 },
+  detail:     { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
 });

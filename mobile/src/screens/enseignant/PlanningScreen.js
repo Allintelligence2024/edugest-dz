@@ -1,61 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, ActivityIndicator,
-} from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { enseignantApi } from '../../api/endpoints';
-import { colors } from '../../theme/colors';
-import { spacing, fontSizes } from '../../theme/spacing';
+import { colors, spacing, fontSizes } from '../../theme';
 
 const JOURS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
-export default function EnseignantPlanningScreen({ navigation }) {
-  const [seances, setSeances]   = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [jourSelect, setJourSelect] = useState(new Date().toISOString().split('T')[0]);
+function iso(d) {
+  return d.toISOString().split('T')[0];
+}
 
-  useEffect(() => {
-    const fetchPlanning = async () => {
-      try {
-        const debut = new Date();
-        debut.setDate(debut.getDate() - debut.getDay());
-        const fin = new Date(debut);
-        fin.setDate(fin.getDate() + 6);
-        const res = await enseignantApi.planning({
-          date_debut: debut.toISOString().split('T')[0],
-          date_fin:   fin.toISOString().split('T')[0],
-        });
-        setSeances(res.data?.data?.seances || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPlanning();
+/**
+ * PILOTE P1-C5 — Planning enseignant réécrit sur GET /seances (instances avec id,
+ * date_seance, statut), PAS sur /planning (canevas de cours récurrents sans id).
+ * Limitation pilote assumée : toutes les séances de l'établissement (même tenant,
+ * lecture seule). Scoping par enseignant connecté : P3.
+ */
+export default function PlanningScreen({ navigation }) {
+  const [seances, setSeances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [jourSelect, setJourSelect] = useState(iso(new Date()));
+
+  const charger = useCallback(async () => {
+    setLoading(true);
+    try {
+      const now = new Date();
+      const debut = new Date(now);
+      debut.setDate(now.getDate() - now.getDay());
+      const fin = new Date(debut);
+      fin.setDate(debut.getDate() + 6);
+      const res = await enseignantApi.seances({ date_debut: iso(debut), date_fin: iso(fin) });
+      setSeances(res?.data ?? []);
+    } catch (e) {
+      console.error(e);
+      setSeances([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const seancesDuJour = seances.filter(s => s.date_seance === jourSelect);
+  useEffect(() => {
+    charger();
+  }, [charger]);
+
+  const seancesDuJour = seances.filter(
+    (s) => (s.date_seance ?? '').slice(0, 10) === jourSelect
+  );
 
   const semaineJours = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - d.getDay() + i);
-    return { date: d.toISOString().split('T')[0], label: JOURS[i], jour: d.getDate() };
+    return { date: iso(d), label: JOURS[d.getDay()], jour: d.getDate() };
   });
 
-  if (loading) return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.jourSelector}>
-        {semaineJours.map(j => (
+        {semaineJours.map((j) => (
           <TouchableOpacity
             key={j.date}
+            testID={`jour-${j.date}`}
             style={[styles.jourBtn, jourSelect === j.date && styles.jourBtnActive]}
             onPress={() => setJourSelect(j.date)}
           >
             <Text style={[styles.jourLabel, jourSelect === j.date && { color: '#fff' }]}>{j.label}</Text>
-            <Text style={[styles.jourNum,   jourSelect === j.date && { color: '#fff' }]}>{j.jour}</Text>
+            <Text style={[styles.jourNum, jourSelect === j.date && { color: '#fff' }]}>{j.jour}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -66,21 +82,38 @@ export default function EnseignantPlanningScreen({ navigation }) {
             <Text style={styles.emptyText}>🎉 Pas de cours ce jour</Text>
           </View>
         ) : (
-          seancesDuJour.map((s, i) => (
+          seancesDuJour.map((s) => (
             <TouchableOpacity
-              key={i}
-              style={[styles.seanceCard, { borderLeftColor: s.statut === 'terminée' ? colors.success : colors.primary }]}
+              key={s.id}
+              style={[
+                styles.seanceCard,
+                { borderLeftColor: s.statut === 'terminée' ? colors.success : colors.primary },
+              ]}
               onPress={() => navigation.navigate('Presences', { seanceId: s.id, titreSeance: s.cours?.groupe?.nom })}
             >
               <View style={styles.seanceHeader}>
-                <Text style={styles.seanceHeure}>{s.cours?.heure_debut} — {s.cours?.heure_fin}</Text>
-                <View style={[styles.statutBadge, { backgroundColor: s.statut === 'terminée' ? '#d1fae5' : '#dbeafe' }]}>
-                  <Text style={[styles.statutText, { color: s.statut === 'terminée' ? '#065f46' : '#1e3a8a' }]}>
+                <Text style={styles.seanceHeure}>
+                  {(s.heure_debut ?? '').slice(0, 5)} — {(s.heure_fin ?? '').slice(0, 5)}
+                </Text>
+                <View
+                  style={[
+                    styles.statutBadge,
+                    { backgroundColor: s.statut === 'terminée' ? '#d1fae5' : '#dbeafe' },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statutText,
+                      { color: s.statut === 'terminée' ? '#065f46' : '#1e3a8a' },
+                    ]}
+                  >
                     {s.statut === 'terminée' ? '✅ Terminée' : '📅 Planifiée'}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.seanceTitre}>{s.cours?.groupe?.nom} — {s.cours?.matiere?.nom_fr}</Text>
+              <Text style={styles.seanceTitre}>
+                {s.cours?.groupe?.nom} — {s.cours?.groupe?.matiere?.nom_fr}
+              </Text>
               <Text style={styles.seanceSalle}>📍 {s.cours?.salle?.nom || 'Salle non définie'}</Text>
               {s.statut !== 'terminée' && (
                 <Text style={styles.seanceAction}>👆 Appuyer pour saisir les présences</Text>

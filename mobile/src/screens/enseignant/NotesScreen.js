@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Alert, ScrollView,
+  StyleSheet, ActivityIndicator, Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { enseignantApi } from '../../api/endpoints';
 
-const BASE = 'https://app.edugest.dz/api/v1';
-
-const apiHeaders = async () => {
-  const token    = await AsyncStorage.getItem('token');
-  const tenantId = await AsyncStorage.getItem('tenantId');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    'X-Tenant-ID': tenantId ?? '',
-  };
-};
+// PILOTE-30OCT (P1-C1) — réécriture data-layer : cet écran utilisait une URL de
+// prod codée en dur + AsyncStorage + header X-Tenant-ID maison, contournant
+// AuthContext (SecureStore), le refresh sérialisé et le tenant fail-closed.
+// Il passe désormais par le client API officiel (intercepteur auth + refresh).
 
 export default function NotesScreen() {
   const [groupes, setGroupes]         = useState([]);
@@ -26,41 +19,58 @@ export default function NotesScreen() {
   const [notes, setNotes]             = useState({});
   const [loading, setLoading]         = useState(false);
   const [saving, setSaving]           = useState(false);
+  const [error, setError]             = useState('');
   const [mode, setMode]               = useState('liste');
 
-  useEffect(() => { loadGroupes(); }, []);
-
-  const loadGroupes = async () => {
+  const loadGroupes = useCallback(async () => {
     setLoading(true);
-    const h = await apiHeaders();
-    const r = await fetch(`${BASE}/groupes?per_page=100`, { headers: h }).then(r => r.json());
-    setGroupes(r?.data?.data ?? r?.data ?? []);
-    setLoading(false);
-  };
+    setError('');
+    try {
+      const body = await enseignantApi.groupes();
+      setGroupes(body?.data?.data ?? body?.data ?? []);
+    } catch (e) {
+      setError(e?.error?.message || e?.message || 'Impossible de charger les groupes');
+      setGroupes([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadGroupes(); }, [loadGroupes]);
 
   const loadEvaluations = async (groupeId) => {
-    const h = await apiHeaders();
-    const r = await fetch(`${BASE}/evaluations?groupe_id=${groupeId}&per_page=50`, { headers: h }).then(r => r.json());
-    setEvaluations(r?.data ?? []);
+    setError('');
+    try {
+      const body = await enseignantApi.evaluations.list({ groupe_id: groupeId, per_page: 50 });
+      setEvaluations(body?.data?.data ?? body?.data ?? []);
+    } catch (e) {
+      setError(e?.error?.message || e?.message || 'Impossible de charger les évaluations');
+      setEvaluations([]);
+    }
   };
 
   const loadElevesPourSaisie = async (evalId) => {
     setLoading(true);
-    const h = await apiHeaders();
-    const r = await fetch(`${BASE}/evaluations/${evalId}/notes`, { headers: h }).then(r => r.json());
-    const data = r?.data ?? [];
-    setEleves(data);
-    const notesInit = {};
-    data.forEach(e => {
-      notesInit[e.eleve_id] = {
-        note:        e.note?.toString() ?? '',
-        absent:      e.absent ?? false,
-        commentaire: e.commentaire ?? '',
-      };
-    });
-    setNotes(notesInit);
-    setLoading(false);
-    setMode('saisie');
+    setError('');
+    try {
+      const body = await enseignantApi.evaluations.notes(evalId);
+      const data = body?.data ?? [];
+      setEleves(data);
+      const notesInit = {};
+      data.forEach(e => {
+        notesInit[e.eleve_id] = {
+          note:        e.note?.toString() ?? '',
+          absent:      e.absent ?? false,
+          commentaire: e.commentaire ?? '',
+        };
+      });
+      setNotes(notesInit);
+      setMode('saisie');
+    } catch (e) {
+      setError(e?.error?.message || e?.message || 'Impossible de charger les élèves');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sauvegarderNotes = async () => {
@@ -69,24 +79,23 @@ export default function NotesScreen() {
 
     const payload = eleves.map(e => ({
       eleve_id:    e.eleve_id,
-      note:        parseFloat(notes[e.eleve_id]?.note) || null,
+      note:        notes[e.eleve_id]?.note === '' ? null : (parseFloat(notes[e.eleve_id]?.note) || null),
       absent:      notes[e.eleve_id]?.absent ?? false,
       commentaire: notes[e.eleve_id]?.commentaire ?? '',
     }));
 
-    const h = await apiHeaders();
-    const r = await fetch(`${BASE}/evaluations/${selectedEval.id}/notes`, {
-      method:  'POST',
-      headers: h,
-      body:    JSON.stringify({ notes: payload }),
-    }).then(r => r.json());
-
-    setSaving(false);
-    if (r?.success) {
-      Alert.alert('✅ Enregistré', `${r?.stats?.nb_notes ?? payload.length} note(s) sauvegardée(s).`);
-      setMode('liste');
-    } else {
-      Alert.alert('Erreur', r?.message ?? 'Échec de la sauvegarde');
+    try {
+      const body = await enseignantApi.evaluations.saisirNotes(selectedEval.id, { notes: payload });
+      if (body?.success) {
+        Alert.alert('Enregistré', `${body?.stats?.nb_notes ?? payload.length} note(s) sauvegardée(s).`);
+        setMode('liste');
+      } else {
+        Alert.alert('Erreur', body?.message ?? 'Échec de la sauvegarde');
+      }
+    } catch (e) {
+      Alert.alert('Erreur', e?.error?.message || e?.message || 'Échec de la sauvegarde');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -94,16 +103,19 @@ export default function NotesScreen() {
     setNotes(n => ({ ...n, [eleveId]: { ...n[eleveId], [field]: value } }));
   };
 
+  const erreur = error ? <Text style={s.error}>{error}</Text> : null;
+
   if (mode === 'liste') {
     if (!selectedGroupe) {
       return (
         <View style={s.container}>
-          <Text style={s.title}>📝 Saisie de notes</Text>
+          <Text style={s.title}>Saisie de notes</Text>
           <Text style={s.sub}>Sélectionnez un groupe :</Text>
+          {erreur}
           {loading ? <ActivityIndicator color="#3b82f6" style={{ marginTop: 30 }} /> : (
             <FlatList
               data={groupes}
-              keyExtractor={g => g.id}
+              keyExtractor={g => String(g.id)}
               renderItem={({ item }) => (
                 <TouchableOpacity style={s.groupeCard} onPress={() => {
                   setSelectedGroupe(item);
@@ -127,9 +139,10 @@ export default function NotesScreen() {
         </TouchableOpacity>
         <Text style={s.title}>{selectedGroupe.nom}</Text>
         <Text style={s.sub}>Sélectionnez une évaluation :</Text>
+        {erreur}
         <FlatList
           data={evaluations}
-          keyExtractor={e => e.id}
+          keyExtractor={e => String(e.id)}
           renderItem={({ item }) => (
             <TouchableOpacity style={s.evalCard} onPress={() => {
               setSelectedEval(item);
@@ -163,7 +176,7 @@ export default function NotesScreen() {
         <>
           <FlatList
             data={eleves}
-            keyExtractor={e => e.eleve_id}
+            keyExtractor={e => String(e.eleve_id)}
             contentContainerStyle={{ paddingBottom: 100 }}
             renderItem={({ item }) => {
               const note = notes[item.eleve_id] ?? {};
@@ -197,10 +210,10 @@ export default function NotesScreen() {
             }}
           />
 
-          <TouchableOpacity style={s.saveBtn} onPress={sauvegarderNotes} disabled={saving}>
+          <TouchableOpacity style={s.saveBtn} onPress={sauvegarderNotes} disabled={saving} testID="btn-enregistrer">
             {saving
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.saveBtnText}>💾 Enregistrer toutes les notes</Text>
+              : <Text style={s.saveBtnText}>Enregistrer toutes les notes</Text>
             }
           </TouchableOpacity>
         </>
@@ -216,7 +229,8 @@ const s = StyleSheet.create({
   back:      { fontSize: 12, color: '#60a5fa', marginBottom: 12, fontWeight: '700' },
   header:    { marginBottom: 16 },
   empty:     { color: '#475569', textAlign: 'center', marginTop: 40 },
-  groupeCard:{ background: undefined, backgroundColor: '#111318', borderRadius: 10,
+  error:     { color: '#f87171', fontSize: 12, fontWeight: '700', marginBottom: 12 },
+  groupeCard:{ backgroundColor: '#111318', borderRadius: 10,
                padding: 14, marginBottom: 8, borderWidth: 1, borderColor: '#1e293b' },
   groupeName:{ fontSize: 13, fontWeight: '800', color: '#f1f5f9' },
   groupeSub: { fontSize: 10, color: '#64748b', marginTop: 2 },

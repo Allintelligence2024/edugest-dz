@@ -1,86 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { useI18n } from '../../context/I18nContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import { presencesApi } from '../../api/endpoints';
-import { withCache } from '../../services/cache';
-import { colors } from '../../theme/colors';
-import { spacing, fontSizes } from '../../theme/spacing';
+import { useEnfants } from '../../context/EnfantContext';
+import { colors, spacing, fontSizes } from '../../theme';
 
-const STATUS_COLORS = { present: colors.success, absent: colors.danger, justifie: colors.warning, retard: colors.info };
+const STATUT_STYLE = {
+  'présent': { emoji: '✅', bg: '#d1fae5', fg: '#065f46' },
+  'absent':  { emoji: '❌', bg: '#fee2e2', fg: '#991b1b' },
+  'retard':  { emoji: '⏰', bg: '#fef3c7', fg: '#92400e' },
+  'excusé':  { emoji: '📝', bg: '#e0e7ff', fg: '#3730a3' },
+};
 
+/**
+ * PILOTE P1 — Présences parent réécrit sur le contrat réel :
+ * GET /eleves/{id}/presences → data.[{statut, motif, heure_arrivee, created_at,
+ * seance.{cours.{groupe.{matiere.{nom_fr}}, enseignant}}}], meta.stats.
+ */
 export default function PresencesScreen() {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const [presences, setPresences] = useState([]);
+  const { enfantActif, loading: loadingEnfant } = useEnfants();
+  const [items, setItems] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ present: 0, absent: 0, total: 0 });
+
+  const charger = useCallback(async () => {
+    if (!enfantActif) return;
+    setLoading(true);
+    try {
+      const res = await presencesApi.byEleve(enfantActif.id, { per_page: 50 });
+      setItems(res?.data ?? []);
+      setStats(res?.meta?.stats ?? null);
+    } catch (e) {
+      console.error(e);
+      setItems([]);
+      setStats(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [enfantActif?.id]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const eleveId = user?.eleve_id;
-        if (!eleveId) { setLoading(false); return; }
-        const data = await withCache(`presences_${eleveId}`, () => presencesApi.byEleve(eleveId, { per_page: 50 }));
-        const items = data?.data || [];
-        setPresences(items);
-        setStats({
-          total: items.length,
-          present: items.filter((p) => p.statut === 'present').length,
-          absent: items.filter((p) => p.statut === 'absent').length,
-        });
-      } catch {} finally { setLoading(false); }
-    })();
-  }, []);
+    if (!loadingEnfant) {
+      if (enfantActif) charger();
+      else setLoading(false);
+    }
+  }, [loadingEnfant, enfantActif?.id, charger]);
 
-  const taux = stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 0;
+  if (loadingEnfant || loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
-  if (loading) return <ActivityIndicator style={styles.center} size="large" color={colors.primary} />;
+  if (!enfantActif) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Aucun enfant rattaché à ce compte.</Text>
+      </View>
+    );
+  }
+
+  const renderItem = ({ item }) => {
+    const st = STATUT_STYLE[item.statut] ?? { emoji: '❓', bg: colors.border, fg: colors.text };
+    const matiere = item.seance?.cours?.groupe?.matiere?.nom_fr ?? 'Matière';
+    const ens = item.seance?.cours?.enseignant;
+    return (
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <View style={styles.info}>
+            <Text style={styles.matiere}>{matiere}</Text>
+            <Text style={styles.date}>
+              {(item.created_at ?? '').slice(0, 10)}
+              {item.heure_arrivee ? ` — arrivée ${String(item.heure_arrivee).slice(0, 5)}` : ''}
+            </Text>
+            {ens ? <Text style={styles.ens}>{ens.prenom} {ens.nom}</Text> : null}
+            {item.motif ? <Text style={styles.motif}>💬 {item.motif}</Text> : null}
+          </View>
+          <View style={[styles.badge, { backgroundColor: st.bg }]}>
+            <Text style={[styles.badgeText, { color: st.fg }]}>{st.emoji} {item.statut}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.statsCard}>
-        <Text style={styles.tauxLabel}>{t('monthPresences')}</Text>
-        <Text style={styles.tauxValue}>{taux}%</Text>
-        <View style={styles.statsRow}>
-          <Text style={styles.stat}>{t('present')}: {stats.present}</Text>
-          <Text style={styles.stat}>{t('absent')}: {stats.absent}</Text>
+      {stats && (
+        <View style={styles.header}>
+          <Text testID="presences-taux" style={styles.taux}>{stats.taux ?? '—'}%</Text>
+          <Text style={styles.sousTitre}>
+            {stats.presents ?? 0} présent(s) • {stats.absents ?? 0} absent(s) • {enfantActif.prenom}
+          </Text>
         </View>
-      </View>
+      )}
       <FlatList
-        data={presences}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={[styles.dot, { backgroundColor: STATUS_COLORS[item.statut] || colors.textLight }]} />
-            <View style={styles.cardBody}>
-              <Text style={styles.date}>{item.seance?.cours?.matiere?.nom || 'Séance'}</Text>
-              <Text style={styles.sub}>{item.date} — {item.seance?.heure_debut || ''}</Text>
-            </View>
-            <Text style={[styles.status, { color: STATUS_COLORS[item.statut] || colors.textLight }]}>
-              {t(item.statut === 'justifie' ? 'justified' : item.statut === 'retard' ? 'late' : item.statut)}
-            </Text>
-          </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>{t('noData')}</Text>}
+        data={items}
+        keyExtractor={(item, i) => String(item.id ?? i)}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+        ListEmptyComponent={<Text style={styles.emptyText}>Aucune présence enregistrée.</Text>}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.md },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  statsCard: { backgroundColor: colors.surface, borderRadius: 16, padding: spacing.lg, alignItems: 'center', marginBottom: spacing.md },
-  tauxLabel: { fontSize: fontSizes.sm, color: colors.textSecondary },
-  tauxValue: { fontSize: fontSizes.xxl, fontWeight: '800', color: colors.primary },
-  statsRow: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm },
-  stat: { fontSize: fontSizes.sm, color: colors.text },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, padding: spacing.md, marginBottom: spacing.sm },
-  dot: { width: 12, height: 12, borderRadius: 6, marginRight: spacing.sm },
-  cardBody: { flex: 1 },
-  date: { fontSize: fontSizes.md, fontWeight: '600', color: colors.text },
-  sub: { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: 2 },
-  status: { fontSize: fontSizes.sm, fontWeight: '600' },
-  empty: { textAlign: 'center', color: colors.textLight, marginTop: spacing.xl },
+  container: { flex: 1, backgroundColor: colors.background },
+  center:    { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header:    { alignItems: 'center', paddingVertical: spacing.md },
+  taux:      { fontSize: 36, fontWeight: '800', color: colors.primary },
+  sousTitre: { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: 2 },
+  list:      { padding: spacing.md, paddingTop: 0 },
+  card:      { backgroundColor: colors.card, borderRadius: 14, padding: spacing.md, marginBottom: spacing.sm },
+  row:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  info:      { flex: 1, marginRight: 8 },
+  matiere:   { fontSize: fontSizes.md, fontWeight: '700', color: colors.text },
+  date:      { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: 2 },
+  ens:       { fontSize: fontSizes.xs, color: colors.textSecondary },
+  motif:     { fontSize: fontSizes.xs, color: colors.textSecondary, fontStyle: 'italic', marginTop: 2 },
+  badge:     { borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  badgeText: { fontSize: fontSizes.xs, fontWeight: '700' },
+  emptyText: { fontSize: fontSizes.md, color: colors.textSecondary, textAlign: 'center', marginTop: 40 },
 });

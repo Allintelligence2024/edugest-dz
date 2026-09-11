@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Sentry from 'sentry-expo';
 import { AuthProvider } from './src/context/AuthContext';
+import { EnfantProvider } from './src/context/EnfantContext';
 import { I18nProvider, useI18n } from './src/context/I18nContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import { colors } from './src/theme/colors';
@@ -53,7 +54,9 @@ export default function App() {
     <SafeAreaProvider>
       <I18nProvider>
         <AuthProvider>
-          <AppContent />
+          <EnfantProvider>
+            <AppContent />
+          </EnfantProvider>
         </AuthProvider>
       </I18nProvider>
     </SafeAreaProvider>

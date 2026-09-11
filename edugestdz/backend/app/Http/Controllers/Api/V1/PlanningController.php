@@ -13,13 +13,29 @@ class PlanningController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['eleve_id' => 'nullable|uuid']);
+
         $debut = $request->date_debut ?? Carbon::now()->startOfWeek(Carbon::SUNDAY)->toDateString();
         $fin   = $request->date_fin   ?? Carbon::now()->endOfWeek(Carbon::SATURDAY)->toDateString();
 
-        $planning = $this->service->getPlanningHebdomadaire($debut, $fin, [
+        $filtres = [
             'enseignant_id' => $request->enseignant_id,
             'groupe_id'     => $request->groupe_id,
-        ]);
+        ];
+
+        // PILOTE P1-C5 — Planning d'un élève : garde périmètre + groupes validés.
+        if ($request->filled('eleve_id')) {
+            if (!app(\App\Services\PerimetreAccesService::class)->peutVoirEleve(auth('api')->user(), $request->eleve_id)) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => ['code' => 'FORBIDDEN', 'message' => "Cet élève n'est pas dans votre périmètre"],
+                ], 403);
+            }
+            $filtres['groupe_ids'] = \App\Models\Inscription::where('eleve_id', $request->eleve_id)
+                ->where('statut', 'validée')->pluck('groupe_id')->all();
+        }
+
+        $planning = $this->service->getPlanningHebdomadaire($debut, $fin, $filtres);
 
         return response()->json([
             'success'    => true,

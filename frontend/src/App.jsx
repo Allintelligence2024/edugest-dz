@@ -164,14 +164,17 @@ function AppInner() {
             <Route path="pointage" element={<PointagePage />} />
             <Route path="profil" element={<ProfilePage />} />
             <Route path="surveillance" element={<SurveillancePage />} />
-            <Route path="diagnostic" element={<DiagnosticPage />} />
+            {/* PILOTE-30OCT (P0-C2) : diagnostic + IA prédictive + feedback enseignant
+                interdits d'exposition pilote (modules inactifs → page bloquée,
+                même en accès direct par URL). Pattern existant, réversible. */}
+            <Route path="diagnostic" element={<ModuleProtectedRoute moduleKey="diagnostic"><DiagnosticPage /></ModuleProtectedRoute>} />
             <Route path="examens" element={<ExamensPage />} />
             <Route path="lms" element={<LmsPage />} />
             <Route path="modules" element={<ModulesPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="devoirs" element={<DevoirsPage />} />
-            <Route path="feedback-enseignant" element={<FeedbackEnseignantPage />} />
-            <Route path="prediction-ia" element={<PredictionIAPage />} />
+            <Route path="feedback-enseignant" element={<ModuleProtectedRoute moduleKey="feedback"><FeedbackEnseignantPage /></ModuleProtectedRoute>} />
+            <Route path="prediction-ia" element={<ModuleProtectedRoute moduleKey="diagnostic"><PredictionIAPage /></ModuleProtectedRoute>} />
             <Route path="rgpd" element={<RgpdPage />} />
             <Route path="marketplace" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplaceSearchPage /></ModuleProtectedRoute>} />
             <Route path="marketplace/offres/:id" element={<ModuleProtectedRoute moduleKey="marketplace"><MarketplaceOffreDetailPage /></ModuleProtectedRoute>} />
