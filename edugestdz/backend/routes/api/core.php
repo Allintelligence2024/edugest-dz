@@ -27,7 +27,7 @@ $lectureEleves = 'role:admin,gestionnaire,secretariat,comptable,enseignant';
 $lectureDossier = 'role:admin,gestionnaire,secretariat,comptable,enseignant,parent'; // dossier élève : parent admis, filiation imposée par verifierPerimetreEleve
 $gestionRh     = 'role:admin,gestionnaire';
 
-Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEleves, $gestionRh) {
+Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEleves, $lectureDossier, $gestionRh) {
 
     // ── Recherche globale ──
     Route::get('search', SearchController::class);
