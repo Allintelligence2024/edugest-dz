@@ -23,6 +23,10 @@ class PlanningService
         if (!empty($filtres['groupe_id'])) {
             $query->where('groupe_id', $filtres['groupe_id']);
         }
+        // PILOTE P1-C5 — un élève peut avoir plusieurs groupes (inscriptions validées).
+        if (!empty($filtres['groupe_ids'])) {
+            $query->whereIn('groupe_id', (array) $filtres['groupe_ids']);
+        }
 
         $cours = $query->get();
 

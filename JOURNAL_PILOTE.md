@@ -14,3 +14,9 @@
 - Demain : fin P1 (bulletins parent P1-C2, paiements P1-C4, dashboard P1-C3, vérifs P1-C5) + P0 business.
 - Humeur/runway (1-5) : _à remplir_
 - Humeur/runway (1-5) : _à remplir_
+
+## 2026-09-11 — P1-C2..C5 : 8 écrans mobiles + mes-enfants + planning eleve_id (en attente CI)
+- Backend : `GET parents/mes-enfants` (role:parent, avant apiResource) + `GET planning?eleve_id` (validate uuid, 403 périmètre, `groupe_ids` inscriptions validées). 8 tests (`MesEnfantsTest`, `PlanningEleveTest`).
+- Mobile : `EnfantContext` + `EnfantSelector` + 8 écrans réécrits sur contrats vérifiés (notes groupées+moyenne officielle, présences plates+stats accentuées, paiements financier+`numero_facture`, bulletins+PDF Linking, plannings groupés/Seance, dashboard 4 cartes, appel défaut présent). Messages/Notifications masqués. 10 tests (8 fichiers).
+- Cause racine n°2 (majeure) : intercepteur axios `response => response.data` — convention `body?.data`. Tout le parsing `res?.data?.data` (rogue + ma 1ʳᵉ vague) rendait vide. 16 occurrences corrigées ; reste : admin (gelé) + dashboard prof (hors scope P1).
+- Verdict CI : à compléter après run.

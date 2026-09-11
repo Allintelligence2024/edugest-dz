@@ -11,6 +11,11 @@ export const planningApi = {
   list: (params) => api.get('/planning', { params }),
 };
 
+// PILOTE P1-C2..C5 — contexte enfant du parent connecté.
+export const parentsApi = {
+  mesEnfants: () => api.get('/parents/mes-enfants'),
+};
+
 export const notesApi = {
   byEleve: (eleveId, params) => api.get(`/eleves/${eleveId}/notes`, { params }),
 };

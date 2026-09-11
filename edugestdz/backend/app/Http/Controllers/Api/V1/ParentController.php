@@ -7,6 +7,22 @@ use Illuminate\Http\{Request, JsonResponse};
 
 class ParentController extends Controller
 {
+    /**
+     * PILOTE P1-C2..C5 — Enfants du parent connecté (contexte mobile).
+     * Le mobile ne connaît pas eleve_id : cette route le fournit, scopée périmètre.
+     */
+    public function mesEnfants(): JsonResponse
+    {
+        $ids = app(\App\Services\PerimetreAccesService::class)
+            ->elevesDuParent(auth('api')->user());
+
+        $eleves = \App\Models\Eleve::whereIn('id', $ids)
+            ->orderBy('nom')->orderBy('prenom')
+            ->get(['id', 'nom', 'prenom', 'niveau_scolaire', 'numero_inscription', 'date_naissance', 'sexe']);
+
+        return response()->json(['success' => true, 'data' => $eleves]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $parents = ParentEleve::with('eleves')

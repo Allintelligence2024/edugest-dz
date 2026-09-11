@@ -1,60 +1,48 @@
 import React from 'react'
-import { render } from '@testing-library/react-native'
-// L'écran « tableau de bord parent » vit dans DashboardScreen.js (le
-// composant exporté s'appelle ParentDashboardScreen) — l'ancien import
-// visait screens/parent/ParentDashboardScreen, fichier qui n'existe pas.
-import ParentDashboardScreen from '../../../screens/parent/DashboardScreen'
+import { render, waitFor } from '@testing-library/react-native'
+import DashboardScreen from '../../../screens/parent/DashboardScreen'
+import { notesApi, presencesApi, paiementsApi, planningApi } from '../../../api/endpoints'
+import { useEnfants } from '../../../context/EnfantContext'
 
+jest.mock('../../../api/endpoints', () => ({
+  notesApi: { byEleve: jest.fn() },
+  presencesApi: { byEleve: jest.fn() },
+  paiementsApi: { byEleve: jest.fn() },
+  planningApi: { list: jest.fn() },
+}))
+jest.mock('../../../context/EnfantContext', () => ({ useEnfants: jest.fn() }))
 jest.mock('../../../context/AuthContext', () => ({
-  useAuth: () => ({
-    user: { prenom: 'Amine', nom: 'Benali' },
-    tenant: { nom: 'Lycée El Mokrani' },
-    isAuthenticated: true,
-    isLoading: false,
-    logout: jest.fn(),
-  }),
+  useAuth: () => ({ user: { prenom: 'Yasmine' } }),
 }))
 
-// Les libellés reflètent src/lang/fr.js (clés réellement utilisées par
-// l'écran : welcome, nextCourse, average, monthPresences, lastPayment).
-jest.mock('../../../context/I18nContext', () => ({
-  useI18n: () => ({
-    t: (key) => {
-      const labels = {
-        welcome: 'Bienvenue',
-        nextCourse: 'Prochain cours',
-        average: 'Moyenne générale',
-        monthPresences: 'Présences du mois',
-        lastPayment: 'Dernier paiement',
-      }
-      return labels[key] || key
-    },
-    locale: 'fr',
-  }),
-}))
+const ENFANT = { id: 'e1', prenom: 'Lina', nom_complet: 'BENALI Lina' }
 
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: () => ({ navigate: jest.fn() }),
-}))
-
-describe('ParentDashboardScreen', () => {
-  it('affiche le message de bienvenue avec le nom de l’utilisateur', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Amine/)).toBeTruthy()
-    expect(getByText(/Benali/)).toBeTruthy()
+describe('ParentDashboardScreen (P1-C3)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    useEnfants.mockReturnValue({ enfants: [ENFANT], enfantActif: ENFANT, loading: false })
+    notesApi.byEleve.mockResolvedValue({ success: true, data: { moyenne_generale: 14.5 } })
+    presencesApi.byEleve.mockResolvedValue({ success: true, data: [], meta: { stats: { taux: 96 } } })
+    paiementsApi.byEleve.mockResolvedValue({ success: true, data: { financier: { total_dette: 5000 } } })
+    planningApi.list.mockResolvedValue({
+      success: true,
+      data: [{ date: '2999-01-01', jour: 'lundi', seances: [{ id: 'c1', heure_debut: '08:00', groupe: { matiere: { nom_fr: 'Maths' } } }] }],
+    })
   })
 
-  it('affiche le nom de l’établissement', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText(/Lycée El Mokrani/)).toBeTruthy()
+  it('affiche les 4 cartes réelles', async () => {
+    const { getByTestId } = render(<DashboardScreen navigation={{ navigate: jest.fn() }} />)
+    await waitFor(() => expect(getByTestId('dash-moyenne')).toBeTruthy())
+    expect(getByTestId('dash-presence')).toBeTruthy()
+    expect(getByTestId('dash-dette')).toBeTruthy()
+    expect(getByTestId('dash-prochain')).toBeTruthy()
+    expect(notesApi.byEleve).toHaveBeenCalledWith('e1')
+    expect(planningApi.list).toHaveBeenCalledWith({ eleve_id: 'e1' })
   })
 
-  it('affiche les quatre indicateurs', () => {
-    const { getByText } = render(<ParentDashboardScreen />)
-    expect(getByText('Prochain cours')).toBeTruthy()
-    expect(getByText('Moyenne générale')).toBeTruthy()
-    expect(getByText('Présences du mois')).toBeTruthy()
-    expect(getByText('Dernier paiement')).toBeTruthy()
+  it('affiche un message sans enfant', async () => {
+    useEnfants.mockReturnValue({ enfants: [], enfantActif: null, loading: false })
+    const { findByText } = render(<DashboardScreen navigation={{ navigate: jest.fn() }} />)
+    expect(await findByText('Aucun enfant rattaché à ce compte.')).toBeTruthy()
   })
 })

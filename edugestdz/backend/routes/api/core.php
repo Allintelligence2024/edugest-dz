@@ -68,6 +68,8 @@ Route::middleware($protected)->group(function () use ($gestionEleves, $lectureEl
         ->middleware($gestionEleves);
 
     // ── Parents ──
+    // PILOTE P1-C2..C5 — AVANT apiResource (sinon 'mes-enfants' matche {parent}).
+    Route::get('parents/mes-enfants', [ParentController::class, 'mesEnfants'])->middleware('role:parent');
     Route::apiResource('parents', ParentController::class)
         ->only(['index', 'show'])
         ->middleware($lectureEleves);

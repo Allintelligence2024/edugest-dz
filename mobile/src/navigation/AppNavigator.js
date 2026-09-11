@@ -15,12 +15,14 @@ import ParentPlanning   from '../screens/parent/PlanningScreen';
 import ParentNotes      from '../screens/parent/NotesScreen';
 import ParentPresences  from '../screens/parent/PresencesScreen';
 import ParentPaiements  from '../screens/parent/PaiementsScreen';
-import ParentMessages   from '../screens/parent/MessagesScreen';
+// PILOTE-30OCT (P1) : Messages masqué — import conservé.
+// import ParentMessages   from '../screens/parent/MessagesScreen';
 import ParentBulletins  from '../screens/parent/BulletinsScreen';
 import ParentProfile    from '../screens/parent/ProfileScreen';
 
 // Parent (nouveaux M3)
-import ParentNotifications from '../screens/parent/NotificationsScreen';
+// PILOTE-30OCT (P1) : Notifications masquée — import conservé.
+// import ParentNotifications from '../screens/parent/NotificationsScreen';
 // PILOTE-30OCT (P0-C2) : Marketplace gelée — écran conservé (tests), onglet retiré.
 // import MarketplaceScreen from '../screens/parent/MarketplaceScreen';
 
@@ -91,10 +93,12 @@ function ParentTabs() {
       <ParentTab.Screen name="Presences"    component={ParentPresences}  options={{ title: 'Présences' }} />
       <ParentTab.Screen name="Paiements"    component={ParentPaiements}  options={{ title: 'Paiements' }} />
       {/* PILOTE-30OCT (P0-C2) : onglet Marketplace retiré (module gelé). */}
+      {/* PILOTE-30OCT (P1) : Notifications + Messages masqués — module gelé, écrans conservés (tests).
       <ParentTab.Screen name="Notifications" component={ParentNotifications} options={{ title: 'Notifications',
         tabBarIcon: ({ focused }) => <Text style={{ fontSize: 20 }}>{focused ? '🔔' : '🔕'}</Text>,
       }} />
       <ParentTab.Screen name="Messages"     component={ParentMessages}   options={{ title: 'Messages' }} />
+      */}
       <ParentTab.Screen name="Bulletins"    component={ParentBulletins}  options={{ title: 'Bulletins' }} />
       <ParentTab.Screen name="Profile"      component={ParentProfile}    options={{ title: 'Profil' }} />
     </ParentTab.Navigator>

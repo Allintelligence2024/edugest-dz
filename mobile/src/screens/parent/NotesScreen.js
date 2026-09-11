@@ -1,71 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
-import { useAuth } from '../../context/AuthContext';
-import { useI18n } from '../../context/I18nContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { notesApi } from '../../api/endpoints';
-import { withCache } from '../../services/cache';
-import { colors } from '../../theme/colors';
-import { spacing, fontSizes } from '../../theme/spacing';
+import { useEnfants } from '../../context/EnfantContext';
+import { colors, spacing, fontSizes } from '../../theme';
 
+const TYPE_LABEL = { devoir: '📝 Devoir', composition: '📋 Composition', interrogation: '✏️ Interro' };
+
+/**
+ * PILOTE P1 — Notes parent réécrit sur le contrat réel :
+ * GET /eleves/{id}/notes → data.{notes[{matiere, couleur, coefficient, notes[], moyenne}],
+ * moyenne_generale, taux_presence}. Plus de calcul local, plus de user.eleve_id.
+ */
 export default function NotesScreen() {
-  const { user } = useAuth();
-  const { t } = useI18n();
-  const [notes, setNotes] = useState([]);
+  const { enfantActif, loading: loadingEnfant } = useEnfants();
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const charger = useCallback(async () => {
+    if (!enfantActif) return;
+    setLoading(true);
+    try {
+      const res = await notesApi.byEleve(enfantActif.id);
+      setData(res?.data ?? null);
+    } catch (e) {
+      console.error(e);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [enfantActif?.id]);
+
   useEffect(() => {
-    (async () => {
-      try {
-        const eleveId = user?.eleve_id;
-        if (!eleveId) { setLoading(false); return; }
-        const data = await withCache(`notes_${eleveId}`, () => notesApi.byEleve(eleveId, { per_page: 50 }));
-        setNotes(data?.data || []);
-      } catch {} finally { setLoading(false); }
-    })();
-  }, []);
+    if (!loadingEnfant) {
+      if (enfantActif) charger();
+      else setLoading(false);
+    }
+  }, [loadingEnfant, enfantActif?.id, charger]);
 
-  const moyenne = notes.length > 0
-    ? (notes.reduce((sum, n) => sum + parseFloat(n.valeur || 0), 0) / notes.length).toFixed(2)
-    : '-';
+  if (loadingEnfant || loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
-  if (loading) return <ActivityIndicator style={styles.center} size="large" color={colors.primary} />;
+  if (!enfantActif) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Aucun enfant rattaché à ce compte.</Text>
+      </View>
+    );
+  }
+
+  const groupes = data?.notes ?? [];
+  const moyenne = data?.moyenne_generale;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.moyenneCard}>
-        <Text style={styles.moyenneLabel}>{t('average')}</Text>
-        <Text style={styles.moyenneValue}>{moyenne}/20</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.moyenneLabel}>Moyenne générale</Text>
+        <Text testID="notes-moyenne" style={styles.moyenne}>
+          {moyenne === null || moyenne === undefined ? '—' : Number(moyenne).toFixed(2)}
+        </Text>
+        <Text style={styles.enfant}>{enfantActif.nom_complet}</Text>
       </View>
-      <FlatList
-        data={notes}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
+
+      {groupes.length === 0 ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyText}>Aucune note pour le moment.</Text>
+        </View>
+      ) : (
+        groupes.map((g, i) => (
+          <View key={i} testID={`matiere-${i}`} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.matiere}>{item.evaluation?.matiere?.nom || 'Matière'}</Text>
-              <Text style={[styles.note, { color: item.valeur >= 10 ? colors.success : colors.danger }]}>{item.valeur}/20</Text>
+              <View style={[styles.dot, { backgroundColor: g.couleur || colors.primary }]} />
+              <Text style={styles.matiere}>{g.matiere}</Text>
+              <Text style={styles.coef}>coef. {g.coefficient}</Text>
             </View>
-            <Text style={styles.evaluation}>{item.evaluation?.titre || ''}</Text>
-            <Text style={styles.date}>{item.created_at?.slice(0, 10)}</Text>
+            {g.notes.map((n) => (
+              <View key={n.id} style={styles.noteRow}>
+                <View style={styles.noteInfo}>
+                  <Text style={styles.noteType}>{TYPE_LABEL[n.type] ?? n.type}</Text>
+                  <Text style={styles.noteDate}>{(n.date ?? '').slice(0, 10)}</Text>
+                  {n.appreciation ? <Text style={styles.noteApp}>{n.appreciation}</Text> : null}
+                </View>
+                {n.absent ? (
+                  <Text style={styles.absent}>ABSENT</Text>
+                ) : (
+                  <Text style={styles.note}>
+                    {n.note}<Text style={styles.sur}>/{n.note_sur}</Text>
+                  </Text>
+                )}
+              </View>
+            ))}
+            <Text style={styles.moyenneMatiere}>
+              Moyenne : {g.moyenne === null || g.moyenne === undefined ? '—' : Number(g.moyenne).toFixed(2)}
+            </Text>
           </View>
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>{t('noData')}</Text>}
-      />
-    </View>
+        ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.md },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  moyenneCard: { backgroundColor: colors.primary, borderRadius: 16, padding: spacing.lg, alignItems: 'center', marginBottom: spacing.md },
-  moyenneLabel: { fontSize: fontSizes.sm, color: colors.white, opacity: 0.9 },
-  moyenneValue: { fontSize: fontSizes.title, fontWeight: '800', color: colors.white, marginTop: spacing.xs },
-  card: { backgroundColor: colors.surface, borderRadius: 12, padding: spacing.md, marginBottom: spacing.sm },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  matiere: { fontSize: fontSizes.md, fontWeight: '600', color: colors.text },
-  note: { fontSize: fontSizes.lg, fontWeight: '700' },
-  evaluation: { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: spacing.xs },
-  date: { fontSize: fontSizes.xs, color: colors.textLight, marginTop: spacing.xs },
-  empty: { textAlign: 'center', color: colors.textLight, marginTop: spacing.xl },
+  container:  { flex: 1, backgroundColor: colors.background, padding: spacing.md },
+  center:     { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header:     { alignItems: 'center', marginBottom: spacing.md },
+  moyenneLabel: { fontSize: fontSizes.sm, color: colors.textSecondary },
+  moyenne:    { fontSize: 40, fontWeight: '800', color: colors.primary },
+  enfant:     { fontSize: fontSizes.sm, color: colors.textSecondary, marginTop: 4 },
+  empty:      { alignItems: 'center', paddingTop: 60 },
+  emptyText:  { fontSize: fontSizes.md, color: colors.textSecondary },
+  card:       { backgroundColor: colors.card, borderRadius: 14, padding: spacing.md, marginBottom: spacing.sm },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  dot:        { width: 12, height: 12, borderRadius: 6, marginRight: 8 },
+  matiere:    { fontSize: fontSizes.md, fontWeight: '700', color: colors.text, flex: 1 },
+  coef:       { fontSize: fontSizes.xs, color: colors.textSecondary },
+  noteRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: colors.border },
+  noteInfo:   { flex: 1 },
+  noteType:   { fontSize: fontSizes.sm, fontWeight: '600', color: colors.text },
+  noteDate:   { fontSize: fontSizes.xs, color: colors.textSecondary },
+  noteApp:    { fontSize: fontSizes.xs, color: colors.textSecondary, fontStyle: 'italic' },
+  note:       { fontSize: fontSizes.lg, fontWeight: '800', color: colors.text },
+  sur:        { fontSize: fontSizes.sm, fontWeight: '400', color: colors.textSecondary },
+  absent:     { fontSize: fontSizes.sm, fontWeight: '800', color: colors.danger },
+  moyenneMatiere: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.primary, marginTop: 6, textAlign: 'right' },
 });
