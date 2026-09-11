@@ -19,4 +19,4 @@
 - Backend : `GET parents/mes-enfants` (role:parent, avant apiResource) + `GET planning?eleve_id` (validate uuid, 403 périmètre, `groupe_ids` inscriptions validées). 8 tests (`MesEnfantsTest`, `PlanningEleveTest`).
 - Mobile : `EnfantContext` + `EnfantSelector` + 8 écrans réécrits sur contrats vérifiés (notes groupées+moyenne officielle, présences plates+stats accentuées, paiements financier+`numero_facture`, bulletins+PDF Linking, plannings groupés/Seance, dashboard 4 cartes, appel défaut présent). Messages/Notifications masqués. 10 tests (8 fichiers).
 - Cause racine n°2 (majeure) : intercepteur axios `response => response.data` — convention `body?.data`. Tout le parsing `res?.data?.data` (rogue + ma 1ʳᵉ vague) rendait vide. 16 occurrences corrigées ; reste : admin (gelé) + dashboard prof (hors scope P1).
-- Verdict CI : à compléter après run.
+- Verdict CI run 34617909038 (`f046eb2`) : backend ✅ (8/8 nouveaux, 0 régression), frontend ✅, Pre-Deploy ✅, qualité ❌ pré-existant (13 annotations, 0 introduites — ligne 101 PlanningController hors diff). Incident intermédiaire : `parents_user_id_unique` (1 profil parent/user) → fix test, re-run vert.
