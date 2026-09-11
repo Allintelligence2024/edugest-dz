@@ -825,7 +825,17 @@ parameters:
 		-
 			message: '#^Relation ''eleve'' is not found in App\\Models\\DiagnosticEleve model\.$#'
 			identifier: larastan.relationExistence
-			count: 2
+			count: 3
+			path: app/Http/Controllers/Api/V1/DiagnosticController.php
+		-
+			message: '#^Relation ''enseignant'' is not found in App\\Models\\PlanRattrapage model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/DiagnosticController.php
+		-
+			message: '#^Relation ''eleve'' is not found in App\\Models\\PlanRattrapage model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
 			path: app/Http/Controllers/Api/V1/DiagnosticController.php
 
 		-
@@ -1077,13 +1087,13 @@ parameters:
 		-
 			message: '#^Relation ''candidats'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-
 			message: '#^Relation ''epreuves'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-
@@ -1095,7 +1105,7 @@ parameters:
 		-
 			message: '#^Relation ''salles'' is not found in App\\Models\\SessionExamen model\.$#'
 			identifier: larastan.relationExistence
-			count: 1
+			count: 2
 			path: app/Http/Controllers/Api/V1/ExamenController.php
 
 		-

@@ -87,7 +87,7 @@ class ConsentementRgpdController extends Controller
         ]);
 
         try {
-            \App\Services\AuditChainService::enregistrer(
+            app(\App\Services\AuditChainService::class)->enregistrer(
                 event: 'consentement_parental',
                 payload: [
                     'type_consentement' => $validated['type_consentement'],
