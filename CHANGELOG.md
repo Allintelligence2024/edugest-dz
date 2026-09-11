@@ -22,6 +22,8 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 - **Mobile** : `AuthContext.js` corrigé (référence `api` non importée → crash du logout et suppression silencieuse du token au démarrage) ; suite de tests Jest réparée : **4 suites / 21 tests verts** (chemins d'import, mock i18n du LoginScreen, assertions alignées sur les écrans réels)
 
 ### Corrigé
+- `/api/v1/health` : un kill-switch actif ne dégrade plus le code HTTP (reste 200, état `ACTIVE` visible dans `checks.kill_switch`) — un kill-switch est une décision administrative, pas une panne d'infrastructure ; les sondes uptime doivent continuer à voir le service (régression introduite par le durcissement Sprint 6 du check kill_switch, détectée par `SecurityNiveau6Test` via l'extension de diagnostic CI PHPUnit)
+- Shim CI **v2 (inversion)** : le code backend vit physiquement dans `edugestdz/backend/` (exigé par l'étape PHPStan du job qualité — GitHub Actions canonicalise le `working-directory`, `../../scripts/…` sortait du dépôt avec un simple symlink) ; symlink `backend` à la racine pour le reste du dépôt
 - `README.md`, `docs/SECURITE.md`, `docs/ARCHITECTURE.md` (grille Risk Score fictive remplacée par la vraie), `docs/ANPDP_DECLARATION.md`, `docs/MONITORING_CHECKLIST.md` : alignés sur la réalité (58 wilayas et non 48, Merkle HMAC-SHA-256 et non SHA3, MFA obligatoire seulement super-admin, crypto classique et non post-quantique, compteurs réels, lien plan d'incident, argumentaire commercial ANPDP reformulé)
 - Lockfile mobile resynchronisé avec `package.json` (`npm ci` échouait)
 

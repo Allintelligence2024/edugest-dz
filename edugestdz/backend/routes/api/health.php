@@ -78,7 +78,12 @@ Route::get('/health', function () {
     // fallback BDD si Redis est indisponible.
     $killActive = app(\App\Services\KillSwitchService::class)->estActif();
     $checks['kill_switch'] = ['status' => $killActive ? 'ACTIVE' : 'inactive'];
-    if ($killActive) $allOk = false;
+    // Volontairement SANS impact sur $allOk : un kill switch actif est un
+    // état administratif délibéré, pas une défaillance d'infrastructure.
+    // Les sondes de disponibilité (UptimeRobot…) doivent continuer de voir
+    // le service vivant (200) pendant l'interruption — sinon elles masquent
+    // la reprise. L'état reste visible dans le payload via checks.kill_switch.
+    // Comportement couvert par SecurityNiveau6Test::test_kill_switch_middleware_excludes_health.
 
     // 7. Migrations status
     try {
