@@ -24,7 +24,11 @@ class ConfigurerTenantPiloteCommand extends Command
 
     public function handle(): int
     {
-        $tenant = Tenant::find($this->argument('tenant'));
+        $id = (string) $this->argument('tenant');
+
+        // L'ID est un UUID Postgres : une chaîne quelconque (faute de frappe
+        // opérateur) leverait une QueryException (22P02) au lieu de « introuvable ».
+        $tenant = \Illuminate\Support\Str::isUuid($id) ? Tenant::find($id) : null;
 
         if (!$tenant) {
             $this->error('Tenant introuvable : ' . $this->argument('tenant'));

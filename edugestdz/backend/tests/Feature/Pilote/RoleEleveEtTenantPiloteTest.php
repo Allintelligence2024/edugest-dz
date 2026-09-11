@@ -77,6 +77,9 @@ class RoleEleveEtTenantPiloteTest extends TestCase
 
     public function test_configurer_pilote_tenant_introuvable(): void
     {
+        // UUID valide mais absent de la base.
+        $this->assertSame(1, Artisan::call('tenant:configurer-pilote', ['tenant' => '00000000-0000-0000-0000-000000000000']));
+        // Chaîne quelconque (faute de frappe opérateur) : erreur propre, pas d'exception SQL.
         $this->assertSame(1, Artisan::call('tenant:configurer-pilote', ['tenant' => 'tenant-inexistant']));
     }
 
