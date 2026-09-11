@@ -77,7 +77,10 @@ class RgpdRetentionCommand extends Command
         $supprimes = 0;
 
         foreach ($disk->allFiles($repertoire) as $chemin) {
-            if ($disk->lastModified($chemin) < $seuil) {
+            // lastModified() du contrat Filesystem retourne int|bool (false
+            // si le fichier disparaît entre le listage et la lecture).
+            $mtime = $disk->lastModified($chemin);
+            if ($mtime !== false && $mtime < $seuil) {
                 if (!$dryRun) {
                     $disk->delete($chemin);
                 }

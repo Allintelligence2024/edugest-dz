@@ -27,8 +27,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // trusté, comportement inchangé.
         $proxiesTrust = (string) env('TRUSTED_PROXIES', '');
         if ($proxiesTrust !== '') {
+            // Argument positionnel : ne pas dépendre du nom du paramètre
+            // (at:) qui varie selon les versions 11.x.
             $middleware->trustProxies(
-                at: $proxiesTrust === '*'
+                $proxiesTrust === '*'
                     ? '*'
                     : array_map('trim', explode(',', $proxiesTrust))
             );

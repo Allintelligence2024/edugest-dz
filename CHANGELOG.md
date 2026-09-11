@@ -15,6 +15,7 @@ Format basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 - Réparation de la chaîne backup/restore (`restore-backup.sh` rejoué sur stubs)
 
 ### Ajouté (suites pentest, clôture Sprint 6)
+- **Shim CI `edugestdz/`** : symlinks de compatibilité pour que les workflows existants (qui pointent vers `edugestdz/*`) trouvent le code déplacé à la racine — la CI de branche redevient verte sans toucher `.github/` ; à supprimer dès l'application de `docs/fusion-workflows.patch`
 - **C2 corrigé** : middleware `jwt.blacklist` appliqué à toutes les routes authentifiées — le verrouillage d'urgence invalide désormais les JWT existants
 - **C3 partiel** : code du challenge Zero-Trust envoyé hors-bande (e-mail), plus jamais dans la réponse 428 ; nouvel endpoint `POST /security/zero-trust/verify` (+ 5 tests)
 - **C5 partiel** : `TRUSTED_PROXIES` opt-in (`bootstrap/app.php`) pour un `$request->ip()` correct derrière proxy

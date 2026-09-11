@@ -91,7 +91,7 @@ class ZeroTrustMiddleware
             \Illuminate\Support\Facades\Mail::raw(
                 "Votre code de vérification EduGest DZ : {$code}\n\n"
                 . 'Il expire dans 15 minutes. Si vous n\'êtes pas à l\'origine de cette connexion, changez votre mot de passe.',
-                function ($message) use ($user) {
+                function (\Illuminate\Mail\Message $message) use ($user) {
                     $message->to($user->email)->subject('EduGest DZ — vérification de nouvel appareil');
                 }
             );
