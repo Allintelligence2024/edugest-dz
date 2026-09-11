@@ -37,12 +37,15 @@ class MesEnfantsTest extends TestCase
         Cache::flush();
     }
 
-    private function lier(User $user, Eleve $eleve): void
+    private function lier(User $user, Eleve ...$eleves): void
     {
+        // user_id UNIQUE sur parents : UN profil par user, N élèves attachés.
         $profil = ParentEleve::factory()->create(['tenant_id' => $this->tenant->id]);
         $profil->user_id = $user->id;
         $profil->save();
-        $eleve->parents()->attach($profil->id, ['est_principal' => true]);
+        foreach ($eleves as $eleve) {
+            $eleve->parents()->attach($profil->id, ['est_principal' => true]);
+        }
     }
 
     private function eleve(): Eleve
@@ -55,8 +58,7 @@ class MesEnfantsTest extends TestCase
         $a = $this->eleve();
         $b = $this->eleve();
         $autre = $this->eleve();
-        $this->lier($this->parent, $a);
-        $this->lier($this->parent, $b);
+        $this->lier($this->parent, $a, $b);
 
         $res = $this->actingAs($this->parent, 'api')->getJson('/api/v1/parents/mes-enfants');
 
